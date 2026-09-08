@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demand Letter - {{ applicant_name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .header {
+            margin-bottom: 30px;
+        }
+        .recipient {
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .amount {
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 40px;
+            font-size: 0.95em;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>DEMAND LETTER</h1>
+    <h2>OUTSTANDING LOAN BALANCE OF KES {{ repayment_amount }}</h2>
+
+    <div class="header">
+        <p><strong>Date:</strong> {{ current_date }}</p>
+    </div>
+
+    <div class="recipient">
+        <p><strong>{{ applicant_name }}</strong><br>
+        Payroll No: {{ payroll_number }}<br>
+        ID No: {{ id_number }}<br>
+        Phone: {{ phone_number }}<br>
+        Email: {{email}}<br>
+        Designation: {{ designation }}</p>
+    </div>
+
+    <p>Dear {{ applicant_name }},</p>
+
+    <p>We write to formally demand payment of <strong>{{ repayment_amount }}</strong>, being the outstanding loan balance due and payable as at the date of this letter.</p>
+
+    <p>The loan instalment of <strong>{{ original_amount }}</strong>, which fell due on <strong>{{ due_date }}</strong>, remains unpaid and is therefore in default. Pursuant to Clause F (Default) of the Loan Agreement, the following charges have lawfully accrued:</p>
+
+    <ul>
+        <li>The defaulted instalment has been treated as a rescheduled instalment and subjected to a rescheduling fee of <strong>{{ late_payment_fee }}</strong> (being the higher of 10% of the instalment or KES 1,500); and</li>
+        <li>A debt collection fee of 15% of the outstanding loan balance, amounting to <strong>{{ collection_fee }}</strong>, has been levied following lapse of seven (7) days after default.</li>
+    </ul>
+
+    <p>Despite prior reminders, no satisfactory payment has been received to date.</p>
+
+    <p><strong>You are hereby required to settle the full outstanding amount of {{ repayment_amount }} within seven (7) days from the date of this letter.</strong></p>
+
+    <h2>Payment Instructions</h2>
+    <p>
+        <strong>Account Name:</strong> LEOCAP INVEST<br>
+        <strong>Bank:</strong> NCBA Bank Kenya PLC<br>
+        <strong>Account Number:</strong> 9710240013
+    </p>
+
+    <p>This letter serves as a <strong>final demand</strong>. Failure to comply within the stipulated period shall result in escalation of recovery action, including but not limited to third-party debt recovery, and/or legal proceedings, at your sole cost and expense, without further notice.</p>
+
+    <div class="footer">
+        <p>Yours faithfully,</p>
+        <p><strong>Elvis Karemi Nyaga</strong><br>
+        Proprietor<br>
+        LEOCAP INVEST</p>
+    </div>
+
+    <hr>
+
+    <!-- Statement of Account -->
+    <h1>STATEMENT OF ACCOUNT – LOAN ARREARS SUMMARY</h1>
+
+    <p><strong>Borrower Name:</strong> {{ applicant_name }}<br>
+       <strong>Payroll Number:</strong> {{ payroll_number }}<br>
+       <strong>ID Number:</strong> {{ id_number }}<br>
+       <strong>Designation:</strong> {{ designation }}<br>
+       <strong>Loan Application Date:</strong> {{ created_at }}<br>
+       <strong>Instalment Due Date:</strong> {{ due_date }}</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Basis</th>
+                <th>Amount (KES)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Outstanding instalment due</td>
+                <td>Loan Position as at 31 January 2026</td>
+                <td class="amount">{{ original_amount }}</td>
+            </tr>
+            <tr>
+                <td>Rescheduling fee</td>
+                <td>Higher of 10% or KES 1,500</td>
+                <td class="amount">{{ late_payment_fee }}</td>
+            </tr>
+            <tr>
+                <td>Debt collection fee</td>
+                <td>15% of loan balance</td>
+                <td class="amount">{{ collection_fee }}</td>
+            </tr>
+            <tr>
+                <td colspan="2"><strong>Total Amount Payable</strong></td>
+                <td class="amount"><strong>{{ repayment_amount }}</strong></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Payment Instructions</h2>
+    <p>
+        <strong>Account Name:</strong> LEOCAP INVEST<br>
+        <strong>Bank:</strong> NCBA Bank Kenya PLC<br>
+        <strong>Account Number:</strong> 9710240013
+    </p>
+
+    <p><em>Note: This statement is issued without prejudice to LEOCAP INVEST's rights to pursue recovery through debt recovery agents, or legal proceedings in the event of continued default.</em></p>
+
+</body>
+</html>

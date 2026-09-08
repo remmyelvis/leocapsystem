@@ -1,0 +1,11 @@
+DROP DATABASE leocap_db;
+CREATE DATABASE leocap_db;
+
+rm -rf migrations
+
+flask db init
+flask db migrate -m "initial schema"
+flask db upgrade
+
+flask db migrate -m "describe change"
+flask db upgrade

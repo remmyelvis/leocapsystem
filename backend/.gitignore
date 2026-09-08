@@ -1,0 +1,15 @@
+website/.env
+migrations
+venv
+.venv
+/.idea
+.idea/dataSources.xml
+/__pycache__
+/website/applicant_documents/*
+/website/application_documents/*
+/website/confirmation_uploads/*
+/website/passports/*
+/website/payslips/*
+/website/statements/*
+/.env
+migrations

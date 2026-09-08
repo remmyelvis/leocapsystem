@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leocap Invest - Interactive Test Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="bg-[#0F2C59] text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3.5 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="bg-amber-500 text-[#0F2C59] p-2 rounded-lg font-bold text-xl shadow-md">
+          <i class="fa-solid fa-coins"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight">LEOCAP INVEST</h1>
+          <p class="text-xs text-amber-300 font-medium">Local System Interactive Test Portal</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-3">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span> Backend Live (Port 5000)
+        </span>
+        <button onclick="toggleDarkMode()" id="dark-mode-btn" class="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition text-amber-300" title="Toggle Dark Mode">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+
+    <!-- MODULE TABS -->
+    <div class="flex flex-wrap border-b border-slate-200 space-x-2 bg-white p-2 rounded-xl shadow-sm dark:bg-slate-800 dark:border-slate-700">
+      <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn flex-1 py-3 px-3 text-center font-semibold rounded-lg text-slate-600 hover:bg-slate-100 transition text-sm">
+        <i class="fa-solid fa-gauge-high mr-1"></i> Dashboard
+      </button>
+      <button onclick="switchTab('calculator')" id="tab-calculator" class="tab-btn flex-1 py-3 px-3 text-center font-semibold rounded-lg text-white bg-[#0F2C59] transition shadow-sm text-sm">
+        <i class="fa-solid fa-calculator mr-1"></i> Calculators
+      </button>
+      <button onclick="switchTab('companies')" id="tab-companies" class="tab-btn flex-1 py-3 px-3 text-center font-semibold rounded-lg text-slate-600 hover:bg-slate-100 transition text-sm">
+        <i class="fa-solid fa-building mr-1"></i> Onboarding
+      </button>
+      <button onclick="switchTab('statements')" id="tab-statements" class="tab-btn flex-1 py-3 px-3 text-center font-semibold rounded-lg text-slate-600 hover:bg-slate-100 transition text-sm">
+        <i class="fa-solid fa-file-pdf mr-1"></i> Statements
+      </button>
+      <button onclick="switchTab('reports')" id="tab-reports" class="tab-btn flex-1 py-3 px-3 text-center font-semibold rounded-lg text-slate-600 hover:bg-slate-100 transition text-sm">
+        <i class="fa-solid fa-chart-pie mr-1"></i> Reports
+      </button>
+    </div>
+
+    <!-- TAB: DASHBOARD -->
+    <section id="view-dashboard" class="space-y-6 hidden">
+      <!-- KPI Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 text-center">
+          <div class="text-[10px] font-bold text-slate-400 uppercase">Total Loans</div>
+          <div id="kpi-total" class="text-2xl font-black text-[#0F2C59] mt-1">—</div>
+        </div>
+        <div class="bg-gradient-to-br from-emerald-600 to-teal-700 p-4 rounded-2xl shadow-sm text-center text-white">
+          <div class="text-[10px] font-bold text-emerald-200 uppercase">Total Disbursed</div>
+          <div id="kpi-disbursed" class="text-2xl font-black mt-1">—</div>
+        </div>
+        <div class="bg-gradient-to-br from-amber-500 to-orange-600 p-4 rounded-2xl shadow-sm text-center text-white">
+          <div class="text-[10px] font-bold text-amber-200 uppercase">Outstanding</div>
+          <div id="kpi-outstanding" class="text-2xl font-black mt-1">—</div>
+        </div>
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 text-center">
+          <div class="text-[10px] font-bold text-slate-400 uppercase">Repayment Rate</div>
+          <div id="kpi-rate" class="text-2xl font-black text-emerald-600 mt-1">—</div>
+        </div>
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-red-200 text-center">
+          <div class="text-[10px] font-bold text-red-400 uppercase">Overdue</div>
+          <div id="kpi-overdue" class="text-2xl font-black text-red-600 mt-1">—</div>
+        </div>
+        <div class="bg-gradient-to-br from-[#0F2C59] to-slate-900 p-4 rounded-2xl shadow-sm text-center text-white">
+          <div class="text-[10px] font-bold text-amber-300 uppercase">Fee Revenue</div>
+          <div id="kpi-revenue" class="text-2xl font-black mt-1">—</div>
+        </div>
+      </div>
+
+      <!-- Status Distribution -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <h3 class="text-sm font-bold text-[#0F2C59] uppercase mb-3"><i class="fa-solid fa-chart-bar mr-2 text-amber-500"></i>Loans by Status</h3>
+          <div id="status-bars" class="space-y-2"></div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <h3 class="text-sm font-bold text-[#0F2C59] uppercase mb-3"><i class="fa-solid fa-building mr-2 text-blue-500"></i>Loans by Company</h3>
+          <div id="company-bars" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <!-- Loan Pipeline -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+          <h3 class="text-sm font-bold text-[#0F2C59] uppercase"><i class="fa-solid fa-list-check mr-2 text-emerald-500"></i>Loan Pipeline</h3>
+          <div class="flex space-x-2">
+            <select id="dash-filter-status" onchange="loadDashboardLoans()" class="text-xs bg-white border border-slate-200 rounded-lg px-2 py-1 font-bold text-slate-600">
+              <option value="">All Status</option>
+              <option value="pending_processing">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="disbursed">Disbursed</option>
+              <option value="paid">Paid</option>
+              <option value="default">Default</option>
+              <option value="rejected">Rejected</option>
+            </select>
+            <select id="dash-filter-company" onchange="loadDashboardLoans()" class="text-xs bg-white border border-slate-200 rounded-lg px-2 py-1 font-bold text-slate-600">
+              <option value="">All Companies</option>
+            </select>
+          </div>
+        </div>
+        <div class="overflow-x-auto max-h-96 overflow-y-auto">
+          <table class="w-full text-xs">
+            <thead class="bg-slate-50 sticky top-0">
+              <tr class="text-left text-[10px] font-bold text-slate-500 uppercase">
+                <th class="py-2 px-3">Applicant</th>
+                <th class="py-2 px-3">Company</th>
+                <th class="py-2 px-3 text-right">Applied</th>
+                <th class="py-2 px-3 text-right">Disbursed</th>
+                <th class="py-2 px-3 text-right">Repayment</th>
+                <th class="py-2 px-3">Status</th>
+                <th class="py-2 px-3">Due Date</th>
+                <th class="py-2 px-3 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="dash-loans-tbody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Audit Trail -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex justify-between items-center cursor-pointer" onclick="document.getElementById('audit-body').classList.toggle('hidden')">
+          <h3 class="text-sm font-bold text-[#0F2C59] uppercase"><i class="fa-solid fa-clock-rotate-left mr-2 text-purple-500"></i>Audit Trail</h3>
+          <i class="fa-solid fa-chevron-down text-slate-400"></i>
+        </div>
+        <div id="audit-body" class="hidden overflow-x-auto max-h-64 overflow-y-auto">
+          <table class="w-full text-xs">
+            <thead class="bg-slate-50 sticky top-0">
+              <tr class="text-left text-[10px] font-bold text-slate-500 uppercase">
+                <th class="py-2 px-3">Date</th>
+                <th class="py-2 px-3">Changed By</th>
+                <th class="py-2 px-3">Field</th>
+                <th class="py-2 px-3">Old Value</th>
+                <th class="py-2 px-3">New Value</th>
+                <th class="py-2 px-3">Notes</th>
+              </tr>
+            </thead>
+            <tbody id="audit-tbody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 1: ALL CALCULATORS -->
+    <section id="view-calculator" class="space-y-6">
+      
+      <!-- Unified Calculator Selector -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Select Calculator Module</label>
+        <select id="master-calculator-selector" onchange="switchCalculatorModule()" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-[#0F2C59] focus:ring-2 focus:ring-blue-500">
+          <option value="module-1m">1. Personal Loan Calculator</option>
+          <option value="module-sal">2. Salary Advance Calculator</option>
+          <option value="module-gross">3. Gross Loan Calculator</option>
+          <option value="module-engine">4. Loan Engine & Amortization</option>
+          <option value="module-compare">5. Loan Comparison Tool</option>
+        </select>
+      </div>
+
+      <!-- MODULE 4: ENGINE -->
+      <div id="module-engine" class="calc-module hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          <!-- CALCULATOR INPUT CONTROLS -->
+          <div class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
+          <div class="border-b border-slate-100 pb-3">
+            <h2 class="text-lg font-bold text-[#0F2C59] flex items-center">
+              <i class="fa-solid fa-sliders text-amber-500 mr-2"></i> Loan Parameters
+            </h2>
+            <p class="text-xs text-slate-500">Adjust amount, company terms, and duration to see real-time computation.</p>
+          </div>
+
+          <!-- LOAN AMOUNT -->
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-xs font-bold text-slate-700 uppercase">Loan Amount (KES)</label>
+              <span id="amount-badge" class="text-sm font-extrabold text-[#0F2C59] bg-slate-100 px-2.5 py-0.5 rounded-md">KES 50,000</span>
+            </div>
+            <input type="range" id="loan-amount" min="5000" max="500000" step="5000" value="50000" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#0F2C59]" oninput="updateLoanCalc()">
+            <div class="flex justify-between text-[11px] text-slate-400 mt-1">
+              <span>KES 5,000</span>
+              <span>KES 250,000</span>
+              <span>KES 500,000</span>
+            </div>
+          </div>
+
+          <!-- DURATION -->
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-xs font-bold text-slate-700 uppercase">Duration (Months)</label>
+              <span id="duration-badge" class="text-sm font-extrabold text-[#0F2C59] bg-slate-100 px-2.5 py-0.5 rounded-md">3 Months</span>
+            </div>
+            <input type="range" id="loan-duration" min="1" max="12" step="1" value="3" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#0F2C59]" oninput="updateLoanCalc()">
+            <div class="flex justify-between text-[11px] text-slate-400 mt-1">
+              <span>1 Month</span>
+              <span>6 Months</span>
+              <span>12 Months</span>
+            </div>
+          </div>
+
+          <!-- COMPANY SELECTION -->
+          <div>
+            <label class="text-xs font-bold text-slate-700 uppercase block mb-1">Employer / Company Terms</label>
+            <select id="company-select" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-[#0F2C59] focus:outline-none" onchange="updateLoanCalc()">
+              <!-- Dynamic options loaded via API -->
+            </select>
+          </div>
+
+          <!-- CALCULATION METHOD -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-bold text-slate-700 uppercase block mb-1">Interest Method</label>
+              <select id="method-select" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm text-slate-800" onchange="updateLoanCalc()">
+                <option value="flat">Flat Rate</option>
+                <option value="reducing">Reducing Balance (EMI)</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-700 uppercase block mb-1">Interest Rate</label>
+              <div class="relative">
+                <input type="number" id="interest-rate" value="10" step="0.5" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm text-slate-800" oninput="updateLoanCalc()">
+                <span class="absolute right-3 top-2 text-xs font-bold text-slate-400">% / mo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BREAKDOWN & KPI SUMMARY CARDS -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            
+            <!-- NET DISBURSEMENT CARD -->
+            <div class="bg-gradient-to-br from-emerald-600 to-teal-700 p-5 rounded-2xl text-white shadow-md">
+              <div class="flex justify-between items-center text-emerald-100 text-xs font-semibold uppercase">
+                <span>Net Cash Disbursed</span>
+                <i class="fa-solid fa-money-bill-transfer text-lg"></i>
+              </div>
+              <div id="card-disbursement" class="text-2xl font-black mt-2 tracking-tight">KES 47,500.00</div>
+              <p class="text-[11px] text-emerald-200 mt-1">Amount received directly by borrower (Principal − Deductions)</p>
+            </div>
+
+            <!-- TOTAL REPAYMENT CARD -->
+            <div class="bg-gradient-to-br from-[#0F2C59] to-slate-900 p-5 rounded-2xl text-white shadow-md">
+              <div class="flex justify-between items-center text-amber-300 text-xs font-semibold uppercase">
+                <span>Total Repayment Amount</span>
+                <i class="fa-solid fa-hand-holding-dollar text-lg"></i>
+              </div>
+              <div id="card-repayment" class="text-2xl font-black mt-2 tracking-tight">KES 65,000.00</div>
+              <div class="flex justify-between text-[11px] text-slate-300 mt-1">
+                <span>Monthly: <b id="card-monthly" class="text-amber-400">KES 21,666.67</b></span>
+                <span>Interest: <b id="card-interest" class="text-amber-400">KES 15,000</b></span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- DEDUCTIONS BREAKDOWN STRIP -->
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 grid grid-cols-3 gap-2 text-center">
+            <div class="border-r border-slate-100 pr-2">
+              <span class="text-[10px] font-bold uppercase text-slate-400 block">Processing Fee (3%)</span>
+              <span id="fee-processing" class="text-sm font-bold text-slate-700">KES 1,500.00</span>
+            </div>
+            <div class="border-r border-slate-100 pr-2">
+              <span class="text-[10px] font-bold uppercase text-slate-400 block">Access / Legal Fee</span>
+              <span id="fee-access" class="text-sm font-bold text-slate-700">KES 1,000.00</span>
+            </div>
+            <div>
+              <span class="text-[10px] font-bold uppercase text-slate-400 block">Total Deductions</span>
+              <span id="fee-total" class="text-sm font-bold text-red-600">KES 2,500.00</span>
+            </div>
+          </div>
+
+          <!-- AMORTIZATION SCHEDULE TABLE -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+              <h3 class="text-xs font-bold text-[#0F2C59] uppercase tracking-wider">
+                <i class="fa-solid fa-calendar-days text-amber-500 mr-1.5"></i> Amortization Schedule Preview
+              </h3>
+              <span class="text-[11px] font-semibold text-slate-500">Month-by-Month Installments</span>
+            </div>
+            <div class="overflow-x-auto max-h-64 overflow-y-auto">
+              <table class="w-full text-xs text-left">
+                <thead class="bg-slate-100 text-slate-600 uppercase font-semibold sticky top-0">
+                  <tr>
+                    <th class="py-2.5 px-4">#</th>
+                    <th class="py-2.5 px-4">Due Date</th>
+                    <th class="py-2.5 px-4 text-right">Principal</th>
+                    <th class="py-2.5 px-4 text-right">Interest</th>
+                    <th class="py-2.5 px-4 text-right">Total Installment</th>
+                    <th class="py-2.5 px-4 text-right">Balance</th>
+                  </tr>
+                </thead>
+                <tbody id="schedule-tbody" class="divide-y divide-slate-100 font-medium">
+                  <!-- Generated rows -->
+                </tbody>
+              </table>
+            </div>
+            <!-- EXPORT BUTTONS -->
+            <div class="px-5 py-3 bg-slate-50 border-t border-slate-100 flex justify-end space-x-2">
+              <button onclick="downloadAmortization('pdf')" class="px-3 py-1.5 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 transition">
+                <i class="fa-solid fa-file-pdf mr-1"></i> PDF
+              </button>
+              <button onclick="downloadAmortization('excel')" class="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 transition">
+                <i class="fa-solid fa-file-excel mr-1"></i> Excel
+              </button>
+            </div>
+          </div>
+        </div>
+        </div> <!-- End col-span-7 -->
+
+        </div> <!-- End grid -->
+      </div> <!-- End module-engine -->
+
+      <!-- MODULE 5: COMPARISON TOOL -->
+      <div id="module-compare" class="calc-module hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Scenario A -->
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-blue-200">
+            <h2 class="text-lg font-bold text-[#0F2C59] mb-4 border-b pb-2">Scenario A</h2>
+            <div class="space-y-4">
+              <div><label class="text-xs font-bold text-slate-500 uppercase mb-1">Amount</label><input type="number" id="comp-a-amount" value="50000" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm"></div>
+              <div><label class="text-xs font-bold text-slate-500 uppercase mb-1">Rate %</label><input type="number" id="comp-a-rate" value="10" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm"></div>
+              <div><label class="text-xs font-bold text-slate-500 uppercase mb-1">Duration (Months)</label><input type="number" id="comp-a-duration" value="3" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm"></div>
+            </div>
+          </div>
+          <!-- Scenario B -->
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-amber-200">
+            <h2 class="text-lg font-bold text-amber-600 mb-4 border-b pb-2">Scenario B</h2>
+            <div class="space-y-4">
+              <div><label class="text-xs font-bold text-slate-500 uppercase mb-1">Amount</label><input type="number" id="comp-b-amount" value="50000" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm"></div>
+              <div><label class="text-xs font-bold text-slate-500 uppercase mb-1">Rate %</label><input type="number" id="comp-b-rate" value="10" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm"></div>
+              <div><label class="text-xs font-bold text-slate-500 uppercase mb-1">Duration (Months)</label><input type="number" id="comp-b-duration" value="6" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm"></div>
+            </div>
+          </div>
+        </div>
+        <button onclick="compareLoans()" class="w-full mt-6 py-3 bg-[#0F2C59] text-white font-bold rounded-xl text-sm shadow-md hover:bg-[#0c2242] transition">
+          Run Comparison
+        </button>
+        <div id="compare-results" class="hidden mt-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+           <table class="w-full text-sm text-left">
+             <thead class="bg-slate-50"><tr class="font-bold text-slate-500"><th class="p-3">Metric</th><th class="p-3">Scenario A</th><th class="p-3">Scenario B</th><th class="p-3">Difference (B - A)</th></tr></thead>
+             <tbody class="divide-y divide-slate-100">
+               <tr><td class="p-3 font-semibold">Total Repayment</td><td id="res-comp-a-total" class="p-3"></td><td id="res-comp-b-total" class="p-3"></td><td id="res-comp-diff-total" class="p-3 font-bold"></td></tr>
+               <tr><td class="p-3 font-semibold">Monthly Installment</td><td id="res-comp-a-monthly" class="p-3"></td><td id="res-comp-b-monthly" class="p-3"></td><td id="res-comp-diff-monthly" class="p-3 font-bold"></td></tr>
+               <tr><td class="p-3 font-semibold">Total Interest</td><td id="res-comp-a-interest" class="p-3"></td><td id="res-comp-b-interest" class="p-3"></td><td id="res-comp-diff-interest" class="p-3 font-bold"></td></tr>
+             </tbody>
+           </table>
+        </div>
+      </div>
+
+      <!-- MODULE 1: PERSONAL LOAN (1 MONTH) -->
+      <div id="module-1m" class="calc-module max-w-2xl mx-auto bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <h2 class="text-lg font-bold text-[#0F2C59] mb-4 border-b pb-2"><i class="fa-solid fa-1 mr-2 text-blue-500"></i>Personal Loan Calculator</h2>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Loan Amount (Gross)</label>
+            <input type="number" id="adv-1m-amount" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-bold text-slate-700" value="23711.34">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Rate %</label>
+            <input type="number" id="adv-1m-rate" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-bold text-slate-700" value="10">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Legal Fees (Fixed)</label>
+            <input type="number" id="adv-1m-legal" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-bold text-slate-700" value="1000">
+          </div>
+          <div class="flex items-center">
+            <input type="checkbox" id="adv-1m-admin" checked class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+            <label class="ml-2 text-xs font-bold text-slate-600">Include Admin & Access Fees (2%)</label>
+          </div>
+          
+          <button onclick="calc1MonthLoan()" class="w-full py-2 bg-[#0F2C59] text-white font-bold rounded-lg text-sm shadow-md hover:bg-[#0c2242] transition">
+            Calculate Breakdown
+          </button>
+
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 mt-4 text-sm font-medium">
+            <div class="flex justify-between text-slate-500"><span>Processing Fees (3%):</span> <span id="res-1m-processing" class="text-slate-800">0.00</span></div>
+            <div class="flex justify-between text-slate-500"><span>Admin/Access (2%):</span> <span id="res-1m-admin" class="text-slate-800">0.00</span></div>
+            <div class="flex justify-between text-slate-500 border-b pb-2"><span>Legal Fees:</span> <span id="res-1m-legal" class="text-slate-800">0.00</span></div>
+            <div class="flex justify-between text-[#0F2C59] font-bold"><span>Disbursement (Net):</span> <span id="res-1m-disburse">0.00</span></div>
+            <div class="flex justify-between text-amber-600 font-bold"><span>Repayment Amount:</span> <span id="res-1m-repay">0.00</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODULE 2: SALARY ADVANCE SIMULATOR -->
+      <div id="module-sal" class="calc-module hidden max-w-2xl mx-auto bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <h2 class="text-lg font-bold text-[#0F2C59] mb-4 border-b pb-2"><i class="fa-solid fa-money-bill-trend-up mr-2 text-emerald-500"></i>Salary Advance Simulator</h2>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Input Net Salary Month 1</label>
+            <input type="number" id="adv-sal-m1" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-bold text-slate-700" value="12000">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Input Net Salary Month 2</label>
+            <input type="number" id="adv-sal-m2" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-bold text-slate-700" value="12000">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Input Net Salary Month 3</label>
+            <input type="number" id="adv-sal-m3" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-bold text-slate-700" value="12000">
+          </div>
+          
+          <button onclick="calcSalaryAdvance()" class="w-full py-2 bg-emerald-600 text-white font-bold rounded-lg text-sm shadow-md hover:bg-emerald-700 transition">
+            Simulate Loan
+          </button>
+
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 mt-4 text-sm font-medium">
+            <div class="flex justify-between text-[#0F2C59] font-bold border-b pb-1"><span>Gross Loan:</span> <span id="res-sal-gross">0.00</span></div>
+            <div class="flex justify-between text-slate-500"><span>Processing (3%):</span> <span id="res-sal-proc">0.00</span></div>
+            <div class="flex justify-between text-slate-500"><span>Access (2%):</span> <span id="res-sal-acc">0.00</span></div>
+            <div class="flex justify-between text-slate-500"><span>Legal:</span> <span id="res-sal-leg">0.00</span></div>
+            <div class="flex justify-between text-emerald-600 font-bold border-t pt-1 border-b pb-1"><span>Disbursement:</span> <span id="res-sal-disb">0.00</span></div>
+            <div class="flex justify-between text-amber-600 font-bold"><span>Repayment:</span> <span id="res-sal-rep">0.00</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODULE 3: GROSS UP CALCULATOR -->
+      <div id="module-gross" class="calc-module hidden max-w-2xl mx-auto bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <h2 class="text-lg font-bold text-[#0F2C59] mb-4 border-b pb-2"><i class="fa-solid fa-scale-balanced mr-2 text-amber-500"></i>Gross Loan Calculator</h2>
+        <div class="space-y-4">
+          <p class="text-xs text-slate-500 mb-2">Input the net amount a client wants to receive in their pocket, and calculate how much gross loan they must apply for.</p>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Desired Net Disbursement</label>
+            <input type="number" id="adv-gross-net" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-bold text-slate-700" placeholder="e.g. 50000">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Loan Type</label>
+            <select id="adv-gross-type" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-bold text-slate-700">
+              <option value="personal">Personal Loan (Legal 1000, Proc 3%, Access 0%)</option>
+              <option value="salary_advance">Salary Advance (Legal 500, Proc 3%, Access 2%)</option>
+            </select>
+          </div>
+          
+          <button onclick="calcGrossUp()" class="w-full py-2 bg-amber-500 text-white font-bold rounded-lg text-sm shadow-md hover:bg-amber-600 transition">
+            Calculate Gross Required
+          </button>
+
+          <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 mt-4 text-center">
+            <div class="text-xs font-bold text-amber-700 uppercase">Gross Loan Application Required</div>
+            <div id="res-gross-req" class="text-2xl font-black text-amber-600 mt-1">KES 0.00</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- TAB 2: MULTI-COMPANY ONBOARDING -->
+    <section id="view-companies" class="space-y-6 hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- ONBOARD NEW COMPANY FORM -->
+        <div class="lg:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+          <div class="border-b border-slate-100 pb-3">
+            <h2 class="text-lg font-bold text-[#0F2C59] flex items-center">
+              <i class="fa-solid fa-plus-circle text-emerald-500 mr-2"></i> Onboard New Company
+            </h2>
+            <p class="text-xs text-slate-500">Add corporate employers with custom interest rates and HR routing.</p>
+          </div>
+
+          <form id="onboard-form" onsubmit="handleOnboardCompany(event)" class="space-y-3">
+            <div>
+              <label class="text-xs font-bold text-slate-700 uppercase block mb-1">Company Name</label>
+              <input type="text" id="new-comp-name" placeholder="e.g., Safaricom PLC" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#0F2C59] focus:outline-none">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs font-bold text-slate-700 uppercase block mb-1">Code Slug</label>
+                <input type="text" id="new-comp-code" placeholder="safaricom" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm">
+              </div>
+              <div>
+                <label class="text-xs font-bold text-slate-700 uppercase block mb-1">Interest Rate</label>
+                <input type="number" id="new-comp-rate" value="10.0" step="0.5" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm">
+              </div>
+            </div>
+
+            <div>
+              <label class="text-xs font-bold text-slate-700 uppercase block mb-1">HR Reviewer Email</label>
+              <input type="email" id="new-comp-email" placeholder="hr_loans@company.co.ke" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs font-bold text-slate-700 uppercase block mb-1">Contact Person</label>
+                <input type="text" id="new-comp-person" placeholder="HR Manager" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm">
+              </div>
+              <div>
+                <label class="text-xs font-bold text-slate-700 uppercase block mb-1">Contact Phone</label>
+                <input type="text" id="new-comp-phone" placeholder="+254 700 000 000" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm">
+              </div>
+            </div>
+
+            <button type="submit" class="w-full py-3 bg-[#0F2C59] hover:bg-slate-900 text-white font-bold rounded-xl text-sm transition shadow-md">
+              <i class="fa-solid fa-check mr-1.5"></i> Onboard Company
+            </button>
+          </form>
+        </div>
+
+        <!-- ONBOARDED COMPANIES LIST -->
+        <div class="lg:col-span-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <div>
+              <h2 class="text-lg font-bold text-[#0F2C59] flex items-center">
+                <i class="fa-solid fa-building-columns text-amber-500 mr-2"></i> Onboarded Companies
+              </h2>
+              <p class="text-xs text-slate-500">Active corporate partners in the system.</p>
+            </div>
+            <button onclick="loadCompaniesList()" class="text-xs font-bold text-[#0F2C59] bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition">
+              <i class="fa-solid fa-rotate mr-1"></i> Refresh
+            </button>
+          </div>
+
+          <div id="companies-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Dynamic cards loaded via JS -->
+          </div>
+          </div>
+  
+        </div>
+
+        <!-- BULK EMPLOYEE UPLOAD -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mt-6">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+            <div>
+              <h2 class="text-lg font-bold text-[#0F2C59] flex items-center">
+                <i class="fa-solid fa-users-viewfinder text-blue-500 mr-2"></i> Bulk Employee Onboarding
+              </h2>
+              <p class="text-xs text-slate-500">Upload a CSV or Excel file to quickly add multiple employees.</p>
+            </div>
+            <a href="/api/auth/applicant/bulk-upload/template" class="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-200 transition">
+              <i class="fa-solid fa-download mr-1"></i> Download Template
+            </a>
+          </div>
+          
+          <div class="flex flex-col md:flex-row gap-4 items-center">
+            <div class="flex-1 w-full">
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Select CSV / Excel File</label>
+              <input type="file" id="bulk-upload-file" accept=".csv, .xlsx" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer border border-slate-200 rounded-full bg-slate-50">
+            </div>
+            <button onclick="handleBulkUpload()" class="mt-6 md:mt-0 px-6 py-2.5 bg-[#0F2C59] text-white font-bold rounded-full text-sm shadow-md hover:bg-[#0c2242] transition whitespace-nowrap">
+              <i class="fa-solid fa-upload mr-2"></i> Upload & Process
+            </button>
+          </div>
+          <div id="bulk-upload-results" class="hidden mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-sm"></div>
+        </div>
+      </section>
+
+    <!-- TAB 3: STATEMENTS & PENALTY SIMULATOR -->
+    <section id="view-statements" class="space-y-6 hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- STATEMENT DOWNLOADER -->
+        <div class="lg:col-span-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+          <div class="border-b border-slate-100 pb-3">
+            <h2 class="text-lg font-bold text-[#0F2C59] flex items-center">
+              <i class="fa-solid fa-file-pdf text-red-500 mr-2"></i> Official Client PDF Statement
+            </h2>
+            <p class="text-xs text-slate-500">ReportLab generated high-resolution account statements.</p>
+          </div>
+
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2 text-slate-600">
+            <p class="font-bold text-[#0F2C59]">Features included in generated PDF:</p>
+            <ul class="list-disc list-inside space-y-1">
+              <li>Corporate branding header & official address</li>
+              <li>Borrower Profile (Name, ID, KRA PIN, Employer & Payroll)</li>
+              <li>Financial KPI summary (Total Borrowed, Repaid, Outstanding Balance)</li>
+              <li>Itemized transaction ledger with Running Balance</li>
+              <li>Payment instructions & M-Pesa Paybill clearance notes</li>
+            </ul>
+          </div>
+
+          <div class="pt-2">
+            <a href="/download-sample-statement" target="_blank" class="inline-flex items-center justify-center w-full py-3.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-sm transition shadow-md">
+              <i class="fa-solid fa-download mr-2"></i> Download / View Sample Client Statement PDF
+            </a>
+          </div>
+        </div>
+
+        <!-- OVERDUE PENALTY CALCULATOR -->
+        <div class="lg:col-span-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+          <div class="border-b border-slate-100 pb-3">
+            <h2 class="text-lg font-bold text-[#0F2C59] flex items-center">
+              <i class="fa-solid fa-triangle-exclamation text-amber-500 mr-2"></i> Late Penalty Engine Simulator
+            </h2>
+            <p class="text-xs text-slate-500">Simulate daily late interest & collection fees for overdue accounts.</p>
+          </div>
+
+          <div class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs font-bold text-slate-700 uppercase block mb-1">Overdue Amount (KES)</label>
+                <input type="number" id="penalty-amount" value="25000" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm" oninput="runPenaltySim()">
+              </div>
+              <div>
+                <label class="text-xs font-bold text-slate-700 uppercase block mb-1">Days Overdue</label>
+                <input type="number" id="penalty-days" value="15" min="0" max="90" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm" oninput="runPenaltySim()">
+              </div>
+            </div>
+
+            <div class="p-4 bg-amber-50 rounded-xl border border-amber-200 text-xs space-y-2">
+              <div class="flex justify-between">
+                <span class="text-slate-600">Grace Period:</span>
+                <span class="font-bold text-slate-800">3 Days (Free)</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-600">Billable Overdue Days:</span>
+                <span id="sim-billable-days" class="font-bold text-slate-800">12 Days</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-600">Daily Penalty Rate:</span>
+                <span class="font-bold text-slate-800">0.5% per day</span>
+              </div>
+              <div class="flex justify-between border-t border-amber-200 pt-2 text-sm font-black">
+                <span class="text-amber-900">Total Penalty Accrued:</span>
+                <span id="sim-penalty-fee" class="text-red-600">KES 1,500.00</span>
+              </div>
+              <div class="flex justify-between text-sm font-black border-t border-amber-200 pt-1">
+                <span class="text-[#0F2C59]">Total Payable with Penalty:</span>
+                <span id="sim-total-payable" class="text-[#0F2C59]">KES 26,500.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 4: CORPORATE REPORTS -->
+    <section id="view-reports" class="space-y-6 hidden">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+          <div>
+            <h2 class="text-lg font-bold text-[#0F2C59] flex items-center">
+              <i class="fa-solid fa-chart-pie text-emerald-500 mr-2"></i> Corporate Repayment Reports
+            </h2>
+            <p class="text-xs text-slate-500">View First, Download Next Implementation</p>
+             <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
+            <input type="date" id="report-start" class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm text-slate-600" title="Start Date">
+            <input type="date" id="report-end" class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm text-slate-600" title="End Date">
+            <select id="report-company" class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm">
+              <option value="nakama">Nakama Tech</option>
+              <option value="ideon">Ideon Limited</option>
+              <option value="safaricom">Safaricom PLC</option>
+            </select>
+            <button onclick="loadReportView()" class="px-5 py-2.5 bg-[#0F2C59] hover:bg-[#0c2242] text-white font-bold rounded-lg text-sm shadow-md transition">
+              <i class="fa-solid fa-bolt mr-2"></i> Generate Report
+            </button>
+          </div>
+        </div>
+
+        <div id="report-data-container" class="hidden space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
+              <div class="text-xs font-bold text-slate-500 uppercase">Total Active Loans</div>
+              <div id="rep-count" class="text-2xl font-black text-[#0F2C59] mt-1">0</div>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
+              <div class="text-xs font-bold text-slate-500 uppercase">Total Disbursed</div>
+              <div id="rep-disbursed" class="text-2xl font-black text-emerald-600 mt-1">KES 0</div>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
+              <div class="text-xs font-bold text-slate-500 uppercase">Expected Repayment</div>
+              <div id="rep-expected" class="text-2xl font-black text-amber-600 mt-1">KES 0</div>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto max-h-96 overflow-y-auto border border-slate-200 rounded-xl">
+            <table class="w-full text-sm text-left">
+              <thead class="bg-slate-100 sticky top-0">
+                <tr class="font-bold text-slate-600 uppercase text-[10px]">
+                  <th class="py-3 px-4">Borrower Name</th>
+                  <th class="py-3 px-4">Phone</th>
+                  <th class="py-3 px-4 text-right">Disbursed (Net)</th>
+                  <th class="py-3 px-4 text-right">To Repay (Gross)</th>
+                </tr>
+              </thead>
+              <tbody id="report-tbody" class="divide-y divide-slate-100">
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="flex justify-end space-x-2">
+            <button onclick="downloadReportExcel()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow-md transition">
+              <i class="fa-solid fa-file-excel mr-2"></i> Excel
+            </button>
+            <button onclick="downloadReportPDF()" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-sm shadow-md transition">
+              <i class="fa-solid fa-file-pdf mr-2"></i> PDF
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- AGING REPORT -->
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mt-6">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+          <div>
+            <h2 class="text-lg font-bold text-[#0F2C59] flex items-center">
+              <i class="fa-solid fa-clock-rotate-left text-amber-500 mr-2"></i> Aging Report (Overdue Tracking)
+            </h2>
+          </div>
+          <button onclick="loadAgingReport()" class="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-200 transition">
+            <i class="fa-solid fa-rotate mr-1"></i> Refresh
+          </button>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4" id="aging-buckets">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Switch Calculator Module
+    function switchCalculatorModule() {
+      const selected = document.getElementById('master-calculator-selector').value;
+      document.querySelectorAll('.calc-module').forEach(mod => {
+        mod.classList.add('hidden');
+      });
+      document.getElementById(selected).classList.remove('hidden');
+    }
+
+    // Tab Switcher
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-[#0F2C59]', 'text-white');
+        btn.classList.add('text-slate-600');
+      });
+      document.getElementById('tab-' + tabId).classList.add('bg-[#0F2C59]', 'text-white');
+      document.getElementById('tab-' + tabId).classList.remove('text-slate-600');
+
+      document.getElementById('view-dashboard').classList.add('hidden');
+      document.getElementById('view-calculator').classList.add('hidden');
+      document.getElementById('view-companies').classList.add('hidden');
+      document.getElementById('view-statements').classList.add('hidden');
+      document.getElementById('view-reports').classList.add('hidden');
+
+      document.getElementById('view-' + tabId).classList.remove('hidden');
+
+      if (tabId === 'dashboard') {
+        loadDashboard();
+      }
+      if (tabId === 'companies') {
+        loadCompaniesList();
+      }
+      if (tabId === 'reports') {
+        loadAgingReport();
+      }
+    }
+
+    // Load Companies for Dropdown & Grid
+    async function loadCompanies() {
+      try {
+        const res = await fetch('/api/companies');
+        const data = await res.json();
+        const select = document.getElementById('company-select');
+        select.innerHTML = '';
+
+        data.companies.forEach(comp => {
+          const opt = document.createElement('option');
+          opt.value = comp.code;
+          opt.textContent = comp.name;
+          select.appendChild(opt);
+        });
+
+        updateLoanCalc();
+      } catch (err) {
+        console.error('Failed to load companies:', err);
+      }
+    }
+
+    // Update Loan Calculator
+    async function updateLoanCalc() {
+      const amount = parseFloat(document.getElementById('loan-amount').value);
+      const duration = parseInt(document.getElementById('loan-duration').value);
+      const company = document.getElementById('company-select').value;
+      const method = document.getElementById('method-select').value;
+      const rate = parseFloat(document.getElementById('interest-rate').value);
+
+      document.getElementById('amount-badge').textContent = `KES ${amount.toLocaleString()}`;
+      document.getElementById('duration-badge').textContent = `${duration} Month${duration > 1 ? 's' : ''}`;
+
+      try {
+        const res = await fetch('/api/loans/calculate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: amount,
+            duration_months: duration,
+            company: company,
+            method: method,
+            interest_rate: rate
+          })
+        });
+        const data = await res.json();
+        const b = data.breakdown;
+
+        document.getElementById('card-disbursement').textContent = `KES ${b.net_disbursement.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        document.getElementById('card-repayment').textContent = `KES ${b.total_repayment.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        document.getElementById('card-monthly').textContent = `KES ${b.monthly_installment.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        document.getElementById('card-interest').textContent = `KES ${b.total_interest.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+
+        document.getElementById('fee-processing').textContent = `KES ${b.processing_fee.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        document.getElementById('fee-access').textContent = `KES ${b.access_fee.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        document.getElementById('fee-total').textContent = `KES ${b.total_deductions.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+
+        // Render schedule table
+        const tbody = document.getElementById('schedule-tbody');
+        tbody.innerHTML = '';
+        data.schedule.forEach(inst => {
+          const row = document.createElement('tr');
+          row.className = 'hover:bg-slate-50 border-b border-slate-100';
+          row.innerHTML = `
+            <td class="py-2.5 px-4 font-bold text-slate-700">${inst.installment_number}</td>
+            <td class="py-2.5 px-4 text-slate-600">${inst.due_date}</td>
+            <td class="py-2.5 px-4 text-right font-medium text-slate-700">KES ${inst.principal_payment.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+            <td class="py-2.5 px-4 text-right font-medium text-amber-700">KES ${inst.interest_payment.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+            <td class="py-2.5 px-4 text-right font-bold text-[#0F2C59]">KES ${inst.total_payment.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+            <td class="py-2.5 px-4 text-right font-medium text-slate-500">KES ${inst.closing_balance.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+          `;
+          tbody.appendChild(row);
+        });
+
+      } catch (err) {
+        console.error('Calculation error:', err);
+      }
+    }
+
+    // Load Companies Grid
+    async function loadCompaniesList() {
+      const grid = document.getElementById('companies-grid');
+      grid.innerHTML = '<div class="col-span-2 text-center text-sm text-slate-400 py-4">Loading companies...</div>';
+      try {
+        const res = await fetch('/api/companies?all=true');
+        const data = await res.json();
+        grid.innerHTML = '';
+
+        data.companies.forEach(comp => {
+          const card = document.createElement('div');
+          card.className = 'p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2';
+          card.innerHTML = `
+            <div class="flex justify-between items-start">
+              <div>
+                <h4 class="font-bold text-sm text-[#0F2C59]">${comp.name}</h4>
+                <span class="text-[11px] font-mono bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded">code: ${comp.code}</span>
+              </div>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${comp.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}">${comp.status.toUpperCase()}</span>
+            </div>
+            <div class="text-xs text-slate-600 space-y-0.5 pt-1">
+              <div><i class="fa-solid fa-envelope text-slate-400 mr-1"></i> HR: <span class="font-medium">${comp.hr_email || 'Not configured'}</span></div>
+              <div><i class="fa-solid fa-percent text-slate-400 mr-1"></i> Rate: <span class="font-medium">${comp.interest_rate}% interest, ${comp.processing_fee_rate}% fee</span></div>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+      } catch (err) {
+        grid.innerHTML = '<div class="col-span-2 text-center text-red-500 text-sm py-4">Failed to load companies</div>';
+      }
+    }
+
+    // Handle Company Onboarding Form
+    async function handleOnboardCompany(e) {
+      e.preventDefault();
+      const name = document.getElementById('new-comp-name').value;
+      const code = document.getElementById('new-comp-code').value;
+      const rate = document.getElementById('new-comp-rate').value;
+      const email = document.getElementById('new-comp-email').value;
+      const person = document.getElementById('new-comp-person').value;
+      const phone = document.getElementById('new-comp-phone').value;
+
+      try {
+        const res = await fetch('/api/companies', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer {{ admin_token }}'
+          },
+          body: JSON.stringify({
+            name: name,
+            code: code,
+            interest_rate: parseFloat(rate),
+            hr_email: email,
+            contact_person: person,
+            contact_phone: phone
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          if (data.hr_credentials) {
+            alert(`Company onboarded successfully!\n\nHR Login Credentials Generated:\nEmail: ${data.hr_credentials.email}\nPassword: ${data.hr_credentials.password}\n\nPlease copy and share these with the HR contact.`);
+          } else {
+            alert('Company onboarded successfully!');
+          }
+          document.getElementById('onboard-form').reset();
+          loadCompaniesList();
+          loadCompanies();
+        } else {
+          alert(data.message || 'Failed to onboard company');
+        }
+      } catch (err) {
+        alert('Network error while onboarding company');
+      }
+    }
+
+    // Penalty Simulator
+    function runPenaltySim() {
+      const amount = parseFloat(document.getElementById('penalty-amount').value) || 0;
+      const days = parseInt(document.getElementById('penalty-days').value) || 0;
+      const graceDays = 3;
+      const dailyRate = 0.005;
+
+      const billable = Math.max(0, days - graceDays);
+      const penaltyFee = Math.round(amount * dailyRate * billable * 100) / 100;
+      const totalPayable = amount + penaltyFee;
+
+      document.getElementById('sim-billable-days').textContent = `${billable} Day${billable !== 1 ? 's' : ''}`;
+      document.getElementById('sim-penalty-fee').textContent = `KES ${penaltyFee.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+      document.getElementById('sim-total-payable').textContent = `KES ${totalPayable.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+    }
+
+    // ADVANCED CALCULATORS
+    async function calc1MonthLoan() {
+      const amount = parseFloat(document.getElementById('adv-1m-amount').value) || 0;
+      const rate = parseFloat(document.getElementById('adv-1m-rate').value) || 0;
+      const legal = parseFloat(document.getElementById('adv-1m-legal').value) || 0;
+      const includeAdmin = document.getElementById('adv-1m-admin').checked;
+      const accessRate = includeAdmin ? 2.0 : 0.0;
+
+      try {
+        const res = await fetch('/api/loans/calculate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: amount,
+            interest_rate: rate,
+            duration_months: 1,
+            processing_fee_rate: 3.0,
+            access_fee_rate: accessRate,
+            legal_fee: legal,
+            rate_type: 'monthly',
+            method: 'flat'
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          const breakdown = data.breakdown || data.data || data;
+          document.getElementById('res-1m-processing').textContent = `KES ${breakdown.processing_fee.toLocaleString()}`;
+          document.getElementById('res-1m-admin').textContent = `KES ${breakdown.access_fee.toLocaleString()}`;
+          document.getElementById('res-1m-legal').textContent = `KES ${breakdown.legal_fee.toLocaleString()}`;
+          document.getElementById('res-1m-disburse').textContent = `KES ${breakdown.net_disbursement.toLocaleString()}`;
+          document.getElementById('res-1m-repay').textContent = `KES ${breakdown.total_repayment.toLocaleString()}`;
+        }
+      } catch (e) {
+        alert("Error calculating loan");
+      }
+    }
+
+    async function calcSalaryAdvance() {
+      const m1 = parseFloat(document.getElementById('adv-sal-m1').value) || 0;
+      const m2 = parseFloat(document.getElementById('adv-sal-m2').value) || 0;
+      const m3 = parseFloat(document.getElementById('adv-sal-m3').value) || 0;
+
+      try {
+        const res = await fetch('/api/loans/simulate-salary-advance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ month1: m1, month2: m2, month3: m3 })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          const d = data.data;
+          document.getElementById('res-sal-gross').textContent = `KES ${d.loan_amount.toLocaleString(undefined, {minimumFractionDigits:2})}`;
+          document.getElementById('res-sal-proc').textContent = `KES ${d.processing_fees.toLocaleString(undefined, {minimumFractionDigits:2})}`;
+          document.getElementById('res-sal-acc').textContent = `KES ${d.access_fees.toLocaleString(undefined, {minimumFractionDigits:2})}`;
+          document.getElementById('res-sal-leg').textContent = `KES ${d.legal_charge.toLocaleString(undefined, {minimumFractionDigits:2})}`;
+          document.getElementById('res-sal-disb').textContent = `KES ${d.disbursement_amount.toLocaleString(undefined, {minimumFractionDigits:2})}`;
+          document.getElementById('res-sal-rep').textContent = `KES ${d.repayment_amount.toLocaleString(undefined, {minimumFractionDigits:2})}`;
+        }
+      } catch(e) {
+        alert("Error simulating salary advance");
+      }
+    }
+
+    async function calcGrossUp() {
+      const net = parseFloat(document.getElementById('adv-gross-net').value) || 0;
+      const type = document.getElementById('adv-gross-type').value;
+
+      try {
+        const res = await fetch('/api/loans/calculate-gross', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ net_amount: net, loan_type: type })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          document.getElementById('res-gross-req').textContent = `KES ${data.data.gross_amount.toLocaleString(undefined, {minimumFractionDigits:2})}`;
+        }
+      } catch(e) {
+        alert("Error calculating gross loan");
+      }
+    }
+
+    // Reports View
+    async function loadReportView() {
+      const comp = document.getElementById('report-company').value;
+      const st = document.getElementById('report-start').value;
+      const en = document.getElementById('report-end').value;
+      let url = `/api/reports/applications/get-all/repayment/company/${comp}/amount`;
+      if (st || en) url += '?';
+      if (st) url += `start_date=${st}&`;
+      if (en) url += `end_date=${en}`;
+
+      try {
+        const res = await fetch(url, {
+          headers: { 'Authorization': 'Bearer {{ admin_token }}' }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          document.getElementById('report-data-container').classList.remove('hidden');
+          document.getElementById('rep-count').textContent = data.count;
+          document.getElementById('rep-disbursed').textContent = `KES ${data.data.total_disbursed.toLocaleString()}`;
+          document.getElementById('rep-expected').textContent = `KES ${data.data.total_repayment.toLocaleString()}`;
+          
+          const tbody = document.getElementById('report-tbody');
+          tbody.innerHTML = '';
+          if (data.data.applications && data.data.applications.length > 0) {
+            data.data.applications.forEach(app => {
+              const row = document.createElement('tr');
+              row.className = 'border-b border-slate-50 hover:bg-slate-50';
+              row.innerHTML = `
+                <td class="py-2.5 px-4">${app.Name}</td>
+                <td class="py-2.5 px-4">${app.Phone}</td>
+                <td class="py-2.5 px-4 text-right">KES ${parseFloat(app.Disbursement_Amount || 0).toLocaleString()}</td>
+                <td class="py-2.5 px-4 text-right font-bold text-[#0F2C59]">KES ${parseFloat(app.Repayment_Amount || 0).toLocaleString()}</td>
+              `;
+              tbody.appendChild(row);
+            });
+          } else {
+            tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-slate-500">No loans found in this date range.</td></tr>';
+          }
+        } else {
+          alert(data.message || 'Failed to load report data');
+        }
+      } catch (e) {
+        alert('Error loading report');
+      }
+    }
+
+    // Reports Download Next
+    async function downloadReportPDF() {
+      const comp = document.getElementById('report-company').value;
+      try {
+        const res = await fetch(`/api/reports/applications/get-all/repayment/company/${comp}/pdf`, {
+          headers: { 'Authorization': 'Bearer {{ admin_token }}' }
+        });
+        if (res.ok) {
+          const blob = await res.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${comp}_Repayment_Report.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        } else {
+          const err = await res.json();
+          alert(err.message || 'Failed to download PDF');
+        }
+      } catch (e) {
+        alert('Error downloading PDF');
+      }
+    }
+
+        // ----------------------------------------------------
+    // PHASE 1: DASHBOARD & WORKFLOW
+    // ----------------------------------------------------
+    async function loadDashboard() {
+      try {
+        const res = await fetch('/api/dashboard/kpis', {
+          headers: { 'Authorization': 'Bearer {{ admin_token }}' }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          document.getElementById('kpi-total').textContent = data.total_applications;
+          document.getElementById('kpi-disbursed').textContent = `KES ${data.total_disbursed_amount.toLocaleString()}`;
+          document.getElementById('kpi-outstanding').textContent = `KES ${data.total_outstanding.toLocaleString()}`;
+          document.getElementById('kpi-rate').textContent = `${data.repayment_rate_pct.toFixed(1)}%`;
+          document.getElementById('kpi-overdue').textContent = data.overdue_count;
+          document.getElementById('kpi-revenue').textContent = `KES ${data.revenue_from_fees.toLocaleString()}`;
+          
+          let sb = '';
+          for (const [status, count] of Object.entries(data.loans_by_status)) {
+            sb += `<div class="flex justify-between text-xs text-slate-600 border-b border-slate-50 pb-1"><span>${status}</span><span class="font-bold">${count}</span></div>`;
+          }
+          document.getElementById('status-bars').innerHTML = sb;
+
+          let cb = '';
+          data.loans_by_company.forEach(c => {
+            cb += `<div class="flex justify-between text-xs text-slate-600 border-b border-slate-50 pb-1"><span>${c.company}</span><span class="font-bold">${c.count} (${c.total_amount.toLocaleString()})</span></div>`;
+          });
+          document.getElementById('company-bars').innerHTML = cb;
+        }
+      } catch (e) {
+        console.error('Failed to load KPIs', e);
+      }
+      loadDashboardLoans();
+      loadAuditTrails();
+    }
+
+    async function loadDashboardLoans() {
+      const status = document.getElementById('dash-filter-status').value;
+      const comp = document.getElementById('dash-filter-company').value;
+      let url = '/api/dashboard/loans?';
+      if (status) url += `status=${status}&`;
+      if (comp) url += `company=${comp}`;
+      
+      try {
+        const res = await fetch(url, {
+          headers: { 'Authorization': 'Bearer {{ admin_token }}' }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          const tbody = document.getElementById('dash-loans-tbody');
+          tbody.innerHTML = '';
+          data.applications.forEach(app => {
+            let actions = '';
+            if (app.loan_status === 'pending_processing') {
+              actions = `<button onclick="actionLoan('${app.id}', 'approve')" class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded">Approve</button> <button onclick="actionLoan('${app.id}', 'reject')" class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Reject</button>`;
+            } else if (app.loan_status === 'approved') {
+              actions = `<button onclick="actionLoan('${app.id}', 'disbursed')" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Disburse</button>`;
+            } else if (app.loan_status === 'disbursed') {
+              actions = `<button onclick="actionLoan('${app.id}', 'paid')" class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Mark Paid</button>`;
+            }
+
+            tbody.innerHTML += `
+              <tr class="border-b border-slate-50 hover:bg-slate-50">
+                <td class="py-2 px-3">${app.applicant_name}</td>
+                <td class="py-2 px-3">${app.company}</td>
+                <td class="py-2 px-3 text-right">${app.amount_applied}</td>
+                <td class="py-2 px-3 text-right">${app.disbursement_amount}</td>
+                <td class="py-2 px-3 text-right">${app.repayment_amount}</td>
+                <td class="py-2 px-3">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold ${app.loan_status === 'disbursed' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700'}">${app.loan_status}</span>
+                </td>
+                <td class="py-2 px-3">${app.due_date ? app.due_date.substring(0, 10) : '-'}</td>
+                <td class="py-2 px-3 text-center">${actions}</td>
+              </tr>
+            `;
+          });
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function actionLoan(id, action) {
+      try {
+        const res = await fetch(`/api/applications/${action}/${id}`, {
+          method: 'PATCH',
+          headers: { 'Authorization': 'Bearer {{ admin_token }}' }
+        });
+        if (res.ok) {
+          loadDashboard();
+        } else {
+          const err = await res.json();
+          alert(err.message || 'Action failed');
+        }
+      } catch (e) {
+        alert('Action failed');
+      }
+    }
+
+    async function loadAuditTrails() {
+      try {
+        const res = await fetch('/api/applications/audit-trails', {
+          headers: { 'Authorization': 'Bearer {{ admin_token }}' }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          const tbody = document.getElementById('audit-tbody');
+          tbody.innerHTML = '';
+          data.data.forEach(log => {
+            tbody.innerHTML += `
+              <tr class="border-b border-slate-50">
+                <td class="py-2 px-3">${log.changed_at.substring(0, 16).replace('T', ' ')}</td>
+                <td class="py-2 px-3">${log.changed_by_email}</td>
+                <td class="py-2 px-3">${log.field_name}</td>
+                <td class="py-2 px-3">${log.old_status}</td>
+                <td class="py-2 px-3">${log.new_status}</td>
+                <td class="py-2 px-3 text-[10px] text-slate-400">${log.notes || ''}</td>
+              </tr>
+            `;
+          });
+        }
+      } catch (e) {}
+    }
+
+    // ----------------------------------------------------
+    // PHASE 2 & 3: EXPORTS, AGING, BULK UPLOAD
+    // ----------------------------------------------------
+    async function loadAgingReport() {
+      const comp = document.getElementById('report-company').value || 'nakama';
+      try {
+        const res = await fetch(`/api/reports/aging/${comp}`, {
+          headers: { 'Authorization': 'Bearer {{ admin_token }}' }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          const b = data.aging_buckets;
+          document.getElementById('aging-buckets').innerHTML = `
+            <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-center"><div class="text-[10px] font-bold text-emerald-600 uppercase">Current</div><div class="text-lg font-black text-emerald-700">${b.current.count}</div><div class="text-xs text-slate-500">${b.current.total.toLocaleString()}</div></div>
+            <div class="bg-amber-50 p-3 rounded-xl border border-amber-100 text-center"><div class="text-[10px] font-bold text-amber-600 uppercase">1-30 Days</div><div class="text-lg font-black text-amber-700">${b['1_30_days'].count}</div><div class="text-xs text-slate-500">${b['1_30_days'].total.toLocaleString()}</div></div>
+            <div class="bg-orange-50 p-3 rounded-xl border border-orange-100 text-center"><div class="text-[10px] font-bold text-orange-600 uppercase">31-60 Days</div><div class="text-lg font-black text-orange-700">${b['31_60_days'].count}</div><div class="text-xs text-slate-500">${b['31_60_days'].total.toLocaleString()}</div></div>
+            <div class="bg-red-50 p-3 rounded-xl border border-red-100 text-center"><div class="text-[10px] font-bold text-red-600 uppercase">61-90 Days</div><div class="text-lg font-black text-red-700">${b['61_90_days'].count}</div><div class="text-xs text-slate-500">${b['61_90_days'].total.toLocaleString()}</div></div>
+            <div class="bg-rose-100 p-3 rounded-xl border border-rose-200 text-center"><div class="text-[10px] font-bold text-rose-800 uppercase">90+ Days</div><div class="text-lg font-black text-rose-900">${b['90_plus'].count}</div><div class="text-xs text-slate-500">${b['90_plus'].total.toLocaleString()}</div></div>
+          `;
+        }
+      } catch (e) {}
+    }
+
+    async function downloadReportExcel() {
+      const comp = document.getElementById('report-company').value;
+      const st = document.getElementById('report-start').value;
+      const en = document.getElementById('report-end').value;
+      let url = `/api/reports/applications/get-all/repayment/company/${comp}/excel?token={{ admin_token }}`;
+      if (st) url += `&start_date=${st}`;
+      if (en) url += `&end_date=${en}`;
+      window.open(url, '_blank');
+    }
+
+    async function downloadAmortization(type) {
+      const amount = document.getElementById('loan-amount').value;
+      const interest_rate = document.getElementById('interest-rate').value;
+      const method = document.getElementById('method-select').value;
+      const payload = { amount: parseFloat(amount), interest_rate: parseFloat(interest_rate), duration_months: 3, processing_fee_rate: 3, access_fee_rate: 0, legal_fee: 0, method: method, rate_type: 'monthly' };
+      
+      try {
+        const res = await fetch(`/api/loans/amortization/${type}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer {{ admin_token }}' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          const blob = await res.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Amortization_Schedule.${type === 'excel' ? 'xlsx' : 'pdf'}`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        }
+      } catch (e) {
+        alert(`Failed to download ${type}`);
+      }
+    }
+
+    async function handleBulkUpload() {
+      const fileInput = document.getElementById('bulk-upload-file');
+      if (!fileInput.files.length) return alert('Select a file first');
+      
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      
+      try {
+        const res = await fetch('/api/auth/applicant/bulk-upload', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer {{ admin_token }}' },
+          body: formData
+        });
+        const data = await res.json();
+        const resDiv = document.getElementById('bulk-upload-results');
+        resDiv.classList.remove('hidden');
+        if (res.ok) {
+          resDiv.innerHTML = `<div class="text-emerald-700 font-bold">Successfully created ${data.created} accounts. Skipped ${data.skipped_duplicates} duplicates.</div>`;
+          if (data.errors && data.errors.length) {
+             resDiv.innerHTML += `<div class="text-red-600 text-xs mt-2">Errors: ${data.errors.length} rows failed.</div>`;
+          }
+        } else {
+          resDiv.innerHTML = `<div class="text-red-600 font-bold">Error: ${data.message || 'Upload failed'}</div>`;
+        }
+      } catch (e) {
+        alert('Upload request failed');
+      }
+    }
+
+    // ----------------------------------------------------
+    // PHASE 4: COMPARISON TOOL & DARK MODE
+    // ----------------------------------------------------
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark');
+      const isDark = document.documentElement.classList.contains('dark');
+      if (isDark) {
+        document.body.classList.add('bg-slate-900', 'text-slate-200');
+        document.body.classList.remove('bg-slate-50', 'text-slate-800');
+      } else {
+        document.body.classList.remove('bg-slate-900', 'text-slate-200');
+        document.body.classList.add('bg-slate-50', 'text-slate-800');
+      }
+    }
+
+    async function compareLoans() {
+      const aAmt = parseFloat(document.getElementById('comp-a-amount').value) || 0;
+      const aRate = parseFloat(document.getElementById('comp-a-rate').value) || 0;
+      const aDur = parseInt(document.getElementById('comp-a-duration').value) || 1;
+      
+      const bAmt = parseFloat(document.getElementById('comp-b-amount').value) || 0;
+      const bRate = parseFloat(document.getElementById('comp-b-rate').value) || 0;
+      const bDur = parseInt(document.getElementById('comp-b-duration').value) || 1;
+
+      try {
+        const [resA, resB] = await Promise.all([
+          fetch('/api/loans/calculate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount: aAmt, interest_rate: aRate, duration_months: aDur, processing_fee_rate: 0, access_fee_rate: 0, legal_fee: 0, method: 'flat', rate_type: 'monthly' }) }),
+          fetch('/api/loans/calculate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount: bAmt, interest_rate: bRate, duration_months: bDur, processing_fee_rate: 0, access_fee_rate: 0, legal_fee: 0, method: 'flat', rate_type: 'monthly' }) })
+        ]);
+        
+        const dataA = await resA.json();
+        const dataB = await resB.json();
+        
+        const brA = dataA.breakdown || dataA.data || dataA;
+        const brB = dataB.breakdown || dataB.data || dataB;
+        
+        document.getElementById('compare-results').classList.remove('hidden');
+        
+        document.getElementById('res-comp-a-total').textContent = `KES ${brA.total_repayment.toLocaleString()}`;
+        document.getElementById('res-comp-b-total').textContent = `KES ${brB.total_repayment.toLocaleString()}`;
+        const diffTotal = brB.total_repayment - brA.total_repayment;
+        document.getElementById('res-comp-diff-total').innerHTML = `<span class="${diffTotal > 0 ? 'text-red-600' : 'text-emerald-600'}">KES ${diffTotal.toLocaleString()}</span>`;
+
+        document.getElementById('res-comp-a-monthly').textContent = `KES ${brA.monthly_installment.toLocaleString()}`;
+        document.getElementById('res-comp-b-monthly').textContent = `KES ${brB.monthly_installment.toLocaleString()}`;
+        const diffMonthly = brB.monthly_installment - brA.monthly_installment;
+        document.getElementById('res-comp-diff-monthly').innerHTML = `<span class="${diffMonthly > 0 ? 'text-red-600' : 'text-emerald-600'}">KES ${diffMonthly.toLocaleString()}</span>`;
+
+        document.getElementById('res-comp-a-interest').textContent = `KES ${brA.total_interest.toLocaleString()}`;
+        document.getElementById('res-comp-b-interest').textContent = `KES ${brB.total_interest.toLocaleString()}`;
+        const diffInt = brB.total_interest - brA.total_interest;
+        document.getElementById('res-comp-diff-interest').innerHTML = `<span class="${diffInt > 0 ? 'text-red-600' : 'text-emerald-600'}">KES ${diffInt.toLocaleString()}</span>`;
+
+      } catch (e) {
+        alert('Comparison failed');
+      }
+    }
+
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCompanies();
+      runPenaltySim();
+      switchCalculatorModule();
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,112 @@
+user register request
+
+{
+    "name":"Moses Ndungu",
+    "email":"moisendungu@gmail.com",
+    "number":"0746029603",
+    "password":"password",
+    "role":"admin"
+}
+
+user login request
+
+{
+    "email":"moisendungu@gmail.com",
+    "password":"password"
+}
+
+applicant register request
+
+{
+    "name":"Moses Githaiga",
+    "phone_number":"0719593888",
+    "email":"githaigamoses01@gmail.com",
+    "password":"passcode",
+    "applicant_type":"ideon",
+    "role":"applicant"
+}
+
+{
+    "name":"Ndungu Githaiga",
+    "phone_number":"0719593888",
+    "email":"ndungugithaiga99@gmail.com",
+    "password":"pass",
+    "applicant_type":"nakama",
+    "role":"applicant"
+}
+
+*move employment_type, company, employment_nature, payroll_number, designation, month_one, month_two, month_three to when applicant is applying for loan
+
+applicant login request
+
+{
+    "email":"githaigamoses01@gmail.com",
+    "password":"passcode"
+}
+
+upload document - form data request
+
+applicant_id:Text
+file:File
+
+update document - form data
+
+file:file
+
+set loan limit for client request
+
+{
+    "loan_limit":"20000"
+}
+
+set interest rate for client request
+
+{
+    "interest_rate":"2.0"
+}
+
+loan application request
+
+{
+    "employment_type":"employed",
+    "company":"nakama",
+    "employment_nature":"consultant",
+    "payroll_number":"100",
+    "designation":"IT",
+    "month_one":"30000",
+    "month_two":"30000",
+    "month_three":"30000",
+    "loan_type":"personal",
+    "amount_applied":"20000",
+    "processing_fees":"2000",
+    "legal_fees":"1000",
+    "disbursement_amount":"17000",
+    "repayment_amount":"22000",
+    "loan_status":"pending_processing",
+    "confirmation_text":null
+}
+
+amend loan request
+
+{
+    "amount_applied":"20000"
+}
+
+upload confirmation text request
+
+{
+    "subject":"This is a sample subject",
+    "confirmation_text":"This is a sample confirmation message "
+}
+
+hr email
+
+{
+    "subject":"This is a sample subject",
+    "body":"This is a sample confirmation message"
+}
+
+upload confirmation document - form data request
+
+email_id:Text
+file:File

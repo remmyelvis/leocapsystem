@@ -1,0 +1,101 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+*.env
+website/.env
+backend/website/.env
+backend/.env
+frontend/.next/standalone/.env
+
+# Databases & SQLite
+*.db
+*.sqlite
+*.sqlite3
+instance/
+backend/instance/
+backend/leocap.db
+backend/leocap_local.db
+
+# User Uploaded Documents & Confidential Data
+backend/website/applicant_documents/*
+backend/website/application_documents/*
+backend/website/confirmation_documents/*
+backend/website/confirmation_uploads/*
+backend/website/passports/*
+backend/website/payslips/*
+backend/website/statements/*
+!backend/website/applicant_documents/.gitkeep
+!backend/website/application_documents/.gitkeep
+!backend/website/confirmation_documents/.gitkeep
+!backend/website/confirmation_uploads/.gitkeep
+!backend/website/passports/.gitkeep
+!backend/website/payslips/.gitkeep
+!backend/website/statements/.gitkeep
+
+# Sample / Generated Client PDFs
+backend/sample_client_statement.pdf
+backend/tmp/
+frontend/tmp/
+tmp/
+
+# Logs
+*.log
+app.log
+stderr.log
+backend/app.log
+backend/stderr.log
+frontend/stderr.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Zip archives & temporary builds
+*.zip
+frontend/dist*.zip
+
+# Frontend Caches & Node modules
+frontend/.next/cache/
+node_modules/
+.npm
+
+# IDE / Editor Files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
