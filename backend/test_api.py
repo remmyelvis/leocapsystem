@@ -1,11 +1,10 @@
-import sys
-sys.path.append(r'C:\Users\ELVIS\.gemini\antigravity\scratch\leocap-system\backend')
-from website import create_app, db
-from website.models import Application
+import urllib.request
+import urllib.error
 import json
 
-app = create_app()
-
-with app.app_context():
-    apps = Application.query.all()
-    print(f"Total Applications in DB: {len(apps)}")
+req = urllib.request.Request('http://127.0.0.1:5000/api/applications/get-all')
+try:
+    with urllib.request.urlopen(req) as response:
+        print(response.getcode())
+except urllib.error.HTTPError as e:
+    print("HTTP Error:", e.code)

@@ -782,6 +782,12 @@ def get_audit_trail_by_id(audit_id):
 @jwt_required()
 @role_required("admin","applicant")
 def get_statement(applicant_id):
+    from flask_jwt_extended import get_jwt_identity, get_jwt
+    user_id = get_jwt_identity()
+    role = get_jwt().get('role')
+    if role == 'applicant' and user_id != applicant_id:
+        return jsonify({"error": "Unauthorized"}), 403
+
     if not applicant_id:
         return jsonify({"error": "Please enter an id"}), 404
 
@@ -1194,7 +1200,14 @@ def write_off_loan(application_id):
 @application.route('/applications/get-all', methods=['GET'])
 @jwt_required()
 def get_all_applications():
-    apps = Application.query.all()
+    from flask_jwt_extended import get_jwt_identity, get_jwt
+    user_id = get_jwt_identity()
+    role = get_jwt().get('role')
+    
+    if role == 'applicant':
+        apps = Application.query.filter_by(applicant_id=user_id).all()
+    else:
+        apps = Application.query.all()
     # In models.py we have a do_orm_execute hook, so Application.query.all() will ONLY return the tenant's apps!
     result = []
     for app in apps:

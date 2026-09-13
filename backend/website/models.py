@@ -564,12 +564,12 @@ def _add_tenant_filter(execute_state: ORMExecuteState):
         
     if execute_state.is_select and not execute_state.is_column_load and not execute_state.is_relationship_load:
         if hasattr(g, "tenant_company") and g.tenant_company:
-            for entity in execute_state.statement.get_select_entities():
-                entity_class = getattr(entity, 'class_', None)
+            for desc in execute_state.statement.column_descriptions:
+                entity_class = desc.get('entity')
                 if entity_class == Application:
                     execute_state.statement = execute_state.statement.where(Application.company == g.tenant_company)
-                elif entity_class == Applicant:
-                    execute_state.statement = execute_state.statement.where(Applicant.company == g.tenant_company)
+                # elif entity_class == Applicant: # Applicant has no company column!
+                #     execute_state.statement = execute_state.statement.where(Applicant.company == g.tenant_company)
                 elif entity_class == StatementEntry:
                     execute_state.statement = execute_state.statement.where(StatementEntry.company == g.tenant_company)
                 elif entity_class == ApplicantDocument:
