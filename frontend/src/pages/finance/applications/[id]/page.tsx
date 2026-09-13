@@ -1,0 +1,228 @@
+
+
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, Mail } from "lucide-react";
+import { apiCall } from "@/lib/apiClient";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const mapStatus = (status: string) => {
+  if (status === "pending_processing") return "PENDING";
+  return status.replace(/_/g, " ").toUpperCase();
+};
+
+const statusBadge = (status: string) => {
+  const s = mapStatus(status);
+  if (s.includes("PENDING")) return "bg-amber-100 text-amber-700";
+  if (s.includes("APPROVE")) return "bg-emerald-100 text-emerald-700";
+  if (s.includes("DECLINE")) return "bg-red-100 text-red-700";
+  if (s.includes("DISBURSE")) return "bg-blue-100 text-blue-700";
+  return "bg-amber-100 text-amber-700";
+};
+
+const mapLoanType = (type: string) => {
+  if (type === "personal") return "Personal / General Loan";
+  if (type === "salary_advance") return "Salary Advance";
+  return type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+};
+
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+function Field({ label, value }: { label: string; value?: string | number | null }) {
+  if (value === undefined || value === null) return null;
+  return (
+    <div>
+      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+        {label}
+      </p>
+      <p className="text-sm text-slate-900 font-medium">{value}</p>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6">
+      <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide mb-5">
+        {title}
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-4">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+interface GetOneResponse {
+  application: {
+    id: string;
+    amount_applied: string;
+    date_submitted: string;
+    loan_status: string;
+    loan_type: string;
+    month_one: string;
+    month_two: string;
+    month_three: string;
+    employment_nature: string;
+    employment_type?: string;
+    is_first_time_applicant?: string;
+  };
+  bio_data: {
+    full_name: string;
+    email: string;
+    phone_number: string;
+    id_number: string;
+  };
+}
+
+export default function FinanceApplicationDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const params = { id: id! };
+  const navigate = useNavigate();
+  const [data, setData] = useState<GetOneResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchApp() {
+      try {
+        const res = await apiCall<GetOneResponse>(`/api/applications/get-one/${params.id}`);
+        if (res.data) {
+          setData(res.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch application", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchApp();
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="p-6 space-y-6 max-w-4xl mx-auto">
+        <Skeleton className="h-10 w-1/3" />
+        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-48 w-full rounded-xl" />
+        <Skeleton className="h-48 w-full rounded-xl" />
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="p-6 text-center text-slate-400 text-sm">
+        Application not found.
+      </div>
+    );
+  }
+
+  const { application, bio_data } = data;
+  
+  // Format numbers
+  const amtApplied = Number(application.amount_applied || 0);
+  const m1 = Number(application.month_one || 0);
+  const m2 = Number(application.month_two || 0);
+  const m3 = Number(application.month_three || 0);
+  
+  // Employment Type handling
+  const empTypeMap: Record<string, string> = {
+    "employed": "Employed",
+    "self_employed": "Self Employed",
+  };
+  const empTypeRaw = application.employment_type || application.employment_nature || "self_employed";
+  const empType = empTypeMap[empTypeRaw.toLowerCase()] || empTypeRaw;
+  
+  const firstTime = application.is_first_time_applicant === "True" ? "Yes" : "No";
+
+  return (
+    <div className="p-6 space-y-6 max-w-4xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <div>
+            <h1 className="text-xl font-black text-slate-900">
+              {mapLoanType(application.loan_type)}
+            </h1>
+            <p className="text-slate-400 text-xs mt-0.5">
+              {application.id.substring(0, 8)}...
+            </p>
+          </div>
+        </div>
+        <span
+          className={`text-xs font-black px-3 py-1.5 rounded-full ${statusBadge(
+            application.loan_status
+          )}`}
+        >
+          {mapStatus(application.loan_status)}
+        </span>
+      </div>
+
+      {/* Top Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Date Submitted</p>
+          <p className="text-sm font-semibold text-slate-900">{formatDate(application.date_submitted)}</p>
+        </div>
+        <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Amount</p>
+          <p className="text-sm font-semibold text-slate-900">Ksh {amtApplied.toLocaleString()}</p>
+        </div>
+        <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Last Updated</p>
+          <p className="text-sm font-semibold text-slate-900">{formatDate(application.date_submitted)}</p>
+        </div>
+      </div>
+
+      {/* Bio Data */}
+      <Section title="BIO DATA">
+        <Field label="Full Name" value={bio_data.full_name} />
+        <Field label="ID Number" value={bio_data.id_number} />
+        <Field label="Phone Number" value={bio_data.phone_number} />
+        <Field label="Email Address" value={bio_data.email} />
+      </Section>
+
+      {/* General Loan Details */}
+      <Section title="GENERAL LOAN DETAILS">
+        <Field label="Employment Type" value={empType} />
+        <Field label="First Time Applicant" value={firstTime} />
+        <Field label="Month 1 Earnings" value={`KES ${m1.toLocaleString()}`} />
+        <Field label="Month 2 Earnings" value={`KES ${m2.toLocaleString()}`} />
+        <Field label="Month 3 Earnings" value={`KES ${m3.toLocaleString()}`} />
+        <Field label="Terms Accepted" value="Yes" />
+      </Section>
+
+      {/* Notice box */}
+      <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4 text-yellow-700 text-sm font-medium">
+        Your application is under review. You will be notified once a decision is made (within 24 hours).
+      </div>
+
+      {/* Messages from Admin */}
+      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Mail className="h-4 w-4 text-violet-700" />
+          <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide">
+            MESSAGES FROM ADMIN
+          </h2>
+        </div>
+        <p className="text-sm text-slate-500">
+          No messages yet. Admin communications regarding your application will appear here.
+        </p>
+      </div>
+    </div>
+  );
+}
