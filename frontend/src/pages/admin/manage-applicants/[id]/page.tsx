@@ -502,6 +502,14 @@ export default function ApplicantDetailsPage() {
             Applicant Details
           </p>
         </div>
+        <div className="ml-auto flex items-center gap-2">
+          <Link to={`/admin/manage-applicants/${params.id}/financial-analysis`}>
+            <Button variant="outline" className="gap-2 rounded-xl">
+              <Search className="w-4 h-4" /> Financial Analysis
+            </Button>
+          </Link>
+        </div>
+
       </div>
 
       {riskProfile && (

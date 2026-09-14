@@ -211,8 +211,7 @@ def create_application():
         memo="New loan applied",
         debit=amount_applied,
         credit=Decimal(0),
-        balance=amount_applied,
-        company=applicant.company
+        balance=amount_applied
     )
     db.session.add(statement_entry_one)
 
@@ -222,8 +221,7 @@ def create_application():
         memo=f"Interest charged ({float(interest_rate)*100}%)",
         debit=interest_amount,
         credit=Decimal(0),
-        balance=amount_applied + interest_amount,
-        company=applicant.company
+        balance=amount_applied + interest_amount
     )
     db.session.add(statement_entry_interest)
 
@@ -954,6 +952,29 @@ def get_applicant_risk_profile(applicant_id):
     # BASE SCORE
     score = 500
     details = []
+
+    
+    # NEW: FINANCIAL FLOW SCORE (M-Pesa / Bank Statements)
+    try:
+        from website.financial_engine.income_detector import detect_recurring_income
+        from website.financial_engine.mpesa_analyzer import analyze_mpesa
+        
+        income_data = detect_recurring_income(applicant_id)
+        if income_data:
+            score += 50
+            details.append({"factor": "Verified Recurring Income", "impact": "+50", "type": "positive"})
+            
+        mpesa_data = analyze_mpesa(applicant_id)
+        if mpesa_data['transaction_count'] > 50:
+            score += 30
+            details.append({"factor": "High Financial Activity", "impact": "+30", "type": "positive"})
+            
+        if mpesa_data['fuliza_count'] > 5:
+            score -= 40
+            details.append({"factor": "High Fuliza Dependency", "impact": "-40", "type": "negative"})
+            
+    except Exception as e:
+        pass # Graceful failure if no parsed statements exist yet
 
     # 1. Profile Completeness (max +120)
     if getattr(applicant, 'kra_pin', None):

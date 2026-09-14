@@ -11,6 +11,7 @@ import Page3 from './pages/admin/audit-trail/[id]/page';
 import Page4 from './pages/admin/dashboard/page';
 import Page5 from './pages/admin/manage-admins/page';
 import Page6 from './pages/admin/manage-applicants/page';
+import FinancialAnalysisPage from './pages/admin/manage-applicants/[id]/financial-analysis';
 import Page7 from './pages/admin/manage-applicants/[id]/page';
 import Page8 from './pages/admin/manage-staff/page';
 import Page9 from './pages/admin/profile/page';
@@ -71,6 +72,7 @@ function App() {
         <Route path="manage-applicants" element={<Page6 />} />
         <Route path="manage-companies" element={<CompaniesPage />} />
         <Route path="manage-applicants/:id" element={<Page7 />} />
+        <Route path="manage-applicants/:id/financial-analysis" element={<FinancialAnalysisPage />} />
         <Route path="manage-staff" element={<Page8 />} />
         <Route path="profile" element={<Page9 />} />
         <Route path="reports" element={<Page10 />} />

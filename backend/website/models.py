@@ -553,6 +553,68 @@ class Company(db.Model):
     def __repr__(self):
         return f"<Company {self.code} | {self.name}>"
 
+
+class StatementUpload(db.Model):
+    __tablename__ = 'statement_uploads'
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid4()), unique=True, nullable=False)
+    applicant_id = db.Column(db.String(36), db.ForeignKey("applicants.id"), nullable=False)
+    filename = db.Column(db.String(255), nullable=False)
+    filepath = db.Column(db.String(500), nullable=False)
+    source = db.Column(db.String(50)) # e.g. 'mpesa', 'kcb'
+    password = db.Column(db.String(255), nullable=True)
+    is_parsed = db.Column(db.Boolean, default=False)
+    parsing_error = db.Column(db.Text, nullable=True)
+    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "applicant_id": self.applicant_id,
+            "filename": self.filename,
+            "source": self.source,
+            "is_parsed": self.is_parsed,
+            "parsing_error": self.parsing_error,
+            "uploaded_at": self.uploaded_at.isoformat() if self.uploaded_at else None
+        }
+
+class ParsedTransaction(db.Model):
+    __tablename__ = 'parsed_transactions'
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid4()), unique=True, nullable=False)
+    applicant_id = db.Column(db.String(36), db.ForeignKey("applicants.id"), nullable=False)
+    statement_id = db.Column(db.String(36), db.ForeignKey("statement_uploads.id"), nullable=False)
+    date = db.Column(db.DateTime, nullable=False)
+    description = db.Column(db.String(500), nullable=False)
+    reference = db.Column(db.String(100), nullable=True)
+    money_in = db.Column(db.Float, default=0.0)
+    money_out = db.Column(db.Float, default=0.0)
+    balance = db.Column(db.Float, nullable=True)
+    category = db.Column(db.String(100), nullable=True) # E.g., Salary, Food, Transfers
+    is_internal_transfer = db.Column(db.Boolean, default=False) # True if reconciled against double counting
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "applicant_id": self.applicant_id,
+            "statement_id": self.statement_id,
+            "date": self.date.isoformat() if self.date else None,
+            "description": self.description,
+            "reference": self.reference,
+            "money_in": self.money_in,
+            "money_out": self.money_out,
+            "balance": self.balance,
+            "category": self.category,
+            "is_internal_transfer": self.is_internal_transfer
+        }
+
+class TransactionKeywordMapping(db.Model):
+    __tablename__ = 'transaction_keyword_mappings'
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid4()), unique=True, nullable=False)
+    keyword = db.Column(db.String(100), nullable=False, unique=True)
+    category = db.Column(db.String(100), nullable=False)
+    added_by = db.Column(db.String(36), nullable=True) # Admin ID who mapped it
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 from sqlalchemy import event
 from sqlalchemy.orm import ORMExecuteState
 from flask import has_request_context, g

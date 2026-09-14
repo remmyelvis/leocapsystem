@@ -61,7 +61,9 @@ def create_app():
     app.register_blueprint(loan_calc_bp)
     app.register_blueprint(statement_bp)
 
+    from website.statement_analysis import statement_analysis_bp
     from website.dashboard import dashboard_bp
+    app.register_blueprint(statement_analysis_bp)
     app.register_blueprint(dashboard_bp)
 
     # Ensure default companies exist within app context

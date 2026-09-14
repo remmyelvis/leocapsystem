@@ -157,29 +157,7 @@ const step5Schema = z.object({
 const fullSchema = step1Schema
   .merge(step3Schema)
   .merge(step4Schema)
-  .merge(step5Schema)
-  .superRefine((data, ctx) => {
-    if (
-      data.employmentType === "Employed" &&
-      (!data.companyName || data.companyName.trim().length < 2)
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Company name is required for employed applicants",
-        path: ["companyName"],
-      });
-    }
-    if (
-      data.employmentType === "Employed" &&
-      (!data.payslipName || data.payslipName.trim().length < 1)
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Payslip is required for employed applicants",
-        path: ["payslipName"],
-      });
-    }
-  });
+  .merge(step5Schema);
 
 type FullFormData = z.infer<typeof fullSchema>;
 
@@ -350,6 +328,8 @@ export default function GeneralLoanPage() {
     watch,
     trigger,
     reset,
+    getValues,
+    setError,
     formState: { errors },
   } = useForm<FullFormData>({
     resolver: zodResolver(fullSchema),
@@ -400,7 +380,23 @@ export default function GeneralLoanPage() {
 
   const handleNext = async () => {
     const fields = STEP_FIELDS[currentStep - 1];
-    const valid = await trigger(fields);
+    let valid = await trigger(fields);
+    
+    // Custom cross-step validation enforcement
+    const values = getValues();
+    if (currentStep === 2 && values.employmentType === "Employed") {
+        if (!values.companyName || values.companyName.trim().length < 2) {
+            setError("companyName", { type: "manual", message: "Company name is required for employed applicants" });
+            valid = false;
+        }
+    }
+    if (currentStep === 3 && values.employmentType === "Employed") {
+        if (!values.payslipName || values.payslipName.trim().length < 1) {
+            setError("payslipName", { type: "manual", message: "Payslip is required for employed applicants" });
+            valid = false;
+        }
+    }
+
     if (valid) {
       setStepErrors([]);
       setCurrentStep((s) => Math.min(s + 1, TOTAL_STEPS));
@@ -455,6 +451,7 @@ export default function GeneralLoanPage() {
 
       if (error || !apiData) {
         toast.error(error ?? "Submission failed. Please try again.");
+        setIsSubmitting(false);
         return;
       }
 
@@ -566,7 +563,11 @@ export default function GeneralLoanPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form onSubmit={handleSubmit(onSubmit, (errs) => {
+          console.error(errs);
+          const firstErr = Object.values(errs)[0]?.message;
+          if (firstErr) toast.error(firstErr as string);
+        })} noValidate>
 
           {/* ════════════════════════════════════════════════════════════════
               STEP 1 — Employment Type
