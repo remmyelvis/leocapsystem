@@ -289,7 +289,7 @@ export default function CompaniesPage() {
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Interest Rate (%)</label>
                   <input
-                    type="number"
+                    type="number" onWheel={(e) => e.currentTarget.blur()}
                     step="0.1"
                     required
                     value={formData.interest_rate}
@@ -300,7 +300,7 @@ export default function CompaniesPage() {
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Processing Fee (%)</label>
                   <input
-                    type="number"
+                    type="number" onWheel={(e) => e.currentTarget.blur()}
                     step="0.1"
                     required
                     value={formData.processing_fee_rate}
@@ -376,7 +376,7 @@ export default function CompaniesPage() {
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1">Interest Rate (%)</label>
                       <input
-                        type="number"
+                        type="number" onWheel={(e) => e.currentTarget.blur()}
                         step="0.1"
                         required
                         value={formData.interest_rate}
@@ -387,7 +387,7 @@ export default function CompaniesPage() {
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1">Processing Fee (%)</label>
                       <input
-                        type="number"
+                        type="number" onWheel={(e) => e.currentTarget.blur()}
                         step="0.1"
                         required
                         value={formData.processing_fee_rate}
@@ -401,7 +401,7 @@ export default function CompaniesPage() {
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1">Access Fee (%)</label>
                       <input
-                        type="number"
+                        type="number" onWheel={(e) => e.currentTarget.blur()}
                         step="0.1"
                         required
                         value={formData.access_fee_rate}
@@ -412,7 +412,7 @@ export default function CompaniesPage() {
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1">Legal Fee (Flat)</label>
                       <input
-                        type="number"
+                        type="number" onWheel={(e) => e.currentTarget.blur()}
                         step="0.1"
                         required
                         value={formData.legal_fee}

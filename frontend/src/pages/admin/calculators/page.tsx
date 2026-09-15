@@ -70,11 +70,11 @@ function PersonalLoanModule() {
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase">Loan Amount</label>
-            <input type="number" value={amount} onChange={e => setAmount(Number(e.target.value))} className="w-full mt-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
+            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={amount} onChange={e => setAmount(Number(e.target.value))} className="w-full mt-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase">Rate (%)</label>
-            <input type="number" value={rate} onChange={e => setRate(Number(e.target.value))} className="w-full mt-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
+            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={rate} onChange={e => setRate(Number(e.target.value))} className="w-full mt-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase">Legal Fees (1000 or 500)</label>
@@ -123,7 +123,7 @@ function SalaryAdvanceModule() {
           {[1, 2, 3].map(i => (
             <div key={i}>
               <label className="block text-xs font-bold text-slate-500 uppercase">Net Salary Month {i}</label>
-              <input type="number" value={i===1 ? m1 : i===2 ? m2 : m3} onChange={e => {
+              <input type="number" onWheel={(e) => e.currentTarget.blur()} value={i===1 ? m1 : i===2 ? m2 : m3} onChange={e => {
                 const v = Number(e.target.value);
                 if (i===1) setM1(v); else if (i===2) setM2(v); else setM3(v);
               }} className="w-full mt-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
@@ -158,7 +158,7 @@ function GrossLoanModule() {
       <div className="flex flex-col md:flex-row gap-4 max-w-2xl">
         <div className="flex-1">
           <label className="block text-xs font-bold text-slate-500 uppercase">Desired Net Amount</label>
-          <input type="number" value={net} onChange={e => setNet(Number(e.target.value))} className="w-full mt-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
+          <input type="number" onWheel={(e) => e.currentTarget.blur()} value={net} onChange={e => setNet(Number(e.target.value))} className="w-full mt-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
         </div>
         <div className="flex-1">
           <label className="block text-xs font-bold text-slate-500 uppercase">Loan Type</label>
@@ -201,9 +201,9 @@ function LoanEngineModule() {
     <div className="space-y-6">
       <h2 className="text-lg font-bold text-slate-800">Advanced Loan Engine & Amortization</h2>
       <div className="flex flex-col md:flex-row gap-4">
-        <input type="number" value={amount} onChange={e => setAmount(Number(e.target.value))} placeholder="Amount" className="flex-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
-        <input type="number" value={rate} onChange={e => setRate(Number(e.target.value))} placeholder="Rate %" className="flex-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
-        <input type="number" value={duration} onChange={e => setDuration(Number(e.target.value))} placeholder="Months" className="flex-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
+        <input type="number" onWheel={(e) => e.currentTarget.blur()} value={amount} onChange={e => setAmount(Number(e.target.value))} placeholder="Amount" className="flex-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
+        <input type="number" onWheel={(e) => e.currentTarget.blur()} value={rate} onChange={e => setRate(Number(e.target.value))} placeholder="Rate %" className="flex-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
+        <input type="number" onWheel={(e) => e.currentTarget.blur()} value={duration} onChange={e => setDuration(Number(e.target.value))} placeholder="Months" className="flex-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
         <select value={method} onChange={e => setMethod(e.target.value)} className="flex-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium">
           <option value="flat">Flat Rate</option>
           <option value="reducing_balance">Reducing Balance</option>
@@ -259,15 +259,15 @@ function CompareLoansModule() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-3 bg-blue-50 p-4 rounded-xl border border-blue-100">
           <h3 className="font-bold text-brand-blue">Scenario A</h3>
-          <input type="number" value={a.amount} onChange={e => setA({...a, amount: Number(e.target.value)})} placeholder="Amount" className="w-full border-blue-200 rounded-lg p-2" />
-          <input type="number" value={a.rate} onChange={e => setA({...a, rate: Number(e.target.value)})} placeholder="Rate %" className="w-full border-blue-200 rounded-lg p-2" />
-          <input type="number" value={a.duration} onChange={e => setA({...a, duration: Number(e.target.value)})} placeholder="Months" className="w-full border-blue-200 rounded-lg p-2" />
+          <input type="number" onWheel={(e) => e.currentTarget.blur()} value={a.amount} onChange={e => setA({...a, amount: Number(e.target.value)})} placeholder="Amount" className="w-full border-blue-200 rounded-lg p-2" />
+          <input type="number" onWheel={(e) => e.currentTarget.blur()} value={a.rate} onChange={e => setA({...a, rate: Number(e.target.value)})} placeholder="Rate %" className="w-full border-blue-200 rounded-lg p-2" />
+          <input type="number" onWheel={(e) => e.currentTarget.blur()} value={a.duration} onChange={e => setA({...a, duration: Number(e.target.value)})} placeholder="Months" className="w-full border-blue-200 rounded-lg p-2" />
         </div>
         <div className="space-y-3 bg-purple-50 p-4 rounded-xl border border-purple-100">
           <h3 className="font-bold text-purple-800">Scenario B</h3>
-          <input type="number" value={b.amount} onChange={e => setB({...b, amount: Number(e.target.value)})} placeholder="Amount" className="w-full border-purple-200 rounded-lg p-2" />
-          <input type="number" value={b.rate} onChange={e => setB({...b, rate: Number(e.target.value)})} placeholder="Rate %" className="w-full border-purple-200 rounded-lg p-2" />
-          <input type="number" value={b.duration} onChange={e => setB({...b, duration: Number(e.target.value)})} placeholder="Months" className="w-full border-purple-200 rounded-lg p-2" />
+          <input type="number" onWheel={(e) => e.currentTarget.blur()} value={b.amount} onChange={e => setB({...b, amount: Number(e.target.value)})} placeholder="Amount" className="w-full border-purple-200 rounded-lg p-2" />
+          <input type="number" onWheel={(e) => e.currentTarget.blur()} value={b.rate} onChange={e => setB({...b, rate: Number(e.target.value)})} placeholder="Rate %" className="w-full border-purple-200 rounded-lg p-2" />
+          <input type="number" onWheel={(e) => e.currentTarget.blur()} value={b.duration} onChange={e => setB({...b, duration: Number(e.target.value)})} placeholder="Months" className="w-full border-purple-200 rounded-lg p-2" />
         </div>
       </div>
       <div className="flex justify-center"><Button onClick={compare} className="bg-gray-900 px-8 py-6 text-lg"><ArrowRight className="mr-2"/> Run Comparison</Button></div>

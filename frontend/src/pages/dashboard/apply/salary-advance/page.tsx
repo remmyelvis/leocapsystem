@@ -618,7 +618,7 @@ export default function SalaryAdvancePage() {
                   </p>
                   <input
                     {...register(key, { valueAsNumber: true })}
-                    type="number"
+                    type="number" onWheel={(e) => e.currentTarget.blur()}
                     inputMode="decimal"
                     min={1}
                     placeholder="0"
@@ -675,7 +675,7 @@ export default function SalaryAdvancePage() {
             <label className={labelClass}>Amount You Want to Apply For (KES)</label>
             <input
               {...register("amountRequested", { valueAsNumber: true })}
-              type="number"
+              type="number" onWheel={(e) => e.currentTarget.blur()}
               inputMode="decimal"
               min={1}
               max={maxLoanAmount > 0 ? maxLoanAmount : undefined}

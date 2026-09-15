@@ -165,7 +165,7 @@ export default function FinanceHRLoanDetailPage() {
               <input
                 value={newAmount}
                 onChange={(e) => setNewAmount(e.target.value)}
-                type="number"
+                type="number" onWheel={(e) => e.currentTarget.blur()}
                 min="1"
                 className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-violet-300 text-sm focus:outline-none focus:ring-2 focus:ring-violet-600/20 focus:border-violet-600 transition-colors"
               />

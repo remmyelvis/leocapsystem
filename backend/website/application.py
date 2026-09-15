@@ -949,30 +949,23 @@ def get_applicant_risk_profile(applicant_id):
     if not applicant:
         return jsonify({'error': 'Applicant not found'}), 404
 
-    # BASE SCORE
-    score = 500
+        # BASE SCORE (Out of 600 limit)
+    score = 300
     details = []
 
-    
-    # NEW: FINANCIAL FLOW SCORE (M-Pesa / Bank Statements)
+    # NEW: FINANCIAL FLOW SCORE (M-Pesa / Bank Statements) - Out of 400
     try:
-        from website.financial_engine.income_detector import detect_recurring_income
-        from website.financial_engine.mpesa_analyzer import analyze_mpesa
+        from website.financial_engine.credit_analyzer import generate_credit_analysis
+        credit_data = generate_credit_analysis(applicant_id)
+        stmt_score = credit_data.get('score', 0)
         
-        income_data = detect_recurring_income(applicant_id)
-        if income_data:
-            score += 50
-            details.append({"factor": "Verified Recurring Income", "impact": "+50", "type": "positive"})
+        if stmt_score > 0:
+            score += stmt_score
+            details.append({"factor": "Statement Analysis Score", "impact": f"+{stmt_score}", "type": "positive"})
             
-        mpesa_data = analyze_mpesa(applicant_id)
-        if mpesa_data['transaction_count'] > 50:
-            score += 30
-            details.append({"factor": "High Financial Activity", "impact": "+30", "type": "positive"})
-            
-        if mpesa_data['fuliza_count'] > 5:
-            score -= 40
-            details.append({"factor": "High Fuliza Dependency", "impact": "-40", "type": "negative"})
-            
+            for d in credit_data.get('scoring_details', []):
+                details.append({"factor": f"Statement: {d['factor']}", "impact": str(d['impact']), "type": "neutral"})
+                
     except Exception as e:
         pass # Graceful failure if no parsed statements exist yet
 

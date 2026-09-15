@@ -6,6 +6,7 @@ from website import create_app
 import logging
 
 app = create_app()
+print("LIVE DB_URL:", app.config.get("SQLALCHEMY_DATABASE_URI"), flush=True)
 
 logging.basicConfig(
     filename='app.log',

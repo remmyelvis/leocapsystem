@@ -302,7 +302,7 @@ export default function HRPendingApplicationDetailPage() {
             <div className="flex-1 w-full">
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">New Amount (KES)</label>
               <input
-                type="number"
+                type="number" onWheel={(e) => e.currentTarget.blur()}
                 value={amendAmount}
                 onChange={(e) => setAmendAmount(e.target.value)}
                 placeholder="e.g. 50000"

@@ -718,7 +718,7 @@ export default function GeneralLoanPage() {
                       </p>
                       <input
                         {...register(key, { valueAsNumber: true })}
-                        type="number"
+                        type="number" onWheel={(e) => e.currentTarget.blur()}
                         inputMode="decimal"
                         min={1}
                         placeholder="0"
@@ -1009,7 +1009,7 @@ export default function GeneralLoanPage() {
                 <label className={labelClass}>Amount Applied (KES)</label>
                 <input
                   {...register("amountApplied", { valueAsNumber: true })}
-                  type="number"
+                  type="number" onWheel={(e) => e.currentTarget.blur()}
                   inputMode="decimal"
                   min={1}
                   placeholder="e.g. 50000"

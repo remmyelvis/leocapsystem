@@ -20,6 +20,7 @@ import {
   CheckCircle2,
   Trash2,
   Download,
+  Search,
 } from "lucide-react";
 import { previewFile, apiCall, downloadFile } from "@/lib/apiClient";
 import { Button } from "@/components/ui/button";

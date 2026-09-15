@@ -595,7 +595,7 @@ export default function FinanceApplyPage() {
                   <p className="text-xs text-slate-400 mb-1.5 font-medium">{label}</p>
                   <input
                     {...register(key, { valueAsNumber: true })}
-                    type="number"
+                    type="number" onWheel={(e) => e.currentTarget.blur()}
                     inputMode="decimal"
                     min={1}
                     placeholder="0"
@@ -651,7 +651,7 @@ export default function FinanceApplyPage() {
             <label className={labelClass}>Amount You Want to Apply For (KES)</label>
             <input
               {...register("amountRequested", { valueAsNumber: true })}
-              type="number"
+              type="number" onWheel={(e) => e.currentTarget.blur()}
               inputMode="decimal"
               min={1}
               max={maxLoanAmount > 0 ? maxLoanAmount : undefined}

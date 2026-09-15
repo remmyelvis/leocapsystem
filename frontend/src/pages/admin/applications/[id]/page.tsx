@@ -130,7 +130,28 @@ export default function ApplicationDetailPage() {
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   
   // Audit Trail State
-  const [auditTrail, setAuditTrail] = useState<any[]>([]);
+    const [riskProfile, setRiskProfile] = useState<any>(null);
+  const [loadingRisk, setLoadingRisk] = useState(false);
+
+  useEffect(() => {
+    const fetchRisk = async () => {
+      if (!app?.applicantId) return;
+      setLoadingRisk(true);
+      try {
+        const res = await apiCall(`/api/applicants/${app.applicantId}/risk-profile`);
+        if (!res.error) {
+          setRiskProfile(res.data);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoadingRisk(false);
+      }
+    };
+    fetchRisk();
+  }, [app?.applicantId]);
+
+const [auditTrail, setAuditTrail] = useState<any[]>([]);
   const [loadingAudit, setLoadingAudit] = useState(false);
   const [showAudit, setShowAudit] = useState(false);
 
@@ -147,6 +168,35 @@ export default function ApplicationDetailPage() {
     } finally {
       setLoadingAudit(false);
     }
+  };
+
+  const getLoanRecommendation = (score: number, amount: number) => {
+    if (!score || !amount) return null;
+    let recommendedPercent = 0;
+    let recommendation = "";
+    let style = "";
+    let icon = null;
+    
+    if (score >= 800) {
+      recommendedPercent = 100;
+      recommendation = "Low Risk. Safe to approve full requested amount.";
+      style = "bg-emerald-50 border-emerald-200 text-emerald-900";
+    } else if (score >= 600) {
+      recommendedPercent = 75;
+      recommendation = "Moderate Risk. Approve with a 25% haircut to limit exposure.";
+      style = "bg-sky-50 border-sky-200 text-sky-900";
+    } else if (score >= 400) {
+      recommendedPercent = 25;
+      recommendation = "High Risk. Recommend a micro-approval test limit (25%) or outright rejection.";
+      style = "bg-amber-50 border-amber-200 text-amber-900";
+    } else {
+      recommendedPercent = 0;
+      recommendation = "Severe Risk. Auto-rejection advised.";
+      style = "bg-rose-50 border-rose-200 text-rose-900";
+    }
+    
+    const recommendedAmount = amount * (recommendedPercent / 100);
+    return { recommendedAmount, recommendation, style };
   };
 
   useEffect(() => {
@@ -992,7 +1042,7 @@ export default function ApplicationDetailPage() {
             <div className="flex-1 w-full">
               <label className="block text-xs font-bold text-blue-700 uppercase tracking-wide mb-1.5">Amount Paid (KES)</label>
               <input
-                type="number"
+                type="number" onWheel={(e) => e.currentTarget.blur()}
                 min="1"
                 value={partialPaymentAmount}
                 onChange={(e) => setPartialPaymentAmount(e.target.value)}
@@ -1052,7 +1102,7 @@ export default function ApplicationDetailPage() {
             <div className="flex-1 w-full">
               <label className="block text-xs font-bold text-purple-700 uppercase tracking-wide mb-1.5">Interest Rate (%)</label>
               <input
-                type="number"
+                type="number" onWheel={(e) => e.currentTarget.blur()}
                 min="1"
                 value={chargeInterestAmount}
                 onChange={(e) => setChargeInterestAmount(e.target.value)}
@@ -1095,6 +1145,81 @@ export default function ApplicationDetailPage() {
       )}
 
       {/* ── Applicant Info ── */}
+      {/* AI Decision Engine Card */}
+      {(riskProfile || loadingRisk) && app.amountApplied && (
+        <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl ring-1 ring-slate-800 shadow-xl p-6 text-white overflow-hidden relative">
+          <div className="absolute -right-10 -top-10 opacity-10">
+            <svg width="200" height="200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="p-2 bg-indigo-500/20 rounded-lg">
+                <AlertTriangle className="h-5 w-5 text-indigo-400" />
+              </div>
+              <h2 className="text-lg font-black tracking-wide">AI DECISION ENGINE</h2>
+            </div>
+            
+            {loadingRisk ? (
+              <div className="animate-pulse space-y-4">
+                <div className="h-4 bg-slate-700 rounded w-1/4"></div>
+                <div className="h-10 bg-slate-700 rounded w-1/2"></div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">CRB Score</p>
+                    <p className="text-3xl font-black text-emerald-400">{riskProfile?.score} <span className="text-sm text-slate-500">/ 1000</span></p>
+                  </div>
+                  <div>
+                    <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Requested Amount</p>
+                    <p className="text-2xl font-bold text-white">{KES.format(app.amountApplied)}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Calculated Capacity</p>
+                    {(() => {
+                      const rec = getLoanRecommendation(riskProfile?.score, app.amountApplied);
+                      if (!rec) return null;
+                      return <p className="text-2xl font-bold text-indigo-400">{KES.format(rec.recommendedAmount)}</p>;
+                    })()}
+                  </div>
+                </div>
+
+                {(() => {
+                  const rec = getLoanRecommendation(riskProfile?.score, app.amountApplied);
+                  if (!rec) return null;
+                  return (
+                    <div className={`p-4 rounded-xl border ${rec.style} flex flex-col sm:flex-row sm:items-center justify-between gap-4`}>
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-wider mb-1 opacity-70">Engine Recommendation</p>
+                        <p className="font-semibold">{rec.recommendation}</p>
+                      </div>
+                      
+                      <div className="flex gap-3">
+                        <Button
+                          onClick={() => {
+                            setLoanAmount(rec.recommendedAmount.toString());
+                            toast.success(`Loan amount overridden to ${KES.format(rec.recommendedAmount)}`);
+                          }}
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl whitespace-nowrap"
+                        >
+                          Apply Haircut
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })()}
+                
+                <p className="text-xs text-slate-500 max-w-2xl">
+                  * Manual Executive Override: If you disagree with the AI recommendation, you can manually type a different approved amount in the "Loan Details" section below before clicking Approve.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <Section title="Applicant Information">
         <Field label="Full Name" value={app.customerName} />
         <Field label="Email Address" value={app.email} />
@@ -1207,7 +1332,7 @@ export default function ApplicationDetailPage() {
                   Loan Amount (KES)
                 </label>
                 <input
-                  type="number"
+                  type="number" onWheel={(e) => e.currentTarget.blur()}
                   min="0"
                   step="100"
                   value={loanAmount}
@@ -1223,7 +1348,7 @@ export default function ApplicationDetailPage() {
                   Interest Rate (%)
                 </label>
                 <input
-                  type="number"
+                  type="number" onWheel={(e) => e.currentTarget.blur()}
                   min="0"
                   max="100"
                   step="0.1"
@@ -1240,7 +1365,7 @@ export default function ApplicationDetailPage() {
                   Processing Fees (%)
                 </label>
                 <input
-                  type="number"
+                  type="number" onWheel={(e) => e.currentTarget.blur()}
                   min="0"
                   max="100"
                   step="0.1"
@@ -1257,7 +1382,7 @@ export default function ApplicationDetailPage() {
                   Access Fees (%)
                 </label>
                 <input
-                  type="number"
+                  type="number" onWheel={(e) => e.currentTarget.blur()}
                   min="0"
                   max="100"
                   step="0.1"
@@ -1274,7 +1399,7 @@ export default function ApplicationDetailPage() {
                   Legal Fees
                 </label>
                 <input
-                  type="number"
+                  type="number" onWheel={(e) => e.currentTarget.blur()}
                   min="0"
                   step="1"
                   value={legalFees}
