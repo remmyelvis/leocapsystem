@@ -433,12 +433,9 @@ def mark_as_partially_paid(application_id):
             db.session.rollback()
             return jsonify({'error': 'Duplicate transaction: Idempotency key already processed'}), 409
             
-    # F-004: Overpayment Guard Rails
+    # F-004: Overpayment Logic - Allow negative outstanding balance (wallet credit)
     amount_paid = float(data.get('amount', 0))
-    current_outstanding = float(app.outstanding_balance) if app.outstanding_balance and float(app.outstanding_balance) > 0 else float(app.repayment_amount)
-    if amount_paid > current_outstanding:
-        amount_paid = current_outstanding  # Cap payment at outstanding balance (or handle overpayment to wallet)
-        data['amount'] = amount_paid # Update data so the rest of the function uses the capped amount
+    current_outstanding = float(app.outstanding_balance) if app.outstanding_balance else float(app.repayment_amount)
 
 
     # ---------------------------
@@ -579,12 +576,9 @@ def charge_interest(application_id):
             db.session.rollback()
             return jsonify({'error': 'Duplicate transaction: Idempotency key already processed'}), 409
             
-    # F-004: Overpayment Guard Rails
+    # F-004: Overpayment Logic - Allow negative outstanding balance (wallet credit)
     amount_paid = float(data.get('amount', 0))
-    current_outstanding = float(app.outstanding_balance) if app.outstanding_balance and float(app.outstanding_balance) > 0 else float(app.repayment_amount)
-    if amount_paid > current_outstanding:
-        amount_paid = current_outstanding  # Cap payment at outstanding balance (or handle overpayment to wallet)
-        data['amount'] = amount_paid # Update data so the rest of the function uses the capped amount
+    current_outstanding = float(app.outstanding_balance) if app.outstanding_balance else float(app.repayment_amount)
 
 
     balance = Decimal(app.repayment_amount)
