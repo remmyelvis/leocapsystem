@@ -224,12 +224,14 @@ function LoanEngineModule() {
             <Button variant="outline" className="border-red-200 text-red-700 hover:bg-red-50" onClick={() => downloadAmortization("pdf")}><Download className="h-4 w-4 mr-2" /> PDF</Button>
           </div>
 
-          <table className="w-full text-sm text-left">
+          <div className="w-full overflow-x-auto">
+<table className="w-full text-sm text-left">
             <thead className="bg-slate-50"><tr><th className="px-4 py-2">Month</th><th className="px-4 py-2 text-right">Principal</th><th className="px-4 py-2 text-right">Interest</th><th className="px-4 py-2 text-right">Balance</th></tr></thead>
             <tbody className="divide-y">{result.schedule.map((row: any) => (
               <tr key={row.month} className="hover:bg-slate-50"><td className="px-4 py-2">{row.month}</td><td className="px-4 py-2 text-right">{KES.format(row.principal_payment)}</td><td className="px-4 py-2 text-right">{KES.format(row.interest_payment)}</td><td className="px-4 py-2 text-right">{KES.format(row.closing_balance)}</td></tr>
             ))}</tbody>
           </table>
+</div>
         </div>
       )}
     </div>
@@ -290,7 +292,8 @@ function CompareLoansModule() {
       </div>
       <div className="flex justify-center"><Button onClick={compare} className="bg-gray-900 px-8 py-6 text-lg"><ArrowRight className="mr-2"/> Run Comparison</Button></div>
       {resA && resB && (
-        <table className="w-full text-sm mt-6 border rounded-xl overflow-hidden">
+        <div className="w-full overflow-x-auto">
+<table className="w-full text-sm mt-6 border rounded-xl overflow-hidden">
           <thead className="bg-slate-100"><tr className="text-left"><th className="p-4">Metric</th><th className="p-4">Scenario A</th><th className="p-4">Scenario B</th><th className="p-4">Difference (B - A)</th></tr></thead>
           <tbody className="divide-y bg-white">
             <tr><td className="p-4 font-bold">Total Repayment</td><td className="p-4">{KES.format(resA.total_repayment)}</td><td className="p-4">{KES.format(resB.total_repayment)}</td><td className={`p-4 font-bold ${resB.total_repayment > resA.total_repayment ? 'text-red-600' : 'text-emerald-600'}`}>{KES.format(resB.total_repayment - resA.total_repayment)}</td></tr>
@@ -298,6 +301,7 @@ function CompareLoansModule() {
             <tr><td className="p-4 font-bold">Monthly Installment</td><td className="p-4">{KES.format(resA.monthly_installment)}</td><td className="p-4">{KES.format(resB.monthly_installment)}</td><td className={`p-4 font-bold ${resB.monthly_installment > resA.monthly_installment ? 'text-red-600' : 'text-emerald-600'}`}>{KES.format(resB.monthly_installment - resA.monthly_installment)}</td></tr>
           </tbody>
         </table>
+</div>
       )}
     </div>
   );
