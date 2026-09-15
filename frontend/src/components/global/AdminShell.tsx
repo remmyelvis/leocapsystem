@@ -172,8 +172,8 @@ function SidebarContent({
                 collapsed ? "justify-center" : ""
               } ${
                 active
-                  ? "bg-brand-blue text-white"
-                  : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20 ring-1 ring-indigo-500/50"
+                  : "text-slate-400 hover:bg-indigo-500/10 hover:text-indigo-300"
               }`}
             >
               <Icon className="h-5 w-5 flex-shrink-0" />
@@ -223,10 +223,10 @@ export default function AdminShell({ user, children }: AdminShellProps) {
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
+    <div className="flex h-screen bg-slate-50/50 overflow-hidden">
       {/* ── Desktop sidebar (lg+): toggleable width ── */}
       <aside
-        className={`hidden lg:flex lg:flex-col bg-slate-900 shadow-xl flex-shrink-0 transition-all duration-300 ${
+        className={`hidden lg:flex lg:flex-col bg-slate-950 shadow-2xl border-r border-slate-800/50 flex-shrink-0 transition-all duration-300 ${
           collapsed ? "w-16" : "w-64"
         }`}
       >
@@ -239,7 +239,7 @@ export default function AdminShell({ user, children }: AdminShellProps) {
       </aside>
 
       {/* ── Tablet sidebar (md–lg): always icon-only ── */}
-      <aside className="hidden md:flex lg:hidden flex-col w-16 bg-slate-900 shadow-xl flex-shrink-0">
+      <aside className="hidden md:flex lg:hidden flex-col w-16 bg-slate-950 shadow-2xl border-r border-slate-800/50 flex-shrink-0">
         <SidebarContent {...navProps} collapsed={true} />
       </aside>
 
@@ -251,7 +251,7 @@ export default function AdminShell({ user, children }: AdminShellProps) {
             onClick={() => setSidebarOpen(false)}
             aria-hidden="true"
           />
-          <aside className="relative flex flex-col w-64 bg-slate-900 shadow-xl z-10">
+          <aside className="relative flex flex-col w-64 bg-slate-950 shadow-2xl border-r border-slate-800/50 z-10">
             <SidebarContent {...navProps} collapsed={false} />
           </aside>
         </div>
@@ -260,7 +260,7 @@ export default function AdminShell({ user, children }: AdminShellProps) {
       {/* ── Main area ── */}
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Topbar */}
-        <header className="bg-white border-b border-slate-200 shadow-sm px-4 sm:px-6 h-16 flex items-center gap-4 flex-shrink-0">
+        <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-sm z-40 sticky top-0 px-4 sm:px-6 h-16 flex items-center gap-4 flex-shrink-0">
           <button
             className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
             onClick={() => setSidebarOpen(true)}
@@ -269,7 +269,7 @@ export default function AdminShell({ user, children }: AdminShellProps) {
             <Menu className="h-5 w-5 text-gray-600" />
           </button>
 
-          <span className="bg-slate-900 shadow-xl text-white text-xs font-bold px-3 py-1.5 rounded-full">
+          <span className="bg-slate-950 shadow-2xl border-r border-slate-800/50 text-white text-xs font-bold px-3 py-1.5 rounded-full">
             Admin Panel
           </span>
 
@@ -278,7 +278,7 @@ export default function AdminShell({ user, children }: AdminShellProps) {
           <UserMenu 
             name={user.name}
             roleLabel="Administrator"
-            bgColorClass="bg-slate-900 shadow-xl"
+            bgColorClass="bg-slate-950 shadow-2xl border-r border-slate-800/50"
             profileHref="/admin/profile"
             isAdmin
           />

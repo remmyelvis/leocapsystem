@@ -66,8 +66,8 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
             collapsed ? "justify-center" : ""
           } ${
             active
-              ? "bg-brand-blue text-white shadow-sm"
-              : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20 ring-1 ring-indigo-500/50 shadow-sm"
+              : "text-slate-400 hover:bg-indigo-500/10 hover:text-indigo-300"
           }`}
         >
           <Icon className="h-5 w-5 flex-shrink-0" />
@@ -77,7 +77,7 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
     });
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
+    <div className="flex h-screen bg-slate-50/50 overflow-hidden">
       {/* ── Desktop sidebar (md+): full labels ── */}
       <aside className="hidden md:flex lg:hidden flex-col w-16 bg-slate-900 flex-shrink-0">
         {/* Logo icon only */}
@@ -93,7 +93,7 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
           <button
             onClick={handleSignOut}
             title="Sign Out"
-            className="flex items-center justify-center w-full px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors"
+            className="flex items-center justify-center w-full px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-indigo-500/10 hover:text-indigo-300 transition-colors"
           >
             <LogOut className="h-5 w-5" />
           </button>
@@ -111,7 +111,7 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
         <div className="px-3 pb-4 flex-shrink-0 border-t border-slate-800 pt-3">
           <button
             onClick={handleSignOut}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors w-full"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-indigo-500/10 hover:text-indigo-300 transition-colors w-full"
           >
             <LogOut className="h-5 w-5 flex-shrink-0" />
             Sign Out
@@ -122,7 +122,7 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
       {/* ── Main area ── */}
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Topbar */}
-        <header className="bg-white border-b border-slate-200 shadow-sm px-4 sm:px-6 h-16 flex items-center gap-4 flex-shrink-0">
+        <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-sm z-40 sticky top-0 px-4 sm:px-6 h-16 flex items-center gap-4 flex-shrink-0">
           <div className="flex-1" />
           <UserMenu 
             name={user.name}

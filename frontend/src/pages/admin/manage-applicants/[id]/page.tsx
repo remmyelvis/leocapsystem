@@ -514,7 +514,7 @@ export default function ApplicantDetailsPage() {
       </div>
 
       {riskProfile && (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mt-6 mb-6">
+        <div className="bg-white rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60 overflow-hidden mt-6 mb-6">
           <div className={`p-4 border-b bg-${riskProfile.color}-50 border-${riskProfile.color}-100 flex justify-between items-center`}>
             <div>
               <div className="flex items-center gap-4">

@@ -53,15 +53,15 @@ export default function CalculatorsPage() {
 const KES = new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 function PersonalLoanModule() {
-  const [amount, setAmount] = useState(23711.34);
-  const [rate, setRate] = useState(10);
+  const [amount, setAmount] = useState<number | "">("");
+  const [rate, setRate] = useState<number | "">("");
   const [includeAdmin, setIncludeAdmin] = useState(false);
   const [legalFee, setLegalFee] = useState(1000);
 
-  const processing = amount * 0.03;
-  const admin = includeAdmin ? amount * 0.02 : 0;
-  const disbursement = amount - legalFee - processing - admin;
-  const repayment = amount * (1 + rate / 100);
+  const processing = (Number(amount) || 0) * 0.03;
+  const admin = includeAdmin ? (Number(amount) || 0) * 0.02 : 0;
+  const disbursement = (Number(amount) || 0) - legalFee - processing - admin;
+  const repayment = (Number(amount) || 0) * (1 + (Number(rate) || 0) / 100);
 
   return (
     <div className="space-y-6">
@@ -70,11 +70,11 @@ function PersonalLoanModule() {
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase">Loan Amount</label>
-            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={amount} onChange={e => setAmount(Number(e.target.value))} className="w-full mt-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
+            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={amount === "" ? "" : amount} onChange={e => setAmount(Number(e.target.value))} className="w-full mt-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase">Rate (%)</label>
-            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={rate} onChange={e => setRate(Number(e.target.value))} className="w-full mt-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
+            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={rate === "" ? "" : rate} onChange={e => setRate(Number(e.target.value))} className="w-full mt-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase">Legal Fees (1000 or 500)</label>
@@ -102,11 +102,11 @@ function PersonalLoanModule() {
 }
 
 function SalaryAdvanceModule() {
-  const [m1, setM1] = useState(12000);
-  const [m2, setM2] = useState(12000);
-  const [m3, setM3] = useState(12000);
+  const [m1, setM1] = useState<number | "">("");
+  const [m2, setM2] = useState<number | "">("");
+  const [m3, setM3] = useState<number | "">("");
 
-  const avg = (m1 + m2 + m3) / 3;
+  const avg = ((Number(m1) || 0) + (Number(m2) || 0) + (Number(m3) || 0)) / 3;
   const repayment = avg / 3;
   const loanAmount = repayment / 1.1;
   const processing = loanAmount * 0.03;
@@ -146,10 +146,10 @@ function SalaryAdvanceModule() {
 }
 
 function GrossLoanModule() {
-  const [net, setNet] = useState(22000);
+  const [net, setNet] = useState<number | "">("");
   const [type, setType] = useState("personal");
 
-  const gross = type === "personal" ? (net + 1000) / 0.97 : (net + 500) / 0.95;
+  const gross = type === "personal" ? ((Number(net) || 0) + 1000) / 0.97 : ((Number(net) || 0) + 500) / 0.95;
 
   return (
     <div className="space-y-6">
@@ -158,7 +158,7 @@ function GrossLoanModule() {
       <div className="flex flex-col md:flex-row gap-4 max-w-2xl">
         <div className="flex-1">
           <label className="block text-xs font-bold text-slate-500 uppercase">Desired Net Amount</label>
-          <input type="number" onWheel={(e) => e.currentTarget.blur()} value={net} onChange={e => setNet(Number(e.target.value))} className="w-full mt-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
+          <input type="number" onWheel={(e) => e.currentTarget.blur()} value={net === "" ? "" : net} onChange={e => setNet(Number(e.target.value))} className="w-full mt-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
         </div>
         <div className="flex-1">
           <label className="block text-xs font-bold text-slate-500 uppercase">Loan Type</label>
@@ -177,9 +177,9 @@ function GrossLoanModule() {
 }
 
 function LoanEngineModule() {
-  const [amount, setAmount] = useState(50000);
-  const [rate, setRate] = useState(5);
-  const [duration, setDuration] = useState(3);
+  const [amount, setAmount] = useState<number | "">("");
+  const [rate, setRate] = useState<number | "">("");
+  const [duration, setDuration] = useState<number | "">("");
   const [method, setMethod] = useState("flat");
   const [result, setResult] = useState<any>(null);
 
@@ -187,22 +187,22 @@ function LoanEngineModule() {
     try {
       const res = await apiCall<any>("/api/loans/calculate", {
         method: "POST",
-        body: { amount, interest_rate: rate, duration_months: duration, method, rate_type: "monthly", processing_fee_rate: 3, access_fee_rate: 0, legal_fee: 0 }
+        body: { amount: Number(amount)||0, interest_rate: Number(rate)||0, duration_months: Number(duration)||0, method, rate_type: "monthly", processing_fee_rate: 3, access_fee_rate: 0, legal_fee: 0 }
       });
       if (res.data) setResult(res.data.breakdown || res.data);
     } catch (e) { toast.error("Calculation failed"); }
   };
 
   const downloadAmortization = (format: "pdf" | "excel") => {
-    window.open(`${import.meta.env.VITE_BACKEND_URL}/api/loans/amortization/${format}?amount=${amount}&interest_rate=${rate}&duration_months=${duration}&method=${method}&rate_type=monthly&processing_fee_rate=3&access_fee_rate=0&legal_fee=0`, '_blank');
+    window.open(`${import.meta.env.VITE_BACKEND_URL}/api/loans/amortization/${format}?amount=${Number(amount)||0}&interest_rate=${Number(rate)||0}&duration_months=${Number(duration)||0}&method=${method}&rate_type=monthly&processing_fee_rate=3&access_fee_rate=0&legal_fee=0`, '_blank');
   };
 
   return (
     <div className="space-y-6">
       <h2 className="text-lg font-bold text-slate-800">Advanced Loan Engine & Amortization</h2>
       <div className="flex flex-col md:flex-row gap-4">
-        <input type="number" onWheel={(e) => e.currentTarget.blur()} value={amount} onChange={e => setAmount(Number(e.target.value))} placeholder="Amount" className="flex-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
-        <input type="number" onWheel={(e) => e.currentTarget.blur()} value={rate} onChange={e => setRate(Number(e.target.value))} placeholder="Rate %" className="flex-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
+        <input type="number" onWheel={(e) => e.currentTarget.blur()} value={amount === "" ? "" : amount} onChange={e => setAmount(Number(e.target.value))} placeholder="Amount" className="flex-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
+        <input type="number" onWheel={(e) => e.currentTarget.blur()} value={rate === "" ? "" : rate} onChange={e => setRate(Number(e.target.value))} placeholder="Rate %" className="flex-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
         <input type="number" onWheel={(e) => e.currentTarget.blur()} value={duration} onChange={e => setDuration(Number(e.target.value))} placeholder="Months" className="flex-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
         <select value={method} onChange={e => setMethod(e.target.value)} className="flex-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium">
           <option value="flat">Flat Rate</option>
@@ -237,16 +237,16 @@ function LoanEngineModule() {
 }
 
 function CompareLoansModule() {
-  const [a, setA] = useState({ amount: 50000, rate: 5, duration: 3 });
-  const [b, setB] = useState({ amount: 50000, rate: 4, duration: 6 });
+  const [a, setA] = useState<{amount: number | "", rate: number | "", duration: number | ""}>({ amount: "", rate: "", duration: "" });
+  const [b, setB] = useState<{amount: number | "", rate: number | "", duration: number | ""}>({ amount: "", rate: "", duration: "" });
   const [resA, setResA] = useState<any>(null);
   const [resB, setResB] = useState<any>(null);
 
   const compare = async () => {
     try {
       const [r1, r2] = await Promise.all([
-        apiCall<any>("/api/loans/calculate", { method: "POST", body: { ...a, method: "flat", rate_type: "monthly", processing_fee_rate: 0, access_fee_rate: 0, legal_fee: 0 } }),
-        apiCall<any>("/api/loans/calculate", { method: "POST", body: { ...b, method: "flat", rate_type: "monthly", processing_fee_rate: 0, access_fee_rate: 0, legal_fee: 0 } })
+        apiCall<any>("/api/loans/calculate", { method: "POST", body: { amount: Number(a.amount)||0, interest_rate: Number(a.rate)||0, duration_months: Number(a.duration)||0, method: "flat", rate_type: "monthly", processing_fee_rate: 0, access_fee_rate: 0, legal_fee: 0 } }),
+        apiCall<any>("/api/loans/calculate", { method: "POST", body: { amount: Number(b.amount)||0, interest_rate: Number(b.rate)||0, duration_months: Number(b.duration)||0, method: "flat", rate_type: "monthly", processing_fee_rate: 0, access_fee_rate: 0, legal_fee: 0 } })
       ]);
       if (r1.data) setResA(r1.data.breakdown || r1.data);
       if (r2.data) setResB(r2.data.breakdown || r2.data);
@@ -257,17 +257,35 @@ function CompareLoansModule() {
     <div className="space-y-6">
       <h2 className="text-lg font-bold text-slate-800">Side-by-Side Comparison</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="space-y-3 bg-blue-50 p-4 rounded-xl border border-blue-100">
-          <h3 className="font-bold text-brand-blue">Scenario A</h3>
-          <input type="number" onWheel={(e) => e.currentTarget.blur()} value={a.amount} onChange={e => setA({...a, amount: Number(e.target.value)})} placeholder="Amount" className="w-full border-blue-200 rounded-lg p-2" />
-          <input type="number" onWheel={(e) => e.currentTarget.blur()} value={a.rate} onChange={e => setA({...a, rate: Number(e.target.value)})} placeholder="Rate %" className="w-full border-blue-200 rounded-lg p-2" />
-          <input type="number" onWheel={(e) => e.currentTarget.blur()} value={a.duration} onChange={e => setA({...a, duration: Number(e.target.value)})} placeholder="Months" className="w-full border-blue-200 rounded-lg p-2" />
+        <div className="space-y-4 bg-blue-50 p-6 rounded-xl border border-blue-100">
+          <h3 className="font-bold text-brand-blue text-lg">Scenario A</h3>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Loan Amount</label>
+            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={a.amount === "" ? "" : a.amount} onChange={e => setA({...a, amount: e.target.value ? Number(e.target.value) : ""})} className="w-full border-blue-200 rounded-lg p-2 bg-white" />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Interest Rate (%)</label>
+            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={a.rate === "" ? "" : a.rate} onChange={e => setA({...a, rate: e.target.value ? Number(e.target.value) : ""})} className="w-full border-blue-200 rounded-lg p-2 bg-white" />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Duration (Months)</label>
+            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={a.duration === "" ? "" : a.duration} onChange={e => setA({...a, duration: e.target.value ? Number(e.target.value) : ""})} className="w-full border-blue-200 rounded-lg p-2 bg-white" />
+          </div>
         </div>
-        <div className="space-y-3 bg-purple-50 p-4 rounded-xl border border-purple-100">
-          <h3 className="font-bold text-purple-800">Scenario B</h3>
-          <input type="number" onWheel={(e) => e.currentTarget.blur()} value={b.amount} onChange={e => setB({...b, amount: Number(e.target.value)})} placeholder="Amount" className="w-full border-purple-200 rounded-lg p-2" />
-          <input type="number" onWheel={(e) => e.currentTarget.blur()} value={b.rate} onChange={e => setB({...b, rate: Number(e.target.value)})} placeholder="Rate %" className="w-full border-purple-200 rounded-lg p-2" />
-          <input type="number" onWheel={(e) => e.currentTarget.blur()} value={b.duration} onChange={e => setB({...b, duration: Number(e.target.value)})} placeholder="Months" className="w-full border-purple-200 rounded-lg p-2" />
+        <div className="space-y-4 bg-purple-50 p-6 rounded-xl border border-purple-100">
+          <h3 className="font-bold text-purple-800 text-lg">Scenario B</h3>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Loan Amount</label>
+            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={b.amount === "" ? "" : b.amount} onChange={e => setB({...b, amount: e.target.value ? Number(e.target.value) : ""})} className="w-full border-purple-200 rounded-lg p-2 bg-white" />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Interest Rate (%)</label>
+            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={b.rate === "" ? "" : b.rate} onChange={e => setB({...b, rate: e.target.value ? Number(e.target.value) : ""})} className="w-full border-purple-200 rounded-lg p-2 bg-white" />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Duration (Months)</label>
+            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={b.duration === "" ? "" : b.duration} onChange={e => setB({...b, duration: e.target.value ? Number(e.target.value) : ""})} className="w-full border-purple-200 rounded-lg p-2 bg-white" />
+          </div>
         </div>
       </div>
       <div className="flex justify-center"><Button onClick={compare} className="bg-gray-900 px-8 py-6 text-lg"><ArrowRight className="mr-2"/> Run Comparison</Button></div>

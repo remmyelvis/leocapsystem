@@ -454,7 +454,7 @@ export default function DashboardPage() {
         ) : (
           /* Table */
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/50">
                   <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">

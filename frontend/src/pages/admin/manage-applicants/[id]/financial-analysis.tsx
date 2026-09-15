@@ -107,7 +107,7 @@ export default function FinancialAnalysisPage() {
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+      <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
         <h2 className="text-lg font-bold mb-4">1. Upload Statement</h2>
         <div className="flex flex-wrap gap-4 items-center mb-6">
           <select value={source} onChange={(e) => setSource(e.target.value)} className="border p-2 rounded w-48 bg-slate-50 text-slate-700">
@@ -194,7 +194,7 @@ export default function FinancialAnalysisPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                  <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
                     <h3 className="font-bold text-slate-800 mb-4">Active Credit Facilities</h3>
                     {currentData.active_credit_facilities?.length > 0 ? (
                       <ul className="space-y-2">
@@ -209,7 +209,7 @@ export default function FinancialAnalysisPage() {
 
                   {activeTab !== 'bank' ? (
                     <>
-                      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                      <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
                         <h3 className="font-bold text-slate-800 mb-4">Utility Payments</h3>
                         <div className="space-y-4">
                           <div className="bg-sky-50 p-3 rounded-xl border border-sky-100">
@@ -223,7 +223,7 @@ export default function FinancialAnalysisPage() {
                         </div>
                       </div>
 
-                      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                      <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
                         <h3 className="font-bold text-slate-800 mb-4">Living Expenses (Shopping)</h3>
                         <div className="space-y-4">
                           <div className="bg-orange-50 p-3 rounded-xl border border-orange-100">
@@ -239,7 +239,7 @@ export default function FinancialAnalysisPage() {
                     </>
                   ) : (
                     <>
-                      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                      <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
                         <h3 className="font-bold text-slate-800 mb-4">Bank Charges & Fees</h3>
                         <div className="space-y-4">
                           <div className="bg-amber-50 p-3 rounded-xl border border-amber-100">
@@ -253,7 +253,7 @@ export default function FinancialAnalysisPage() {
                         </div>
                       </div>
 
-                      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                      <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
                         <h3 className="font-bold text-slate-800 mb-4">Transfers Out (M-Pesa / EFT)</h3>
                         <div className="space-y-4">
                           <div className="bg-purple-50 p-3 rounded-xl border border-purple-100">
@@ -271,7 +271,7 @@ export default function FinancialAnalysisPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                  <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
                     <h3 className="font-bold text-slate-800 mb-4">Frequent Income Sources</h3>
                     <ul className="divide-y divide-slate-100">
                       {currentData.frequent_inflows.map((inf: any, i: number) => (
@@ -283,7 +283,7 @@ export default function FinancialAnalysisPage() {
                     </ul>
                   </div>
                   
-                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                  <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
                     <h3 className="font-bold text-slate-800 mb-4">Frequent Outflow Destinations</h3>
                     <ul className="divide-y divide-slate-100">
                       {currentData.frequent_outflows.map((out: any, i: number) => (
@@ -299,7 +299,7 @@ export default function FinancialAnalysisPage() {
             );
           })()}
           
-          <details className="bg-white rounded-2xl shadow-sm border border-slate-200">
+          <details className="bg-white rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
             <summary className="p-4 font-bold text-slate-700 cursor-pointer select-none hover:bg-slate-50 rounded-2xl outline-none">View Raw Parsed Transactions</summary>
             <div className="p-4 pt-0">
                <div className="bg-white rounded-2xl overflow-hidden">

@@ -336,9 +336,9 @@ return (
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/60">
+                <tr className="border-b border-slate-200 bg-slate-50/80 text-xs uppercase tracking-wider text-slate-500 font-semibold sticky top-0 backdrop-blur-md">
                   <th className="px-4 py-3 text-left">
                     <input 
                       type="checkbox" 

@@ -67,7 +67,7 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "Inter", "sans-serif"],
+        sans: ["Plus Jakarta Sans", "Inter", "sans-serif"],
       },
     },
   },

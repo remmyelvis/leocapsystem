@@ -178,7 +178,7 @@ export default function FinanceShell({ user, children }: FinanceShellProps) {
     user.role === "FINANCE_IDEON" ? "Ideon Limited" : "Nakama";
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
+    <div className="flex h-screen bg-slate-50/50 overflow-hidden">
       {/* ── Desktop sidebar (lg+) ── */}
       <aside
         className={`hidden lg:flex lg:flex-col bg-violet-900 flex-shrink-0 transition-all duration-300 ${
@@ -215,7 +215,7 @@ export default function FinanceShell({ user, children }: FinanceShellProps) {
       {/* ── Main area ── */}
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Topbar */}
-        <header className="bg-white border-b border-slate-200 shadow-sm px-4 sm:px-6 h-16 flex items-center gap-4 flex-shrink-0">
+        <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-sm z-40 sticky top-0 px-4 sm:px-6 h-16 flex items-center gap-4 flex-shrink-0">
           <button
             className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
             onClick={() => setSidebarOpen(true)}
