@@ -71,7 +71,7 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
           }`}
         >
           <Icon className="h-5 w-5 flex-shrink-0" />
-          {!collapsed && <span>{label}</span>}
+          {!collapsed && <span className="truncate">{label}</span>}
         </Link>
       );
     });
@@ -151,7 +151,7 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
               }`}
             >
               <Icon className={`h-5 w-5 ${active ? "text-brand-blue" : "text-gray-400"}`} />
-              <span>{label}</span>
+              <span className="truncate">{label}</span>
             </Link>
           );
         })}

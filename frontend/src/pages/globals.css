@@ -113,3 +113,23 @@ html {
     font-size: 13px;
   }
 }
+
+
+/* Prevent Flex/Grid text overflow blowouts */
+* {
+  min-width: 0;
+}
+
+body {
+  /* Force long unbroken strings (like emails or IDs) to wrap */
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Ensure headings scale even more aggressively on mobile */
+@media (max-width: 640px) {
+  h1 { font-size: 1.5rem !important; line-height: 2rem !important; }
+  h2 { font-size: 1.25rem !important; line-height: 1.75rem !important; }
+  h3 { font-size: 1.125rem !important; line-height: 1.5rem !important; }
+}
