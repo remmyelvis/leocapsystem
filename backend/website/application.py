@@ -1318,3 +1318,30 @@ def decline_rate(application_id):
         
     update_loan_status(app, "declined", get_jwt_identity(), get_jwt().get("role"), "Applicant", commit=True)
     return jsonify({"message": "Rate declined", "application": app.to_dict()}), 200
+
+
+@application.route('/applications/default/<string:application_id>', methods=['GET', 'POST', 'PATCH', 'OPTIONS'])
+@jwt_required()
+@role_required("admin")
+def mark_as_default(application_id):
+    from flask_jwt_extended import get_jwt_identity, get_jwt
+    email = get_jwt_identity()
+    role = get_jwt().get("role")
+    
+    app = db.session.query(Application).with_for_update().filter_by(id=application_id).first()
+    if not app:
+        db.session.rollback()
+        return jsonify({'error': 'Application not found'}), 404
+        
+    allowed_statuses = ["unpaid", "partially_paid"]
+    if app.repayment_status not in allowed_statuses:
+        db.session.rollback()
+        return jsonify({'error': 'Application cannot be marked as defaulted'}), 403
+        
+    old_status = app.repayment_status
+    app.repayment_status = 'defaulted'
+    
+    update_loan_status(app, "defaulted", email, role, email, commit=False)
+    db.session.commit()
+    
+    return jsonify({'message': 'Application marked as defaulted'}), 200
