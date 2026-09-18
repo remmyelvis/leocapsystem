@@ -1297,3 +1297,24 @@ def delete_application(application_id):
     db.session.commit()
     return jsonify({"message": "Deleted"}), 200
 
+
+
+@application.route('/applications/rate-confirmed/<string:application_id>', methods=['PATCH'])
+@jwt_required()
+def confirm_rate(application_id):
+    app = Application.query.filter_by(id=application_id).first()
+    if not app:
+        return jsonify({"error": "Not found"}), 404
+        
+    update_loan_status(app, "confirmed", get_jwt_identity(), get_jwt().get("role"), "Applicant", commit=True)
+    return jsonify({"message": "Rate confirmed", "application": app.to_dict()}), 200
+
+@application.route('/applications/rate-declined/<string:application_id>', methods=['PATCH'])
+@jwt_required()
+def decline_rate(application_id):
+    app = Application.query.filter_by(id=application_id).first()
+    if not app:
+        return jsonify({"error": "Not found"}), 404
+        
+    update_loan_status(app, "declined", get_jwt_identity(), get_jwt().get("role"), "Applicant", commit=True)
+    return jsonify({"message": "Rate declined", "application": app.to_dict()}), 200
