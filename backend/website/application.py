@@ -658,7 +658,7 @@ def escalate(application_id):
     if not app:
         return jsonify({'error': 'Application not found'}), 404
         
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     external_ref = data.get('external_reference')
     if external_ref:
         existing_txn = StatementEntry.query.filter_by(external_reference=external_ref).first()
@@ -1273,7 +1273,7 @@ def reject_application(application_id):
     app = Application.query.filter_by(id=application_id).first()
     if not app:
         return jsonify({"error": "Not found"}), 404
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     msg = data.get("message", "Rejected")
     update_loan_status(app, "declined", get_jwt_identity(), get_jwt().get("role"), "Leocap", notes=msg, commit=True)
     return jsonify({"message": "Rejected", "application": app.to_dict()}), 200
