@@ -232,7 +232,7 @@ def create_application():
         'application': new_application.to_dict()
     }), 201
 
-@application.route('/applications/paid/<string:application_id>', methods=['GET', 'POST', 'PATCH', 'OPTIONS'])
+@application.route('/applications/paid/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
 @jwt_required()
 @role_required("admin")
 def mark_as_paid(application_id):
@@ -290,7 +290,7 @@ def mark_as_paid(application_id):
     }), 200
 
 
-@application.route('/applications/nakama/paid', methods=['GET', 'POST', 'PATCH', 'OPTIONS'])
+@application.route('/applications/nakama/paid', methods=['GET', 'POST', 'PATCH'])
 @jwt_required()
 @role_required("admin")
 def mark_nakama_as_paid():
@@ -314,7 +314,7 @@ def mark_nakama_as_paid():
     }), 200
 
 
-@application.route('/applications/ideon/paid', methods=['GET', 'POST', 'PATCH', 'OPTIONS'])
+@application.route('/applications/ideon/paid', methods=['GET', 'POST', 'PATCH'])
 @jwt_required()
 @role_required("admin")
 def mark_ideon_as_paid():
@@ -337,7 +337,7 @@ def mark_ideon_as_paid():
         'message': 'Applications marked as paid successfully'
     }), 200
     
-@application.route('/applications/bulk/paid', methods=['GET', 'POST', 'PATCH', 'OPTIONS'])
+@application.route('/applications/bulk/paid', methods=['GET', 'POST', 'PATCH'])
 @jwt_required()
 @role_required("admin")
 def mark_bulk_as_paid():
@@ -405,7 +405,7 @@ def mark_bulk_as_paid():
     }), 200
 
 
-@application.route('/applications/partially-paid/<string:application_id>', methods=['GET', 'POST', 'PATCH', 'OPTIONS'])
+@application.route('/applications/partially-paid/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
 @jwt_required()
 @role_required("admin")
 def mark_as_partially_paid(application_id):
@@ -550,7 +550,7 @@ def mark_as_partially_paid(application_id):
     }), 200
 
 
-@application.route('/applications/charge-interest/<string:application_id>', methods=['GET', 'POST', 'PATCH', 'OPTIONS'])
+@application.route('/applications/charge-interest/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
 @jwt_required()
 @role_required("admin")
 def charge_interest(application_id):
@@ -1239,7 +1239,7 @@ def get_one_application(application_id):
         "bio_data": applicant.to_dict() if applicant else {}
     }), 200
 
-@application.route('/applications/amend/<string:application_id>', methods=['GET', 'POST', 'PATCH', 'OPTIONS'])
+@application.route('/applications/amend/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
 @jwt_required()
 def amend_application(application_id):
     app = Application.query.filter_by(id=application_id).first()
@@ -1258,7 +1258,7 @@ def amend_application(application_id):
     db.session.commit()
     return jsonify({"message": "Amended", "application": app.to_dict()}), 200
 
-@application.route('/applications/approve/<string:application_id>', methods=['GET', 'POST', 'PATCH', 'OPTIONS'])
+@application.route('/applications/approve/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
 @jwt_required()
 def approve_application(application_id):
     app = Application.query.filter_by(id=application_id).first()
@@ -1267,7 +1267,7 @@ def approve_application(application_id):
     update_loan_status(app, "approved", get_jwt_identity(), get_jwt().get("role"), "Leocap", commit=True)
     return jsonify({"message": "Approved", "application": app.to_dict()}), 200
 
-@application.route('/applications/reject/<string:application_id>', methods=['GET', 'POST', 'PATCH', 'OPTIONS'])
+@application.route('/applications/reject/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
 @jwt_required()
 def reject_application(application_id):
     app = Application.query.filter_by(id=application_id).first()
@@ -1278,7 +1278,7 @@ def reject_application(application_id):
     update_loan_status(app, "declined", get_jwt_identity(), get_jwt().get("role"), "Leocap", notes=msg, commit=True)
     return jsonify({"message": "Rejected", "application": app.to_dict()}), 200
 
-@application.route('/applications/disbursed/<string:application_id>', methods=['GET', 'POST', 'PATCH', 'OPTIONS'])
+@application.route('/applications/disbursed/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
 @jwt_required()
 def disburse_application(application_id):
     app = Application.query.filter_by(id=application_id).first()
@@ -1299,7 +1299,7 @@ def delete_application(application_id):
 
 
 
-@application.route('/applications/rate-confirmed/<string:application_id>', methods=['GET', 'POST', 'PATCH', 'OPTIONS'])
+@application.route('/applications/rate-confirmed/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
 @jwt_required()
 def confirm_rate(application_id):
     app = Application.query.filter_by(id=application_id).first()
@@ -1309,7 +1309,7 @@ def confirm_rate(application_id):
     update_loan_status(app, "confirmed", get_jwt_identity(), get_jwt().get("role"), "Applicant", commit=True)
     return jsonify({"message": "Rate confirmed", "application": app.to_dict()}), 200
 
-@application.route('/applications/rate-declined/<string:application_id>', methods=['GET', 'POST', 'PATCH', 'OPTIONS'])
+@application.route('/applications/rate-declined/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
 @jwt_required()
 def decline_rate(application_id):
     app = Application.query.filter_by(id=application_id).first()
@@ -1320,7 +1320,7 @@ def decline_rate(application_id):
     return jsonify({"message": "Rate declined", "application": app.to_dict()}), 200
 
 
-@application.route('/applications/default/<string:application_id>', methods=['GET', 'POST', 'PATCH', 'OPTIONS'])
+@application.route('/applications/default/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
 @jwt_required()
 @role_required("admin")
 def mark_as_default(application_id):
