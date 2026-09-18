@@ -22,6 +22,14 @@ from flask_jwt_extended import create_access_token
 
 FRONTEND_DIST = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend', 'dist'))
 
+
+@app.route('/debug-routes')
+def debug_routes():
+    rules = []
+    for rule in app.url_map.iter_rules():
+        rules.append(f"{rule} : {rule.methods}")
+    return '<br>'.join(rules)
+
 @app.route('/test-portal')
 def test_portal():
     from website.models import User
