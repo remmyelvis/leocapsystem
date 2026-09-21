@@ -53,7 +53,13 @@ def send_email_smtp(recipient, subject, body, isHrEmail, attachments = None, cc=
             logging.debug(f"Attempting SMTP login with: {sender_address}")
             server.set_debuglevel(1)
             server.login(sender_address, sender_password)
-            server.send_message(msg)
+            to_addrs = [recipient]
+            if cc:
+                # Handle comma separated CCs just in case
+                cc_list = [c.strip() for c in cc.split(",") if c.strip()]
+                to_addrs.extend(cc_list)
+            
+            server.sendmail(sender_address, to_addrs, msg.as_string())
             logging.info(f"Email sent successfully from {sender_address}")
         return True, None
     except Exception as e:
