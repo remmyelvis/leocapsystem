@@ -9,7 +9,7 @@ import logging
 from dotenv import load_dotenv
 
 
-def send_email_smtp(recipient, subject, body, isHrEmail, attachments = None, cc=None):
+def send_email_smtp(recipient, subject, body, isHrEmail, attachments = None):
     load_dotenv()
     sender_address = os.getenv("SENDER_ADDRESS")
     sender_password = os.getenv("SENDER_PASSWORD")
@@ -18,8 +18,6 @@ def send_email_smtp(recipient, subject, body, isHrEmail, attachments = None, cc=
     msg['Subject'] = subject
     msg['From'] = sender_address
     msg['To'] = recipient
-    if cc:
-        msg['Cc'] = cc
 
     msg.attach(MIMEText(body, 'plain'))
 
@@ -53,13 +51,7 @@ def send_email_smtp(recipient, subject, body, isHrEmail, attachments = None, cc=
             logging.debug(f"Attempting SMTP login with: {sender_address}")
             server.set_debuglevel(1)
             server.login(sender_address, sender_password)
-            to_addrs = [recipient]
-            if cc:
-                # Handle comma separated CCs just in case
-                cc_list = [c.strip() for c in cc.split(",") if c.strip()]
-                to_addrs.extend(cc_list)
-            
-            server.sendmail(sender_address, to_addrs, msg.as_string())
+            server.send_message(msg)
             logging.info(f"Email sent successfully from {sender_address}")
         return True, None
     except Exception as e:
