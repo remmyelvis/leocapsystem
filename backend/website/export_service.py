@@ -1269,17 +1269,24 @@ def generate_company_mou_pdf(company):
     elements.append(Paragraph("5.3 All loan applications must be accompanied by: i) The Applicant's National Identity Card; ii) Original Copies of The Applicant's Salary Pay Slips for Three Months Immediately Preceding the Date of The Application; And iii) Certified Copy Of The Applicant's Job Identity Card.", list_style))
     elements.append(Paragraph("5.4 LEOCAP INVEST shall subject all loan applications to the standard Credit appraisal process and shall approve or decline the loan application within Twenty-Four (24) hours of receipt of the application.", list_style))
     elements.append(Paragraph("5.5 Loan drawdown shall be affected by crediting the loan proceeds to the loanees' account.", list_style))
-    elements.append(Paragraph(f"5.7 The repayments shall be recovered and remitted in a lump sum to the LEOCAP INVEST Bank Account on the 28th day of each month.", list_style))
+    elements.append(Paragraph(f"5.6 The Lender shall send repayment schedules advising {company_name} of the monthly repayment for new Loans advanced under the Scheme, after each disbursement.", list_style))
+    elements.append(Paragraph(f"5.7 The repayments shall be recovered and remitted in a lump sum to the LEOCAP INVEST Bank Account on the 28th day of each month. The bank Details are as follows: NCBA BANK, PRESTIGE BRANCH, ACCOUNT NUMBER: 9710240013.", list_style))
     
     elements.append(Spacer(1, 6))
     elements.append(Paragraph(f"<b>6. Obligations of {company_name}</b>", bold_style))
     elements.append(Paragraph(f"6.1 <b>{company_name}</b> shall guarantee the repayment of all loans under the Scheme and shall also offer administrative support to the LENDER.", list_style))
     elements.append(Paragraph("6.2.1 Execute a Guarantee in favour of LEOCAP INVEST and use Staff pay slips as security for the facility.", list_style))
+    elements.append(Paragraph("6.2.2 Ensure that the Loan Application forms that are submitted to the Lender are fully and accurately completed by the applicants;", list_style))
+    elements.append(Paragraph("6.2.3 Issue a confirmation letter to the Lender signed by the duly authorized officials in respect of the applications that are submitted;", list_style))
     elements.append(Paragraph("6.2.4 Promptly advise LEOCAP INVEST in case a loanee leaves the employment and facilitate the recovery of the employee's outstanding loan with the lender from the loanee's terminal dues.", list_style))
     
     elements.append(Spacer(1, 6))
     elements.append(Paragraph("<b>7. Force Majeure</b>", bold_style))
     elements.append(Paragraph("This MOU shall be suspended in the event of an act of God, war or other event beyond the reasonable control of either party.", list_style))
+    
+    elements.append(Spacer(1, 6))
+    elements.append(Paragraph("<b>8. Dispute</b>", bold_style))
+    elements.append(Paragraph("Should any dispute arise between the parties hereto with regard to the interpretation, rights, claims, obligations, and/or implementation of any one or more of the provisions of this agreement, the parties shall refer the dispute to the jurisdiction of a court in Kenya.", list_style))
     
     elements.append(Spacer(1, 6))
     elements.append(Paragraph("<b>9. Default</b>", bold_style))
