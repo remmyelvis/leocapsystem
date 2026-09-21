@@ -9,7 +9,7 @@ import logging
 from dotenv import load_dotenv
 
 
-def send_email_smtp(recipient, subject, body, isHrEmail, attachments = None):
+def send_email_smtp(recipient, subject, body, isHrEmail, attachments = None, cc=None):
     load_dotenv()
     sender_address = os.getenv("SENDER_ADDRESS")
     sender_password = os.getenv("SENDER_PASSWORD")
@@ -18,6 +18,8 @@ def send_email_smtp(recipient, subject, body, isHrEmail, attachments = None):
     msg['Subject'] = subject
     msg['From'] = sender_address
     msg['To'] = recipient
+    if cc:
+        msg['Cc'] = cc
 
     msg.attach(MIMEText(body, 'plain'))
 
