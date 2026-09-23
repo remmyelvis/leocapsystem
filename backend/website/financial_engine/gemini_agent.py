@@ -17,7 +17,7 @@ def generate_statement_narrative(applicant_id, txns, mpesa_metrics, credit_analy
         return "Gemini API key not configured."
         
     try:
-        model = genai.GenerativeModel('gemini-3.6-flash')
+        model = genai.GenerativeModel('gemini-3.5-flash-lite')
         
         # Prepare context payload
         context = {
@@ -41,8 +41,12 @@ def generate_statement_narrative(applicant_id, txns, mpesa_metrics, credit_analy
                 response = model.generate_content(prompt)
                 return response.text.strip()
             except Exception as e:
-                if "429" in str(e) and attempt < 2:
-                    time.sleep(11) # Wait out the rate limit (usually ~10s for RPM limits)
+                if "429" in str(e) and attempt < 3:
+                    import re as regex
+                    match = regex.search(r'retry in (\d+\.?\d*)s', str(e))
+                    wait_time = float(match.group(1)) + 2 if match else 20
+                    print(f"Rate limit hit. Waiting {wait_time} seconds before retry...")
+                    time.sleep(wait_time)
                     continue
                 return f"AI Analysis failed: {str(e)}"
     except Exception as e:
@@ -54,7 +58,7 @@ def chat_with_statement(applicant_id, query):
         
     try:
         txns = ParsedTransaction.query.filter_by(applicant_id=applicant_id).order_by(ParsedTransaction.date.desc()).limit(1000).all()
-        model = genai.GenerativeModel('gemini-3.6-flash')
+        model = genai.GenerativeModel('gemini-3.5-flash-lite')
         
         txns_context = [{"date": str(t.date), "desc": t.description, "in": t.money_in, "out": t.money_out, "bal": t.balance} for t in txns]
         
