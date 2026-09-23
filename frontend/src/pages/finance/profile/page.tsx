@@ -233,7 +233,7 @@ function DocumentRow({
           <input
             ref={fileInputRef}
             type="file"
-            accept=".pdf"
+            accept=".pdf, image/jpeg, image/png, image/jpg"
             className="hidden"
             onChange={handleFileChange}
           />
@@ -373,7 +373,7 @@ export default function FinanceProfilePage() {
     return isUploaded || !!selectedFiles[doc.key];
   });
   const hasFilesToUpload = Object.keys(selectedFiles).length > 0;
-  const showUploadButton = allDocsReady && hasFilesToUpload;
+  const showUploadButton = hasFilesToUpload;
 
   const handleFileSelect = (key: string, file: File) => {
     setSelectedFiles((prev) => ({ ...prev, [key]: file }));

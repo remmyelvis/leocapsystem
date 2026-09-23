@@ -328,7 +328,7 @@ export function DocumentUploadCard({
         <input
           ref={fileInputRef}
           type="file"
-          accept=".pdf"
+          accept=".pdf, image/jpeg, image/png, image/jpg"
           className="hidden"
           onChange={handleFileChange}
         />
