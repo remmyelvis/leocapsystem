@@ -205,6 +205,16 @@ def update(id):
 
         if os.path.exists(filepath) or existing_doc:
             continue
+            
+        # If they are uploading a new document for this type, delete the old one first
+        old_docs = ApplicantDocument.query.filter_by(applicant_id=id, document_type=field_name).all()
+        for old_d in old_docs:
+            db.session.delete(old_d)
+            if os.path.exists(old_d.filepath):
+                try:
+                    os.remove(old_d.filepath)
+                except Exception:
+                    pass
 
         file.save(filepath)
 
@@ -212,8 +222,9 @@ def update(id):
             applicant_id=id,
             filename=filename,
             filepath=filepath,
-            document_type = field_name,
-            filetype=filename.rsplit(".", 1)[1]
+            document_type=field_name,
+            filetype=filename.rsplit(".", 1)[1] if "." in filename else "unknown",
+            status="pending"
         )
 
         db.session.add(doc)

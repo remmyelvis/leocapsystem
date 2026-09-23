@@ -27,7 +27,7 @@ import { apiCall } from "@/lib/apiClient";
 // Constants
 // ---------------------------------------------------------------------------
 
-const ACCEPTED_DOC_TYPES = ["application/pdf"];
+const ACCEPTED_DOC_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
 const MAX_DOC_SIZE_MB = 10;
 
 function formatBytes(bytes: number): string {
@@ -178,7 +178,7 @@ export function DocumentUploadCard({
       if (!file) return;
 
       if (!ACCEPTED_DOC_TYPES.includes(file.type)) {
-        toast.error("Only PDF files are accepted.");
+        toast.error("Only PDF and Image (JPG/PNG) files are accepted.");
         if (fileInputRef.current) fileInputRef.current.value = "";
         return;
       }
