@@ -9,6 +9,7 @@ from website.financial_engine.income_detector import detect_recurring_income
 from website.financial_engine.mpesa_analyzer import analyze_mpesa
 from website.financial_engine.credit_analyzer import generate_credit_analysis
 from werkzeug.utils import secure_filename
+from website.financial_engine.gemini_agent import generate_statement_narrative, chat_with_statement
 
 statement_analysis_bp = Blueprint('statement_analysis', __name__)
 
@@ -102,10 +103,12 @@ def get_analysis(applicant_id):
     
     txns = ParsedTransaction.query.filter_by(applicant_id=applicant_id).order_by(ParsedTransaction.date.desc()).limit(100).all()
     
+    gemini_narrative = generate_statement_narrative(applicant_id, txns, mpesa, credit_analysis)
     return jsonify({
         'income_detection': income,
         'mpesa_metrics': mpesa,
         'credit_analysis': credit_analysis,
+        'gemini_narrative': gemini_narrative,
         'recent_transactions': [t.to_dict() for t in txns]
     })
 
@@ -134,3 +137,13 @@ def delete_statement(upload_id):
     db.session.delete(upload)
     db.session.commit()
     return jsonify({'success': True, 'message': 'Statement deleted'})
+
+@statement_analysis_bp.route('/api/statements/chat/<string:applicant_id>', methods=['POST'])
+@jwt_required()
+def handle_chat(applicant_id):
+    query = request.json.get('message')
+    if not query:
+        return jsonify({'error': 'Message is required'}), 400
+    
+    answer = chat_with_statement(applicant_id, query)
+    return jsonify({'answer': answer})

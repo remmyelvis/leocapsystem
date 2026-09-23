@@ -17,6 +17,9 @@ export default function FinancialAnalysisPage() {
   const [history, setHistory] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("combined");
   const [loanAsk, setLoanAsk] = useState<string>("");
+  const [chatQuery, setChatQuery] = useState("");
+  const [chatHistory, setChatHistory] = useState<{role: string, text: string}[]>([]);
+  const [isChatting, setIsChatting] = useState(false);
 
 
   const fetchHistory = async () => {
@@ -104,6 +107,39 @@ export default function FinancialAnalysisPage() {
       }
     } catch (e) {
       toast.error("Failed to delete");
+    }
+  };
+
+
+  const handleChat = async () => {
+    if (!chatQuery.trim()) return;
+    
+    const userMsg = chatQuery;
+    setChatHistory(prev => [...prev, {role: 'user', text: userMsg}]);
+    setChatQuery("");
+    setIsChatting(true);
+    
+    try {
+      const token = localStorage.getItem("leocap_token") || "";
+      const res = await fetch(`/api/statements/chat/${params.id}`, {
+        method: "POST",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: userMsg })
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        setChatHistory(prev => [...prev, {role: 'ai', text: data.answer}]);
+      } else {
+        toast.error("Failed to get answer");
+      }
+    } catch (e) {
+      toast.error("Chat failed");
+    } finally {
+      setIsChatting(false);
     }
   };
 
@@ -198,9 +234,51 @@ export default function FinancialAnalysisPage() {
             ))}
           </div>
         </div>
+        
+        {/* Chat with Statement */}
+        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm mt-8">
+          <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+            ?? Chat with this Statement
+          </h3>
+          <div className="bg-slate-50 border border-slate-200 rounded-lg h-64 overflow-y-auto p-4 mb-4 space-y-4">
+            {chatHistory.length === 0 ? (
+              <p className="text-slate-400 text-sm italic text-center mt-20">Ask Gemini anything about this applicant's financial history...</p>
+            ) : (
+              chatHistory.map((msg, i) => (
+                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[80%] p-3 rounded-lg text-sm ${msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-white border border-slate-200 text-slate-800'}`}>
+                    {msg.text}
+                  </div>
+                </div>
+              ))
+            )}
+            {isChatting && (
+              <div className="flex justify-start">
+                <div className="bg-white border border-slate-200 text-slate-500 p-3 rounded-lg text-sm italic">
+                  Gemini is thinking...
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <input 
+              type="text" 
+              className="flex-1 p-2 border border-slate-300 rounded-md text-sm" 
+              placeholder="e.g. Do they have any late night gambling transactions?"
+              value={chatQuery}
+              onChange={(e) => setChatQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleChat()}
+            />
+            <Button onClick={handleChat} disabled={isChatting || !chatQuery.trim()}>Ask</Button>
+          </div>
+        </div>
+
+        </>
       )}
 
       {analysis && analysis.credit_analysis && (
+        <>
+
         <div className="space-y-6">
           
           {/* Tabs */}
@@ -501,6 +579,46 @@ export default function FinancialAnalysisPage() {
             </div>
           </details>
         </div>
+        
+        {/* Chat with Statement */}
+        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm mt-8">
+          <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+            ?? Chat with this Statement
+          </h3>
+          <div className="bg-slate-50 border border-slate-200 rounded-lg h-64 overflow-y-auto p-4 mb-4 space-y-4">
+            {chatHistory.length === 0 ? (
+              <p className="text-slate-400 text-sm italic text-center mt-20">Ask Gemini anything about this applicant's financial history...</p>
+            ) : (
+              chatHistory.map((msg, i) => (
+                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[80%] p-3 rounded-lg text-sm ${msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-white border border-slate-200 text-slate-800'}`}>
+                    {msg.text}
+                  </div>
+                </div>
+              ))
+            )}
+            {isChatting && (
+              <div className="flex justify-start">
+                <div className="bg-white border border-slate-200 text-slate-500 p-3 rounded-lg text-sm italic">
+                  Gemini is thinking...
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <input 
+              type="text" 
+              className="flex-1 p-2 border border-slate-300 rounded-md text-sm" 
+              placeholder="e.g. Do they have any late night gambling transactions?"
+              value={chatQuery}
+              onChange={(e) => setChatQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleChat()}
+            />
+            <Button onClick={handleChat} disabled={isChatting || !chatQuery.trim()}>Ask</Button>
+          </div>
+        </div>
+
+        </>
       )}
     </div>
   );
