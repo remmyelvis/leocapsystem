@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Upload, Search, BookOpen, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Download, Upload, Search, BookOpen, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
@@ -172,14 +172,40 @@ export default function FinancialAnalysisPage() {
 
   return (
     <div className="p-6 w-full max-w-[1200px] mx-auto space-y-6">
-      <div className="flex items-center gap-4">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400">
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <div>
-          <h1 className="text-2xl font-black text-slate-900">Financial Flow & CRB Analysis</h1>
-          <p className="text-sm text-slate-500">M-Pesa & Bank Statement Engine</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400">
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <div>
+            <h1 className="text-2xl font-black text-slate-900">Financial Flow & CRB Analysis</h1>
+            <p className="text-sm text-slate-500">M-Pesa & Bank Statement Engine</p>
+          </div>
         </div>
+        {analysis && (
+          <Button 
+            onClick={() => {
+              const token = localStorage.getItem("leocap_token") || "";
+              fetch(`/api/statements/export_report/${params.id}?loan_ask=${loanAsk || 0}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              })
+              .then(res => res.blob())
+              .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Credit_Risk_Profile_${params.id}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+              })
+              .catch(err => toast.error("Failed to export PDF"));
+            }}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+          >
+            <Download className="mr-2 h-4 w-4" /> Export PDF Report
+          </Button>
+        )}
       </div>
 
       <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">

@@ -9,6 +9,9 @@ from website.financial_engine.income_detector import detect_recurring_income
 from website.financial_engine.mpesa_analyzer import analyze_mpesa
 from website.financial_engine.credit_analyzer import generate_credit_analysis
 from werkzeug.utils import secure_filename
+from website.financial_engine.pdf_report_generator import generate_credit_profile_pdf
+from flask import send_file
+from website.models import Applicant
 from website.financial_engine.gemini_agent import generate_statement_narrative, chat_with_statement
 
 statement_analysis_bp = Blueprint('statement_analysis', __name__)
@@ -147,3 +150,40 @@ def handle_chat(applicant_id):
     
     answer = chat_with_statement(applicant_id, query)
     return jsonify({'answer': answer})
+
+@statement_analysis_bp.route('/api/statements/export_report/<string:applicant_id>', methods=['GET'])
+@jwt_required()
+def export_report(applicant_id):
+    loan_ask_str = request.args.get('loan_ask', '0')
+    try:
+        loan_ask = int(loan_ask_str)
+    except:
+        loan_ask = 0
+        
+    applicant = Applicant.query.get(applicant_id)
+    if not applicant:
+        return jsonify({'error': 'Applicant not found'}), 404
+        
+    txns = ParsedTransaction.query.filter_by(applicant_id=applicant_id).order_by(ParsedTransaction.date.desc()).all()
+    if not txns:
+        return jsonify({'error': 'No transactions found'}), 404
+        
+    # Generate data
+    credit_analysis = generate_credit_analysis(applicant_id, loan_ask=loan_ask)
+    mpesa = analyze_mpesa(applicant_id)
+    
+    # Try getting cached narrative if we don't want to hit Gemini again, but for now we generate it
+    # Note: in production we would cache this in the DB to avoid 10s wait times
+    try:
+        narrative = generate_statement_narrative(applicant_id, txns, mpesa, credit_analysis)
+    except Exception as e:
+        narrative = "AI Narrative unavailable: " + str(e)
+        
+    pdf_buffer = generate_credit_profile_pdf(applicant, credit_analysis, mpesa, narrative, loan_ask)
+    
+    return send_file(
+        pdf_buffer,
+        as_attachment=True,
+        download_name=f"Credit_Risk_Profile_{applicant_id}.pdf",
+        mimetype='application/pdf'
+    )
