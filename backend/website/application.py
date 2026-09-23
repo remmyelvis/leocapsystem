@@ -225,6 +225,38 @@ def create_application():
     )
     db.session.add(statement_entry_interest)
 
+    # Process document uploads
+    from website.models import ApplicationDocument
+    from website.config import Config
+    from flask import current_app
+    from werkzeug.utils import secure_filename
+    
+    files = request.files.items()
+    if files:
+        folder = os.path.join(current_app.config["APPLICATION_DOCUMENTS"], f"{applicant.name}_{application_id}")
+        os.makedirs(folder, exist_ok=True)
+        
+        for field_name, file in files:
+            valid, error = Config.validate_file(file)
+            if not valid:
+                continue
+                
+            filename = secure_filename(file.filename)
+            unique_name = f"{applicant.name}_{field_name}_{filename}"
+            filepath = os.path.join(folder, unique_name)
+            
+            file.save(filepath)
+            
+            doc = ApplicationDocument(
+                application_id=application_id,
+                filename=filename,
+                filepath=filepath,
+                document_passcode=request.form.get(f"{field_name}_passcode"),
+                document_type=field_name,
+                filetype=filename.rsplit(".", 1)[1] if "." in filename else "unknown"
+            )
+            db.session.add(doc)
+
     db.session.commit()
 
     return jsonify({

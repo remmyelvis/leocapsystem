@@ -477,6 +477,7 @@ class ApplicantDocument(db.Model):
             "application_id": self.application_id,
             "filename": self.filename,
             "filetype": self.filetype,
+            "document_passcode": self.document_passcode,
             "document_type":self.document_type,
             "uploaded_at": self.uploaded_at.isoformat() if self.uploaded_at else None
         }
@@ -572,6 +573,7 @@ class StatementUpload(db.Model):
             "applicant_id": self.applicant_id,
             "filename": self.filename,
             "source": self.source,
+            "password": self.password,
             "is_parsed": self.is_parsed,
             "parsing_error": self.parsing_error,
             "uploaded_at": self.uploaded_at.isoformat() if self.uploaded_at else None
