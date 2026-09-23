@@ -16,7 +16,7 @@ def generate_statement_narrative(applicant_id, txns, mpesa_metrics, credit_analy
         return "Gemini API key not configured."
         
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.5-flash')
         
         # Prepare context payload
         context = {
@@ -46,7 +46,7 @@ def chat_with_statement(applicant_id, query):
         
     try:
         txns = ParsedTransaction.query.filter_by(applicant_id=applicant_id).order_by(ParsedTransaction.date.desc()).limit(1000).all()
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.5-flash')
         
         txns_context = [{"date": str(t.date), "desc": t.description, "in": t.money_in, "out": t.money_out, "bal": t.balance} for t in txns]
         
