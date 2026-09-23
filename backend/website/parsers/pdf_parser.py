@@ -8,53 +8,72 @@ def unlock_and_parse_mpesa(filepath, password=None):
     try:
         with pdfplumber.open(filepath, password=password) as pdf:
             for page in pdf.pages:
-                text = page.extract_text()
-                table = page.extract_table()
-                
-                if table:
-                    for row in table:
-                        if not row or len(row) < 5:
-                            continue
-                        try:
-                            date_str = str(row[1]).strip()
-                            if len(date_str) < 10:
+                tables = page.extract_tables()
+                if tables:
+                    for table in tables:
+                        for row in table:
+                            if not row or len(row) < 6:
                                 continue
+                            
                             try:
-                                dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
-                            except ValueError:
-                                try:
-                                    dt = pd.to_datetime(date_str).to_pydatetime()
-                                except:
+                                # Ensure we are reading the correct columns by looking for strict datetime
+                                date_str = str(row[1]).strip()
+                                if len(date_str) < 19:
                                     continue
-                                    
-                            desc = str(row[2]).strip() if row[2] else ""
-                            ref = str(row[0]).strip() if row[0] else ""
-                            
-                            def clean_amt(v):
-                                if not v: return 0.0
-                                v = str(v).replace(',', '').strip()
-                                try: return float(v)
-                                except: return 0.0
-                            
-                            paid_in = clean_amt(row[4]) if len(row) > 4 else 0.0
-                            withdrawn = clean_amt(row[5]) if len(row) > 5 else 0.0
-                            balance = clean_amt(row[6]) if len(row) > 6 else 0.0
                                 
-                            extracted_data.append({
-                                'date': dt,
-                                'description': desc,
-                                'reference': ref,
-                                'money_in': paid_in,
-                                'money_out': withdrawn,
-                                'balance': balance
-                            })
-                        except Exception as e:
-                            continue
+                                try:
+                                    # M-Pesa format is EXACTLY YYYY-MM-DD HH:MM:SS
+                                    dt = datetime.strptime(date_str[:19], '%Y-%m-%d %H:%M:%S')
+                                except ValueError:
+                                    continue
+                                        
+                                desc = str(row[2]).strip() if row[2] else ""
+                                ref = str(row[0]).strip() if row[0] else ""
+                                
+                                def clean_amt(v):
+                                    if not v or str(v).strip() == '': return 0.0
+                                    # Remove non-numeric chars except dot and minus
+                                    v_clean = re.sub(r'[^0-9.-]', '', str(v))
+                                    try: return float(v_clean)
+                                    except: return 0.0
+                                
+                                # M-Pesa standard columns
+                                # 3: Transaction Status
+                                # 4: Paid In
+                                # 5: Withdrawn
+                                # 6: Balance
+                                
+                                # Sometimes pdfplumber shifts columns if it misreads table lines
+                                # Let's find the values in the last 3 available columns
+                                c_len = len(row)
+                                paid_in_str = row[c_len-3] if c_len >= 7 else row[4]
+                                withdrawn_str = row[c_len-2] if c_len >= 7 else row[5]
+                                balance_str = row[c_len-1] if c_len >= 7 else (row[6] if c_len > 6 else 0)
+
+                                paid_in = clean_amt(paid_in_str)
+                                withdrawn = clean_amt(withdrawn_str)
+                                # Withdrawn is often represented as a negative number in M-Pesa. Convert to positive for logic
+                                if withdrawn < 0: withdrawn = abs(withdrawn)
+                                
+                                balance = clean_amt(balance_str)
+                                    
+                                extracted_data.append({
+                                    'date': dt,
+                                    'description': desc,
+                                    'reference': ref,
+                                    'money_in': paid_in,
+                                    'money_out': withdrawn,
+                                    'balance': balance
+                                })
+                            except Exception as e:
+                                continue
     except pdfplumber.pdfminer.pdfdocument.PDFPasswordIncorrect:
         return {"error": "Incorrect password", "data": []}
     except Exception as e:
         return {"error": str(e), "data": []}
         
+    # Sort data by date
+    extracted_data = sorted(extracted_data, key=lambda x: x['date'])
     return {"error": None, "data": extracted_data}
 
 
