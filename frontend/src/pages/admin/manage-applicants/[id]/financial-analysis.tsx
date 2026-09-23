@@ -234,350 +234,165 @@ export default function FinancialAnalysisPage() {
             ))}
           </div>
         </div>
-        
-        {/* Chat with Statement */}
-        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm mt-8">
-          <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-            ?? Chat with this Statement
-          </h3>
-          <div className="bg-slate-50 border border-slate-200 rounded-lg h-64 overflow-y-auto p-4 mb-4 space-y-4">
-            {chatHistory.length === 0 ? (
-              <p className="text-slate-400 text-sm italic text-center mt-20">Ask Gemini anything about this applicant's financial history...</p>
-            ) : (
-              chatHistory.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] p-3 rounded-lg text-sm ${msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-white border border-slate-200 text-slate-800'}`}>
-                    {msg.text}
-                  </div>
-                </div>
-              ))
-            )}
-            {isChatting && (
-              <div className="flex justify-start">
-                <div className="bg-white border border-slate-200 text-slate-500 p-3 rounded-lg text-sm italic">
-                  Gemini is thinking...
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <input 
-              type="text" 
-              className="flex-1 p-2 border border-slate-300 rounded-md text-sm" 
-              placeholder="e.g. Do they have any late night gambling transactions?"
-              value={chatQuery}
-              onChange={(e) => setChatQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleChat()}
-            />
-            <Button onClick={handleChat} disabled={isChatting || !chatQuery.trim()}>Ask</Button>
-          </div>
-        </div>
-
-        </>
       )}
 
+      {/* Analysis Output */}
       {analysis && analysis.credit_analysis && (
         <>
+        {analysis.gemini_narrative && (
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl border border-indigo-100 shadow-sm mb-6">
+            <h3 className="font-bold text-indigo-900 mb-2 flex items-center gap-2">
+              ? AI Executive Summary
+            </h3>
+            <p className="text-slate-800 text-sm whitespace-pre-wrap leading-relaxed">
+              {analysis.gemini_narrative}
+            </p>
+          </div>
+        )}
 
-        <div className="space-y-6">
-          
-          {/* Tabs */}
-          <div className="flex space-x-2 border-b border-slate-200">
-            <button 
-              onClick={() => setActiveTab('combined')}
-              className={`px-4 py-2 font-bold ${activeTab === 'combined' ? 'border-b-2 border-emerald-500 text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}
-            >
-              Combined Score
-            </button>
-            {analysis.credit_analysis.mpesa && (
-              <button 
-                onClick={() => setActiveTab('mpesa')}
-                className={`px-4 py-2 font-bold ${activeTab === 'mpesa' ? 'border-b-2 border-emerald-500 text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}
-              >
-                M-Pesa Analysis
-              </button>
-            )}
-            {analysis.credit_analysis.bank && (
-              <button 
-                onClick={() => setActiveTab('bank')}
-                className={`px-4 py-2 font-bold ${activeTab === 'bank' ? 'border-b-2 border-emerald-500 text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}
-              >
-                Bank Analysis
-              </button>
-            )}
+        <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-bold">Analysis Results</h2>
+            <div className="flex gap-2">
+              {analysis.credit_analysis.mpesa && (
+                <Button variant={activeTab === 'mpesa' ? 'default' : 'outline'} size="sm" onClick={() => setActiveTab('mpesa')}>
+                  M-Pesa Analysis
+                </Button>
+              )}
+              {analysis.credit_analysis.bank && (
+                <Button variant={activeTab === 'bank' ? 'default' : 'outline'} size="sm" onClick={() => setActiveTab('bank')}>
+                  Bank Analysis
+                </Button>
+              )}
+            </div>
           </div>
           
-          {/* Active Tab Content */}
-          {(() => {
-            const currentData = analysis.credit_analysis[activeTab];
-            if (!currentData) return null;
-            
-            return (
-              <div className="space-y-6 animate-in fade-in duration-300">
-                <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 text-white">
-                  <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div>
-                      <h2 className="text-2xl font-bold mb-1">{activeTab === 'combined' ? 'Combined Financial Risk Score' : activeTab === 'mpesa' ? 'M-Pesa Risk Score' : 'Bank Risk Score'}</h2>
-                      <p className="text-slate-400 text-sm">Conservative statement analysis algorithm</p>
+          <div className="space-y-8">
+            {(() => {
+              const currentData = analysis.credit_analysis[activeTab];
+              if (!currentData) return <p className="text-slate-500 italic">No data available for this source.</p>;
+              
+              return (
+                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="flex flex-col md:flex-row gap-6 mb-8">
+                    <div className="flex-1 bg-slate-50 p-6 rounded-xl border border-slate-100 flex flex-col items-center justify-center text-center">
+                      <p className="text-slate-500 font-medium mb-1">Credit Score</p>
+                      <h3 className={`text-5xl font-black ${currentData.score > 250 ? 'text-emerald-600' : currentData.score > 150 ? 'text-amber-500' : 'text-red-500'}`}>
+                        {currentData.score}
+                      </h3>
+                      <p className="text-slate-400 text-sm mt-2">Max 400</p>
                     </div>
-                    <div className="text-right">
-                      <span className="text-5xl font-black text-emerald-400">{currentData.score}</span>
-                      <span className="text-xl text-slate-400"> / 400</span>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-6 pt-6 border-t border-slate-700">
-                     <h4 className="text-sm font-semibold text-slate-300 mb-3 uppercase tracking-wider">Score Factors</h4>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                       {currentData.scoring_details?.map((d: any, i: number) => (
-                         <div key={i} className="flex justify-between items-center bg-slate-800/50 p-3 rounded-lg border border-slate-700/50">
-                           <span className="text-sm text-slate-300">{d.factor}</span>
-                           <span className={`text-sm font-bold ${String(d.impact).startsWith('+') ? 'text-emerald-400' : String(d.impact).startsWith('-') ? 'text-rose-400' : 'text-slate-400'}`}>
-                             {d.impact}
-                           </span>
-                         </div>
-                       ))}
-                     </div>
-                  </div>
-                </div>
-
-
-                {currentData.advanced_metrics && (
-                  <div className="mt-6 bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
-                    <h3 className="font-bold text-slate-800 mb-4">Advanced Statement Metrics</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                      <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                        <p className="text-xs text-slate-500 font-semibold uppercase">Highest Balance</p>
-                        <p className="font-bold text-slate-800">KES {(currentData.advanced_metrics.highest_balance || 0).toLocaleString()}</p>
-                        <p className="text-xs text-slate-400 mt-1">Duration: {currentData.advanced_metrics.duration_highest_balance_days} days</p>
-                      </div>
-                      <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                        <p className="text-xs text-slate-500 font-semibold uppercase">Lowest Balance</p>
-                        <p className="font-bold text-slate-800">KES {(currentData.advanced_metrics.lowest_balance || 0).toLocaleString()}</p>
-                        <p className="text-xs text-slate-400 mt-1">Duration: {currentData.advanced_metrics.duration_lowest_balance_days} days</p>
-                      </div>
-                      <div className="bg-emerald-50 p-3 rounded-lg border border-emerald-100">
-                        <p className="text-xs text-emerald-600 font-semibold uppercase">Max Money In</p>
-                        <p className="font-bold text-emerald-800">KES {(currentData.advanced_metrics.highest_money_in || 0).toLocaleString()}</p>
-                      </div>
-                      <div className="bg-rose-50 p-3 rounded-lg border border-rose-100">
-                        <p className="text-xs text-rose-600 font-semibold uppercase">Max Money Out</p>
-                        <p className="font-bold text-rose-800">KES {(currentData.advanced_metrics.highest_money_out || 0).toLocaleString()}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {currentData.advanced_metrics.loan_ask_analysis && (
-                        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                          <h4 className="font-bold text-blue-900 mb-2">Loan Affordability Analysis</h4>
-                          <ul className="text-sm space-y-1 text-blue-800">
-                            <li><strong>Loan Ask:</strong> KES {currentData.advanced_metrics.loan_ask_analysis.amount_requested.toLocaleString()}</li>
-                            <li><strong>Statement Duration:</strong> {currentData.advanced_metrics.loan_ask_analysis.statement_months} months</li>
-                            <li><strong>Avg Monthly Inflow:</strong> KES {currentData.advanced_metrics.loan_ask_analysis.avg_monthly_inflow.toLocaleString()}</li>
-                            <li><strong>Est. Monthly Retention (33%):</strong> KES {currentData.advanced_metrics.loan_ask_analysis.avg_monthly_retention?.toLocaleString()}</li>
-                            <li><strong>Ask to Retention Ratio:</strong> {currentData.advanced_metrics.loan_ask_analysis.ratio_to_retention}x</li>
-                            <li><strong>Risk Rating:</strong> {currentData.advanced_metrics.loan_ask_analysis.affordability}</li>
-                          </ul>
-                        </div>
-                      )}
-                      
-                      {currentData.advanced_metrics.money_laundering_indications?.length > 0 && (
-                        <div className="bg-red-50 p-4 rounded-xl border border-red-200">
-                          <h4 className="font-bold text-red-700 mb-2">AML / Suspicious Transfer Flags</h4>
-                          <ul className="text-sm space-y-2">
-                            {currentData.advanced_metrics.money_laundering_indications.map((m: any, i: number) => (
-                              <li key={i} className="text-red-800 font-medium pb-2 border-b border-red-100 last:border-0">{m.reason} - {m.description}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-
-                      {currentData.advanced_metrics.heavy_credit_dependency_flags?.length > 0 && (
-                        <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
-                          <h4 className="font-bold text-amber-800 mb-2">Heavy Credit Dependency</h4>
-                          <p className="text-sm text-amber-900 mb-2">Distress flags (arrears, penalties, etc): {currentData.advanced_metrics.heavy_credit_dependency_flags.length}</p>
-                          <ul className="text-xs space-y-1">
-                            {currentData.advanced_metrics.heavy_credit_dependency_flags.slice(0,3).map((h: any, i: number) => (
-                              <li key={i} className="text-amber-900">{h.date ? h.date.split('T')[0] : ''}: {h.description}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      {currentData.advanced_metrics.gambling_instances?.length > 0 && (
-                        <div className="bg-orange-50 p-4 rounded-xl border border-orange-200">
-                          <h4 className="font-bold text-orange-700 mb-2">Gambling Detected</h4>
-                          <p className="text-sm text-orange-800 mb-2">{currentData.advanced_metrics.gambling_instances.length} instances found</p>
-                          <ul className="text-xs space-y-1">
-                            {currentData.advanced_metrics.gambling_instances.slice(0,3).map((g: any, i: number) => (
-                              <li key={i} className="text-orange-900">{g.date ? g.date.split('T')[0] : ''}: {g.description}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      {currentData.advanced_metrics.lipa_mdogo_mdogo_instances?.length > 0 && (
-                        <div className="bg-purple-50 p-4 rounded-xl border border-purple-200">
-                          <h4 className="font-bold text-purple-700 mb-2">Lipa Mdogo Mdogo</h4>
-                          <ul className="text-xs space-y-1">
-                            {currentData.advanced_metrics.lipa_mdogo_mdogo_instances.slice(0,3).map((l: any, i: number) => (
-                              <li key={i} className="text-purple-900">{l.description}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
-                    <h3 className="font-bold text-slate-800 mb-4">Active Credit Facilities</h3>
-                    {currentData.active_credit_facilities?.length > 0 ? (
+                    <div className="flex-[2] bg-blue-50 p-6 rounded-xl border border-blue-100">
+                      <p className="text-blue-900 font-medium mb-3">Score Factors</p>
                       <ul className="space-y-2">
-                        {currentData.active_credit_facilities.map((cf: string, i: number) => (
-                          <li key={i} className="text-sm px-3 py-2 bg-rose-50 text-rose-700 border border-rose-100 rounded-lg font-medium">{cf}</li>
+                        {currentData.details?.map((d: any, i: number) => (
+                          <li key={i} className="flex justify-between text-sm">
+                            <span className="text-slate-700">{d.factor}</span>
+                            <span className={`font-bold ${String(d.impact).startsWith('+') ? 'text-emerald-600' : 'text-red-500'}`}>{d.impact}</span>
+                          </li>
                         ))}
                       </ul>
-                    ) : (
-                      <p className="text-sm text-slate-500 bg-slate-50 p-3 rounded-lg">None detected</p>
-                    )}
+                    </div>
                   </div>
 
-                  {activeTab !== 'bank' ? (
-                    <>
-                      <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
-                        <h3 className="font-bold text-slate-800 mb-4">Utility Payments</h3>
-                        <div className="space-y-4">
-                          <div className="bg-sky-50 p-3 rounded-xl border border-sky-100">
-                            <p className="text-xs text-sky-600 uppercase tracking-wider font-semibold">Frequency</p>
-                            <p className="text-xl font-bold text-sky-900">{currentData.utilities?.count || 0} payments</p>
+                  {currentData.advanced_metrics && (
+                    <div className="mb-8 p-6 bg-slate-50 rounded-xl border border-slate-100">
+                      <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                        Risk Indicators & Affordability
+                      </h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {currentData.advanced_metrics.loan_ask_analysis && (
+                          <div className="bg-white p-4 rounded-xl border border-blue-100">
+                            <h4 className="font-bold text-blue-900 mb-2">Loan Affordability Analysis</h4>
+                            <ul className="text-sm space-y-1 text-blue-800">
+                              <li><strong>Loan Ask:</strong> KES {currentData.advanced_metrics.loan_ask_analysis.amount_requested.toLocaleString()}</li>
+                              <li><strong>Statement Duration:</strong> {currentData.advanced_metrics.loan_ask_analysis.statement_months} months</li>
+                              <li><strong>Avg Monthly Inflow:</strong> KES {currentData.advanced_metrics.loan_ask_analysis.avg_monthly_inflow.toLocaleString()}</li>
+                              <li><strong>Est. Monthly Retention (33%):</strong> KES {currentData.advanced_metrics.loan_ask_analysis.avg_monthly_retention?.toLocaleString()}</li>
+                              <li><strong>Ask to Retention Ratio:</strong> {currentData.advanced_metrics.loan_ask_analysis.ratio_to_retention}x</li>
+                              <li><strong>Risk Rating:</strong> {currentData.advanced_metrics.loan_ask_analysis.affordability}</li>
+                            </ul>
                           </div>
-                          <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                            <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Total Spent</p>
-                            <p className="text-lg font-bold text-slate-800">KES {(currentData.utilities?.total || 0).toLocaleString()}</p>
+                        )}
+                      
+                        {currentData.advanced_metrics.heavy_credit_dependency_flags?.length > 0 && (
+                          <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                            <h4 className="font-bold text-amber-800 mb-2">Heavy Credit Dependency</h4>
+                            <p className="text-sm text-amber-900 mb-2">Distress flags (arrears, penalties, etc): {currentData.advanced_metrics.heavy_credit_dependency_flags.length}</p>
+                            <ul className="text-xs space-y-1">
+                              {currentData.advanced_metrics.heavy_credit_dependency_flags.slice(0,3).map((h: any, i: number) => (
+                                <li key={i} className="text-amber-900">{h.date ? h.date.split('T')[0] : ''}: {h.description}</li>
+                              ))}
+                            </ul>
                           </div>
+                        )}
+                        
+                        {currentData.advanced_metrics.gambling_instances?.length > 0 && (
+                          <div className="bg-red-50 p-4 rounded-xl border border-red-200">
+                            <h4 className="font-bold text-red-800 mb-2">Gambling Detected</h4>
+                            <p className="text-sm text-red-900 mb-2">Found {currentData.advanced_metrics.gambling_instances.length} instances.</p>
+                            <ul className="text-xs space-y-1">
+                              {currentData.advanced_metrics.gambling_instances.slice(0,3).map((g: any, i: number) => (
+                                <li key={i} className="text-red-900">{g.date ? g.date.split('T')[0] : ''}: {g.description}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        {currentData.advanced_metrics.lipa_mdogo_mdogo_instances?.length > 0 && (
+                          <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
+                            <h4 className="font-bold text-blue-800 mb-2">Asset Financing (Lipa Mdogo Mdogo)</h4>
+                            <ul className="text-xs space-y-1">
+                              {currentData.advanced_metrics.lipa_mdogo_mdogo_instances.slice(0,3).map((l: any, i: number) => (
+                                <li key={i} className="text-blue-900">{l.date ? l.date.split('T')[0] : ''}: {l.description}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        <div className="bg-white p-4 rounded-xl border border-slate-200">
+                          <h4 className="font-bold text-slate-800 mb-2">Extremes</h4>
+                          <ul className="text-sm space-y-1 text-slate-600">
+                            <li>Highest Balance: {currentData.advanced_metrics.highest_balance?.toLocaleString()}</li>
+                            <li>Lowest Balance: {currentData.advanced_metrics.lowest_balance?.toLocaleString()}</li>
+                            <li>Highest Money In: {currentData.advanced_metrics.highest_money_in?.toLocaleString()}</li>
+                            <li>Highest Money Out: {currentData.advanced_metrics.highest_money_out?.toLocaleString()}</li>
+                          </ul>
                         </div>
                       </div>
-
-                      <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
-                        <h3 className="font-bold text-slate-800 mb-4">Living Expenses (Shopping)</h3>
-                        <div className="space-y-4">
-                          <div className="bg-orange-50 p-3 rounded-xl border border-orange-100">
-                            <p className="text-xs text-orange-600 uppercase tracking-wider font-semibold">Frequency</p>
-                            <p className="text-xl font-bold text-orange-900">{currentData.shopping?.count || 0} visits</p>
-                          </div>
-                          <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                            <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Total Spent</p>
-                            <p className="text-lg font-bold text-slate-800">KES {(currentData.shopping?.total || 0).toLocaleString()}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
-                        <h3 className="font-bold text-slate-800 mb-4">Bank Charges & Fees</h3>
-                        <div className="space-y-4">
-                          <div className="bg-amber-50 p-3 rounded-xl border border-amber-100">
-                            <p className="text-xs text-amber-600 uppercase tracking-wider font-semibold">Frequency</p>
-                            <p className="text-xl font-bold text-amber-900">{currentData.bank_fees?.count || 0} charges</p>
-                          </div>
-                          <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                            <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Total Spent</p>
-                            <p className="text-lg font-bold text-slate-800">KES {(currentData.bank_fees?.total || 0).toLocaleString()}</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
-                        <h3 className="font-bold text-slate-800 mb-4">Transfers Out (M-Pesa / EFT)</h3>
-                        <div className="space-y-4">
-                          <div className="bg-purple-50 p-3 rounded-xl border border-purple-100">
-                            <p className="text-xs text-purple-600 uppercase tracking-wider font-semibold">Frequency</p>
-                            <p className="text-xl font-bold text-purple-900">{currentData.transfers_out?.count || 0} transfers</p>
-                          </div>
-                          <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                            <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Total Transferred</p>
-                            <p className="text-lg font-bold text-slate-800">KES {(currentData.transfers_out?.total || 0).toLocaleString()}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </>
+                    </div>
                   )}
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
-                    <h3 className="font-bold text-slate-800 mb-4">Frequent Income Sources</h3>
-                    <ul className="divide-y divide-slate-100">
-                      {currentData.frequent_inflows.map((inf: any, i: number) => (
-                        <li key={i} className="py-3 flex justify-between text-sm items-center">
-                          <span className="font-semibold text-slate-700 truncate pr-4">{inf.name}</span>
-                          <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">{inf.count}x</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
-                    <h3 className="font-bold text-slate-800 mb-4">Frequent Outflow Destinations</h3>
-                    <ul className="divide-y divide-slate-100">
-                      {currentData.frequent_outflows.map((out: any, i: number) => (
-                        <li key={i} className="py-3 flex justify-between text-sm items-center">
-                          <span className="font-semibold text-slate-700 truncate pr-4">{out.name}</span>
-                          <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">{out.count}x</span>
-                        </li>
-                      ))}
-                    </ul>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="font-bold text-slate-800 mb-3 text-sm uppercase tracking-wider">Top Entities Paid</h4>
+                      <div className="space-y-2">
+                        {currentData.frequent_outflows?.map((f: any, i: number) => (
+                          <div key={i} className="flex justify-between items-center p-3 bg-white border border-slate-100 rounded-lg shadow-sm">
+                            <span className="font-medium text-slate-700 truncate mr-2">{f.name}</span>
+                            <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-full font-bold">{f.count} txns</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-800 mb-3 text-sm uppercase tracking-wider">Top Entities Received From</h4>
+                      <div className="space-y-2">
+                        {currentData.frequent_inflows?.map((f: any, i: number) => (
+                          <div key={i} className="flex justify-between items-center p-3 bg-white border border-slate-100 rounded-lg shadow-sm">
+                            <span className="font-medium text-slate-700 truncate mr-2">{f.name}</span>
+                            <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-full font-bold">{f.count} txns</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })()}
-          
-          <details className="bg-white rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
-            <summary className="p-4 font-bold text-slate-700 cursor-pointer select-none hover:bg-slate-50 rounded-2xl outline-none">View Raw Parsed Transactions</summary>
-            <div className="p-4 pt-0">
-               <div className="bg-white rounded-2xl overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-slate-50 border-y border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                        <th className="p-4">Date</th>
-                        <th className="p-4">Details</th>
-                        <th className="p-4">Category</th>
-                        <th className="p-4 text-right">Money Out</th>
-                        <th className="p-4 text-right">Money In</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {analysis.recent_transactions?.map((tx: any, i: number) => (
-                        <tr key={i} className="hover:bg-slate-50/50 transition-colors">
-                          <td className="p-4 text-sm text-slate-600 whitespace-nowrap">
-                            {new Date(tx.date).toLocaleDateString()}
-                          </td>
-                          <td className="p-4 text-sm">
-                            <p className="font-medium text-slate-800">{tx.description || tx.memo}</p>
-                          </td>
-                          <td className="p-4">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-                              {tx.category || "Uncategorized"}
-                            </span>
-                          </td>
-                          <td className="p-4 text-sm font-medium text-right text-slate-900">
-                            {tx.money_out > 0 ? tx.money_out.toLocaleString() : "-"}
-                          </td>
-                          <td className="p-4 text-sm font-medium text-right text-emerald-600">
-                            {tx.money_in > 0 ? tx.money_in.toLocaleString() : "-"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </details>
+              );
+            })()}
+          </div>
         </div>
         
         {/* Chat with Statement */}
@@ -617,9 +432,41 @@ export default function FinancialAnalysisPage() {
             <Button onClick={handleChat} disabled={isChatting || !chatQuery.trim()}>Ask</Button>
           </div>
         </div>
-
+        
         </>
       )}
+      
+      {/* Recent Transactions Table */}
+      {analysis && analysis.recent_transactions && (
+        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm mt-6">
+          <h3 className="font-bold text-slate-800 mb-4">Sample Transactions</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-slate-50 text-slate-500">
+                <tr>
+                  <th className="px-4 py-3">Date</th>
+                  <th className="px-4 py-3">Description</th>
+                  <th className="px-4 py-3 text-right">In</th>
+                  <th className="px-4 py-3 text-right">Out</th>
+                  <th className="px-4 py-3 text-right">Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                {analysis.recent_transactions?.map((tx: any, i: number) => (
+                  <tr key={i} className="border-b border-slate-50 hover:bg-slate-50">
+                    <td className="px-4 py-2 whitespace-nowrap">{tx.date?.split('T')[0]}</td>
+                    <td className="px-4 py-2">{tx.description}</td>
+                    <td className="px-4 py-2 text-right text-emerald-600">{tx.money_in > 0 ? tx.money_in.toLocaleString() : '-'}</td>
+                    <td className="px-4 py-2 text-right text-red-500">{tx.money_out > 0 ? tx.money_out.toLocaleString() : '-'}</td>
+                    <td className="px-4 py-2 text-right font-medium">{tx.balance?.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+      
     </div>
   );
 }
