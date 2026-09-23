@@ -186,7 +186,7 @@ class ApplicationDocument(db.Model):
             "application_id": self.application_id,
             "filename": self.filename,
             "filetype": self.filetype,
-            "document_passcode": self.document_passcode,
+            
             "document_type": self.document_type,
             "uploaded_at": self.uploaded_at.isoformat() if self.uploaded_at else None,
             "status": self.status,
@@ -477,7 +477,7 @@ class ApplicantDocument(db.Model):
             "application_id": self.application_id,
             "filename": self.filename,
             "filetype": self.filetype,
-            "document_passcode": self.document_passcode,
+            
             "document_type":self.document_type,
             "uploaded_at": self.uploaded_at.isoformat() if self.uploaded_at else None
         }
