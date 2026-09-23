@@ -24,7 +24,7 @@ def generate_credit_profile_pdf(applicant, credit_analysis, mpesa_metrics, narra
     elements.append(Spacer(1, 12))
     
     # Applicant Info
-    elements.append(Paragraph(f"<b>Applicant:</b> {applicant.first_name if hasattr(applicant, 'first_name') else applicant.full_name}", normal_style))
+    elements.append(Paragraph(f"<b>Applicant:</b> {applicant.name if hasattr(applicant, 'name') else 'Unknown Applicant'}", normal_style))
     elements.append(Paragraph(f"<b>Loan Ask:</b> KES {loan_ask if loan_ask else 'N/A'}", normal_style))
     elements.append(Spacer(1, 20))
     
