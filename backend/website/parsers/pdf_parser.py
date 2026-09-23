@@ -5,7 +5,6 @@ from datetime import datetime
 
 def unlock_and_parse_mpesa(filepath, password=None):
     extracted_data = []
-    seen_receipts = set()
     try:
         with pdfplumber.open(filepath, password=password) as pdf:
             for page in pdf.pages:
@@ -56,11 +55,7 @@ def unlock_and_parse_mpesa(filepath, password=None):
                                 
                                 balance = clean_amt(balance_str)
                                 
-                                # Prevent duplicates from overlapping tables parsed by pdfplumber
-                                if ref and ref in seen_receipts and ref.strip() != "":
-                                    continue
-                                if ref.strip() != "":
-                                    seen_receipts.add(ref)
+
                                     
                                 extracted_data.append({
                                     'date': dt,
