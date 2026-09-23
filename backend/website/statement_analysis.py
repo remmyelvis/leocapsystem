@@ -88,9 +88,17 @@ def trigger_analysis(upload_id):
 @statement_analysis_bp.route('/api/statements/analysis/<string:applicant_id>', methods=['GET'])
 @jwt_required()
 def get_analysis(applicant_id):
+    loan_ask_str = request.args.get('loan_ask')
+    loan_ask = None
+    if loan_ask_str:
+        try:
+            loan_ask = float(loan_ask_str)
+        except ValueError:
+            pass
+
     income = detect_recurring_income(applicant_id)
     mpesa = analyze_mpesa(applicant_id)
-    credit_analysis = generate_credit_analysis(applicant_id)
+    credit_analysis = generate_credit_analysis(applicant_id, loan_ask=loan_ask)
     
     txns = ParsedTransaction.query.filter_by(applicant_id=applicant_id).order_by(ParsedTransaction.date.desc()).limit(100).all()
     

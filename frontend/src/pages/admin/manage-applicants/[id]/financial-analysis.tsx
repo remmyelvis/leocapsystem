@@ -15,11 +15,13 @@ export default function FinancialAnalysisPage() {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [uploadId, setUploadId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState("combined");
+  const [loanAsk, setLoanAsk] = useState<string>("");
 
   const fetchAnalysis = async () => {
     try {
       const token = localStorage.getItem("leocap_token") || "";
-      const res = await fetch(`/api/statements/analysis/${params.id}`, {
+      const url = loanAsk ? `/api/statements/analysis/${params.id}?loan_ask=${loanAsk}` : `/api/statements/analysis/${params.id}`;
+      const res = await fetch(url, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -108,7 +110,17 @@ export default function FinancialAnalysisPage() {
       </div>
 
       <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
-        <h2 className="text-lg font-bold mb-4">1. Upload Statement</h2>
+        <h2 className="text-lg font-bold mb-4">1. Upload Statement & Loan Request</h2>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-slate-700 mb-1">Loan Ask Amount (KES) - Optional, used to guide affordability analysis</label>
+            <input 
+              type="number" 
+              placeholder="e.g. 50000" 
+              value={loanAsk} 
+              onChange={(e) => setLoanAsk(e.target.value)} 
+              className="border p-2 rounded w-64 text-slate-700 bg-white" 
+            />
+          </div>
         <div className="flex flex-wrap gap-4 items-center mb-6">
           <select value={source} onChange={(e) => setSource(e.target.value)} className="border p-2 rounded w-48 bg-slate-50 text-slate-700">
             <option value="mpesa">M-Pesa Statement</option>
@@ -193,6 +205,79 @@ export default function FinancialAnalysisPage() {
                   </div>
                 </div>
 
+
+                {currentData.advanced_metrics && (
+                  <div className="mt-6 bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
+                    <h3 className="font-bold text-slate-800 mb-4">Advanced Statement Metrics</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                      <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                        <p className="text-xs text-slate-500 font-semibold uppercase">Highest Balance</p>
+                        <p className="font-bold text-slate-800">KES {(currentData.advanced_metrics.highest_balance || 0).toLocaleString()}</p>
+                        <p className="text-xs text-slate-400 mt-1">Duration: {currentData.advanced_metrics.duration_highest_balance_days} days</p>
+                      </div>
+                      <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                        <p className="text-xs text-slate-500 font-semibold uppercase">Lowest Balance</p>
+                        <p className="font-bold text-slate-800">KES {(currentData.advanced_metrics.lowest_balance || 0).toLocaleString()}</p>
+                        <p className="text-xs text-slate-400 mt-1">Duration: {currentData.advanced_metrics.duration_lowest_balance_days} days</p>
+                      </div>
+                      <div className="bg-emerald-50 p-3 rounded-lg border border-emerald-100">
+                        <p className="text-xs text-emerald-600 font-semibold uppercase">Max Money In</p>
+                        <p className="font-bold text-emerald-800">KES {(currentData.advanced_metrics.highest_money_in || 0).toLocaleString()}</p>
+                      </div>
+                      <div className="bg-rose-50 p-3 rounded-lg border border-rose-100">
+                        <p className="text-xs text-rose-600 font-semibold uppercase">Max Money Out</p>
+                        <p className="font-bold text-rose-800">KES {(currentData.advanced_metrics.highest_money_out || 0).toLocaleString()}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {currentData.advanced_metrics.loan_ask_analysis && (
+                        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                          <h4 className="font-bold text-blue-900 mb-2">Loan Affordability Analysis</h4>
+                          <ul className="text-sm space-y-1 text-blue-800">
+                            <li><strong>Loan Ask:</strong> KES {currentData.advanced_metrics.loan_ask_analysis.amount_requested.toLocaleString()}</li>
+                            <li><strong>Avg Monthly Inflow:</strong> KES {currentData.advanced_metrics.loan_ask_analysis.avg_monthly_inflow.toLocaleString()}</li>
+                            <li><strong>Risk Rating:</strong> {currentData.advanced_metrics.loan_ask_analysis.affordability}</li>
+                          </ul>
+                        </div>
+                      )}
+                      
+                      {currentData.advanced_metrics.money_laundering_indications?.length > 0 && (
+                        <div className="bg-red-50 p-4 rounded-xl border border-red-200">
+                          <h4 className="font-bold text-red-700 mb-2">AML / Suspicious Transfer Flags</h4>
+                          <ul className="text-sm space-y-2">
+                            {currentData.advanced_metrics.money_laundering_indications.map((m: any, i: number) => (
+                              <li key={i} className="text-red-800 font-medium pb-2 border-b border-red-100 last:border-0">{m.reason} - {m.description}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {currentData.advanced_metrics.gambling_instances?.length > 0 && (
+                        <div className="bg-orange-50 p-4 rounded-xl border border-orange-200">
+                          <h4 className="font-bold text-orange-700 mb-2">Gambling Detected</h4>
+                          <p className="text-sm text-orange-800 mb-2">{currentData.advanced_metrics.gambling_instances.length} instances found</p>
+                          <ul className="text-xs space-y-1">
+                            {currentData.advanced_metrics.gambling_instances.slice(0,3).map((g: any, i: number) => (
+                              <li key={i} className="text-orange-900">{g.date ? g.date.split('T')[0] : ''}: {g.description}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {currentData.advanced_metrics.lipa_mdogo_mdogo_instances?.length > 0 && (
+                        <div className="bg-purple-50 p-4 rounded-xl border border-purple-200">
+                          <h4 className="font-bold text-purple-700 mb-2">Lipa Mdogo Mdogo</h4>
+                          <ul className="text-xs space-y-1">
+                            {currentData.advanced_metrics.lipa_mdogo_mdogo_instances.slice(0,3).map((l: any, i: number) => (
+                              <li key={i} className="text-purple-900">{l.description}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
                     <h3 className="font-bold text-slate-800 mb-4">Active Credit Facilities</h3>
