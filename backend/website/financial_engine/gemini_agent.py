@@ -1,3 +1,4 @@
+import time
 import os
 import json
 import google.generativeai as genai
@@ -35,8 +36,15 @@ def generate_statement_narrative(applicant_id, txns, mpesa_metrics, credit_analy
         Data: {json.dumps(context)}
         """
         
-        response = model.generate_content(prompt)
-        return response.text.strip()
+        for attempt in range(3):
+            try:
+                response = model.generate_content(prompt)
+                return response.text.strip()
+            except Exception as e:
+                if "429" in str(e) and attempt < 2:
+                    time.sleep(11) # Wait out the rate limit (usually ~10s for RPM limits)
+                    continue
+                return f"AI Analysis failed: {str(e)}"
     except Exception as e:
         return f"AI Analysis failed: {str(e)}"
 
@@ -61,7 +69,14 @@ def chat_with_statement(applicant_id, query):
         Admin's Question: {query}
         """
         
-        response = model.generate_content(prompt)
-        return response.text.strip()
+        for attempt in range(3):
+            try:
+                response = model.generate_content(prompt)
+                return response.text.strip()
+            except Exception as e:
+                if "429" in str(e) and attempt < 2:
+                    time.sleep(11)
+                    continue
+                return f"Chat failed: {str(e)}"
     except Exception as e:
         return f"Chat failed: {str(e)}"
