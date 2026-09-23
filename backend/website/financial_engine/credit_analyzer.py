@@ -20,22 +20,50 @@ def _analyze_txns_subset(txns, loan_ask=None):
     frequent_in = Counter(entities_in).most_common(5)
     frequent_out = Counter(entities_out).most_common(5)
     
-    credit_keywords = ['fuliza', 'm-shwari', 'tala', 'branch', 'zenka', 'kcb', 'ncba', 'loan', 'repayment']
     active_lenders = set()
+    heavy_credit_dependency_flags = []
+    
+    heavy_credit_keywords = ['extension', 'rollover', 'reschedule', 'restructuring', 'penalty', 'late fee', 'arrears', 'collection', 'recovery', 'default', 'overdue']
+    
+    digital_lender_mapping = {
+        'fuliza': 'Fuliza', 'm-shwari': 'M-Shwari', 'kcb m-pesa': 'KCB M-Pesa', 'tala': 'Tala', 'branch': 'Branch',
+        'zenka': 'Zenka', 'okash': 'Okash', 'fairmoney': 'FairMoney', 'migo': 'Migo', 'pesapal': 'PesaPal',
+        'pesapap': 'PesaPap', 'timiza': 'Timiza', 'hustler fund': 'Hustler Fund', 'eazzy loan': 'Eazzy Loan',
+        'ncba loop': 'NCBA Loop', 'loop': 'Loop', 'berry': 'Berry', 'pesaflex': 'PesaFlex',
+        'kcb loan': 'KCB', 'equity loan': 'Equity', 'absa loan': 'Absa', 'co-op loan': 'Co-op Bank', 'family bank loan': 'Family Bank'
+    }
+
     for t in txns:
         desc = str(t.description).lower()
-        if 'fuliza' in desc: active_lenders.add('Fuliza (Safaricom)')
-        elif 'm-shwari' in desc: active_lenders.add('M-Shwari')
-        elif 'kcb m-pesa' in desc: active_lenders.add('KCB M-Pesa')
-        elif 'tala' in desc: active_lenders.add('Tala')
-        elif 'branch' in desc: active_lenders.add('Branch')
-        elif 'zenka' in desc: active_lenders.add('Zenka')
-        elif t.category == 'debt': 
+        # Find explicit lenders
+        for key, name in digital_lender_mapping.items():
+            if key in desc:
+                active_lenders.add(name)
+        
+        # General loan indicators mapping to category
+        if any(w in desc for w in ['loan', 'credit', 'advance', 'overdraft', 'repayment', 'financing']):
+            if t.category != 'debt':
+                name = desc.split('-')[0].strip().title()
+                if len(name) > 2 and name not in ['Loan', 'Credit', 'Advance', 'Overdraft', 'Repayment', 'Financing']:
+                    active_lenders.add(name)
+
+        if t.category == 'debt': 
             name = desc.split('-')[0].strip().title()
             if len(name) > 2: active_lenders.add(name)
             
+        # Heavy dependency indicators
+        if any(w in desc for w in heavy_credit_keywords):
+            heavy_credit_dependency_flags.append({"date": t.date.isoformat() if t.date else None, "description": t.description})
+            
     # Gambling and Lipa mdogo mdogo
-    gambling_keywords = ['betika', 'sportpesa', '1xbet', 'odibets', 'mozart', 'bet', 'casino', 'betway', 'shabiki', 'mcheza']
+    gambling_keywords = [
+        'betting', ' bet ', 'wager', 'gambling', 'gaming', 'casino', 'jackpot', 'lottery', 'lotto',
+        'sports betting', 'sportsbook', 'betslip', 'virtual games', 'slots', 'roulette', 'poker', 
+        'crash', 'aviator', 'prediction', 'football betting', 'live betting',
+        'sportpesa', 'betika', 'odibets', 'betway', '1xbet', 'mozzart', 'shabiki', 'betafriq',
+        'odibet', 'premier bet', 'elitebet', 'bangbet', 'dafabet', 'melbet', 'mostbet', 'betlion',
+        'betboss', 'betgr8', '22bet', '888sport', 'hollywoodbets', '1win', 'parimatch', '10bet', 'bet365', 'supabet'
+    ]
     lipa_mdogo_keywords = ['m-kopa', 'watu', 'mkopa', 'lipa later', 'dlight', 'sun king', 'sunking', 'd-light', 'kopa', 'm kopa']
     
     gambling_instances = []
@@ -147,6 +175,10 @@ def _analyze_txns_subset(txns, loan_ask=None):
     if len(money_laundering_indications) > 0:
         score -= 100
         details.append({"factor": "Suspicious rapid in/out transfers detected", "impact": "-100"})
+        
+    if len(heavy_credit_dependency_flags) > 0:
+        score -= 60
+        details.append({"factor": "Signs of heavy credit distress (arrears, penalties, recovery)", "impact": "-60"})
 
     total_in = sum(t.money_in for t in txns)
     total_out = sum(t.money_out for t in txns)
@@ -213,6 +245,7 @@ def _analyze_txns_subset(txns, loan_ask=None):
             "duration_highest_balance_days": round(high_bal_duration.total_seconds() / 86400, 1),
             "duration_lowest_balance_days": round(low_bal_duration.total_seconds() / 86400, 1),
             "gambling_instances": gambling_instances[:10],
+            "heavy_credit_dependency_flags": heavy_credit_dependency_flags[:10],
             "lipa_mdogo_mdogo_instances": lipa_mdogo_instances[:10],
             "suspicious_payments": suspicious_payments[:5],
             "money_laundering_indications": money_laundering_indications[:5],

@@ -253,6 +253,18 @@ export default function FinancialAnalysisPage() {
                         </div>
                       )}
 
+
+                      {currentData.advanced_metrics.heavy_credit_dependency_flags?.length > 0 && (
+                        <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                          <h4 className="font-bold text-amber-800 mb-2">Heavy Credit Dependency</h4>
+                          <p className="text-sm text-amber-900 mb-2">Distress flags (arrears, penalties, etc): {currentData.advanced_metrics.heavy_credit_dependency_flags.length}</p>
+                          <ul className="text-xs space-y-1">
+                            {currentData.advanced_metrics.heavy_credit_dependency_flags.slice(0,3).map((h: any, i: number) => (
+                              <li key={i} className="text-amber-900">{h.date ? h.date.split('T')[0] : ''}: {h.description}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                       {currentData.advanced_metrics.gambling_instances?.length > 0 && (
                         <div className="bg-orange-50 p-4 rounded-xl border border-orange-200">
                           <h4 className="font-bold text-orange-700 mb-2">Gambling Detected</h4>
