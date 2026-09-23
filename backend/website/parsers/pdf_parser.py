@@ -5,6 +5,7 @@ from datetime import datetime
 
 def unlock_and_parse_mpesa(filepath, password=None):
     extracted_data = []
+    seen_receipts = set()
     try:
         with pdfplumber.open(filepath, password=password) as pdf:
             for page in pdf.pages:
@@ -43,12 +44,10 @@ def unlock_and_parse_mpesa(filepath, password=None):
                                 # 5: Withdrawn
                                 # 6: Balance
                                 
-                                # Sometimes pdfplumber shifts columns if it misreads table lines
-                                # Let's find the values in the last 3 available columns
-                                c_len = len(row)
-                                paid_in_str = row[c_len-3] if c_len >= 7 else row[4]
-                                withdrawn_str = row[c_len-2] if c_len >= 7 else row[5]
-                                balance_str = row[c_len-1] if c_len >= 7 else (row[6] if c_len > 6 else 0)
+                                # Use fixed column indices for M-Pesa
+                                paid_in_str = row[4] if len(row) > 4 else "0"
+                                withdrawn_str = row[5] if len(row) > 5 else "0"
+                                balance_str = row[6] if len(row) > 6 else "0" 
 
                                 paid_in = clean_amt(paid_in_str)
                                 withdrawn = clean_amt(withdrawn_str)
@@ -56,6 +55,12 @@ def unlock_and_parse_mpesa(filepath, password=None):
                                 if withdrawn < 0: withdrawn = abs(withdrawn)
                                 
                                 balance = clean_amt(balance_str)
+                                
+                                # Prevent duplicates from overlapping tables parsed by pdfplumber
+                                if ref and ref in seen_receipts and ref.strip() != "":
+                                    continue
+                                if ref.strip() != "":
+                                    seen_receipts.add(ref)
                                     
                                 extracted_data.append({
                                     'date': dt,
