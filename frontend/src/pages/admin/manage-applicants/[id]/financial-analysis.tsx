@@ -179,6 +179,27 @@ export default function FinancialAnalysisPage() {
         </div>
       </div>
 
+      
+      {/* Statement History */}
+      {history.length > 0 && (
+        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm mb-6">
+          <h3 className="font-bold text-slate-800 mb-4">Uploaded Statements</h3>
+          <div className="space-y-3">
+            {history.map((stmt: any) => (
+              <div key={stmt.id} className="flex items-center justify-between p-3 border border-slate-100 rounded-lg">
+                <div>
+                  <p className="font-semibold text-sm">{stmt.filename}</p>
+                  <p className="text-xs text-slate-500">Uploaded: {new Date(stmt.uploaded_at).toLocaleString()}</p>
+                </div>
+                <Button variant="destructive" size="sm" onClick={() => handleDelete(stmt.id)}>
+                  Delete
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {analysis && analysis.credit_analysis && (
         <div className="space-y-6">
           
