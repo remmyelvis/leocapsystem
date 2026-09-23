@@ -1178,6 +1178,64 @@ def generate_crb_report_pdf(applicant, risk_data):
     # Footer
     elements.append(Paragraph("<i>This report is generated automatically by LEOCAP INVEST based on systemic algorithms analyzing borrowing behavior, data consistency, and completeness.</i>", styles['Italic']))
     
+    # APPEND M-PESA & AI STATEMENT ANALYSIS
+    if risk_data.get('ai_narrative'):
+        from reportlab.platypus import PageBreak, HRFlowable
+        elements.append(PageBreak())
+        
+        # We need to redefine title_style and sub_title_style just in case since they are defined top of func
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib import colors
+        from reportlab.lib.enums import TA_CENTER
+        styles = getSampleStyleSheet()
+        t_style = ParagraphStyle('Title2', parent=styles['Heading1'], alignment=TA_CENTER, fontSize=16, spaceAfter=5, textColor=colors.HexColor("#1E3A8A"))
+        st_style = ParagraphStyle('SubTitle2', parent=styles['Heading2'], alignment=TA_CENTER, fontSize=12, spaceAfter=10)
+        n_style = styles['Normal']
+        
+        elements.append(Paragraph("M-PESA / BANK AI ANALYSIS", t_style))
+        elements.append(HRFlowable(width="100%", thickness=2, color=colors.HexColor("#1E3A8A")))
+        elements.append(Spacer(1, 10))
+        
+        elements.append(Paragraph("<b>1. AI Executive Summary</b>", st_style))
+        narrative = risk_data['ai_narrative']
+        for p in narrative.split('\n'):
+            if p.strip():
+                elements.append(Paragraph(p.strip(), n_style))
+                elements.append(Spacer(1, 6))
+        elements.append(Spacer(1, 10))
+        
+        cr_analysis = risk_data.get('credit_analysis', {})
+        c_data = cr_analysis.get('mpesa', cr_analysis) if isinstance(cr_analysis, dict) else {}
+        adv = c_data.get('advanced_metrics', {})
+        
+        if adv:
+            elements.append(Paragraph("<b>2. Advanced Statement Indicators</b>", st_style))
+            
+            if adv.get('loan_ask_analysis'):
+                la = adv['loan_ask_analysis']
+                elements.append(Paragraph("<b>Affordability:</b>", n_style))
+                elements.append(Paragraph(f"- Avg Monthly Verified Inflow: KES {la.get('avg_monthly_inflow', 0):,.2f}", n_style))
+                elements.append(Paragraph(f"- Estimated Monthly Retention: KES {la.get('avg_monthly_retention', 0):,.2f}", n_style))
+                elements.append(Paragraph(f"- Ask-to-Retention Ratio: {la.get('ratio_to_retention', 0)}x", n_style))
+                elements.append(Spacer(1, 10))
+                
+            elements.append(Paragraph("<b>Extremes:</b>", n_style))
+            elements.append(Paragraph(f"- Highest Balance: KES {adv.get('highest_balance', 0):,.2f}", n_style))
+            elements.append(Paragraph(f"- Highest Inflow: KES {adv.get('highest_money_in', 0):,.2f}", n_style))
+            elements.append(Paragraph(f"- Highest Outflow: KES {adv.get('highest_money_out', 0):,.2f}", n_style))
+            elements.append(Spacer(1, 10))
+            
+            if adv.get('heavy_credit_dependency_flags'):
+                elements.append(Paragraph("<b>Heavy Credit Dependency (Flags):</b>", n_style))
+                for flag in adv['heavy_credit_dependency_flags'][:5]:
+                    elements.append(Paragraph(f"- {flag.get('description', '')}", n_style))
+                    
+            if adv.get('gambling_instances'):
+                elements.append(Spacer(1, 10))
+                elements.append(Paragraph("<b>Gambling Detected:</b>", n_style))
+                for g in adv['gambling_instances'][:5]:
+                    elements.append(Paragraph(f"- {g.get('description', '')}", n_style))
+    
     doc.build(elements)
     pdf_bytes = buffer.getvalue()
     buffer.close()
