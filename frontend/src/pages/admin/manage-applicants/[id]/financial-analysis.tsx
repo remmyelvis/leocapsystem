@@ -237,6 +237,8 @@ export default function FinancialAnalysisPage() {
                           <ul className="text-sm space-y-1 text-blue-800">
                             <li><strong>Loan Ask:</strong> KES {currentData.advanced_metrics.loan_ask_analysis.amount_requested.toLocaleString()}</li>
                             <li><strong>Avg Monthly Inflow:</strong> KES {currentData.advanced_metrics.loan_ask_analysis.avg_monthly_inflow.toLocaleString()}</li>
+                            <li><strong>Est. Monthly Retention (33%):</strong> KES {currentData.advanced_metrics.loan_ask_analysis.avg_monthly_retention?.toLocaleString()}</li>
+                            <li><strong>Ask to Retention Ratio:</strong> {currentData.advanced_metrics.loan_ask_analysis.ratio_to_retention}x</li>
                             <li><strong>Risk Rating:</strong> {currentData.advanced_metrics.loan_ask_analysis.affordability}</li>
                           </ul>
                         </div>

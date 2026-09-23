@@ -193,23 +193,26 @@ def _analyze_txns_subset(txns, loan_ask=None):
             score -= 40
             details.append({"factor": "High spend ratio (>95%)", "impact": "-40"})
 
-    # Loan Ask Analysis
+    # Loan Ask Analysis (33% Retention Heuristic)
     loan_ask_details = None
+    avg_retention_per_month = avg_monthly_in / 3.0 if avg_monthly_in > 0 else 0
+    
     if loan_ask and loan_ask > 0:
-        if avg_monthly_in > 0:
-            ask_ratio = loan_ask / avg_monthly_in
-            if ask_ratio > 3:
+        if avg_retention_per_month > 0:
+            ask_ratio_to_retention = loan_ask / avg_retention_per_month
+            if ask_ratio_to_retention > 3:
                 score -= 50
-                details.append({"factor": f"Loan ask ({loan_ask}) is >3x average monthly inflow", "impact": "-50"})
-            elif ask_ratio < 0.5:
+                details.append({"factor": f"Loan ask ({loan_ask}) exceeds 3x average monthly retention", "impact": "-50"})
+            elif ask_ratio_to_retention <= 1.5:
                 score += 30
-                details.append({"factor": f"Loan ask ({loan_ask}) is easily affordable (<50% monthly inflow)", "impact": "+30"})
+                details.append({"factor": f"Loan ask ({loan_ask}) is highly affordable (<=1.5x monthly retention)", "impact": "+30"})
         
         loan_ask_details = {
             "amount_requested": loan_ask,
             "avg_monthly_inflow": round(avg_monthly_in, 2),
-            "ratio_to_inflow": round(loan_ask / avg_monthly_in, 2) if avg_monthly_in > 0 else None,
-            "affordability": "High Risk" if avg_monthly_in == 0 or (loan_ask / avg_monthly_in) > 3 else "Moderate Risk" if (loan_ask / avg_monthly_in) > 1 else "Low Risk"
+            "avg_monthly_retention": round(avg_retention_per_month, 2),
+            "ratio_to_retention": round(loan_ask / avg_retention_per_month, 2) if avg_retention_per_month > 0 else None,
+            "affordability": "High Risk" if avg_retention_per_month == 0 or (loan_ask / avg_retention_per_month) > 3 else "Moderate Risk" if (loan_ask / avg_retention_per_month) > 1.5 else "Low Risk"
         }
             
     score = max(0, min(400, int(score)))
