@@ -415,7 +415,7 @@ export default function ProfilePage() {
         method: "PATCH",
         isFormData: true,
         formData: fd,
-        requiresAuth: false,
+        requiresAuth: true,
         skipProxy: true,
       });
 

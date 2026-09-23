@@ -399,7 +399,7 @@ export default function FinanceProfilePage() {
         method: "PATCH",
         isFormData: true,
         formData: fd,
-        requiresAuth: false,
+        requiresAuth: true,
         skipProxy: true,
       });
 
