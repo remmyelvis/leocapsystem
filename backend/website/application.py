@@ -1116,6 +1116,26 @@ def get_applicant_risk_profile(applicant_id):
         "factors": details
     }
     
+    # NEW: Fetch M-Pesa AI Analysis to combine into the PDF
+    try:
+        from website.models import ParsedTransaction
+        from website.financial_engine.credit_analyzer import generate_credit_analysis
+        from website.financial_engine.mpesa_analyzer import analyze_mpesa
+        from website.financial_engine.gemini_agent import generate_statement_narrative
+        
+        txns = ParsedTransaction.query.filter_by(applicant_id=applicant_id).order_by(ParsedTransaction.date.desc()).all()
+        if txns:
+            cr_analysis = generate_credit_analysis(applicant_id)
+            mp_metrics = analyze_mpesa(applicant_id)
+            narrative = generate_statement_narrative(applicant_id, txns, mp_metrics, cr_analysis)
+            
+            risk_data['ai_narrative'] = narrative
+            risk_data['credit_analysis'] = cr_analysis
+            risk_data['mpesa_metrics'] = mp_metrics
+    except Exception as e:
+        print("Could not attach statement AI analysis:", str(e))
+        pass
+    
     from flask import request, Response
     if request.args.get('format') == 'pdf':
         from website.export_service import generate_crb_report_pdf
