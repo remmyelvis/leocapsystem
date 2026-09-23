@@ -182,7 +182,16 @@ def _analyze_txns_subset(txns, loan_ask=None):
 
     total_in = sum(t.money_in for t in txns)
     total_out = sum(t.money_out for t in txns)
-    avg_monthly_in = total_in / 6.0 if total_in > 0 else 0 # Assuming 6 months typical statement
+    
+    # Dynamically calculate statement duration in months
+    statement_months = 1.0
+    if sorted_txns:
+        valid_dates = [t.date for t in sorted_txns if t.date]
+        if valid_dates:
+            days_span = (max(valid_dates) - min(valid_dates)).days
+            statement_months = max(1.0, days_span / 30.44)  # Minimum 1 month to avoid dividing by zero
+            
+    avg_monthly_in = total_in / statement_months if total_in > 0 else 0
     
     if total_in > 0:
         ratio = total_out / total_in
@@ -209,6 +218,7 @@ def _analyze_txns_subset(txns, loan_ask=None):
         
         loan_ask_details = {
             "amount_requested": loan_ask,
+            "statement_months": round(statement_months, 1),
             "avg_monthly_inflow": round(avg_monthly_in, 2),
             "avg_monthly_retention": round(avg_retention_per_month, 2),
             "ratio_to_retention": round(loan_ask / avg_retention_per_month, 2) if avg_retention_per_month > 0 else None,
