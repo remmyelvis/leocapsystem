@@ -14,8 +14,25 @@ export default function FinancialAnalysisPage() {
     const [source, setSource] = useState("mpesa");
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [uploadId, setUploadId] = useState<number | null>(null);
+  const [history, setHistory] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("combined");
   const [loanAsk, setLoanAsk] = useState<string>("");
+
+
+  const fetchHistory = async () => {
+    try {
+      const token = localStorage.getItem("leocap_token") || "";
+      const res = await fetch(`/api/statements/list/${params.id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setHistory(data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const fetchAnalysis = async () => {
     try {
@@ -35,6 +52,7 @@ export default function FinancialAnalysisPage() {
 
   useEffect(() => {
     fetchAnalysis();
+    fetchHistory();
   }, [params.id]);
 
   const handleUpload = async () => {
@@ -61,6 +79,7 @@ export default function FinancialAnalysisPage() {
       if (res.ok) {
         toast.success("Document uploaded securely!");
         setUploadId(data.upload_id);
+        fetchHistory();
       } else {
         toast.error(data.error || "Failed to upload");
       }
@@ -68,6 +87,24 @@ export default function FinancialAnalysisPage() {
       toast.error("Upload failed");
     }
     setIsUploading(false);
+  };
+
+
+  const handleDelete = async (id: string) => {
+    try {
+      const token = localStorage.getItem("leocap_token") || "";
+      const res = await fetch(`/api/statements/${id}`, {
+        method: "DELETE",
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        toast.success("Statement deleted");
+        fetchHistory();
+        fetchAnalysis();
+      }
+    } catch (e) {
+      toast.error("Failed to delete");
+    }
   };
 
   const handleAnalyze = async () => {

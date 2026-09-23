@@ -118,3 +118,19 @@ def learn_keyword():
     category = data.get('category')
     teach_keyword(keyword, category, admin_id)
     return jsonify({'success': True})
+
+@statement_analysis_bp.route('/api/statements/list/<string:applicant_id>', methods=['GET'])
+@jwt_required()
+def list_statements(applicant_id):
+    uploads = StatementUpload.query.filter_by(applicant_id=applicant_id).order_by(StatementUpload.uploaded_at.desc()).all()
+    return jsonify([u.to_dict() for u in uploads])
+
+@statement_analysis_bp.route('/api/statements/<string:upload_id>', methods=['DELETE'])
+@jwt_required()
+def delete_statement(upload_id):
+    upload = StatementUpload.query.get_or_404(upload_id)
+    # Also delete associated parsed transactions
+    ParsedTransaction.query.filter_by(statement_id=upload.id).delete()
+    db.session.delete(upload)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Statement deleted'})
