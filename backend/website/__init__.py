@@ -63,8 +63,10 @@ def create_app():
 
     from website.statement_analysis import statement_analysis_bp
     from website.dashboard import dashboard_bp
+    from website.audit_logs import audit_logs
     app.register_blueprint(statement_analysis_bp)
     app.register_blueprint(dashboard_bp)
+    app.register_blueprint(audit_logs)
 
     # Ensure default companies exist within app context
     with app.app_context():

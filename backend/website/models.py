@@ -1,4 +1,5 @@
 import calendar
+import enum
 from uuid import uuid4
 from datetime import datetime
 
@@ -642,3 +643,53 @@ def _add_tenant_filter(execute_state: ORMExecuteState):
                 elif entity_class == ApplicationDocument:
                     subq = db.select(Application.id).where(Application.company == g.tenant_company)
                     execute_state.statement = execute_state.statement.where(ApplicationDocument.application_id.in_(subq))
+
+
+class AuditAction(str, enum.Enum):
+    CREATE = "create"
+    VIEW = "view"
+    UPDATE = "update"
+    DELETE = "delete"
+    LOGIN = "login"
+    LOGOUT = "logout"
+    EXPORT = "export"
+    OTHER = "other"
+
+
+class AuditLog(db.Model):
+    __tablename__ = "audit_logs"
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid4()), unique=True, nullable=False)
+    action = db.Column(db.Enum(AuditAction), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    endpoint = db.Column(db.String(255), nullable=True)
+    http_method = db.Column(db.String(10), nullable=True)
+    status = db.Column(db.String(50), default="success", nullable=False)
+    error_message = db.Column(db.Text, nullable=True)
+    actor_id = db.Column(db.String(100), nullable=True)
+    actor_email = db.Column(db.String(120), nullable=True)
+    actor_role = db.Column(db.String(50), nullable=True)
+    entity_type = db.Column(db.String(100), nullable=True)
+    entity_id = db.Column(db.String(100), nullable=True)
+    old_values = db.Column(db.JSON, nullable=True)
+    new_values = db.Column(db.JSON, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "action": self.action.value if hasattr(self.action, "value") else str(self.action),
+            "description": self.description,
+            "endpoint": self.endpoint,
+            "http_method": self.http_method,
+            "status": self.status,
+            "error_message": self.error_message,
+            "actor_id": self.actor_id,
+            "actor_email": self.actor_email,
+            "actor_role": self.actor_role,
+            "entity_type": self.entity_type,
+            "entity_id": self.entity_id,
+            "old_values": self.old_values,
+            "new_values": self.new_values,
+            "created_at": self.created_at.isoformat() if self.created_at else None
+        }
