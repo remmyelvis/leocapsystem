@@ -8,6 +8,7 @@ import Page0 from './pages/admin/applications/page';
 import Page1 from './pages/admin/applications/[id]/page';
 import Page2 from './pages/admin/audit-trail/page';
 import Page3 from './pages/admin/audit-trail/[id]/page';
+import AuditLogDetailPage from './pages/admin/audit-trail/logs/[logId]/page';
 import Page4 from './pages/admin/dashboard/page';
 import Page5 from './pages/admin/manage-admins/page';
 import Page6 from './pages/admin/manage-applicants/page';
@@ -66,6 +67,7 @@ function App() {
       <Route path="/admin" element={<AdminLayout />}>
         <Route path="applications" element={<Page0 />} />
         <Route path="applications/:id" element={<Page1 />} />
+        <Route path="audit-trail/logs/:logId" element={<AuditLogDetailPage />} />
         <Route path="audit-trail/:id" element={<Page3 />} />
         <Route path="dashboard" element={<Page4 />} />
         <Route path="manage-admins" element={<Page5 />} />
