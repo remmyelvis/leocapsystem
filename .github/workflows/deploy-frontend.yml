@@ -1,9 +1,11 @@
 name: Deploy frontend
 
+# Manual only for now. Re-enable the push trigger once the server is ready
+# (see todo). Then add:
+#   push:
+#     branches: [main]
+#     paths: ["frontend/**"]
 on:
-  push:
-    branches: [main]
-    paths: ["frontend/**"]
   workflow_dispatch:
 
 jobs:
