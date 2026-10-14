@@ -30,3 +30,10 @@ Werkzeug==3.1.8
 pandas
 reportlab
 openpyxl
+numpy
+Pillow
+pdfplumber
+PyPDF2
+pytesseract
+python-dateutil
+google-generativeai
