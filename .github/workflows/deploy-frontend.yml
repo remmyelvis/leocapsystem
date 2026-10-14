@@ -1,0 +1,36 @@
+name: Deploy frontend
+
+on:
+  push:
+    branches: [main]
+    paths: ["frontend/**"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build
+        working-directory: frontend
+        env:
+          VITE_BACKEND_URL: https://api.leocapinvest.co.ke
+        run: npm ci && npm run build
+
+      - name: Upload dist over FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: cs1.hpcnoc.com
+          protocol: ftps
+          port: 21
+          username: ${{ secrets.FTP_WEB_USERNAME }}
+          password: ${{ secrets.FTP_WEB_PASSWORD }}
+          local-dir: ./frontend/dist/
+          server-dir: /
