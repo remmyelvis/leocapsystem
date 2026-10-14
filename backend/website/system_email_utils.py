@@ -45,6 +45,10 @@ def send_email_smtp(recipient, subject, body, isHrEmail, attachments = None):
     smtp_host = os.getenv("SMTP_HOST", "mail.leocapinvest.co.ke")
     smtp_port = int(os.getenv("SMTP_PORT", 465))
 
+    if os.getenv("DEMO_MODE") == "True":
+        logging.info(f"DEMO MODE ACTIVE: Bypassing actual email sending to {recipient}")
+        return True, None
+
     try:
         # Use SMTP_SSL for port 465
         with smtplib.SMTP_SSL(smtp_host, smtp_port) as server:
