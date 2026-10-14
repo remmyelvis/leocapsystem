@@ -7,45 +7,36 @@ Applicants apply for loans, admins manage them.
 
 ## Tech Stack
 
-- Next.js 14 (App Router), TypeScript
+- React 18 + Vite 8, TypeScript, React Router 7 (client-side SPA)
 - TailwindCSS + shadcn/ui
-- NextAuth v5 (JWT, httpOnly cookies)
+- TanStack React Query (server data) + axios
 - Zustand (local state + localStorage persistence)
 - React Hook Form + Zod
-- Backend API: https://loanapplication-ldee.onrender.com (Python/Flask)
+- Backend API: Python/Flask in ../backend (see README there)
 
 ## Project Structure
 
 src/
-├── app/
-│   ├── (public)/          # landing, login, register
-│   ├── dashboard/         # applicant portal
-│   ├── admin/             # admin portal
-│   └── api/
-│       ├── auth/          # NextAuth + register + verify
-│       └── proxy/         # proxy to backend API
-├── components/
-│   ├── global/            # DashboardShell, Navbar, Footer
-│   └── loans/             # loan-specific components
-├── lib/
-│   ├── auth.ts            # NextAuth config
-│   ├── apiClient.ts       # base fetch wrapper
-│   ├── applicantApi.ts    # applicant auth API calls
-│   ├── applicationApi.ts  # loan application API calls
-│   └── loanCalculations.ts # loan math formulas
-├── store/
-│   ├── loanStore.ts       # Zustand loan store (persisted)
-│   └── authStore.ts       # Zustand auth store
-├── types/
-│   ├── loan.ts            # loan types
-│   └── user.ts            # user types
-└── configs/
-    ├── constants.ts       # APP_NAME, LOAN_TYPES etc
-    └── loanSettings.ts    # interest rates, fees
+├── main.tsx, App.tsx      # entry + all routes (react-router)
+├── pages/                 # one folder per route, each with page.tsx
+│   ├── login/ register/ forgot-password/ privacy-policy/
+│   ├── dashboard/         # applicant portal (apply, applications, profile)
+│   ├── admin/             # admin portal (applicants, staff, companies,
+│   │                      #   audit-trail, reports, calculators, settings)
+│   ├── hr/                # HR portal (applications, ideon, nakama)
+│   └── finance/           # finance portal (applications, hr-loans, my-loans)
+├── components/            # global/ (shell, navbar), loans/, profile/, ui/
+├── contexts/              # AuthContext
+├── store/                 # Zustand stores (auth, loan, admin, profiles, ...)
+├── repositories/ services/ hooks/ schemas/ types/ configs/
+└── lib/                   # API clients + loan math (NOT in git, see Notes)
 
 ## Backend API Endpoints
 
-Base URL: https://loanapplication-ldee.onrender.com
+Base URL: same origin (`/api`, proxied by Vite in dev). Some paths below are
+from the original docs; the authoritative list is ../backend/website/*.py
+(blueprint prefixes: /api/auth/users, /api/auth/applicant, /api/application,
+/api/applicant, /api/reports, /api/dashboard, /api/audit-logs, /api/cron, /api).
 
 ### Auth (Admin/HR/Finance)
 
@@ -88,11 +79,13 @@ GET   /api/application/emails/get-email/:email_id
 
 ## Authentication Flow
 
-- Applicants: login via /api/applicant/login → JWT in httpOnly cookie
-  Cookie name: access_token_cookie
-- Admin/HR/Finance: login via /api/auth/login → (token setup pending)
-- NextAuth wraps both, stores role in session
-- Proxy at /api/proxy/[...path] forwards Cookie header to backend
+- Applicants: login via /api/auth/applicant/login
+- Admin/HR/Finance: login via /api/auth/users/login
+- Backend issues a JWT (Flask-JWT-Extended) as the `access_token_cookie`
+  cookie (also accepts an Authorization header); the role is in the token
+- Client side: `AuthContext` + Zustand `authStore`, helpers in `src/lib/`
+- No NextAuth and no proxy route; the browser calls `/api/*` directly
+  (Vite proxy in dev)
 
 ## User Roles
 
@@ -205,8 +198,12 @@ Progress bar: 50% personal info + 50% documents
 
 ## Important Notes
 
-- Backend is Python/Flask on Render (free tier - slow cold starts)
-- Proxy at src/app/api/proxy/[...path]/route.ts forwards all
-  requests to backend
-- localStorage used for persistence until full API integration
-- Mock admin: admin@leocapinvest.com / Admin@2024!
+- Backend is Python/Flask (see ../backend/README.md for setup). The Vite dev
+  server proxies `/api` to http://localhost:5000 (vite.config.ts); a few pages
+  build absolute URLs from `VITE_BACKEND_URL`
+- macOS: port 5000 is taken by AirPlay Receiver. Run Flask on another port and
+  update the proxy target in vite.config.ts (or turn AirPlay Receiver off)
+- Demo mode: `DEMO_MODE=True` stops real emails (see ../start_demo.bat)
+- `src/lib/` is NOT in git: the root .gitignore has `lib/` (a Python template
+  rule), so a fresh clone is missing apiClient, applicantApi, etc. and won't build
+- Leftover Next.js file: `middleware.ts` (imports `@/lib/auth`, unused by Vite)

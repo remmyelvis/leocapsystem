@@ -2,7 +2,25 @@
 
 This is an app that manages users and loan applications.
 
+## Running locally
 
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+brew install tesseract   # OCR for uploaded documents
+```
+
+Copy `website/.env.example` to `website/.env` and fill it in (`DATABASE_URL`, `SECRET_KEY`, SMTP settings). For a throwaway SQLite setup with no real emails:
+
+```bash
+DEMO_MODE=True DATABASE_URL=sqlite:///demo.db SECRET_KEY=dev python app.py   # serves on :5000
+```
+
+- `app.py` runs `db.create_all()` on startup. Schema changes go through Flask-Migrate (see `runcommands.txt`).
+- `pymssql` (in `requirements.txt`) needs build tools; skip it unless you use SQL Server.
+- macOS: port 5000 is used by AirPlay Receiver. Run on another port with `python -c "from app import app; app.run(port=5001)"` and point the frontend proxy at it.
+- `python demo_seeder.py` resets `instance/demo.db` and seeds admin, HR and finance users, 2 companies, 5 applicants and 5 applications. Staff logins (password `demo123`): `admin@leocapdemo.com`, `hr@leocapdemo.com`, `finance@leocapdemo.com`; applicants use `password123` (e.g. `sylvia@example.com`). If you change the models, update the seeder to match.
+- `app.py` also serves the built frontend from `../frontend/dist`.
 
 
 ## API Documentation

@@ -1,29 +1,21 @@
+# Leocap Invest: Frontend
 
+React 18 + Vite + React Router single-page app (applicant, admin, HR and finance portals). Talks to the Flask API in `../backend`.
 
 ## Getting Started
 
-First, install the dependencies.
-
 ```bash
 npm install
+npm run dev      # http://localhost:5173
+npm run build    # output in dist/ (the backend can serve it)
+npm run lint
 ```
 
-Then run the development server:
+The dev server proxies `/api` to `http://localhost:5000` (`vite.config.ts`). Start the backend first (see `../backend/README.md`). On macOS, port 5000 is used by AirPlay Receiver, so run Flask on another port and change the proxy target.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Optional env: `VITE_BACKEND_URL` (absolute backend URL, used for file downloads such as the loan calculator export).
 
-Open [http://localhost:5173](http://localhost:3000) with your browser to see the result.
+## Notes
 
-
-## Deploy on Vercel
-
-The easiest way to deploy your Vite.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
+- `src/lib/` (API clients, loan math) is excluded by the root `.gitignore` (`lib/`), so it must be present locally for the app to build.
+- See `CLAUDE.md` for structure, roles, loan rules and business logic.
