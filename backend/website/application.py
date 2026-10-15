@@ -1296,6 +1296,7 @@ def get_one_application(application_id):
 
 @application.route('/applications/amend/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
 @jwt_required()
+@role_required("admin", "hr", "finance", "super_admin")  # amend can overwrite any column, so staff only
 def amend_application(application_id):
     app = Application.query.filter_by(id=application_id).first()
     if not app:
