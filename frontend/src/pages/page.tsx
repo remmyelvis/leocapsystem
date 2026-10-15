@@ -130,27 +130,35 @@ function HeroSection() {
         backgroundPosition: "center top",
       }}
     >
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-950/97 via-blue-900/92 to-blue-700/75" />
+      {/* Navy scrim. Tailwind only generates opacity steps on its scale (/90, /95), so the old /97 and /92 stops were silently dropped and the photo showed through unshaded. */}
+      {/* Small screens: text spans the full width, so keep the scrim even top to bottom */}
+      <div className="absolute inset-0 lg:hidden bg-gradient-to-b from-[#081430]/90 via-[#0b1f45]/90 to-[#081430]/95" />
+      {/* Large screens: solid navy behind the text column, easing off so the photo reads on the right */}
+      <div className="absolute inset-0 hidden lg:block bg-[linear-gradient(100deg,rgba(8,20,48,0.96)_0%,rgba(11,31,69,0.92)_42%,rgba(15,44,89,0.50)_64%,rgba(15,44,89,0.22)_100%)]" />
+      {/* Grounds the stat cards at the bottom */}
+      <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-[#081430]/70 to-transparent" />
 
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-24">
         <div className="max-w-2xl">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 mb-8">
-            <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
-            <span className="text-blue-100 text-xs font-semibold tracking-wider uppercase">
+          <div className="inline-flex items-center gap-2 bg-[#081430]/50 border border-white/25 backdrop-blur-sm rounded-full px-4 py-1.5 mb-8">
+            <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse motion-reduce:animate-none" />
+            <span className="text-blue-50 text-[12px] font-semibold tracking-[0.14em] uppercase">
               Trusted Fintech · Nairobi, Kenya
             </span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight mb-6">
+          {/* globals.css forces every h1 to 1.5rem under 640px; keep the hero headline display-sized on phones */}
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl max-sm:!text-[clamp(28px,8.6vw,36px)] max-sm:!leading-[1.12] font-black text-white tracking-tight leading-[1.1] mb-6 drop-shadow-[0_2px_24px_rgba(8,20,48,0.45)]">
             Fast, Flexible Loans
             <br />
-            <span className="text-red-400">for Kenyan Professionals</span>
+            <span className="bg-gradient-to-r from-red-300 via-red-200 to-amber-200 bg-clip-text text-transparent">
+              for Kenyan Professionals
+            </span>
           </h1>
 
-          <p className="text-lg text-blue-100 mb-10 leading-relaxed max-w-xl">
+          <p className="text-[17px] sm:text-xl text-blue-50 mb-10 leading-relaxed max-w-xl text-pretty">
             Salary advances, personal loans, and more — approved within{" "}
             <span className="text-white font-semibold">24 hours</span>. Empowering
             Kenyan professionals with fast, fair, and flexible financial solutions.
@@ -160,7 +168,7 @@ function HeroSection() {
             <Link to="/login">
               <Button
                 size="lg"
-                className="bg-red-600 hover:bg-red-700 text-white font-bold text-base px-8 h-14 shadow-xl shadow-red-900/30 transition-transform hover:scale-105"
+                className="bg-red-600 hover:bg-red-700 text-white font-bold text-[15px] sm:text-base px-8 h-14 shadow-xl shadow-red-950/40 transition-transform hover:scale-105 motion-reduce:transform-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#081430]"
               >
                 Apply for a Loan
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -169,7 +177,7 @@ function HeroSection() {
             <Button
               size="lg"
               variant="outline"
-              className="bg-transparent border-white/60 text-white hover:bg-white/20 hover:border-white text-base px-8 h-14 backdrop-blur-sm"
+              className="bg-white/10 border-white/70 text-white font-semibold hover:bg-white hover:text-blue-950 hover:border-white text-[15px] sm:text-base px-8 h-14 backdrop-blur-sm focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#081430]"
               onClick={() =>
                 document
                   .getElementById("products")
@@ -186,7 +194,7 @@ function HeroSection() {
           {stats.map(({ icon: Icon, label, value }) => (
             <div
               key={label}
-              className="flex items-center gap-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-6 py-4 hover:bg-white/15 transition-colors"
+              className="flex items-center gap-4 bg-[#081430]/60 backdrop-blur-md border border-white/20 rounded-xl px-6 py-4 shadow-lg shadow-black/20 hover:bg-[#081430]/75 transition-colors"
             >
               <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center flex-shrink-0">
                 <Icon className="h-5 w-5 text-white" />
@@ -195,7 +203,7 @@ function HeroSection() {
                 <p className="text-white font-black text-2xl leading-none">
                   {value}
                 </p>
-                <p className="text-blue-200 text-xs mt-0.5">{label}</p>
+                <p className="text-blue-100 text-[13px] mt-1">{label}</p>
               </div>
             </div>
           ))}
