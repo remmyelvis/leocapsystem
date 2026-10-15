@@ -26,7 +26,8 @@ jobs:
           VITE_BACKEND_URL: https://api.leocapinvest.co.ke
         run: npm ci && npm run build
 
-      - name: Upload dist over FTPS
+      # leocapinvest.co.ke -> /home/leocapin/public_html
+      - name: Upload dist to leocapinvest.co.ke (public_html)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: cs1.hpcnoc.com
@@ -34,5 +35,17 @@ jobs:
           port: 21
           username: ${{ secrets.FTP_WEB_USERNAME }}
           password: ${{ secrets.FTP_WEB_PASSWORD }}
+          local-dir: ./frontend/dist/
+          server-dir: /
+
+      # app.leocapinvest.co.ke -> /home/leocapin/app.leocapinvest.co.ke
+      - name: Upload dist to app.leocapinvest.co.ke
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: cs1.hpcnoc.com
+          protocol: ftps
+          port: 21
+          username: ${{ secrets.FTP_APP_USERNAME }}
+          password: ${{ secrets.FTP_APP_PASSWORD }}
           local-dir: ./frontend/dist/
           server-dir: /
