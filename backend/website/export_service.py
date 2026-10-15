@@ -240,6 +240,19 @@ def export_statement(applicant, apps, df, statement_request_date=None):
 
     stmt_date = statement_request_date if statement_request_date else datetime.now().strftime("%d %B %Y, %H:%M")
 
+    # Where each loan's ledger window starts. Older ledger rows are not linked to a loan, so they are matched by time,
+    # and a loan's "New loan applied" row is sometimes stamped seconds (or minutes) BEFORE the application's created_at.
+    # Start the window at that row instead, otherwise it lands on the previous loan's statement.
+    window_starts = []
+    for a in apps:
+        start = a.created_at if a.created_at else pd.Timestamp.min
+        if a.created_at and not df.empty and 'memo' in df.columns and 'application_id' in df.columns:
+            earlier = df[(df['memo'] == 'New loan applied') & df['application_id'].isnull()
+                         & (df['parsed_date'] < a.created_at) & (df['parsed_date'] >= a.created_at - pd.Timedelta(minutes=15))]
+            if not earlier.empty:
+                start = earlier['parsed_date'].max()
+        window_starts.append(start)
+
     for i, app in enumerate(apps):
         # 1. HEADER
         left_text = (
@@ -318,8 +331,8 @@ def export_statement(applicant, apps, df, statement_request_date=None):
         total_repaid = Decimal(0) # Calculate from transactions if needed, but for now we'll put a placeholder or sum credits
         
         # Determine transactions for this loan
-        start_date = app.created_at if app.created_at else pd.Timestamp.min
-        end_date = apps[i+1].created_at if i + 1 < len(apps) and apps[i+1].created_at else pd.Timestamp.max
+        start_date = window_starts[i]
+        end_date = window_starts[i+1] if i + 1 < len(apps) and apps[i+1].created_at else pd.Timestamp.max
         
         # If multiple loans were created at the exact same microsecond (test data anomaly),
         # slightly offset the end_date so intervals don't collapse to zero width
