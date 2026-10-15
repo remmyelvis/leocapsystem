@@ -199,11 +199,11 @@ export default function ManageApplicantsPage() {
             className="flex-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
           />
           <div className="flex gap-2 w-full md:w-auto">
-            <Button onClick={handleBulkUpload} disabled={uploading || !bulkFile} className="bg-brand-blue hover:bg-slate-800 w-full md:w-auto">
+            <Button onClick={handleBulkUpload} disabled={uploading || !bulkFile} className="bg-brand-blue hover:bg-slate-800 flex-1 md:flex-none">
               {uploading ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
               Upload
             </Button>
-            <Button variant="outline" onClick={downloadTemplate} className="w-full md:w-auto">
+            <Button variant="outline" onClick={downloadTemplate} className="flex-1 md:flex-none">
               <Download className="h-4 w-4 mr-2" /> Template
             </Button>
           </div>
