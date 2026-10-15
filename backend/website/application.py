@@ -1295,6 +1295,28 @@ def get_one_application(application_id):
         "bio_data": applicant.to_dict() if applicant else {}
     }), 200
 
+def sync_terms_to_ledger(app):
+    """Rewrite the ledger rows created when the loan was applied so they follow the current amount and rate.
+    Rollover rows ("Interest charged 15%") and payments are left alone."""
+    amount = Decimal(str(app.amount_applied))
+    rate = Decimal(str(app.interest_rate))
+    if rate > 1:  # tolerate a whole-number percent
+        rate = rate / 100
+    interest = round(amount * rate, 2)
+
+    applied = StatementEntry.query.filter_by(application_id=app.id, memo="New loan applied").first()
+    if applied:
+        applied.debit = amount
+        applied.balance = amount
+    interest_row = StatementEntry.query.filter(
+        StatementEntry.application_id == app.id, StatementEntry.memo.like("Interest charged (%")
+    ).first()
+    if interest_row:
+        interest_row.debit = interest
+        interest_row.balance = amount + interest
+        interest_row.memo = f"Interest charged ({float(rate) * 100}%)"
+
+
 @application.route('/applications/amend/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
 @jwt_required()
 @role_required("admin", "hr", "finance", "super_admin")  # amend can overwrite any column, so staff only
@@ -1321,6 +1343,10 @@ def amend_application(application_id):
     for k, v in data.items():
         if hasattr(app, k):
             setattr(app, k, v)
+
+    # A rate or amount change must also show in the ledger, not only on the application.
+    if any(k in data for k in ("interest_rate", "amount_applied", "total_repayment_amount")):
+        sync_terms_to_ledger(app)
     db.session.commit()
     return jsonify({"message": "Amended", "application": app.to_dict()}), 200
 
