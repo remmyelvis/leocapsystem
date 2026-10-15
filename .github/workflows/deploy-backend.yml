@@ -1,12 +1,15 @@
 name: Deploy backend
 
-# Manual only for now. Re-enable the push trigger once the server is ready
-# (see todo). Then add:
-#   push:
-#     branches: [main]
-#     paths: ["backend/**"]
 on:
+  push:
+    branches: [main]
+    paths: ["backend/**"]
   workflow_dispatch:
+
+# never run two deploys of the same app at once (they share one FTP sync-state file)
+concurrency:
+  group: deploy-backend
+  cancel-in-progress: false
 
 jobs:
   deploy:

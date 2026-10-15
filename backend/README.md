@@ -23,6 +23,12 @@ DEMO_MODE=True DATABASE_URL=sqlite:///demo.db SECRET_KEY=dev python app.py   # s
 - `app.py` also serves the built frontend from `../frontend/dist`.
 
 
+## Deployment (GitHub Actions → cPanel)
+
+Pushing to `main` deploys automatically over FTPS: changes under `backend/` run "Deploy backend" (uploads to the API folder and touches `tmp/restart.txt` so Passenger restarts), changes under `frontend/` run "Deploy frontend" (builds and uploads `dist/` to `public_html` and `app.leocapinvest.co.ke`). Both can also be run by hand from the Actions tab. Needs the repo secrets `FTP_API_*`, `FTP_WEB_*`, `FTP_APP_*` (username = full cPanel FTP login).
+
+The deploy never touches `.env`, `.htaccess`, the server's own `app.py`, uploaded documents or databases. It does **not** change the database or install Python packages: a model change needs the SQL in `../db/` applied first, and a new dependency needs installing through cPanel's Setup Python App. See `../db/README.md`.
+
 ## API Documentation
 
 ## Users
