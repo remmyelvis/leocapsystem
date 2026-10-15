@@ -613,13 +613,14 @@ def charge_interest(application_id):
     current_outstanding = float(app.outstanding_balance) if app.outstanding_balance else float(app.repayment_amount)
 
 
-    balance = Decimal(app.repayment_amount)
+    # Interest is charged on the OUTSTANDING balance (what is still owed), not on the original repayment amount.
+    # Payments are applied against outstanding_balance, so the interest is added to both it and repayment_amount.
+    outstanding = Decimal(app.outstanding_balance) if app.outstanding_balance else Decimal(app.repayment_amount)
     interest_rate = Decimal(data.get("interest_rate")) / 100
-    new_balance = round((balance * (interest_rate + 1)), 2)
-    app.repayment_amount = str(new_balance)
-    # Payments are applied against outstanding_balance, so the interest must be added there too.
-    outstanding = Decimal(app.outstanding_balance) if app.outstanding_balance else balance
-    app.outstanding_balance = str(round(outstanding + (new_balance - balance), 2))
+    interest_amount = round(outstanding * interest_rate, 2)
+    new_outstanding = round(outstanding + interest_amount, 2)
+    app.repayment_amount = str(round(Decimal(app.repayment_amount) + interest_amount, 2))
+    app.outstanding_balance = str(new_outstanding)
 
     app.memo = f"Interest charged {data.get('interest_rate')}%"
     app.interest_charged_date = datetime.now()
@@ -661,9 +662,9 @@ def charge_interest(application_id):
         applicant_id=app.applicant_id,
         application_id=app.id,
         memo=app.memo,
-        debit=Decimal(interest_rate*balance),
+        debit=interest_amount,
         credit=Decimal(0),
-        balance=Decimal(new_balance),
+        balance=new_outstanding,
         date = date
     )
 
