@@ -808,7 +808,7 @@ def get_audit_trail_by_id(audit_id):
 
 @application.route('/applicant/statement/<string:applicant_id>', methods=['GET'])
 @jwt_required()
-@role_required("admin","applicant")
+@role_required("admin","hr","finance","applicant")
 def get_statement(applicant_id):
     from flask_jwt_extended import get_jwt_identity, get_jwt
     user_id = get_jwt_identity()
@@ -820,29 +820,36 @@ def get_statement(applicant_id):
         return jsonify({"error": "Please enter an id"}), 404
 
     app_id = request.args.get("application_id")
-    
+    start_str = request.args.get("start_date")
+    end_str = request.args.get("end_date")
+
     query = StatementEntry.query.filter_by(applicant_id=applicant_id)
     if app_id:
         query = query.filter_by(application_id=app_id)
-        
+
+    # Same date handling as the PDF download: both dates or none.
+    if start_str and end_str:
+        try:
+            start_date = datetime.combine(datetime.strptime(start_str, "%Y-%m-%d").date(), time.min)
+            end_date = datetime.combine(datetime.strptime(end_str, "%Y-%m-%d").date(), time.max)
+        except ValueError:
+            return jsonify({"error": "Invalid date format, use YYYY-MM-DD"}), 400
+        if start_date > end_date:
+            return jsonify({"error": "start_date cannot be after end_date"}), 400
+        query = query.filter(StatementEntry.date.between(start_date, end_date))
+
     statements = query.order_by(StatementEntry.date.asc()).all()
-    
-    # Dynamically compute running balances for UI display (matching PDF engine)
-    running_balance = 0.0
+
+    # Show each row's own stored balance (per loan), as the applicant PDF does. Summing debits and credits
+    # across every loan the applicant ever had gave a meaningless running total.
     results = []
     for s in statements:
-        deb = float(s.debit) if s.debit else 0.0
-        cred = float(s.credit) if s.credit else 0.0
-        running_balance += deb
-        running_balance -= cred
-        
-        # Build dict resembling to_statement but with dynamic balance
         results.append({
             "date": s.date.isoformat() if s.date else None,
             "memo": s.memo,
-            "debit": str(deb),
-            "credit": str(cred),
-            "balance": str(running_balance)
+            "debit": str(float(s.debit) if s.debit else 0.0),
+            "credit": str(float(s.credit) if s.credit else 0.0),
+            "balance": str(float(s.balance) if s.balance is not None else 0.0)
         })
 
     return jsonify({
