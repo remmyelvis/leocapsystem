@@ -617,6 +617,9 @@ def charge_interest(application_id):
     interest_rate = Decimal(data.get("interest_rate")) / 100
     new_balance = round((balance * (interest_rate + 1)), 2)
     app.repayment_amount = str(new_balance)
+    # Payments are applied against outstanding_balance, so the interest must be added there too.
+    outstanding = Decimal(app.outstanding_balance) if app.outstanding_balance else balance
+    app.outstanding_balance = str(round(outstanding + (new_balance - balance), 2))
 
     app.memo = f"Interest charged {data.get('interest_rate')}%"
     app.interest_charged_date = datetime.now()
@@ -1304,6 +1307,15 @@ def amend_application(application_id):
     if "repayment_status" in data:
         update_repayment_status(app, data["repayment_status"], get_jwt_identity(), get_jwt().get("role"), "Leocap", commit=False)
         
+    # The admin terms form sends the new repayment as "total_repayment_amount", which is not a column.
+    # Save it as repayment_amount and move outstanding_balance by the same difference, so payments already made are kept.
+    if data.get("total_repayment_amount") is not None:
+        new_repayment = Decimal(str(data["total_repayment_amount"]))
+        old_repayment = Decimal(str(app.repayment_amount))
+        outstanding = Decimal(str(app.outstanding_balance)) if app.outstanding_balance else old_repayment
+        app.repayment_amount = new_repayment
+        app.outstanding_balance = round(outstanding + (new_repayment - old_repayment), 2)
+
     for k, v in data.items():
         if hasattr(app, k):
             setattr(app, k, v)
