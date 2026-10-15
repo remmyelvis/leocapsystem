@@ -10,6 +10,12 @@ SQL to bring the live loan-app database in line with `backend/website/models.py`
 | `02_loan_app_upgrade.sql` | Creates 5 tables, adds 11 columns, converts 8 money columns from text to `numeric(12,2)`. One transaction (all or nothing), re-runnable, drops nothing. |
 | `03_verify_schema_readonly.sql` | Read-only. Compares the live schema with the models. Expect 0 rows. |
 
+## Important: who owns the tables
+
+The loan-app tables belong to `leocapin_admin`, but cPanel's phpPgAdmin signs in as `leocapin`, which cannot alter them ("must be owner of relation"). Read-only scripts (01, 03) run fine there; the upgrade (02) must run as `leocapin_admin`. Without SSH, the way that worked is `server_runner/`: upload `zz_run_db_upgrade.py` + `zz_db_upgrade.sql` to the API app folder and run the script from cPanel's Setup Python App ("Execute python script"). It reads `DATABASE_URL` from `website/.env` itself (no credentials printed), refuses any database other than `leocapin_main_v1`, and commits only if its own checks pass. Move both files out of the web folder afterwards.
+
+**Status:** applied to the live database on 2026-10-15 (112 applications, row counts unchanged, 03 verification returned no differences). Snapshot copies `bak_20261015_*` were created beforehand and can be dropped once the new code is confirmed working.
+
 ## Running them (cPanel, no SSH)
 
 1. cPanel → Databases → `leocapin_main_v1` → Advanced → **Open phpPgAdmin**. Confirm the database name at the top.
