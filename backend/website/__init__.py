@@ -25,6 +25,7 @@ def create_app():
     origins=[
         "https://leocapinvest.co.ke",
         "https://www.leocapinvest.co.ke",
+        "https://app.leocapinvest.co.ke",
         "http://localhost:3000",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
