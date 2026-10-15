@@ -102,15 +102,11 @@ html {
   }
 }
 
-@media (max-width: 768px) {
-  html {
-    font-size: 14px;
-  }
-}
-
+/* Floor at 14px: at 13px every rem-based size shrank another 19% (text-xs rendered ~9.8px,
+   buttons and inputs lost height with it). The 768px step is gone; 15px from the 1024px rule applies. */
 @media (max-width: 480px) {
   html {
-    font-size: 13px;
+    font-size: 14px;
   }
 }
 
@@ -127,9 +123,11 @@ body {
   word-break: break-word;
 }
 
-/* Ensure headings scale even more aggressively on mobile */
+/* Keep headings and tiny labels from overflowing on phones, but not smaller than they need to be.
+   (An element can still opt out of the h1 cap with a !important px size, as the landing hero does.) */
 @media (max-width: 640px) {
-  h1 { font-size: 1.5rem !important; line-height: 2rem !important; }
+  .text-xs { font-size: 12px; line-height: 1rem; }
+  h1 { font-size: clamp(1.5rem, 6vw, 2rem) !important; line-height: 1.2 !important; }
   h2 { font-size: 1.25rem !important; line-height: 1.75rem !important; }
   h3 { font-size: 1.125rem !important; line-height: 1.5rem !important; }
 }

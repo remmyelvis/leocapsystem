@@ -168,7 +168,7 @@ export default function AdminDashboardPage() {
                 <p className="text-sm font-medium text-slate-500">{label}</p>
                 <div className="p-2 bg-slate-50 rounded-lg"><Icon className="h-4 w-4 text-slate-400" /></div>
               </div>
-              <p className="text-2xl font-bold text-slate-900 mt-3">{value}</p>
+              <p className="text-xl sm:text-2xl font-bold text-slate-900 mt-3 break-normal">{value}</p>
             </div>
           ))}
       </div>

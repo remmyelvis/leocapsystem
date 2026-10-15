@@ -187,7 +187,7 @@ export default function ReportsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-500 text-xs font-semibold uppercase tracking-wide">Total Disbursed</p>
-              <p className="text-2xl font-black text-slate-900 mt-2">{loading ? <Skeleton className="h-8 w-24" /> : KES.format(displayData.total_disbursed)}</p>
+              <p className="text-2xl font-black text-slate-900 mt-2 break-normal">{loading ? <Skeleton className="h-8 w-24" /> : KES.format(displayData.total_disbursed)}</p>
             </div>
             <div className="h-12 w-12 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0"><TrendingUp className="h-6 w-6 text-emerald-600" /></div>
           </div>
