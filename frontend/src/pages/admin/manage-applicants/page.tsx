@@ -68,6 +68,10 @@ export default function ManageApplicantsPage() {
     fetchApplicants();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to suspend this applicant? This action cannot be undone.")) return;
 

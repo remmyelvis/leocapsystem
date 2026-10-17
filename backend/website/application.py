@@ -762,6 +762,10 @@ def get_audit_trails():
     if application_id:
         query = query.filter_by(application_id=application_id)
 
+    period_days = {"today": 1, "7d": 7, "30d": 30}.get(request.args.get("period"))
+    if period_days:
+        query = query.filter(ApplicationAudit.changed_at >= datetime.utcnow() - timedelta(days=period_days))
+
     # Order newest first
     query = query.order_by(ApplicationAudit.changed_at.desc())
 

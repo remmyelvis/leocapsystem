@@ -103,6 +103,13 @@ export default function AllApplicationsPage() {
     setCurrentPage(1);
   }, [search, statusFilter, typeFilter, companyFilter, dateRange]);
 
+  // Companies come from the loans themselves (the registered list does not cover every name in use)
+  const companyOptions = useMemo(() => {
+    const names = new Set(applications.map((a) => a.company).filter(Boolean));
+    if (urlCompany !== "all") names.add(urlCompany);
+    return Array.from(names).sort((a, b) => a.localeCompare(b));
+  }, [applications, urlCompany]);
+
   const filtered = useMemo(() => {
     
     const now = Date.now();
@@ -131,7 +138,7 @@ export default function AllApplicationsPage() {
         (a, b) =>
           new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
       );
-  }, [applications, search, statusFilter, typeFilter, dateRange]);
+  }, [applications, search, statusFilter, typeFilter, companyFilter, dateRange]);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -279,7 +286,7 @@ return (
           <option value="rate_confirmed">Rate Accepted</option>
           <option value="rate_declined">Rate Declined</option>
           <option value="approved">Approved</option>
-          <option value="declined">Declined</option>
+          <option value="rejected">Declined</option>
           <option value="disbursed">Disbursed</option>
         </select>
 
@@ -302,10 +309,9 @@ return (
           className="text-sm border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white"
         >
           <option value="all">All Companies</option>
-          <option value="ideon">Ideon</option>
-          <option value="nakama">Nakama</option>
-          <option value="joy_flowers">Joy Flowers</option>
-          <option value="personal">Personal</option>
+          {companyOptions.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
         </select>
 
         {/* Date range filter */}

@@ -1,7 +1,7 @@
 
 
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSession } from "@/contexts/AuthContext";
 import { Search, Eye, Loader2, FileDown, FileSpreadsheet } from "lucide-react";
@@ -71,6 +71,7 @@ export default function FinanceCompanyApplicationsPage() {
   const companyLabel = company === "ideon" ? "Ideon Limited" : "Nakama Tech Limited";
 
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("");
   const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,6 +92,15 @@ export default function FinanceCompanyApplicationsPage() {
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [downloadingExcel, setDownloadingExcel] = useState(false);
 
+  // Search runs on the server (name, email, phone, payroll no.) so it covers every page, not just the one on screen
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
@@ -99,6 +109,7 @@ export default function FinanceCompanyApplicationsPage() {
         params.append("page", String(page));
         params.append("page_size", "10");
         params.append("company", company);
+        if (debouncedSearch) params.append("search", debouncedSearch);
 
         if (selectedMonth) {
           const capitalizedMonth = selectedMonth.charAt(0).toUpperCase() + selectedMonth.slice(1);
@@ -131,19 +142,9 @@ export default function FinanceCompanyApplicationsPage() {
     if (session) {
       fetchData();
     }
-  }, [session, selectedMonth, page, company]);
+  }, [session, selectedMonth, page, company, debouncedSearch]);
 
-  const filtered = useMemo(() => {
-    return applications.filter((a) => {
-      if (!search) return true;
-      const s = search.toLowerCase();
-      const app = a.application || a;
-      const name = (a.bio_data?.full_name || app.applicant_id || "").toLowerCase();
-      const email = (a.bio_data?.email || "").toLowerCase();
-      const payroll = app.payroll_number ? String(app.payroll_number).toLowerCase() : "";
-      return name.includes(s) || email.includes(s) || payroll.includes(s);
-    });
-  }, [applications, search]);
+  const filtered = applications;
 
   const handleDownloadPdf = async () => {
     setDownloadingPdf(true);
@@ -228,7 +229,10 @@ export default function FinanceCompanyApplicationsPage() {
         </div>
         <select
           value={selectedMonth}
-          onChange={(e) => setSelectedMonth(e.target.value)}
+          onChange={(e) => {
+            setSelectedMonth(e.target.value);
+            setPage(1);
+          }}
           className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-600/20 focus:border-violet-600 transition-colors bg-white sm:w-48"
         >
           <option value="">All Months</option>

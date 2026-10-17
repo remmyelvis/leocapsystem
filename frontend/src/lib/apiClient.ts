@@ -202,10 +202,12 @@ export async function apiCall<T>(
 
 export async function downloadFile(
   endpoint: string,
-  filename: string
+  filename: string,
+  options?: { method?: "GET" | "POST"; body?: unknown }
 ): Promise<{ error: string | null }> {
   try {
     const headers: Record<string, string> = {};
+    if (options?.body !== undefined) headers["Content-Type"] = "application/json";
     const token = getToken();
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
@@ -213,7 +215,8 @@ export async function downloadFile(
 
     const config: AxiosRequestConfig = {
       url: `${BASE_URL}${endpoint}`,
-      method: "GET",
+      method: options?.method ?? "GET",
+      data: options?.body,
       headers,
       responseType: "blob",
     };

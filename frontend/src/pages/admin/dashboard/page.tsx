@@ -28,6 +28,7 @@ export default function AdminDashboardPage() {
   // Filters for Pipeline
   const [statusFilter, setStatusFilter] = useState("");
   const [companyFilter, setCompanyFilter] = useState("");
+  const [companies, setCompanies] = useState<{ code: string }[]>([]);
   
   // Time Series Filter
   const [monthFilter, setMonthFilter] = useState("all");
@@ -84,9 +85,16 @@ export default function AdminDashboardPage() {
   }, [monthFilter]);
 
   useEffect(() => {
-    if (!isLoading) {
-      fetchLoans();
-    }
+    apiCall<{ companies: { code: string }[] }>("/api/companies").then((res) => {
+      if (res.data?.companies) setCompanies(res.data.companies);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isLoading) return;
+    // wait for the typing to pause so each keystroke does not fire (and race) its own request
+    const timer = setTimeout(fetchLoans, 300);
+    return () => clearTimeout(timer);
   }, [statusFilter, companyFilter]);
 
   const handleAction = async (id: string, action: string) => {
@@ -223,11 +231,17 @@ export default function AdminDashboardPage() {
               <option value="pending_processing">Pending</option>
               <option value="approved">Approved</option>
               <option value="disbursed">Disbursed</option>
-              <option value="paid">Paid</option>
-              <option value="default">Default</option>
               <option value="rejected">Rejected</option>
+              <option value="written_off">Written Off</option>
+              <option value="paid">Repaid</option>
+              <option value="partially_paid">Partially Paid</option>
+              <option value="unpaid">Unpaid</option>
+              <option value="default">Defaulted</option>
             </select>
-            <input type="text" placeholder="Company..." value={companyFilter} onChange={e => setCompanyFilter(e.target.value)} className="text-xs bg-white border border-slate-200 rounded-lg px-3 py-1.5 font-bold text-slate-600 focus:ring-2 focus:ring-brand-blue/20" />
+            <select value={companyFilter} onChange={e => setCompanyFilter(e.target.value)} className="text-xs bg-white border border-slate-200 rounded-lg px-3 py-1.5 font-bold text-slate-600 focus:ring-2 focus:ring-brand-blue/20 capitalize">
+              <option value="">All Companies</option>
+              {companies.map(c => <option key={c.code} value={c.code}>{c.code}</option>)}
+            </select>
           </div>
         </div>
         <div className="overflow-x-auto max-h-96">

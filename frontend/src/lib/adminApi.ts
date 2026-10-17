@@ -38,6 +38,7 @@ export interface ApplicationBioData {
   email: string;
   phone_number: string;
   id_number: string;
+  applicant_type?: string;
 }
 
 export interface ApplicationDocument {

@@ -8,6 +8,15 @@ from sqlalchemy import func
 
 dashboard_bp = Blueprint('dashboard_bp', __name__, url_prefix='/api/dashboard')
 
+
+def _registered_companies():
+    """{applicant id: company} - the one picked at sign-up ("Select Your Company", applicants.applicant_type), which
+    is always one of the entries in the Companies list (ideon, nakama, personal).
+    Loans are reported under this, not under applications.company: personal-loan applicants type their employer
+    into that one, which produced look-alike "companies" such as 'Inspire Credit' and 'Inspire Credit Ltd'."""
+    return {aid: atype for aid, atype in db.session.query(Applicant.id, Applicant.applicant_type).all()}
+
+
 @dashboard_bp.route('/kpis', methods=['GET'])
 @jwt_required()
 @role_required('admin')
@@ -49,13 +58,14 @@ def get_dashboard_kpis():
     company_data = {}
     
     now = datetime.utcnow()
+    owner = _registered_companies()
     
     for app in apps:
         # loans by status
         loans_by_status_dict[app.loan_status] = loans_by_status_dict.get(app.loan_status, 0) + 1
         
         # company grouping
-        comp = app.company or "Unknown"
+        comp = owner.get(app.applicant_id) or "unknown"
         if comp not in company_data:
             company_data[comp] = {'count': 0, 'total_amount': 0.0}
         company_data[comp]['count'] += 1
@@ -128,7 +138,7 @@ def get_dashboard_kpis():
         recent_applications.append({
             'id': ra.id,
             'applicant_name': applicant.name if applicant else "Unknown",
-            'company': ra.company,
+            'company': owner.get(ra.applicant_id) or ra.company,
             'amount_applied': float(ra.amount_applied) if ra.amount_applied else 0.0,
             'disbursement_amount': float(ra.disbursement_amount) if ra.disbursement_amount else 0.0,
             'repayment_amount': float(ra.repayment_amount) if ra.repayment_amount else 0.0,
@@ -177,12 +187,24 @@ def get_dashboard_kpis():
 def get_dashboard_loans():
     status = request.args.get('status')
     company = request.args.get('company')
-    
+
+    # Paid / unpaid / default are repayment states; every other value is a loan_status
+    repayment_filters = {
+        'paid': ['paid'],
+        'partially_paid': ['partially_paid'],
+        'unpaid': ['unpaid'],
+        'default': ['defaulted', 'escalated'],
+    }
+
     query = Application.query
-    if status:
+    if status in repayment_filters:
+        query = query.filter(Application.repayment_status.in_(repayment_filters[status]))
+    elif status:
         query = query.filter_by(loan_status=status)
-    if company:
-        query = query.filter_by(company=company)
+    owner = _registered_companies()
+    if company and company.strip():
+        registered = db.select(Applicant.id).where(Applicant.applicant_type.ilike(f"%{company.strip()}%"))
+        query = query.filter(Application.applicant_id.in_(registered))
         
     apps = query.order_by(Application.created_at.desc()).all()
     
@@ -193,7 +215,7 @@ def get_dashboard_loans():
             'id': app.id,
             'applicant_name': applicant.name if applicant else "Unknown",
             'applicant_phone': applicant.phone_number if applicant else "Unknown",
-            'company': app.company,
+            'company': owner.get(app.applicant_id) or app.company,
             'amount_applied': float(app.amount_applied) if app.amount_applied else 0.0,
             'disbursement_amount': float(app.disbursement_amount) if app.disbursement_amount else 0.0,
             'repayment_amount': float(app.repayment_amount) if app.repayment_amount else 0.0,

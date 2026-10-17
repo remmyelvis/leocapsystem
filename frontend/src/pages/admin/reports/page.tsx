@@ -257,11 +257,13 @@ export default function ReportsPage() {
             <option value="pending_processing">Pending</option>
             <option value="approved">Approved</option>
             <option value="disbursed">Disbursed</option>
-            <option value="paid">Paid</option>
+            <option value="rejected">Rejected</option>
+            <option value="written_off">Written Off</option>
           </select>
           <select value={repayment} onChange={e => setRepayment(e.target.value)} className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium">
             <option value="all">All Repayments</option>
             <option value="unpaid">Unpaid</option>
+            <option value="partially_paid">Partially Paid</option>
             <option value="paid">Paid</option>
           </select>
           <input type="date" value={startDate} max={endDate || undefined} onChange={e => setStartDate(e.target.value)} className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium" />

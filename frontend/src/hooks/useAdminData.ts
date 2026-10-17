@@ -79,7 +79,7 @@ function transformApplication(item: AdminApplicationItem): TransformedApplicatio
     email: bio.email || "",
     phone: bio.phone_number || "",
     idNumber: bio.id_number || "",
-    company: app.company || "",
+    company: bio.applicant_type || app.company || "",
     loanType: app.loan_type || "personal",
     employmentType: app.employment_type || "",
     employmentNature: app.employment_nature || "",

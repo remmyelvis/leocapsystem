@@ -3,7 +3,7 @@ from io import BytesIO
 
 import pandas as pd
 from flask import Blueprint, request, jsonify, current_app, send_file
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from werkzeug.utils import secure_filename
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from uuid import uuid4
@@ -81,6 +81,14 @@ def get_applications_report():
         query = query.where(Application.created_at >= start_dt)
     if end_dt:
         query = query.where(Application.created_at <= end_dt)
+
+    search = (request.args.get("search") or "").strip()
+    if search:
+        like = f"%{search}%"
+        matching_applicants = select(Applicant.id).where(or_(
+            Applicant.name.ilike(like), Applicant.email.ilike(like), Applicant.phone_number.ilike(like)
+        ))
+        query = query.where(or_(Application.payroll_number.ilike(like), Application.applicant_id.in_(matching_applicants)))
 
     # Default ordering
     query = query.order_by(Application.created_at.desc())

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Download, LayoutList, Filter } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,13 @@ export default function CustomReportBuilder() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [isExporting, setIsExporting] = useState(false);
+  const [companies, setCompanies] = useState<{ name: string; code: string }[]>([]);
+
+  useEffect(() => {
+    apiCall<{ companies: { name: string; code: string }[] }>("/api/companies").then((res) => {
+      if (res.data?.companies) setCompanies(res.data.companies);
+    });
+  }, []);
 
   const toggleColumn = (id: string) => {
     setSelectedCols(prev => 
@@ -52,17 +59,12 @@ export default function CustomReportBuilder() {
         }
       };
       
-      const res = await apiCall<Blob>("/api/reports/custom/excel", {
-        method: "POST",
-        body: payload,
-        responseType: "blob"
-      });
-      
-      if (res.data) {
-        downloadFile(res.data, "Custom_Report.xlsx");
-        toast.success("Custom report exported successfully!");
+      const res = await downloadFile("/api/reports/custom/excel", "Custom_Report.xlsx", { method: "POST", body: payload });
+
+      if (res.error) {
+        toast.error(res.error);
       } else {
-        toast.error("Failed to generate report.");
+        toast.success("Custom report exported successfully!");
       }
     } catch (e: any) {
       toast.error("Export failed: " + e.message);
@@ -99,10 +101,9 @@ export default function CustomReportBuilder() {
               className="w-full px-3 py-2 border rounded-lg text-sm mb-3"
             >
               <option value="all">All Companies</option>
-              <option value="nakama">Nakama</option>
-              <option value="ideon">Ideon</option>
-              <option value="sleek_fit_studio_ltd">Sleek Fit Studio Ltd</option>
-              <option value="joy_flowers">Joy Flowers</option>
+              {companies.map((c) => (
+                <option key={c.code} value={c.code}>{c.name}</option>
+              ))}
             </select>
             
             <label className="text-sm font-medium text-gray-700 mt-2 block">Start Date</label>
@@ -121,9 +122,10 @@ export default function CustomReportBuilder() {
             >
               <option value="">Any Status</option>
               <option value="disbursed">Disbursed</option>
-              <option value="pending">Pending</option>
+              <option value="pending_processing">Pending</option>
+              <option value="approved">Approved</option>
               <option value="rejected">Rejected</option>
-              <option value="paid">Paid</option>
+              <option value="written_off">Written Off</option>
             </select>
           </div>
         </div>
