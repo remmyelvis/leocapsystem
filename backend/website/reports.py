@@ -535,12 +535,10 @@ def get_company_repayment_pdf(identifier):
         total_amount=total_amount
     )
 
-    return send_file(
-        pdf_buffer,
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name=f"{comp_name}_Repayment_Report_{month}.pdf"
-    )
+    # Return bytes, not send_file(BytesIO): the host's Passenger file wrapper calls fileno() on the buffer and crashes.
+    response = Response(pdf_buffer.getvalue(), mimetype="application/pdf")
+    response.headers["Content-Disposition"] = f'attachment; filename="{comp_name}_Repayment_Report_{month}.pdf"'
+    return response
 
 @reports.route('/aging/<identifier>', methods=['GET'])
 @jwt_required()
@@ -651,6 +649,9 @@ def get_global_aging_report():
 @jwt_required()
 @role_required('admin', 'hr', 'finance')
 def custom_excel_report():
+    import io
+    import openpyxl
+    from openpyxl.styles import Font
     data = request.get_json() or {}
     columns = data.get('columns', [])
     filters = data.get('filters', {})
@@ -718,9 +719,6 @@ def custom_excel_report():
     wb.save(output)
     output.seek(0)
     
-    return send_file(
-        output,
-        as_attachment=True,
-        download_name="Custom_Report.xlsx",
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+    response = Response(output.getvalue(), mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response.headers["Content-Disposition"] = "attachment; filename=Custom_Report.xlsx"
+    return response

@@ -1,6 +1,6 @@
 import string
 
-from flask import Blueprint, request, jsonify, current_app, send_file
+from flask import Blueprint, request, jsonify, current_app, send_file, Response
 
 from website.models import Applicant, Application, ApplicantDocument
 from website import db, Config
@@ -444,9 +444,5 @@ def download_bulk_template():
     output.write(si.getvalue().encode('utf-8'))
     output.seek(0)
     
-    return send_file(
-        output,
-        mimetype='text/csv',
-        as_attachment=True,
-        download_name='bulk_upload_template.csv'
-    )
+    # Bytes, not send_file(BytesIO): the host's Passenger file wrapper calls fileno() on the buffer and crashes.
+    return Response(output.getvalue(), mimetype='text/csv', headers={"Content-Disposition": "attachment; filename=bulk_upload_template.csv"})
