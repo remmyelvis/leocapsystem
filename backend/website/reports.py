@@ -40,6 +40,13 @@ FILTERABLE_FIELDS = {
 }
 
 
+def _balance_due(app):
+    """What is still owed on a loan: the tracked outstanding balance, or the repayment amount on older loans
+    that never had one (their balance is 0.00)."""
+    outstanding = float(app.outstanding_balance or 0)
+    return outstanding if outstanding > 0 else float(app.repayment_amount or 0)
+
+
 def _date_range_args():
     """(start, end) datetimes from ?start_date / ?end_date (YYYY-MM-DD, either may be omitted); end covers its whole day.
     Answers 400 for a malformed or reversed range."""
@@ -144,12 +151,16 @@ def get_applications_report():
             {
                 "created_at": application.created_at,
                 "applicant_id": Applicant.query.get(application.applicant_id).name,
+                "applicant_name": Applicant.query.get(application.applicant_id).name,
                 "company": application.company,
                 "loan_type": application.loan_type,
                 "amount_applied": application.amount_applied,
+                "disbursement_amount": application.disbursement_amount,
                 "loan_status": application.loan_status,
                 "id": application.id,
                 "repayment_amount": application.repayment_amount,
+                "outstanding_balance": application.outstanding_balance,
+                "due_date": application.due_date.isoformat() if application.due_date else None,
                 "repayment_status": application.repayment_status
             }
             for application in pagination.items
@@ -599,7 +610,7 @@ def get_aging_report(identifier):
         if app.due_date and now > app.due_date:
             overdue_days = (now - app.due_date).days
         
-        amt = float(app.repayment_amount or 0)
+        amt = _balance_due(app)
         
         if overdue_days <= 0:
             bucket = 'current'
@@ -653,7 +664,7 @@ def get_global_aging_report():
         if app.due_date and now > app.due_date:
             overdue_days = (now - app.due_date).days
         
-        amt = float(app.repayment_amount or 0)
+        amt = _balance_due(app)
         
         if overdue_days <= 0:
             bucket = 'current'
