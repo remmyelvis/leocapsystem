@@ -76,6 +76,19 @@ def create_app():
        except Exception:
            pass
 
+    # applications.employer_name was added after the live database was created: add it once, so deploying needs no manual SQL
+    with app.app_context():
+        from sqlalchemy import inspect, text
+        try:
+            if "employer_name" not in {c["name"] for c in inspect(db.engine).get_columns("applications")}:
+                db.session.execute(text("ALTER TABLE applications ADD COLUMN employer_name VARCHAR(150)"))
+                db.session.commit()
+        except Exception:
+            db.session.rollback()
+            # another worker may have added it a moment ago; only complain if it is still missing
+            if "employer_name" not in {c["name"] for c in inspect(db.engine).get_columns("applications")}:
+                app.logger.exception("Could not add applications.employer_name")
+
     
     from flask import request, g
     from flask_jwt_extended import verify_jwt_in_request, get_jwt, get_jwt_identity

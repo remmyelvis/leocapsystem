@@ -569,6 +569,7 @@ def export_application(df, title, app):
         ["Employment Type", app.employment_type],
         ["Employment Nature", app.employment_nature],
         ["Company", app.company],
+        ["Employer", app.employer_name or "-"],
         ["Payroll Number", app.payroll_number],
         ["Designation",app.designation],
         ["Month One Salary", app.month_one],

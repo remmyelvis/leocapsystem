@@ -2,7 +2,8 @@ import { apiCall } from "./apiClient";
 
 export interface CreateApplicationPayload {
   employment_type: string;        // "employed" | "self_employed"
-  company: string;                // "nakama" | "ideon" | "personal"
+  company: string;                // "nakama" | "ideon" | "personal" (the backend uses the applicant's own company)
+  employer_name?: string;         // who the applicant works for
   employment_nature: string;
   payroll_number: string;
   designation: string;

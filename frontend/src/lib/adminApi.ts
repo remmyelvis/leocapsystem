@@ -54,6 +54,7 @@ export interface ApplicationDetails {
   date_submitted: string;
   designation: string;
   employment_nature: string;
+  employer_name?: string | null;
   month_one: string;
   month_two: string;
   month_three: string;

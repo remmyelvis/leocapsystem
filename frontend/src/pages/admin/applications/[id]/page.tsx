@@ -1231,6 +1231,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
       <Section title="Employment Details">
         <Field label="Employment Type" value={app.employmentType} />
         <Field label="Company" value={app.company} />
+        {app.employerName && <Field label="Employer" value={app.employerName} />}
         <Field label="Employment Nature" value={app.employmentNature} />
         <Field label="Designation" value={app.designation} />
         <Field label="Payroll Number" value={app.payrollNumber} />

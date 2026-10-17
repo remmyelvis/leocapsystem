@@ -28,7 +28,8 @@ class Application(db.Model):
     __tablename__ = 'applications'
     id = db.Column(db.String(36), primary_key=True, unique=True, nullable=False)
     employment_type = db.Column(db.String(100), nullable=True)
-    company = db.Column(db.String(100), nullable=True)
+    company = db.Column(db.String(100), nullable=True)  # the company picked at sign-up: ideon, nakama or personal
+    employer_name = db.Column(db.String(150), nullable=True)  # who the applicant works for, as typed in the loan form
     employment_nature = db.Column(db.String(100), nullable=True)
     payroll_number = db.Column(db.String(100), nullable=True)
     designation = db.Column(db.String(100), nullable=True)
@@ -100,6 +101,7 @@ class Application(db.Model):
             'month_two': self.month_two,
             'month_three': self.month_three,
             'company': self.company,
+            'employer_name': self.employer_name,
             'loan_type': self.loan_type,
             'amount_applied': self.amount_applied,
             'processing_fees': self.processing_fees,

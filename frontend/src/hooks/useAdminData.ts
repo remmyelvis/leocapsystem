@@ -18,6 +18,7 @@ export interface TransformedApplication {
   loanType: string;
   employmentType: string;
   employmentNature: string;
+  employerName: string;
   designation: string;
   payrollNumber: string;
   monthOne: number;
@@ -83,6 +84,7 @@ function transformApplication(item: AdminApplicationItem): TransformedApplicatio
     loanType: app.loan_type || "personal",
     employmentType: app.employment_type || "",
     employmentNature: app.employment_nature || "",
+    employerName: app.employer_name || "",
     designation: app.designation || "",
     payrollNumber: app.payroll_number || "",
     monthOne: parseFloat(app.month_one) || 0,

@@ -419,7 +419,8 @@ export default function GeneralLoanPage() {
     try {
       const payload: CreateApplicationPayload = {
         employment_type: data.employmentType === "Employed" ? "employed" : "self_employed",
-        company: data.companyName || "personal",
+        company: "personal",
+        employer_name: data.companyName || undefined,
         employment_nature: data.employmentType === "Employed" ? "permanent" : "self_employed",
         payroll_number: "N/A",
         designation: "N/A",

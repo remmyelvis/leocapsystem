@@ -157,7 +157,9 @@ def create_application():
     new_application = Application(
         id=application_id,
         employment_type=data.get('employment_type'),
-        company=data.get('company'),
+        # The company is the one the applicant picked at sign-up. The form's company/employer text must not replace it.
+        company=(applicant.applicant_type if applicant and applicant.applicant_type else data.get('company')),
+        employer_name=(data.get('employer_name') or '').strip()[:150] or None,
         employment_nature=data.get('employment_nature'),
         payroll_number=data.get('payroll_number'),
         designation=data.get('designation'),
