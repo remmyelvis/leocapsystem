@@ -109,21 +109,21 @@ class CompanyReportPDFGenerator:
         elements.append(Spacer(1, 20))
         
         # Main Data Table
-        table_data = [["#", "Borrower Name", "Payroll No", "Phone", "Disbursed", "Monthly Installment"]]
+        table_data = [["#", "Borrower Name", "Payroll No", "Request Date", "Amount Applied", "Repayment Amount"]]
         
         for idx, app in enumerate(apps, 1):
             table_data.append([
                 str(idx),
-                app.get('Name', 'N/A'),
-                app.get('Payroll_Number', 'N/A'),
-                app.get('Phone', 'N/A'),
-                f"{float(app.get('Disbursement_Amount', 0)):,.2f}",
-                f"{float(app.get('Repayment_Amount', 0)):,.2f}"
+                app.get('Customer') or 'N/A',
+                app.get('Payroll') or 'N/A',
+                app.get('Request Date') or 'N/A',
+                app.get('Amount Applied', '0.00'),
+                app.get('Repayment Amount', '0.00')
             ])
             
         # Add Total Row
         table_data.append([
-            "", "", "", "TOTAL", "", f"KES {float(total_amount):,.2f}"
+            "", "", "", "", "TOTAL", f"KES {float(total_amount):,.2f}"
         ])
             
         main_table = Table(table_data, colWidths=[30, 200, 100, 100, 100, 100])

@@ -447,29 +447,41 @@ def get_company_repayment_amount(identifier):
     }), 200
 
 
+def _repayment_report_apps(identifier):
+    """Unpaid, disbursed loans of one company (every company when identifier is 'all') for the requested date range, else the month."""
+    query = Application.query.filter_by(repayment_status="unpaid", loan_status="disbursed")
+    if identifier.lower() == "all":
+        comp_code, comp_name = "all", "All Companies"
+    else:
+        company = Company.query.filter(
+            (Company.id == identifier) | (Company.code == identifier.lower())
+        ).first()
+        comp_code = company.code if company else identifier.lower()
+        comp_name = company.name if company else identifier
+        query = query.filter_by(company=comp_code)
+
+    period = request.args.get("month", datetime.now().strftime("%B"))
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
+    if start_date and end_date:
+        try:
+            start_dt = datetime.strptime(start_date, '%Y-%m-%d')
+            end_dt = datetime.strptime(end_date, '%Y-%m-%d').replace(hour=23, minute=59, second=59)
+            query = query.filter(Application.created_at >= start_dt, Application.created_at <= end_dt)
+            period = f"{start_date}_to_{end_date}"
+        except ValueError:
+            start_date = None
+    if not (start_date and end_date):
+        query = query.filter_by(month=period)
+    return comp_code, comp_name, period, query.all()
+
+
 @reports.route('/applications/get-all/repayment/company/<identifier>/excel', methods=['GET'])
 @jwt_required()
 @role_required("admin", "hr", "finance")
 def get_company_repayment_excel(identifier):
     """Export repayment report in Excel format for any company."""
-    company = Company.query.filter(
-        (Company.id == identifier) | (Company.code == identifier.lower())
-    ).first()
-
-    comp_code = company.code if company else identifier.lower()
-    comp_name = company.name if company else identifier
-    month = request.args.get("month", datetime.now().strftime("%B"))
-    start_date = request.args.get("start_date")
-    end_date = request.args.get("end_date")
-
-    query = Application.query.filter_by(repayment_status="unpaid", company=comp_code, loan_status="disbursed")
-    
-    if start_date and end_date:
-        query = query.filter(Application.created_at >= start_date, Application.created_at <= end_date)
-    else:
-        query = query.filter_by(month=month)
-        
-    apps = query.all()
+    comp_code, comp_name, month, apps = _repayment_report_apps(identifier)
 
     if not apps:
         return jsonify({"message": f"No unpaid disbursed applications found for {comp_name} in {month}."}), 404
@@ -505,24 +517,7 @@ Paybill Number: 880100 (Deposit reference: {comp_code.upper()})
 @role_required("admin", "hr", "finance")
 def get_company_repayment_pdf(identifier):
     """Export repayment report in PDF format for any company."""
-    company = Company.query.filter(
-        (Company.id == identifier) | (Company.code == identifier.lower())
-    ).first()
-
-    comp_code = company.code if company else identifier.lower()
-    comp_name = company.name if company else identifier
-    month = request.args.get("month", datetime.now().strftime("%B"))
-    start_date = request.args.get("start_date")
-    end_date = request.args.get("end_date")
-
-    query = Application.query.filter_by(repayment_status="unpaid", company=comp_code, loan_status="disbursed")
-    
-    if start_date and end_date:
-        query = query.filter(Application.created_at >= start_date, Application.created_at <= end_date)
-    else:
-        query = query.filter_by(month=month)
-        
-    apps = query.all()
+    comp_code, comp_name, month, apps = _repayment_report_apps(identifier)
 
     if not apps:
         return jsonify({"message": f"No unpaid disbursed applications found for {comp_name} in {month}."}), 404

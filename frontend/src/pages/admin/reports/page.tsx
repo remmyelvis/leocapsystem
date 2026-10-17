@@ -108,7 +108,7 @@ export default function ReportsPage() {
   }, [loanType, company, loanStatus, repayment, month, startDate, endDate]);
 
   const handleDownload = async (type: "excel" | "pdf") => {
-    const compTarget = company !== "all" ? company : "nakama";
+    const compTarget = company;
     const params = new URLSearchParams();
     if (startDate) params.append("start_date", startDate);
     if (endDate) params.append("end_date", endDate);
