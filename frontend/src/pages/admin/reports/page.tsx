@@ -127,7 +127,9 @@ export default function ReportsPage() {
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-[#081430]">Reports &amp; Analytics</h1>
           <div className="mt-1 max-w-2xl text-sm text-slate-600" aria-live="polite">
-            {loading && rows.length === 0 ? <Skeleton className="mt-2 h-4 w-72" /> : (
+            {loading && rows.length === 0 && !error ? <Skeleton className="mt-2 h-4 w-72" /> : error && rows.length === 0 ? (
+              <span className="text-rose-700">The loan list did not load. Try again below.</span>
+            ) : (
               <>
                 <span className="font-semibold tabular-nums text-slate-800">{pagination.total_records.toLocaleString("en-KE")}</span>{" "}
                 {pagination.total_records === 1 ? "loan" : "loans"} from {who}{period}.
