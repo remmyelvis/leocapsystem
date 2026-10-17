@@ -8,6 +8,7 @@ import { z } from "zod";
 import { signIn, useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import SessionExpiredNotice from "@/components/global/SessionExpiredNotice";
 import BrandLogo from "@/components/global/BrandLogo";
 import { AlertCircle, ArrowLeft, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import { applicantApi } from "@/lib/applicantApi";
@@ -133,6 +134,8 @@ export default function ApplicantLoginPage() {
                 <span>{error}</span>
               </div>
             )}
+
+            <SessionExpiredNotice />
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
               {/* Email */}

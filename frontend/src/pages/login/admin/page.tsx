@@ -8,6 +8,7 @@ import { z } from "zod";
 import { signIn, useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import SessionExpiredNotice from "@/components/global/SessionExpiredNotice";
 import BrandLogo from "@/components/global/BrandLogo";
 import { AlertCircle, Eye, EyeOff, Loader2, Lock, Mail, Shield } from "lucide-react";
 import { adminApi, SUPER_ADMIN_EMAIL, isSuperAdmin } from "@/lib/adminApi";
@@ -148,6 +149,8 @@ export default function AdminLoginPage() {
                 <span>{error}</span>
               </div>
             )}
+
+            <SessionExpiredNotice />
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
               {/* Email */}
