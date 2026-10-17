@@ -13,7 +13,7 @@ from website.system_email_utils import send_email_smtp
 from website.models import Application, Applicant, ApplicationDocument, HrEmail, Email, Company
 from website import db, Config, export_service
 from website.role_decorator import role_required
-from flask import Response
+from flask import Response, abort, make_response
 
 from dotenv import load_dotenv
 
@@ -39,6 +39,22 @@ FILTERABLE_FIELDS = {
     "month":Application.month
 }
 
+
+def _date_range_args():
+    """(start, end) datetimes from ?start_date / ?end_date (YYYY-MM-DD, either may be omitted); end covers its whole day.
+    Answers 400 for a malformed or reversed range."""
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
+    try:
+        start = datetime.strptime(start_date, "%Y-%m-%d") if start_date else None
+        end = datetime.strptime(end_date, "%Y-%m-%d").replace(hour=23, minute=59, second=59) if end_date else None
+    except ValueError:
+        abort(make_response(jsonify({"error": "Dates must be in YYYY-MM-DD format."}), 400))
+    if start and end and start > end:
+        abort(make_response(jsonify({"error": "Start date must not be after end date."}), 400))
+    return start, end
+
+
 @reports.route('/applications/get-all', methods=['GET'])
 @jwt_required()
 @role_required("admin","hr","finance")
@@ -59,6 +75,12 @@ def get_applications_report():
 
         if value:
             query = query.where(model_column == value)
+
+    start_dt, end_dt = _date_range_args()
+    if start_dt:
+        query = query.where(Application.created_at >= start_dt)
+    if end_dt:
+        query = query.where(Application.created_at <= end_dt)
 
     # Default ordering
     query = query.order_by(Application.created_at.desc())
@@ -461,17 +483,14 @@ def _repayment_report_apps(identifier):
         query = query.filter_by(company=comp_code)
 
     period = request.args.get("month", datetime.now().strftime("%B"))
-    start_date = request.args.get("start_date")
-    end_date = request.args.get("end_date")
-    if start_date and end_date:
-        try:
-            start_dt = datetime.strptime(start_date, '%Y-%m-%d')
-            end_dt = datetime.strptime(end_date, '%Y-%m-%d').replace(hour=23, minute=59, second=59)
-            query = query.filter(Application.created_at >= start_dt, Application.created_at <= end_dt)
-            period = f"{start_date}_to_{end_date}"
-        except ValueError:
-            start_date = None
-    if not (start_date and end_date):
+    start_dt, end_dt = _date_range_args()
+    if start_dt or end_dt:
+        if start_dt:
+            query = query.filter(Application.created_at >= start_dt)
+        if end_dt:
+            query = query.filter(Application.created_at <= end_dt)
+        period = f"{request.args.get('start_date') or 'start'}_to_{request.args.get('end_date') or 'latest'}"
+    else:
         query = query.filter_by(month=period)
     return comp_code, comp_name, period, query.all()
 
