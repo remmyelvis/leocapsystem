@@ -14,7 +14,7 @@ const passwordField = z
 
 const idNumberField = z
   .string()
-  .regex(/^\d{7,8}$/, "ID number must be 7-8 digits");
+  .regex(/^\d{7,9}$/, "ID number must be 7-9 digits");
 
 const phoneField = z
   .string()

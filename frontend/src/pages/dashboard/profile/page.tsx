@@ -42,7 +42,7 @@ const profileSchema = z.object({
     .or(z.literal("")),
   idNumber: z
     .string()
-    .regex(/^\d{7,8}$/, "ID number must be 7 or 8 digits")
+    .regex(/^\d{7,9}$/, "ID number must be 7-9 digits")
     .or(z.literal("")),
   kraPin: z
     .string()

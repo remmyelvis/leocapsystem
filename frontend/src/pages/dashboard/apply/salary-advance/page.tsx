@@ -107,7 +107,7 @@ const salaryAdvanceSchema = z.object({
   customerName: z.string().min(2, "Customer name is required"),
   idNumber: z
     .string()
-    .regex(/^\d{7,8}$/, "ID number must be 7-8 digits"),
+    .regex(/^\d{7,9}$/, "ID number must be 7-9 digits"),
   kraPin: z
     .string()
     .regex(/^[Aa]\d{9}[A-Za-z]$/, "KRA PIN format: A followed by 9 digits and a letter (e.g. A123456789Z)"),

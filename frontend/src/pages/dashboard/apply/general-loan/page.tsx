@@ -109,7 +109,7 @@ const step1Schema = z.object({
 
 const step3Schema = z.object({
   customerName: z.string().min(2, "Customer name is required"),
-  idNumber: z.string().regex(/^\d{7,8}$/, "ID number must be 7-8 digits"),
+  idNumber: z.string().regex(/^\d{7,9}$/, "ID number must be 7-9 digits"),
   phoneNumber: z
     .string()
     .regex(/^(\+254|0)[17]\d{8}$/, "Please enter a valid Kenyan phone number (e.g. 0712345678)"),

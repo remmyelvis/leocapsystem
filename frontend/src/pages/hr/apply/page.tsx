@@ -112,7 +112,7 @@ This Agreement constitutes the entire understanding between the parties and supe
 const salaryAdvanceSchema = z.object({
   payrollNumber: z.string().min(1, "Please enter your payroll number"),
   customerName: z.string().min(2, "Customer name is required"),
-  idNumber: z.string().regex(/^\d{7,8}$/, "ID number must be 7-8 digits"),
+  idNumber: z.string().regex(/^\d{7,9}$/, "ID number must be 7-9 digits"),
   kraPin: z
     .string()
     .regex(/^[Aa]\d{9}[A-Za-z]$/, "KRA PIN format: A followed by 9 digits and a letter"),
