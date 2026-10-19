@@ -20,6 +20,8 @@ load_dotenv()
 auth = Blueprint('auth',__name__, url_prefix='/api/auth/users')
 
 @auth.route('/register', methods=['POST'])
+@jwt_required()
+@role_required("admin", "super_admin")
 def register():
 
     data = request.get_json()
@@ -76,39 +78,9 @@ def login():
 
     return response, 200
     
-@auth.route('/dev/login', methods=['POST'])
-def dev_login():
-
-    data = request.get_json()
-
-    if not data or not data.get('email') or not data.get('password'):
-        return jsonify({'message': 'Please provide both email and password'}), 400
-
-    user = User.query.filter_by(email=data['email']).first()
-
-    if not user:
-        return jsonify({'message': 'User not found, please register'}), 401
-
-    if not check_password_hash(user.password, data['password']):
-        return jsonify({'message': 'Invalid credentials'}), 401
-
-    access_token = create_access_token(
-        identity=user.id,
-        additional_claims={"role":user.role}
-    )
-
-    response = jsonify({
-        'message': 'Logged in successfully',
-        'token':access_token,
-        'user': user.to_dict()
-    })
-
-    set_access_cookies(response, access_token)
-
-    return response, 200
-
 @auth.route('/delete/<string:id>', methods=['DELETE'])
 @jwt_required()
+@role_required("admin", "super_admin")
 def delete(id):
     user = User.query.get(id)
 
@@ -123,6 +95,9 @@ def delete(id):
 @auth.route('/update/<string:id>', methods=['PATCH'])
 @jwt_required()
 def update(id):
+
+    if id != get_jwt_identity() and get_jwt().get("role") not in ("admin", "super_admin"):
+        return jsonify({'message': 'You are not authorized to update this user'}), 403
 
     user = User.query.get(id)
 

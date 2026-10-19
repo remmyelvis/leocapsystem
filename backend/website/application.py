@@ -1302,6 +1302,8 @@ def get_one_application(application_id):
     app = Application.query.filter_by(id=application_id).first()
     if not app:
         return jsonify({"error": "Application not found"}), 404
+    if get_jwt().get("role") == "applicant" and app.applicant_id != get_jwt_identity():
+        return jsonify({"error": "Application not found"}), 404
     applicant = Applicant.query.get(app.applicant_id)
     return jsonify({
         "application": app.to_dict(),
@@ -1363,8 +1365,9 @@ def amend_application(application_id):
     db.session.commit()
     return jsonify({"message": "Amended", "application": app.to_dict()}), 200
 
-@application.route('/applications/approve/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
+@application.route('/applications/approve/<string:application_id>', methods=['PATCH'])
 @jwt_required()
+@role_required("admin", "super_admin", "hr", "finance")
 def approve_application(application_id):
     app = Application.query.filter_by(id=application_id).first()
     if not app:
@@ -1372,8 +1375,9 @@ def approve_application(application_id):
     update_loan_status(app, "approved", get_jwt_identity(), get_jwt().get("role"), "Leocap", commit=True)
     return jsonify({"message": "Approved", "application": app.to_dict()}), 200
 
-@application.route('/applications/reject/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
+@application.route('/applications/reject/<string:application_id>', methods=['PATCH'])
 @jwt_required()
+@role_required("admin", "super_admin", "hr", "finance")
 def reject_application(application_id):
     app = Application.query.filter_by(id=application_id).first()
     if not app:
@@ -1383,8 +1387,9 @@ def reject_application(application_id):
     update_loan_status(app, "declined", get_jwt_identity(), get_jwt().get("role"), "Leocap", notes=msg, commit=True)
     return jsonify({"message": "Rejected", "application": app.to_dict()}), 200
 
-@application.route('/applications/disbursed/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
+@application.route('/applications/disbursed/<string:application_id>', methods=['PATCH'])
 @jwt_required()
+@role_required("admin", "super_admin")
 def disburse_application(application_id):
     app = Application.query.filter_by(id=application_id).first()
     if not app:
@@ -1394,6 +1399,7 @@ def disburse_application(application_id):
 
 @application.route('/applications/delete/<string:application_id>', methods=['DELETE'])
 @jwt_required()
+@role_required("admin", "super_admin")
 def delete_application(application_id):
     app = Application.query.filter_by(id=application_id).first()
     if not app:
@@ -1404,20 +1410,22 @@ def delete_application(application_id):
 
 
 
-@application.route('/applications/rate-confirmed/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
+@application.route('/applications/rate-confirmed/<string:application_id>', methods=['PATCH'])
 @jwt_required()
+@role_required("applicant")
 def confirm_rate(application_id):
-    app = Application.query.filter_by(id=application_id).first()
+    app = Application.query.filter_by(id=application_id, applicant_id=get_jwt_identity()).first()
     if not app:
         return jsonify({"error": "Not found"}), 404
         
     update_loan_status(app, "confirmed", get_jwt_identity(), get_jwt().get("role"), "Applicant", commit=True)
     return jsonify({"message": "Rate confirmed", "application": app.to_dict()}), 200
 
-@application.route('/applications/rate-declined/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
+@application.route('/applications/rate-declined/<string:application_id>', methods=['PATCH'])
 @jwt_required()
+@role_required("applicant")
 def decline_rate(application_id):
-    app = Application.query.filter_by(id=application_id).first()
+    app = Application.query.filter_by(id=application_id, applicant_id=get_jwt_identity()).first()
     if not app:
         return jsonify({"error": "Not found"}), 404
         

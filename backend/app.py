@@ -18,12 +18,15 @@ from flask import render_template, send_file
 from website.models import Applicant
 from website.statement_service import StatementPDFGenerator
 from flask import render_template, send_file, send_from_directory
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, jwt_required
+from website.role_decorator import role_required
 
 FRONTEND_DIST = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend', 'dist'))
 
 
 @app.route('/debug-routes')
+@jwt_required()
+@role_required("admin")
 def debug_routes():
     rules = []
     for rule in app.url_map.iter_rules():
@@ -31,6 +34,8 @@ def debug_routes():
     return '<br>'.join(rules)
 
 @app.route('/test-portal')
+@jwt_required()
+@role_required("admin")
 def test_portal():
     from website.models import User
     admin = User.query.filter_by(role="admin").first()

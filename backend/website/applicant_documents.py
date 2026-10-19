@@ -11,7 +11,7 @@ from website import db
 from website.models import ApplicantDocument, Applicant, Application
 from website.models import User
 from website.config import Config
-from website.role_decorator import role_required
+from website.role_decorator import role_required, can_access_applicant
 
 applicant_documents = Blueprint("applicant_documents", __name__, url_prefix='/api/applicant')
 
@@ -23,6 +23,9 @@ def upload_applicant_documents(applicant_id):
 
     if not applicant:
         return {"error":"Applicant does not exist with provided id"}, 404
+
+    if not can_access_applicant(applicant_id):
+        return {"error": "Unauthorized"}, 403
     
     files = request.files.items()
     
@@ -95,6 +98,9 @@ def update_applicant_document(doc_id):
 
     doc = ApplicantDocument.query.get_or_404(doc_id)
 
+    if doc.applicant_id != applicant_id:
+        return {"error": "Unauthorized"}, 403
+
     if "file" in request.files:
         file = request.files["file"]
 
@@ -133,6 +139,9 @@ def get_documents_by_applicant(applicant_id):
     if not applicant_id:
         return {"error":"applicant_id required"}, 400
 
+    if not can_access_applicant(applicant_id):
+        return {"error": "Unauthorized"}, 403
+
     docs = ApplicantDocument.query.filter_by(applicant_id=applicant_id).all()
     return jsonify([d.to_dict() for d in docs])
 
@@ -144,7 +153,7 @@ def get_applicant_document(doc_id):
 
     doc = ApplicantDocument.query.filter_by(id=doc_id).first()
 
-    if doc is None:
+    if doc is None or not can_access_applicant(doc.applicant_id):
         return {"error": "document not found"}, 404
 
     return jsonify(doc.to_dict())
@@ -156,6 +165,8 @@ def download_applicant_document(doc_id):
         return {"error":"document_id required"}, 400
 
     doc = ApplicantDocument.query.get_or_404(doc_id)
+    if not can_access_applicant(doc.applicant_id):
+        return {"error": "Unauthorized"}, 403
     return send_file(doc.filepath, as_attachment=True)
 
 @applicant_documents.route("/documents/delete/<string:doc_id>", methods=["DELETE"])
@@ -163,6 +174,9 @@ def download_applicant_document(doc_id):
 def delete_applicant_document(doc_id):
 
     doc = ApplicantDocument.query.get_or_404(doc_id)
+
+    if doc.applicant_id != get_jwt_identity() and get_jwt().get("role") not in ("admin", "super_admin"):
+        return {"error": "Unauthorized"}, 403
 
     if os.path.exists(doc.filepath):
         os.remove(doc.filepath)

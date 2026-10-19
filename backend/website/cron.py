@@ -1,4 +1,7 @@
-from flask import Blueprint, jsonify
+import os
+from hmac import compare_digest
+
+from flask import Blueprint, jsonify, request
 from website.models import Application, Applicant
 from website import db
 from datetime import datetime, timedelta
@@ -8,7 +11,14 @@ cron_bp = Blueprint('cron', __name__, url_prefix='/api/cron')
 
 @cron_bp.route('/reminders', methods=['POST', 'GET'])
 def run_reminders():
-    # In production, this should be secured by a cron secret
+    # Only the scheduled job may run this: it sends the CRON_SECRET (X-Cron-Secret header or ?key=)
+    secret = os.getenv("CRON_SECRET", "")
+    if not secret:
+        return jsonify({"error": "CRON_SECRET is not configured"}), 503
+    sent = request.headers.get("X-Cron-Secret") or request.args.get("key", "")
+    if not compare_digest(sent.encode(), secret.encode()):
+        return jsonify({"error": "Unauthorized"}), 401
+
     apps = Application.query.filter(Application.loan_status == 'disbursed', Application.repayment_status.in_(['unpaid', 'partially_paid'])).all()
     
     now = datetime.utcnow()

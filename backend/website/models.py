@@ -191,9 +191,7 @@ class ApplicationDocument(db.Model):
             "filetype": self.filetype,
             
             "document_type": self.document_type,
-            "uploaded_at": self.uploaded_at.isoformat() if self.uploaded_at else None,
-            "status": self.status,
-            "admin_comment": self.admin_comment
+            "uploaded_at": self.uploaded_at.isoformat() if self.uploaded_at else None
         }
 
 
@@ -638,9 +636,10 @@ def _add_tenant_filter(execute_state: ORMExecuteState):
                 # elif entity_class == Applicant: # Applicant has no company column!
                 #     execute_state.statement = execute_state.statement.where(Applicant.company == g.tenant_company)
                 elif entity_class == StatementEntry:
-                    execute_state.statement = execute_state.statement.where(StatementEntry.company == g.tenant_company)
+                    subq = db.select(Applicant.id).where(Applicant.applicant_type == g.tenant_company)
+                    execute_state.statement = execute_state.statement.where(StatementEntry.applicant_id.in_(subq))
                 elif entity_class == ApplicantDocument:
-                    subq = db.select(Applicant.id).where(Applicant.company == g.tenant_company)
+                    subq = db.select(Applicant.id).where(Applicant.applicant_type == g.tenant_company)
                     execute_state.statement = execute_state.statement.where(ApplicantDocument.applicant_id.in_(subq))
                 elif entity_class == ApplicationDocument:
                     subq = db.select(Application.id).where(Application.company == g.tenant_company)

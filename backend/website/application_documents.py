@@ -7,7 +7,7 @@ from website import db
 from website.models import ApplicantDocument, Applicant, Application, ApplicationDocument
 from website.models import User
 from website.config import Config
-from website.role_decorator import role_required
+from website.role_decorator import role_required, can_access_application
 
 documents = Blueprint("documents", __name__, url_prefix='/api/application')
 
@@ -26,7 +26,8 @@ def upload_document(application_id):
     if not application_id:
         return {"error":"application_id required"}, 400
 
-    Application.query.get_or_404(application_id)
+    if Application.query.get_or_404(application_id).applicant_id != applicant_id:
+        return {"error": "Unauthorized"}, 403
 
     data = request.form
 
@@ -85,6 +86,9 @@ def update_document(doc_id):
 
     doc = ApplicationDocument.query.get_or_404(doc_id)
 
+    if Application.query.get_or_404(doc.application_id).applicant_id != applicant_id:
+        return {"error": "Unauthorized"}, 403
+
     if "file" in request.files:
         file = request.files["file"]
 
@@ -123,6 +127,10 @@ def get_documents_by_application(application_id):
     if not application_id:
         return {"error":"application_id required"}, 400
 
+    app_obj = Application.query.get(application_id)
+    if not app_obj or not can_access_application(app_obj):
+        return {"error": "Application not found"}, 404
+
     docs = ApplicationDocument.query.filter_by(application_id=application_id).all()
     return jsonify([d.to_dict() for d in docs])
 
@@ -134,7 +142,8 @@ def get_document(doc_id):
 
     doc = ApplicationDocument.query.filter_by(id=doc_id).first()
 
-    if doc is None:
+    app_obj = Application.query.get(doc.application_id) if doc else None
+    if doc is None or not app_obj or not can_access_application(app_obj):
         return {"error": "document not found"}, 404
 
     return jsonify(doc.to_dict())
@@ -147,22 +156,9 @@ def download_document(doc_id):
 
     doc = ApplicationDocument.query.get_or_404(doc_id)
     
-    # ---------------------------
-    # SECURITY PATCH: IDOR Protection
-    # ---------------------------
-    applicant_id = get_jwt_identity()
-    role = get_jwt().get("role")
-    
-    if role not in ["admin"]:
-        app_obj = Application.query.get(doc.application_id)
-        if app_obj:
-            if role in ["hr", "finance"]:
-                current_user = Applicant.query.get(applicant_id)
-                if not current_user or app_obj.company != current_user.applicant_type:
-                    return {"error": "Unauthorized access to document"}, 403
-            elif role == "applicant":
-                if app_obj.applicant_id != applicant_id:
-                    return {"error": "Unauthorized access to document"}, 403
+    app_obj = Application.query.get(doc.application_id)
+    if not app_obj or not can_access_application(app_obj):
+        return {"error": "Unauthorized access to document"}, 403
 
     return send_file(doc.filepath, as_attachment=True)
 
@@ -171,6 +167,10 @@ def download_document(doc_id):
 def delete_document(doc_id):
 
     doc = ApplicationDocument.query.get_or_404(doc_id)
+
+    app_obj = Application.query.get(doc.application_id)
+    if get_jwt().get("role") not in ("admin", "super_admin") and (not app_obj or app_obj.applicant_id != get_jwt_identity()):
+        return {"error": "Unauthorized"}, 403
 
     if os.path.exists(doc.filepath):
         os.remove(doc.filepath)
