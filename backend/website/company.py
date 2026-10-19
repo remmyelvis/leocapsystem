@@ -6,7 +6,7 @@ from datetime import datetime
 
 from website import db
 from website.models import Company, Application, ApplicationAudit, User, Applicant
-from website.role_decorator import role_required
+from website.role_decorator import role_required, optional_claims
 
 company_bp = Blueprint('company', __name__, url_prefix='/api')
 
@@ -74,7 +74,9 @@ def seed_default_companies():
 @company_bp.route('/companies', methods=['GET'])
 def get_companies():
     """List companies for application onboarding and admin oversight."""
-    show_all = request.args.get('all', 'false').lower() == 'true'
+    # Anonymous callers (the sign-up page) only get active companies' id/name/code; bank and fee details are for signed-in users.
+    signed_in = bool(optional_claims())
+    show_all = signed_in and request.args.get('all', 'false').lower() == 'true'
     
     if show_all:
         companies = Company.query.order_by(Company.created_at.desc()).all()
@@ -84,11 +86,15 @@ def get_companies():
     return jsonify({
         "success": True,
         "count": len(companies),
-        "companies": [comp.to_dict() for comp in companies]
+        "companies": [
+            comp.to_dict() if signed_in else {"id": comp.id, "name": comp.name, "code": comp.code}
+            for comp in companies
+        ]
     }), 200
 
 
 @company_bp.route('/companies/<identifier>', methods=['GET'])
+@jwt_required()
 def get_company(identifier):
     """Retrieve single company details by ID or code slug."""
     company = Company.query.filter(

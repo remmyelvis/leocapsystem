@@ -2,14 +2,14 @@ import string
 
 from flask import Blueprint, request, jsonify, current_app, send_file, Response
 
-from website.models import Applicant, Application, ApplicantDocument
+from website.models import Applicant, Application, ApplicantDocument, Company
 from website import db, Config
 
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt, set_access_cookies
 
-from website.role_decorator import role_required
+from website.role_decorator import role_required, optional_claims
 from website.system_email_utils import send_email_smtp
 from dotenv import load_dotenv
 load_dotenv()
@@ -34,15 +34,25 @@ def register():
     if Applicant.query.filter_by(email=data['email']).first():
         return jsonify({'message': 'Applicant already exist'}), 409
 
+    # The company must be one of the active companies offered on the sign-up page
+    company_code = str(data.get('applicant_type') or '').strip().lower()
+    if not Company.query.filter_by(code=company_code, status='active').first():
+        return jsonify({'message': 'Please select a valid company'}), 400
+
     hashed_password = generate_password_hash(data['password'])
+
+    # Self-registration always creates a plain applicant; only a signed-in admin (manage-staff page) can create HR/finance staff
+    role = 'applicant'
+    if optional_claims().get('role') in ('admin', 'super_admin') and data.get('role') in ('hr', 'finance'):
+        role = data['role']
 
     new_applicant = Applicant(
         name=data.get('name'),
         phone_number=data.get('phone_number'),
         email=data.get('email'),
         password=hashed_password,
-        applicant_type=data.get('applicant_type'),
-        role=data.get('role')
+        applicant_type=company_code,
+        role=role
     )
 
     db.session.add(new_applicant)

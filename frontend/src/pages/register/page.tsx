@@ -62,14 +62,14 @@ export default function RegisterPage() {
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const res = await apiCall<any>("/api/companies?all=true");
-        // Always append Personal at the end
-        const fetched = res.data.companies || [];
-        setCompanies([...fetched, { code: "personal", name: "Personal" }]);
+        // Active companies only; "personal" is one of them
+        const res = await apiCall<any>("/api/companies", { requiresAuth: false });
+        const fetched = res.data?.companies || [];
+        setCompanies(fetched.length ? fetched : [{ code: "personal", name: "Personal / Individual" }]);
       } catch (e) {
         console.error("Failed to fetch companies:", e);
         // Fallback
-        setCompanies([{ code: "personal", name: "Personal" }]);
+        setCompanies([{ code: "personal", name: "Personal / Individual" }]);
       } finally {
         setLoadingCompanies(false);
       }
@@ -86,6 +86,7 @@ export default function RegisterPage() {
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+    defaultValues: { applicant_type: "" },
   });
 
   const selectedType = watch("applicant_type");
