@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import App from './App';
 import './pages/globals.css'; 
 import { AuthProvider } from './contexts/AuthContext';
@@ -16,6 +17,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <MetricsProvider>
           <BrowserRouter>
             <App />
+            <Toaster richColors position="top-right" closeButton />
           </BrowserRouter>
         </MetricsProvider>
       </AuthProvider>

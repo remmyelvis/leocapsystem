@@ -196,6 +196,23 @@ export default function ApplicantDetailsPage() {
   const [selectedFiles, setSelectedFiles] = useState<Record<string, File>>({});
   const [uploadingDocs, setUploadingDocs] = useState(false);
 
+  const [limitInput, setLimitInput] = useState("");
+  const [savingLimit, setSavingLimit] = useState(false);
+
+  const handleSaveLimit = async () => {
+    setSavingLimit(true);
+    const response = await apiCall(`/api/auth/applicant/loan-limit/${params.id}`, {
+      method: "PATCH",
+      body: { loan_limit: limitInput.trim() },
+    });
+    setSavingLimit(false);
+    if (response.error) {
+      toast.error(response.error);
+      return;
+    }
+    toast.success(limitInput.trim() && limitInput.trim() !== "0" ? "Loan limit saved" : "Loan limit removed");
+  };
+
   const [statementEntries, setStatementEntries] = useState<any[] | null>(null);
   const [loadingStatement, setLoadingStatement] = useState(false);
   const [downloadingStatement, setDownloadingStatement] = useState(false);
@@ -404,6 +421,7 @@ export default function ApplicantDetailsPage() {
         toast.error(response.error);
       } else if (response.data) {
         setData(response.data);
+        setLimitInput(response.data.applicant.loan_limit ? String(response.data.applicant.loan_limit) : "");
       }
     } catch {
       setError("Failed to load applicant details.");
@@ -630,11 +648,30 @@ export default function ApplicantDetailsPage() {
                 })}
               </span>
             } />
+            <div className="flex flex-col py-3">
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                Loan Limit (KES)
+              </span>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={limitInput}
+                  onChange={(e) => setLimitInput(e.target.value)}
+                  placeholder="No limit"
+                  className="flex-1 min-w-0 px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue"
+                />
+                <Button type="button" size="sm" onClick={handleSaveLimit} disabled={savingLimit} className="rounded-xl">
+                  {savingLimit ? "Saving…" : "Save"}
+                </Button>
+              </div>
+              <span className="text-xs text-slate-400 mt-1">The most this person can apply for. Leave empty for no limit.</span>
+            </div>
           </div>
         </div>
       </div>
 
-      
+
       {/* Applications / Loans List */}
       <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6 space-y-4">
         <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2 mb-4">
