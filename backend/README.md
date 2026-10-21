@@ -415,6 +415,21 @@ Authenticated user
 ```
 
 
+#### Endpoint: get_hr_all / get_finance_all
+
+```http
+  GET /applications/get-hr-all
+  GET /applications/get-finance-all
+```
+
+Loans applied for by HR staff (`get-hr-all`) or by finance staff (`get-finance-all`), newest first, in the same shape as `get-all` (`application` + `bio_data`). Staff of that role only get their own loans (HR on `get-hr-all`, finance on `get-finance-all`); the other role (finance on `get-hr-all`, HR on `get-finance-all`) gets all of them for their own company, and an admin gets every company's. `bio_data` carries the name as both `name` and `full_name`.
+
+#### Permissions
+```http
+admin, hr, finance
+```
+
+
 #### Endpoint: get_one
 
 ```http

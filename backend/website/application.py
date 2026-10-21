@@ -1326,6 +1326,29 @@ def _amount_paid_by_app(app_ids):
     return {app_id: float(total or 0) for app_id, total in rows}
 
 
+def _applications_with_bio_data(apps):
+    """Loans as the list pages show them: the loan plus the applicant's details."""
+    paid = _amount_paid_by_app([a.id for a in apps])
+    result = []
+    for app in apps:
+        applicant = Applicant.query.get(app.applicant_id)
+        if applicant:
+            result.append({
+                "application": {**app.to_dict(), "amount_paid": paid.get(app.id, 0.0)},
+                "bio_data": applicant.to_dict()
+            })
+    return result
+
+
+def _staff_applications(staff_role):
+    """Loans of staff with this role ("hr" or "finance"), newest first. The staff themselves only get their own.
+    HR and finance only ever get their own company's loans (the tenant filter in models.py)."""
+    query = Application.query.join(Applicant, Applicant.id == Application.applicant_id).filter(Applicant.role == staff_role)
+    if get_jwt().get("role") == staff_role:
+        query = query.filter(Application.applicant_id == get_jwt_identity())
+    return query.order_by(Application.created_at.desc()).all()
+
+
 @application.route('/applications/get-all', methods=['GET'])
 @jwt_required()
 def get_all_applications():
@@ -1338,16 +1361,23 @@ def get_all_applications():
     else:
         apps = Application.query.all()
     # In models.py we have a do_orm_execute hook, so Application.query.all() will ONLY return the tenant's apps!
-    paid = _amount_paid_by_app([a.id for a in apps])
-    result = []
-    for app in apps:
-        applicant = Applicant.query.get(app.applicant_id)
-        if applicant:
-            result.append({
-                "application": {**app.to_dict(), "amount_paid": paid.get(app.id, 0.0)},
-                "bio_data": applicant.to_dict()
-            })
-    return jsonify(result), 200
+    return jsonify(_applications_with_bio_data(apps)), 200
+
+
+@application.route('/applications/get-hr-all', methods=['GET'])
+@jwt_required()
+@role_required("admin", "super_admin", "hr", "finance")
+def get_hr_applications():
+    """Loans applied for by HR staff: an HR user sees their own, finance (and admins) see all of them."""
+    return jsonify(_applications_with_bio_data(_staff_applications("hr"))), 200
+
+
+@application.route('/applications/get-finance-all', methods=['GET'])
+@jwt_required()
+@role_required("admin", "super_admin", "hr", "finance")
+def get_finance_applications():
+    """Loans applied for by finance staff: a finance user sees their own, HR (and admins) see all of them."""
+    return jsonify(_applications_with_bio_data(_staff_applications("finance"))), 200
 
 @application.route('/applications/get-one/<string:application_id>', methods=['GET'])
 @jwt_required()

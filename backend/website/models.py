@@ -395,6 +395,7 @@ class Applicant(db.Model):
             'id': self.id,
             'kra_pin': self.kra_pin,
             'name': self.name,
+            'full_name': self.name,  # the HR/finance pages read bio_data.full_name
             'id_number': self.id_number,
             'phone_number': self.phone_number,
             'email': self.email,
