@@ -361,42 +361,89 @@ def mark_as_paid(application_id):
     }), 200
 
 
-def _mark_salary_advances_paid(company_code):
-    """Mark every disbursed salary advance of one company as paid and tell the borrowers whose loan this just cleared."""
-    apps = (
+def _balance_due(app):
+    """What is still owed on a loan: the tracked balance, or the repayment amount on older loans without one."""
+    outstanding = Decimal(str(app.outstanding_balance)) if app.outstanding_balance else Decimal(0)
+    return outstanding if outstanding > 0 else Decimal(str(app.repayment_amount))
+
+
+def clear_company_month(company_code, company_name, month, dry_run=False):
+    """Mark one company's unpaid, disbursed loans of one repayment month as paid: the loans on that month's repayment
+    report. Each loan is cleared the way the single Mark as Paid does it (ledger credit for what was owed, balance 0,
+    audit entry) and its borrower is emailed. With dry_run nothing is changed: it only says what would be.
+    Returns (response, status code)."""
+    month = (month or datetime.now().strftime("%B")).strip().capitalize()
+    if month not in calendar.month_name:
+        return jsonify({"message": "Please choose a month."}), 400
+
+    loans = (
         Application.query
         .filter(
-            Application.loan_type == "salary_advance",
-            Application.loan_status == "disbursed",
             Application.company == company_code,
-            Application.repayment_status != "paid"
+            Application.repayment_status == "unpaid",
+            Application.loan_status == "disbursed",
+            Application.month == month
         )
         .all()
     )
-    for app in apps:
-        app.repayment_status = "paid"
+    if not loans:
+        return jsonify({"message": f"No unpaid disbursed applications found for {company_name} in {month}."}), 404
+
+    total = sum((_balance_due(app) for app in loans), Decimal(0))
+    summary = {"company": company_name, "month": month, "count": len(loans), "total": float(total)}
+    if dry_run:
+        return jsonify({**summary, "dry_run": True, "message": f"{len(loans)} loans would be marked as paid."}), 200
+
+    admin_id = get_jwt_identity()
+    user = User.query.get(admin_id) or Applicant.query.get(admin_id)
+    email = user.email if user else "unknown"
+    role = get_jwt().get("role")
+    for app in loans:
+        db.session.add(StatementEntry(
+            applicant_id=app.applicant_id,
+            application_id=app.id,
+            memo="Loan paid",
+            debit=Decimal(0),
+            credit=_balance_due(app),
+            balance=Decimal(0)
+        ))
+        app.outstanding_balance = "0"
+        update_repayment_status(
+            app, "paid", email, role, "Leocap Invest",
+            notes=f"Marked as paid with the {company_name} {month} repayment", commit=False
+        )
 
     db.session.commit()
 
-    notify_loans_repaid(apps)
+    notify_loans_repaid(loans)
 
-    return jsonify({
-        'message': 'Applications marked as paid successfully'
-    }), 200
+    return jsonify({**summary, "dry_run": False, "success": True,
+                    "message": f"Successfully marked {len(loans)} {company_name} loans as paid for {month}."}), 200
+
+
+def _company_paid_request(company_code):
+    """The Mark Nakama Paid / Mark Ideon Paid buttons: ?month=October (default this month) and ?dry_run=1 to preview."""
+    company = Company.query.filter_by(code=company_code).first()
+    return clear_company_month(
+        company_code,
+        company.name if company else company_code,
+        request.args.get("month"),
+        dry_run=request.args.get("dry_run") in ("1", "true")
+    )
 
 
 @application.route('/applications/nakama/paid', methods=['PATCH'])
 @jwt_required()
 @role_required("admin")
 def mark_nakama_as_paid():
-    return _mark_salary_advances_paid("nakama")
+    return _company_paid_request("nakama")
 
 
 @application.route('/applications/ideon/paid', methods=['PATCH'])
 @jwt_required()
 @role_required("admin")
 def mark_ideon_as_paid():
-    return _mark_salary_advances_paid("ideon")
+    return _company_paid_request("ideon")
 
 @application.route('/applications/bulk/paid', methods=['PATCH'])
 @jwt_required()

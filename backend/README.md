@@ -592,6 +592,26 @@ admin
 | Parameter | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
 | `application_id`      | `string` | **Required**. Id of application to mark as paid |
+
+#### Endpoint: mark a company's month as paid
+
+```http
+    PATCH /applications/nakama/paid?month=October
+    PATCH /applications/ideon/paid?month=October
+    PATCH /companies/<code or id>/paid?month=October
+```
+
+#### Permissions
+```http
+admin (nakama, ideon), admin / super_admin / finance (companies)
+```
+
+| Query | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `month`      | `string` | **Optional** Month name, default = this month; anything else is 400 |
+| `dry_run`      | `string` | **Optional** `1` only reports `count` and `total` (what is still owed) and changes nothing |
+
+Marks the unpaid, disbursed loans of that company and repayment month as paid: exactly the loans on that month's repayment report. Part-paid, delinquent, not-yet-disbursed and other-month loans are left alone. Each loan is cleared like a single mark-as-paid (ledger credit for what was owed, balance 0, audit entry naming the company and month) and its borrower is emailed. 404 with the reason when nothing is due.
                          
 #### Endpoint: escalate
 

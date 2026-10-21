@@ -7,7 +7,6 @@ from datetime import datetime
 from website import db
 from website.models import Company, Application, ApplicationAudit, User, Applicant
 from website.role_decorator import role_required, optional_claims
-from website.notifications import notify_loans_repaid
 
 company_bp = Blueprint('company', __name__, url_prefix='/api')
 
@@ -286,68 +285,17 @@ def delete_company(identifier):
 @jwt_required()
 @role_required("admin", "super_admin", "finance")
 def mark_company_loans_as_paid(identifier):
-    """Batch-mark all active disbursed loans for any company as paid."""
+    """Mark a month's unpaid, disbursed loans of any company as paid (?month=, default this month; ?dry_run=1 previews)."""
+    from website.application import clear_company_month
     company = Company.query.filter(
         (Company.id == identifier) | (Company.code == identifier.lower())
     ).first()
-
-    comp_code = company.code if company else identifier.lower()
-    comp_name = company.name if company else identifier
-
-    claims = get_jwt()
-    changed_by_email = claims.get('email', 'admin@leocapinvest.co.ke')
-    changed_by_role = claims.get('role', 'admin')
-
-    month = request.args.get('month', datetime.now().strftime("%B"))
-
-    applications = Application.query.filter(
-        Application.company == comp_code,
-        Application.repayment_status == "unpaid",
-        Application.loan_status == "disbursed",
-        Application.month == month
-    ).all()
-
-    if not applications:
-        return jsonify({
-            "message": f"No unpaid disbursed applications found for {comp_name} in {month}."
-        }), 404
-
-    updated_count = 0
-    for app in applications:
-        old_status = app.repayment_status
-        app.repayment_status = "paid"
-        updated_count += 1
-
-        audit = ApplicationAudit(
-            id=str(uuid4()),
-            application_id=app.id,
-            field_name="repayment_status",
-            old_status=old_status,
-            new_status="paid",
-            application_old_loan_amount=float(app.amount_applied or 0),
-            application_new_loan_amount=float(app.amount_applied or 0),
-            application_old_repayment_amount=float(app.repayment_amount or 0),
-            application_new_repayment_amount=float(app.repayment_amount or 0),
-            changed_by_email=changed_by_email,
-            changed_by_role=changed_by_role,
-            changed_by_company=comp_name,
-            notes=f"Batch payroll clearance for {comp_name} - {month}"
-        )
-        db.session.add(audit)
-
-    try:
-        db.session.commit()
-        notify_loans_repaid(applications)
-        return jsonify({
-            "success": True,
-            "message": f"Successfully marked {updated_count} {comp_name} loans as paid for {month}.",
-            "count": updated_count,
-            "company": comp_name,
-            "month": month
-        }), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"message": "Failed to update loan repayment status", "error": str(e)}), 500
+    return clear_company_month(
+        company.code if company else identifier.lower(),
+        company.name if company else identifier,
+        request.args.get("month"),
+        dry_run=request.args.get("dry_run") in ("1", "true")
+    )
 
 @company_bp.route('/company/<string:company_id>/mou', methods=['GET'])
 @jwt_required()
