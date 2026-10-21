@@ -374,6 +374,8 @@ Base url
 Applicant
 ```
 
+**Rate and amount rules.** `amount_applied` must be a number above 0 (and below 1,000,000,000), otherwise the answer is 400 "Please enter a valid loan amount."; if the applicant has a `loan_limit` above 0, a larger amount is refused with a 400 that names the limit. The `interest_rate` sent in the form is **not used**: every application starts at the applicant's company rate (`companies.interest_rate`, in percent, edited on the Companies page; 10% if it is missing or negative). If the form's value differs, or is missing or not a number, the application is still created at the company rate and an `interest_rate` entry ("sent X, used Y", by the applicant) is added to the application's audit trail and logged as a warning. The real terms are set afterwards by an admin ("Set loan terms").
+
 #### Form-data
 
 ```http

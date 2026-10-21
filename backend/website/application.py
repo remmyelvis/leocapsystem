@@ -1,5 +1,6 @@
+import logging
 import os
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from io import BytesIO
 import math
 
@@ -114,6 +115,16 @@ def advance_due_date():
 def personal_due_date():
     return datetime.now() + relativedelta(months=1)
 
+MAX_LOAN_AMOUNT = Decimal("1000000000")  # the amount columns hold at most 10 digits before the decimal point
+
+
+def _starting_rate(applicant):
+    """The interest rate a new application starts at, as a fraction: the company's standard rate (admins edit it on the
+    Companies page) or 10%. The value the browser sends is never used; the admin sets the real terms afterwards."""
+    company = Company.query.filter_by(code=applicant.applicant_type).first()
+    percent = company.interest_rate if company and company.interest_rate is not None and company.interest_rate >= 0 else 10
+    return Decimal(str(percent)) / 100
+
 @application.route('/applications', methods=['POST'])
 @jwt_required()
 @role_required("applicant", "hr", "finance")
@@ -148,14 +159,31 @@ def create_application():
             "message": "You have pending loan applications. You cannot apply for a new loan."
         }), 400
 
-    application_id = str(uuid4())
-    am = data.get("amount_applied")
+    try:
+        amount = Decimal(str(data.get("amount_applied")))
+    except InvalidOperation:
+        amount = None
+    if amount is None or not amount.is_finite() or amount <= 0 or amount >= MAX_LOAN_AMOUNT:
+        return jsonify({"message": "Please enter a valid loan amount."}), 400
 
-    amount = Decimal(am)
+    if applicant.loan_limit and amount > applicant.loan_limit:
+        return jsonify({
+            "message": f"Your loan limit is KES {applicant.loan_limit:,}. Please apply for that amount or less."
+        }), 400
+
+    application_id = str(uuid4())
     processing = round((amount * Decimal(0.03)), 2)
     access = 0
 
-    repayment = round((amount * (Decimal(data.get('interest_rate')) + 1)), 2)
+    rate = _starting_rate(applicant)
+    rate_text = format(rate.normalize(), "f")
+    requested_rate = data.get("interest_rate")
+    try:
+        rate_differs = Decimal(str(requested_rate)) != rate
+    except InvalidOperation:
+        rate_differs = True
+
+    repayment = round((amount * (rate + 1)), 2)
 
     new_application = Application(
         id=application_id,
@@ -172,11 +200,11 @@ def create_application():
         month_three=data.get('month_three'),
         loan_type=data.get('loan_type'),
         loan_purpose=data.get('loan_purpose'),
-        amount_applied=data.get('amount_applied'),
+        amount_applied=amount,
         processing_fees=str(processing),
         repayment_amount=str(repayment),
         outstanding_balance=str(repayment),
-        interest_rate=data.get('interest_rate'),
+        interest_rate=rate_text,
         applicant_id=applicant_id,
         applicant_role=role
     )
@@ -206,8 +234,27 @@ def create_application():
 
     db.session.add(new_application)
 
-    amount_applied = Decimal(str(data.get("amount_applied")))
-    interest_rate = Decimal(str(data.get("interest_rate")))
+    if rate_differs:
+        # Keep what the request carried: the form always sends the standard rate, so anything else means a modified
+        # request or an out-of-date page. The standard rate was used either way.
+        db.session.add(ApplicationAudit(
+            application_id=application_id,
+            application_old_loan_amount=float(amount),
+            application_new_loan_amount=float(amount),
+            application_old_repayment_amount=float(repayment),
+            application_new_repayment_amount=float(repayment),
+            field_name="interest_rate",
+            old_status=str(requested_rate)[:255],
+            new_status=rate_text,
+            changed_by_email=applicant.email,
+            changed_by_role=role,
+            changed_by_company=applicant.applicant_type or "Applicant",
+            notes="The application request carried a different interest rate than the company's standard rate; the standard rate was used."
+        ))
+        logging.warning("Application %s: request carried interest_rate=%r, used %s", application_id, requested_rate, rate_text)
+
+    amount_applied = amount
+    interest_rate = rate
     interest_amount = amount_applied * interest_rate  # confirm rate is a fraction, not a whole-number percent
 
     statement_entry_one = StatementEntry(
