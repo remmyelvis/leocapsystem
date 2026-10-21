@@ -18,6 +18,7 @@ from website.models import Application, Applicant, ApplicationDocument, HrEmail,
 from website import db, Config
 from website.role_decorator import role_required
 from website.upload_paths import upload_path
+from website.notifications import notify_hr_of_application
 from flask import Response
 from sqlalchemy.orm.attributes import get_history
 from dateutil.relativedelta import relativedelta
@@ -262,6 +263,8 @@ def create_application():
 
     db.session.commit()
 
+    notify_hr_of_application(new_application, applicant)
+
     return jsonify({
         'message': 'Application created successfully',
         'application': new_application.to_dict()
@@ -406,12 +409,12 @@ def mark_bulk_as_paid():
         )
         db.session.add(audit)
         try:
-            from website.system_email_utils import send_email_smtp
+            from website.system_email_utils import send_email_background
             applicant_obj = Applicant.query.get(app.applicant_id)
             if applicant_obj:
                 subject = "Loan Fully Repaid - Congratulations"
                 body = f"Dear {applicant_obj.name},<br/><br/>Your loan (ID: {app.id}) has been fully repaid. Thank you for using Leocap."
-                send_email_smtp(applicant_obj.email, subject, body)
+                send_email_background(applicant_obj.email, subject, body, html=True)
         except Exception as e:
             pass
             

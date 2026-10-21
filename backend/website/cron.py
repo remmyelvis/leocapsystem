@@ -86,9 +86,10 @@ def run_reminders():
             
         if subject and body:
             try:
-                send_email_smtp(applicant.email, subject, body)
-                count_sent += 1
-            except:
+                ok, _ = send_email_smtp(applicant.email, subject, body, html=True)
+                if ok:
+                    count_sent += 1
+            except Exception:
                 pass
                 
     db.session.commit()

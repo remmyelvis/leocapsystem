@@ -5,11 +5,12 @@ from email.mime.base import MIMEBase
 from email import encoders
 import os
 import logging
+import threading
 
 from dotenv import load_dotenv
 
 
-def send_email_smtp(recipient, subject, body, isHrEmail, attachments = None):
+def send_email_smtp(recipient, subject, body, isHrEmail=False, attachments=None, html=False):
     load_dotenv()
     sender_address = os.getenv("SENDER_ADDRESS")
     sender_password = os.getenv("SENDER_PASSWORD")
@@ -19,7 +20,7 @@ def send_email_smtp(recipient, subject, body, isHrEmail, attachments = None):
     msg['From'] = sender_address
     msg['To'] = recipient
 
-    msg.attach(MIMEText(body, 'plain'))
+    msg.attach(MIMEText(body, 'html' if html else 'plain'))
 
     if attachments:
         for file_path in attachments:
@@ -60,3 +61,16 @@ def send_email_smtp(recipient, subject, body, isHrEmail, attachments = None):
     except Exception as e:
         logging.error(f"Failed to send email from {sender_address}: {e}", exc_info=True)
         return False, str(e)
+
+
+def send_email_background(recipient, subject, body, html=False):
+    """Send an email without making the caller wait for the mail server. A failure is logged, never raised."""
+    def _send():
+        try:
+            ok, error = send_email_smtp(recipient, subject, body, html=html)
+            if not ok:
+                logging.error("Email to %s failed: %s", recipient, error)
+        except Exception:
+            logging.exception("Email to %s failed", recipient)
+
+    threading.Thread(target=_send, daemon=True).start()

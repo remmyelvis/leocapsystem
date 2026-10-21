@@ -186,7 +186,7 @@ def delete_applicant_document(doc_id):
 @jwt_required()
 @role_required("admin", "hr", "finance", "super_admin")
 def verify_document(doc_id):
-    from website.system_email_utils import send_email_smtp
+    from website.system_email_utils import send_email_background
     import os
     data = request.get_json()
     status = data.get('status')
@@ -215,7 +215,7 @@ def verify_document(doc_id):
         <p>Regards,<br>LeoCap Team</p>
         """
         try:
-            send_email_smtp(applicant.email, "Document Rejected - Action Required", html_content)
+            send_email_background(applicant.email, "Document Rejected - Action Required", html_content, html=True)
         except Exception as e:
             print("Email failed", e)
             

@@ -38,38 +38,3 @@ def send_email(email_id):
         "message": "Email sent",
         "email_id": email.id
     }), 202
-
-@send_email_bp.route('/send-hr-email/<string:application_id>', methods=['POST'])
-@jwt_required()
-def send_hr_email(application_id):
-
-    data = request.get_json()
-
-    hr_user = User.query.filter_by(role = "hr").first()
-
-    new_hr_email = HrEmail(
-        application_id = application_id,
-        recipient = hr_user.email_bp,
-        subject = data.get('subject'),
-        body = data.get('body')
-    )
-
-    success, error = send_email_smtp(
-        new_hr_email.recipient,
-        new_hr_email.subject,
-        new_hr_email.body,
-        isHrEmail=True
-    )
-
-    if success:
-        new_hr_email.status = "sent"
-    else:
-        new_hr_email.status = "failed"
-
-    db.session.add(new_hr_email)
-    db.session.commit()
-
-    return jsonify({
-        "message": "Email sent",
-        "email_id": new_hr_email.id
-    }), 202

@@ -61,11 +61,15 @@ def may_send(email):
         return True
 
 
+def frontend_url():
+    """Where the web app lives: a server setting, never taken from the request."""
+    return os.getenv("FRONTEND_URL", DEFAULT_FRONTEND_URL).rstrip("/")
+
+
 def send_reset_email(applicant):
     """Email the reset link in the background, so the answer to the request takes the same time whether or not an
     account exists. The link base is a server setting, never taken from the request."""
-    base = os.getenv("FRONTEND_URL", DEFAULT_FRONTEND_URL).rstrip("/")
-    link = f"{base}/reset-password?token={make_reset_token(applicant)}"
+    link = f"{frontend_url()}/reset-password?token={make_reset_token(applicant)}"
     body = (
         f"Hello {applicant.name},\n\n"
         "We received a request to reset the password of your Leocap Invest account.\n"
