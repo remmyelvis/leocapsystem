@@ -155,7 +155,7 @@ export default function HRApplicationsPage() {
       url,
       `repayment_${company}_export.pdf`
     );
-    if (error) toast.error("Failed to download PDF. Please try again.");
+    if (error) toast.error(error);
     setDownloadingPdf(false);
   };
 
@@ -169,7 +169,7 @@ export default function HRApplicationsPage() {
       url,
       `repayment_${company}_export.xlsx`
     );
-    if (error) toast.error("Failed to download Excel. Please try again.");
+    if (error) toast.error(error);
     setDownloadingExcel(false);
   };
 
@@ -183,6 +183,9 @@ export default function HRApplicationsPage() {
           </h1>
           <p className="text-slate-400 text-sm mt-1">
             Salary advance and finance applications from {companyLabel}
+          </p>
+          <p className="text-slate-400 text-xs mt-1">
+            Repayment downloads list the unpaid, disbursed loans for the month selected below (this month if none is selected).
           </p>
         </div>
 

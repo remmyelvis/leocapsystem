@@ -218,7 +218,15 @@ export async function downloadFile(
   } catch (err: any) {
     console.error("Download failed:", err);
     if (axios.isAxiosError(err) && err.response?.data) {
-      const data = err.response.data;
+      let data = err.response.data;
+      if (data instanceof Blob) {
+        // The request asks for a blob, so an error body arrives as a Blob too: read the server's message out of it
+        try {
+          data = JSON.parse(await data.text());
+        } catch {
+          data = null;
+        }
+      }
       if (data?.error) return { error: data.error };
       if (data?.message) return { error: data.message };
     }
