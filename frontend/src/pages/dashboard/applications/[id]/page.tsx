@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, FileText, CheckCircle, AlertCircle, Clock, Mail, Download, Paperclip, RefreshCw, UploadCloud, X } from "lucide-react";
 import { calculateGeneralLoan, calculateSalaryAdvanceFromAmount, formatKES } from "@/lib/loanCalculations";
 import type { LoanStatus, PaymentStatus } from "@/types/loan";
+import { paymentStatusFromRepayment } from "@/lib/paymentStatus";
 import { applicationApi } from "@/lib/applicationApi";
 import { downloadFile, apiCall } from "@/lib/apiClient";
 import { emailApi, type Email, type EmailDocument } from "@/lib/emailApi";
@@ -30,12 +31,14 @@ const STATUS_STYLES: Record<LoanStatus, string> = {
 const PAYMENT_STATUS_STYLES: Record<PaymentStatus, string> = {
   UNPAID: "bg-orange-100 text-orange-700",
   PARTIALLY_PAID: "bg-blue-100 text-blue-700",
+  DELINQUENT: "bg-red-100 text-red-700",
   FULLY_PAID: "bg-emerald-100 text-emerald-700",
 };
 
 const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   UNPAID: "Unpaid",
   PARTIALLY_PAID: "Partially Paid",
+  DELINQUENT: "Overdue",
   FULLY_PAID: "Fully Paid",
 };
 
@@ -139,12 +142,10 @@ function mapApiToApp(appData: Record<string, unknown>, bioData: Record<string, u
       ? Number(appData.repayment_amount)
       : undefined;
 
+  const apiOutstanding = appData.outstanding_balance ? Number(appData.outstanding_balance) : undefined;
+
   const loanStatusValue = typeof appData.loan_status === 'string' ? appData.loan_status : '';
-  const repaymentStatusValue = typeof appData.repayment_status === 'string' ? appData.repayment_status.toLowerCase() : '';
-  let paymentStatus: PaymentStatus | undefined = undefined;
-  if (repaymentStatusValue === "paid" || repaymentStatusValue === "fully_paid") paymentStatus = "FULLY_PAID";
-  else if (repaymentStatusValue === "partially_paid") paymentStatus = "PARTIALLY_PAID";
-  else if (repaymentStatusValue === "unpaid" || repaymentStatusValue === "defaulted") paymentStatus = "UNPAID";
+  const paymentStatus = paymentStatusFromRepayment(appData.repayment_status);
 
   const amountPaid = appData.amount_paid != null ? Number(appData.amount_paid) : undefined;
 
@@ -181,6 +182,7 @@ function mapApiToApp(appData: Record<string, unknown>, bioData: Record<string, u
     apiAccessFees,
     apiDisbursementAmount,
     apiTotalRepayment,
+    apiOutstanding,
     disbursementConfirmed: undefined as boolean | undefined,
     paymentStatus,
     amountPaid,
@@ -1012,9 +1014,11 @@ export default function ApplicationDetailPage() {
               displayAmountPaid = 0;
               displayAmountRemaining = totalRepayment;
             } else {
-              // PARTIALLY_PAID or other
+              // PARTIALLY_PAID, DELINQUENT or other. What is still owed is the outstanding balance (it includes any
+              // collection fee), or the repayment amount on older loans that never had one: their repayment amount
+              // was already lowered by each payment, so subtracting the amount paid again would count it twice.
               displayAmountPaid = actualPaid;
-              displayAmountRemaining = Math.max(0, totalRepayment - actualPaid);
+              displayAmountRemaining = (app.apiOutstanding ?? 0) > 0 ? app.apiOutstanding! : totalRepayment;
             }
 
             return (
@@ -1065,6 +1069,12 @@ export default function ApplicationDetailPage() {
           {app.paymentStatus === "PARTIALLY_PAID" && (
             <div className="mt-4 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-700">
               You have made partial payments. Please continue with the remaining balance.
+            </div>
+          )}
+          {app.paymentStatus === "DELINQUENT" && (
+            <div className="mt-4 bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-700">
+              Your loan is overdue and a collection fee has been added to the balance. Please pay the outstanding
+              balance as soon as possible or contact Leocap Invest.
             </div>
           )}
           {(app.paymentStatus === "UNPAID" || !app.paymentStatus) && (

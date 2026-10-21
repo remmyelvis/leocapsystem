@@ -963,7 +963,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
           {/* Repayment Actions for Disbursed Loans */}
           {isDisbursed && (
             <>
-              {(normalizedRepaymentStatus === "unpaid" || normalizedRepaymentStatus === "partially_paid") && (
+              {(normalizedRepaymentStatus === "unpaid" || normalizedRepaymentStatus === "partially_paid" || normalizedRepaymentStatus === "delinquent") && (
                 <Button
                   onClick={() => handleRepaymentAction("default")}
                   disabled={updating}

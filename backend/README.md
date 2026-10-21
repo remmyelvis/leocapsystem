@@ -36,7 +36,7 @@ The deploy never touches `.env`, `.htaccess`, the server's own `app.py`, uploade
 It is locked behind a secret: set `CRON_SECRET` in the server's `website/.env` (restart the app afterwards) and send it with the call, for example
 `curl -s -X POST -H "X-Cron-Secret: <secret>" https://api.leocapinvest.co.ke/api/cron/reminders` (or `?key=<secret>`). Without `CRON_SECRET` the endpoint answers 503, with a wrong one 401.
 
-A delinquent loan can still be paid down from the admin application page (partial payments keep it `delinquent`, so the job never charges the fee twice) or marked paid. Rollover interest ("Charge Interest") is not offered on a delinquent loan.
+A delinquent loan can still be paid down from the admin application page (partial payments keep it `delinquent`, so the job never charges the fee twice) marked paid, or moved on like any overdue loan (Mark as Default, then Escalate). Rollover interest ("Charge Interest") is not offered on a delinquent loan.
 
 ## API Documentation
 

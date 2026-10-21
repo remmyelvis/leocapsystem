@@ -20,6 +20,7 @@ import {
   Info,
 } from "lucide-react";
 import { ProfileIncompleteBanner } from "@/components/profile/ProfileCompletion";
+import { paymentStatusFromRepayment } from "@/lib/paymentStatus";
 
 // ---------------------------------------------------------------------------
 // Types for API response
@@ -74,12 +75,14 @@ const STATUS_STYLES: Record<string, string> = {
 const PAYMENT_STATUS_STYLES: Record<string, string> = {
   UNPAID: "bg-orange-100 text-orange-700",
   PARTIALLY_PAID: "bg-blue-100 text-blue-700",
+  DELINQUENT: "bg-red-100 text-red-700",
   FULLY_PAID: "bg-emerald-100 text-emerald-700",
 };
 
 const PAYMENT_STATUS_LABELS: Record<string, string> = {
   UNPAID: "Unpaid",
   PARTIALLY_PAID: "Partially Paid",
+  DELINQUENT: "Overdue",
   FULLY_PAID: "Fully Paid",
 };
 
@@ -184,7 +187,7 @@ export default function DashboardPage() {
             status: app.loan_status as string,
             submittedAt: (app.date_submitted ?? app.created_at) as string,
             disbursementConfirmed: app.disbursement_confirmed as boolean,
-            paymentStatus: app.payment_status as string,
+            paymentStatus: paymentStatusFromRepayment(app.repayment_status),
             interestRate: app.interest_rate ? parseFloat(app.interest_rate as string) : undefined,
             disbursementAmount: app.disbursement_amount ? parseFloat(app.disbursement_amount as string) : 0,
             repaymentAmount: app.repayment_amount ? parseFloat(app.repayment_amount as string) : 0,

@@ -427,7 +427,7 @@ return (
                       <td className="px-4 py-4 whitespace-nowrap capitalize">
                         <span className={`inline-flex text-xs font-bold px-2.5 py-1 rounded-full ${
                           app.repaymentStatus?.toLowerCase() === 'paid' ? 'bg-emerald-100 text-emerald-700' :
-                          app.repaymentStatus?.toLowerCase() === 'defaulted' ? 'bg-red-100 text-red-700' :
+                          (app.repaymentStatus?.toLowerCase() === 'defaulted' || app.repaymentStatus?.toLowerCase() === 'delinquent') ? 'bg-red-100 text-red-700' :
                           app.repaymentStatus?.toLowerCase() === 'partially_paid' ? 'bg-blue-100 text-blue-700' :
                           'bg-slate-100 text-gray-700'
                         }`}>

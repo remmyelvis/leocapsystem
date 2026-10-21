@@ -236,6 +236,7 @@ export default function AdminDashboardPage() {
               <option value="paid">Repaid</option>
               <option value="partially_paid">Partially Paid</option>
               <option value="unpaid">Unpaid</option>
+              <option value="delinquent">Delinquent</option>
               <option value="default">Defaulted</option>
             </select>
             <select value={companyFilter} onChange={e => setCompanyFilter(e.target.value)} className="text-xs bg-white border border-slate-200 rounded-lg px-3 py-1.5 font-bold text-slate-600 focus:ring-2 focus:ring-brand-blue/20 capitalize">

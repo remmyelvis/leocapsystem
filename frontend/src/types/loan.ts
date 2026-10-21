@@ -13,7 +13,7 @@ export type LoanStatus =
   | "DECLINED"       // Admin declined
   | "DISBURSED";     // Money sent
 
-export type PaymentStatus = "UNPAID" | "PARTIALLY_PAID" | "FULLY_PAID";
+export type PaymentStatus = "UNPAID" | "PARTIALLY_PAID" | "DELINQUENT" | "FULLY_PAID";
 
 export type NatureOfEmployment = "Agent" | "Management" | "Other";
 export type EmploymentType = "Self Employed" | "Employed";

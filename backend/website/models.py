@@ -117,6 +117,7 @@ class Application(db.Model):
             'collection_fee': self.collection_fee,
             'late_payment_fee': self.late_payment_fee,
             'repayment_status': self.repayment_status,
+            'outstanding_balance': self.outstanding_balance,
             'created_at':self.created_at,
             'due_date':self.due_date,
             'notes': self.notes,

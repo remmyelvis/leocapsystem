@@ -8,6 +8,7 @@ from flask import Blueprint, request, jsonify, current_app, send_file
 from werkzeug.utils import secure_filename
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from uuid import uuid4
+from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError
 
 from website.export_service import export_applicant, export_application, export_statement
@@ -1261,6 +1262,20 @@ def write_off_loan(application_id):
 
 
 
+def _amount_paid_by_app(app_ids):
+    """{application id: what the borrower has paid so far} = the credits on that loan's ledger rows.
+    A write-off is a credit in the ledger but not a payment, so it is left out."""
+    if not app_ids:
+        return {}
+    rows = (
+        db.session.query(StatementEntry.application_id, func.sum(StatementEntry.credit))
+        .filter(StatementEntry.application_id.in_(app_ids), StatementEntry.memo != "Loan written off")
+        .group_by(StatementEntry.application_id)
+        .all()
+    )
+    return {app_id: float(total or 0) for app_id, total in rows}
+
+
 @application.route('/applications/get-all', methods=['GET'])
 @jwt_required()
 def get_all_applications():
@@ -1273,12 +1288,13 @@ def get_all_applications():
     else:
         apps = Application.query.all()
     # In models.py we have a do_orm_execute hook, so Application.query.all() will ONLY return the tenant's apps!
+    paid = _amount_paid_by_app([a.id for a in apps])
     result = []
     for app in apps:
         applicant = Applicant.query.get(app.applicant_id)
         if applicant:
             result.append({
-                "application": app.to_dict(),
+                "application": {**app.to_dict(), "amount_paid": paid.get(app.id, 0.0)},
                 "bio_data": applicant.to_dict()
             })
     return jsonify(result), 200
@@ -1293,7 +1309,7 @@ def get_one_application(application_id):
         return jsonify({"error": "Application not found"}), 404
     applicant = Applicant.query.get(app.applicant_id)
     return jsonify({
-        "application": app.to_dict(),
+        "application": {**app.to_dict(), "amount_paid": _amount_paid_by_app([app.id]).get(app.id, 0.0)},
         "bio_data": applicant.to_dict() if applicant else {}
     }), 200
 
@@ -1433,7 +1449,7 @@ def mark_as_default(application_id):
         db.session.rollback()
         return jsonify({'error': 'Application not found'}), 404
         
-    allowed_statuses = ["unpaid", "partially_paid"]
+    allowed_statuses = ["unpaid", "partially_paid", "delinquent"]
     if app.repayment_status not in allowed_statuses:
         db.session.rollback()
         return jsonify({'error': 'Application cannot be marked as defaulted'}), 403

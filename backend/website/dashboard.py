@@ -87,7 +87,7 @@ def get_dashboard_kpis():
             if app_repay > app_applied:
                 interest_income += (app_repay - app_applied)
             
-        if app.loan_status == 'disbursed' and app.repayment_status == 'unpaid':
+        if app.loan_status == 'disbursed' and app.repayment_status in ('unpaid', 'partially_paid', 'delinquent'):
             total_outstanding += float(app.outstanding_balance) if app.outstanding_balance and float(app.outstanding_balance) > 0 else (float(app.repayment_amount) if app.repayment_amount else 0.0)
             if app.due_date and app.due_date < now:
                 overdue_count += 1
@@ -193,6 +193,7 @@ def get_dashboard_loans():
         'paid': ['paid'],
         'partially_paid': ['partially_paid'],
         'unpaid': ['unpaid'],
+        'delinquent': ['delinquent'],
         'default': ['defaulted', 'escalated'],
     }
 

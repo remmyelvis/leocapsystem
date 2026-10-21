@@ -57,7 +57,7 @@ const LOAN_STATUSES: Record<string, string> = {
   pending_processing: "Pending", approved: "Approved", disbursed: "Disbursed", rejected: "Rejected", written_off: "Written off",
 };
 const REPAYMENTS: Record<string, string> = {
-  unpaid: "Unpaid", partially_paid: "Partly paid", paid: "Paid", escalated: "Escalated", defaulted: "Defaulted",
+  unpaid: "Unpaid", partially_paid: "Partly paid", paid: "Paid", delinquent: "Delinquent", escalated: "Escalated", defaulted: "Defaulted",
 };
 
 export const loanTypeLabel = (v: string) => LOAN_TYPES[v] ?? titleCase(v);
@@ -412,6 +412,7 @@ export function FilterBar({
           <option value="all">Any repayment</option>
           <option value="unpaid">Unpaid</option>
           <option value="partially_paid">Partly paid</option>
+          <option value="delinquent">Delinquent</option>
           <option value="paid">Paid</option>
         </SelectField>
       </div>
@@ -485,6 +486,7 @@ function statusOf(row: LoanRow): { label: string; dot: string; text: string } {
     paid: { dot: "#10B981", text: "text-emerald-700" },
     partially_paid: { dot: "#F59E0B", text: "text-amber-700" },
     unpaid: { dot: "#64748B", text: "text-slate-700" },
+    delinquent: { dot: "#DC2626", text: "text-red-700" },
     escalated: { dot: "#E11D48", text: "text-rose-700" },
     defaulted: { dot: "#9F1239", text: "text-rose-800" },
   };
