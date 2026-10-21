@@ -22,6 +22,11 @@ import { apiCall } from "@/lib/apiClient";
 
 const KES = new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
 const DATE_RANGES = [
   { label: "All Time", value: "all" },
   { label: "Last 30 Days", value: "30" },
@@ -52,43 +57,35 @@ export default function AllApplicationsPage() {
     setCompanyFilter(urlCompany);
   }, [urlStatus, urlCompany]);
   const [marking, setMarking] = useState(false);
+  const [payMonth, setPayMonth] = useState(MONTH_NAMES[new Date().getMonth()]);
   const [selectedAppIds, setSelectedAppIds] = useState<string[]>([]);
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
-  const handleMarkNakamaPaid = async () => {
-    if (!confirm("Are you sure you want to mark all Nakama loans as paid?")) return;
+  // Mark one company's unpaid, disbursed loans of one repayment month as paid. A preview says how many loans and how
+  // much first, so nothing is cleared (and no borrower emailed) before the admin has seen it.
+  const handleMarkCompanyPaid = async (code: "nakama" | "ideon", label: string) => {
     setMarking(true);
     try {
-      const response = await apiCall("/api/applications/nakama/paid", { method: "PATCH" });
+      const path = `/api/applications/${code}/paid?month=${payMonth}`;
+      const preview = await apiCall<{ count: number; total: number }>(`${path}&dry_run=1`, { method: "PATCH" });
+      if (preview.error || !preview.data) {
+        toast.error(preview.error ?? `Could not check the ${label} loans`);
+        return;
+      }
+      const { count, total } = preview.data;
+      if (!confirm(`Mark ${count} ${label} loan${count !== 1 ? "s" : ""} for ${payMonth} (${KES.format(total)}) as paid?\n\nEach borrower will be emailed that their loan is fully repaid.`)) return;
+      const response = await apiCall(path, { method: "PATCH" });
       if (response.error) {
         toast.error(response.error);
       } else {
-        toast.success("All Nakama loans marked as paid");
+        toast.success(`${label} loans for ${payMonth} marked as paid`);
         refetch();
       }
     } catch (error) {
-      toast.error("Failed to mark Nakama loans as paid");
-    } finally {
-      setMarking(false);
-    }
-  };
-
-  const handleMarkIdeonPaid = async () => {
-    if (!confirm("Are you sure you want to mark all Ideon loans as paid?")) return;
-    setMarking(true);
-    try {
-      const response = await apiCall("/api/applications/ideon/paid", { method: "PATCH" });
-      if (response.error) {
-        toast.error(response.error);
-      } else {
-        toast.success("All Ideon loans marked as paid");
-        refetch();
-      }
-    } catch (error) {
-      toast.error("Failed to mark Ideon loans as paid");
+      toast.error(`Failed to mark ${label} loans as paid`);
     } finally {
       setMarking(false);
     }
@@ -218,8 +215,18 @@ return (
           )}
           {urlType === "salary_advance" && (
             <>
+              <select
+                value={payMonth}
+                onChange={(e) => setPayMonth(e.target.value)}
+                title="Repayment month the Mark Paid buttons clear"
+                className="px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white"
+              >
+                {MONTH_NAMES.map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
               <button
-                onClick={handleMarkNakamaPaid}
+                onClick={() => handleMarkCompanyPaid("nakama", "Nakama")}
                 disabled={marking}
                 className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors disabled:opacity-50"
               >
@@ -227,7 +234,7 @@ return (
                 Mark Nakama Paid
               </button>
               <button
-                onClick={handleMarkIdeonPaid}
+                onClick={() => handleMarkCompanyPaid("ideon", "Ideon")}
                 disabled={marking}
                 className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors disabled:opacity-50"
               >
