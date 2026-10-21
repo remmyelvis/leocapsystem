@@ -130,7 +130,7 @@ export default function FinancePendingApplicationDetailPage() {
     }
     setAmendLoading(true);
     try {
-      const res = await apiCall(`/api/applications/hr/amend/${params.id}`, {
+      const res = await apiCall(`/api/applications/finance/amend/${params.id}`, {
         method: "PATCH",
         body: { amount_applied: amendAmount.toString() },
       });
