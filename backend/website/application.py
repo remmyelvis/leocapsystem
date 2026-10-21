@@ -267,7 +267,7 @@ def create_application():
         'application': new_application.to_dict()
     }), 201
 
-@application.route('/applications/paid/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
+@application.route('/applications/paid/<string:application_id>', methods=['PATCH'])
 @jwt_required()
 @role_required("admin")
 def mark_as_paid(application_id):
@@ -309,7 +309,7 @@ def mark_as_paid(application_id):
     }), 200
 
 
-@application.route('/applications/nakama/paid', methods=['GET', 'POST', 'PATCH'])
+@application.route('/applications/nakama/paid', methods=['PATCH'])
 @jwt_required()
 @role_required("admin")
 def mark_nakama_as_paid():
@@ -333,7 +333,7 @@ def mark_nakama_as_paid():
     }), 200
 
 
-@application.route('/applications/ideon/paid', methods=['GET', 'POST', 'PATCH'])
+@application.route('/applications/ideon/paid', methods=['PATCH'])
 @jwt_required()
 @role_required("admin")
 def mark_ideon_as_paid():
@@ -356,7 +356,7 @@ def mark_ideon_as_paid():
         'message': 'Applications marked as paid successfully'
     }), 200
     
-@application.route('/applications/bulk/paid', methods=['GET', 'POST', 'PATCH'])
+@application.route('/applications/bulk/paid', methods=['PATCH'])
 @jwt_required()
 @role_required("admin")
 def mark_bulk_as_paid():
@@ -424,7 +424,7 @@ def mark_bulk_as_paid():
     }), 200
 
 
-@application.route('/applications/partially-paid/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
+@application.route('/applications/partially-paid/<string:application_id>', methods=['PATCH'])
 @jwt_required()
 @role_required("admin")
 def mark_as_partially_paid(application_id):
@@ -572,7 +572,7 @@ def mark_as_partially_paid(application_id):
     }), 200
 
 
-@application.route('/applications/charge-interest/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
+@application.route('/applications/charge-interest/<string:application_id>', methods=['PATCH'])
 @jwt_required()
 @role_required("admin")
 def charge_interest(application_id):
@@ -1335,7 +1335,7 @@ def sync_terms_to_ledger(app):
         interest_row.memo = f"Interest charged ({float(rate) * 100}%)"
 
 
-@application.route('/applications/amend/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
+@application.route('/applications/amend/<string:application_id>', methods=['PATCH'])
 @jwt_required()
 @role_required("admin", "hr", "finance", "super_admin")  # amend can overwrite any column, so staff only
 def amend_application(application_id):
@@ -1436,7 +1436,7 @@ def decline_rate(application_id):
     return jsonify({"message": "Rate declined", "application": app.to_dict()}), 200
 
 
-@application.route('/applications/default/<string:application_id>', methods=['GET', 'POST', 'PATCH'])
+@application.route('/applications/default/<string:application_id>', methods=['PATCH'])
 @jwt_required()
 @role_required("admin")
 def mark_as_default(application_id):

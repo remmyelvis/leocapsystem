@@ -29,6 +29,10 @@ Pushing to `main` deploys automatically over FTPS: changes under `backend/` run 
 
 The deploy never touches `.env`, `.htaccess`, the server's own `app.py`, uploaded documents or databases. It does **not** change the database or install Python packages: a model change needs the SQL in `../db/` applied first, and a new dependency needs installing through cPanel's Setup Python App. See `../db/README.md`.
 
+## Login cookie and `SECRET_KEY`
+
+Logins are a cookie signed with `SECRET_KEY` (set it in `website/.env`; use a long random value: if it is missing the code falls back to a public default, so never deploy without it). The cookie is `Secure`, `HttpOnly` and `SameSite=Lax`, so the frontend and the API must be on the same site (`app.leocapinvest.co.ke` + `api.leocapinvest.co.ke`, or `localhost` + `localhost` in development). A frontend on a different domain, or a local frontend pointed at the live API, will not be logged in: that would need `SameSite=None` plus CSRF tokens in `website/config.py`. Routes that change data accept only PATCH (or POST/DELETE), never GET.
+
 ## Daily reminder job (cron)
 
 `POST /api/cron/reminders` is meant to be called **once a day** (cPanel > Cron Jobs). For every disbursed loan that is unpaid or part-paid it emails the borrower 7 days before the due date, 3 days before, on the due date and 7 days after, and on day 8 after the due date it marks the loan `delinquent`, adds a 15% collection fee to the outstanding balance and writes a "Delinquency Collection Fee" ledger row. Each reminder fires on its exact day, so a day the job does not run is a reminder that is never sent.

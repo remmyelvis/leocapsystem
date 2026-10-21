@@ -12,11 +12,14 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=2)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
     JWT_TOKEN_LOCATION = ["cookies", "headers"]
-    JWT_COOKIE_SECURE = False
     JWT_ACCESS_COOKIE_PATH = "/"
+    JWT_COOKIE_SECURE = True
+    # The app (app.leocapinvest.co.ke) and the API (api.leocapinvest.co.ke) are the same site, so Lax is enough and other
+    # websites cannot make a logged-in user's browser send authenticated requests. Routes that change data are not GET,
+    # since Lax still sends the cookie on a top-level GET. (Cross-site use, such as a frontend on another domain talking
+    # to this API, would need "None" again plus CSRF tokens.)
+    JWT_COOKIE_SAMESITE = "Lax"
     JWT_COOKIE_CSRF_PROTECT = False
-    JWT_COOKIE_SECURE = True          # MUST be True for cross-origin cookies
-    JWT_COOKIE_SAMESITE = "None"      # MUST be added to allow cross-origin
 
     db_url = os.environ.get('DATABASE_URL', '')
     SQLALCHEMY_DATABASE_URI = db_url
