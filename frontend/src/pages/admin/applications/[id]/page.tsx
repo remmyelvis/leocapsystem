@@ -40,6 +40,7 @@ const KES = new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES",
 const PAYMENT_STATUS_MAP: Record<string, { label: string; style: string }> = {
   "unpaid": { label: "Unpaid", style: "bg-orange-100 text-orange-700" },
   "partially_paid": { label: "Partially Paid", style: "bg-blue-100 text-blue-700" },
+  "delinquent": { label: "Delinquent", style: "bg-red-100 text-red-700" },
   "fully_paid": { label: "Fully Paid", style: "bg-emerald-100 text-emerald-700" },
 };
 
@@ -973,7 +974,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                 </Button>
               )}
               
-              {(normalizedRepaymentStatus === "unpaid" || normalizedRepaymentStatus === "partially_paid" || normalizedRepaymentStatus === "defaulted" || normalizedRepaymentStatus === "escalated") && (
+              {(normalizedRepaymentStatus === "unpaid" || normalizedRepaymentStatus === "partially_paid" || normalizedRepaymentStatus === "delinquent" || normalizedRepaymentStatus === "defaulted" || normalizedRepaymentStatus === "escalated") && (
                 <>
                   <Button
                     onClick={() => {
@@ -986,17 +987,20 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                     <CheckCircle2 className="mr-1.5 h-4 w-4" />
                     Mark as Partially Paid
                   </Button>
-                  <Button
-                    onClick={() => {
-                      setShowChargeInterest(!showChargeInterest);
-                      setShowPartialPayment(false);
-                    }}
-                    disabled={updating}
-                    className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold"
-                  >
-                    <Percent className="mr-1.5 h-4 w-4" />
-                    Charge Interest
-                  </Button>
+                  {/* Rollover interest is not offered on a delinquent loan: its 15% collection fee was already added */}
+                  {normalizedRepaymentStatus !== "delinquent" && (
+                    <Button
+                      onClick={() => {
+                        setShowChargeInterest(!showChargeInterest);
+                        setShowPartialPayment(false);
+                      }}
+                      disabled={updating}
+                      className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold"
+                    >
+                      <Percent className="mr-1.5 h-4 w-4" />
+                      Charge Interest
+                    </Button>
+                  )}
                   <Button
                     onClick={() => handleRepaymentAction("paid")}
                     disabled={updating}

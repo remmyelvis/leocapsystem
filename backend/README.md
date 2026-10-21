@@ -29,6 +29,15 @@ Pushing to `main` deploys automatically over FTPS: changes under `backend/` run 
 
 The deploy never touches `.env`, `.htaccess`, the server's own `app.py`, uploaded documents or databases. It does **not** change the database or install Python packages: a model change needs the SQL in `../db/` applied first, and a new dependency needs installing through cPanel's Setup Python App. See `../db/README.md`.
 
+## Daily reminder job (cron)
+
+`POST /api/cron/reminders` is meant to be called **once a day** (cPanel > Cron Jobs). For every disbursed loan that is unpaid or part-paid it emails the borrower 7 days before the due date, 3 days before, on the due date and 7 days after, and on day 8 after the due date it marks the loan `delinquent`, adds a 15% collection fee to the outstanding balance and writes a "Delinquency Collection Fee" ledger row. Each reminder fires on its exact day, so a day the job does not run is a reminder that is never sent.
+
+It is locked behind a secret: set `CRON_SECRET` in the server's `website/.env` (restart the app afterwards) and send it with the call, for example
+`curl -s -X POST -H "X-Cron-Secret: <secret>" https://api.leocapinvest.co.ke/api/cron/reminders` (or `?key=<secret>`). Without `CRON_SECRET` the endpoint answers 503, with a wrong one 401.
+
+A delinquent loan can still be paid down from the admin application page (partial payments keep it `delinquent`, so the job never charges the fee twice) or marked paid. Rollover interest ("Charge Interest") is not offered on a delinquent loan.
+
 ## API Documentation
 
 ## Users

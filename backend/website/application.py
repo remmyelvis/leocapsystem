@@ -483,12 +483,15 @@ def mark_as_partially_paid(application_id):
     app.memo = f"Partially paid {data.get('amount')}"
     app.partially_paid_date = datetime.now()
 
-    allowed_statuses = ["unpaid", "partially_paid", "defaulted", "escalated"]
+    allowed_statuses = ["unpaid", "partially_paid", "delinquent", "defaulted", "escalated"]
 
     if status not in allowed_statuses:
         return jsonify({'error': 'Application cannot be marked as partially paid'}), 403
 
-    app.repayment_status = "partially_paid"
+    # A delinquent loan stays delinquent while it is paid down. The daily reminder job only looks at unpaid and
+    # part-paid loans, so turning it back into partially_paid would make the job add the 15% collection fee again.
+    new_status = "delinquent" if status == "delinquent" else "partially_paid"
+    app.repayment_status = new_status
     app.partially_paid_count += 1
     
     date_str = data.get("date")
@@ -529,7 +532,7 @@ def mark_as_partially_paid(application_id):
     # ---------------------------
     update_repayment_status(
         application=app,
-        new_status="partially_paid",
+        new_status=new_status,
         changed_by_email=changed_by_email,
         changed_by_role=changed_by_role,
         changed_by_company="Leocap Invest",
