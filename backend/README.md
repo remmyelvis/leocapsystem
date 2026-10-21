@@ -1128,5 +1128,25 @@ admin
 admin
 ```
 
+#### Endpoint: repayment report (PDF)
+
+```http
+    GET /applications/get-all/repayment/nakama/pdf
+    GET /applications/get-all/repayment/ideon/pdf
+    GET /applications/get-all/repayment/company/<code or id>/pdf   // any company ("all" for every company)
+```
+
+#### Permissions
+```http
+admin, hr, finance
+```
+
+| Query | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `month`      | `string` | **Optional** Month name, default = this month |
+| `start_date`, `end_date`      | `string` | **Optional** `YYYY-MM-DD`, replaces `month` |
+
+The unpaid, disbursed loans of one company as a one-page landscape PDF (`CompanyReportPDFGenerator.generate_repayment_report` in `report_service.py`): the same format for admin and HR/finance. A long list is scaled down to stay on one page. The payment instructions name the Leocap account, except the Nakama route, which names Nakama's own account. 404 with `{"message": ...}` when nothing is due.
+
 
 

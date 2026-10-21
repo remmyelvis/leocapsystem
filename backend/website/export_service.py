@@ -121,63 +121,6 @@ def dataframe_to_excel(df, title, total_amount, payment_details):
     return output
 
 
-def dataframe_to_pdf(df, title, bank_details, total_amount):
-    output = BytesIO()
-
-    doc = SimpleDocTemplate(output, pagesize=portrait(A4))
-
-    styles = getSampleStyleSheet()
-
-    table_data = [df.columns.tolist()]
-    table_data.extend(df.values.tolist())
-
-    table = Table(table_data)
-
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    logo_path = os.path.join(BASE_DIR, "templates", "logo.png")
-
-    table.setStyle(
-        TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
-            ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 8),  # <-- table-wide font size
-            ("FONTSIZE", (0, 0), (-1, 0), 8),  # optional: slightly bigger header row
-            ("TOPPADDING", (0, 0), (-1, -1), 3),  # optional: tighten row height to match smaller font
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
-            ("ALIGN", (-2, 0), (-1, -1), "RIGHT")
-        ])
-    )
-
-    logo = Image("website/templates/logo.png")
-    logo.drawHeight = 150
-    logo.drawWidth = 250
-    logo.hAlign = "LEFT"
-
-    elements = [
-        logo,
-        Paragraph(title, styles["Heading4"]),
-        Spacer(1, 12),
-        table,
-        Spacer(1, 12),
-        Paragraph(f"Total repayment: {total_amount:,.2f}", styles["Heading4"]),
-        Spacer(1, 12),
-        Paragraph(f"Expected repayment: {total_amount:,.2f}", styles["Heading4"]),
-        Paragraph(
-            bank_details.replace("\n", "<br/>"),
-            styles["BodyText"]
-        ),
-        Spacer(1, 15),
-    ]
-
-    doc.build(elements)
-
-    output.seek(0)
-
-    return output
-
-
-
 def export_statement(applicant, apps, df, statement_request_date=None):
     from reportlab.platypus import KeepTogether, HRFlowable, SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
     from reportlab.lib import colors, pagesizes

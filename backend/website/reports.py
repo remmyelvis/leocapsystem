@@ -8,7 +8,7 @@ from werkzeug.utils import secure_filename
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from uuid import uuid4
 
-from website.export_service import escalation_to_pdf, dataframe_to_excel, dataframe_to_pdf
+from website.export_service import escalation_to_pdf, dataframe_to_excel
 from website.system_email_utils import send_email_smtp
 from website.models import Application, Applicant, ApplicationDocument, HrEmail, Email, Company
 from website import db, Config, export_service
@@ -340,107 +340,15 @@ def get_all_repayment_ideon_excel():
 @jwt_required()
 @role_required("admin","hr","finance")
 def get_all_repayment_nakama_pdf():
-    month = request.args.get("month")
-    
-    apps = (
-        Application.query
-        .filter_by(repayment_status="unpaid", company="nakama", loan_status="disbursed", month=month)
-        .all()
-    )
+    # Same report as the admin one; Nakama's payment instructions name Nakama's own account.
+    return _repayment_pdf_response("nakama", account_name="ELVIS KAREMI NYAGA", account_number="8460950033")
 
-    total_amount = Decimal("0")
-    for app in apps:
-        total_amount += Decimal(str(app.repayment_amount))
-
-    if len(apps) < 1:
-        return jsonify({
-            "message":"There are no applications of this status"
-        })
-
-    records = [
-        app.to_rep_exp()
-        for app in apps
-    ]
-
-    df_pdf = pd.DataFrame(records)
-
-    bank_details = """
-                1. Account Details:
-                Account Name: ELVIS KAREMI NYAGA
-                NCBA BANK KENYA PLC
-                Account Number:8460950033
-                Branch Name: PRESTIGE
-                Swift Code: CBAFKENX
-                Paybill Number: 880100 (For deposits from Mpesa to NCBA Bank)"""
-
-    pdf_sheet = dataframe_to_pdf(
-        df_pdf,
-        title="Nakama Tech LTD: Repayment Report",
-        bank_details=bank_details,
-        total_amount=total_amount
-    )
-
-    response = Response(
-        pdf_sheet,
-        mimetype="application/pdf"
-    )
-    response.headers["Content-Disposition"] = (
-        "attachment; filename=repayment_nakama_export.pdf"
-    )
-    return response, 200
 
 @reports.route('/applications/get-all/repayment/ideon/pdf', methods=['GET'])
 @jwt_required()
 @role_required("admin","hr","finance")
 def get_all_repayment_ideon_pdf():
-    month = request.args.get("month")
-    
-    apps = (
-        Application.query
-        .filter_by(repayment_status="unpaid", company="ideon", loan_status="disbursed", month=month)
-        .all()
-    )
-
-    total_amount = Decimal("0")
-    for app in apps:
-        total_amount += Decimal(str(app.repayment_amount))
-
-    if len(apps) < 1:
-        return jsonify({
-            "message":"There are no applications of this status"
-        })
-
-    records = [
-        app.to_rep_exp()
-        for app in apps
-    ]
-
-    df_pdf = pd.DataFrame(records)
-
-    bank_details = """
-                1. Account Details:
-                Account Name: LEOCAP INVEST
-                NCBA BANK KENYA PLC
-                Account Number:9710240013
-                Branch Name: PRESTIGE
-                Swift Code: CBAFKENX
-                Paybill Number: 880100 (For deposits from Mpesa to NCBA Bank)"""
-
-    pdf_sheet = dataframe_to_pdf(
-        df_pdf,
-        title="Ideon LTD: Repayment Report",
-        bank_details=bank_details,
-        total_amount=total_amount
-    )
-
-    response = Response(
-        pdf_sheet,
-        mimetype="application/pdf"
-    )
-    response.headers["Content-Disposition"] = (
-        "attachment; filename=repayment_ideon_export.pdf"
-    )
-    return response, 200
+    return _repayment_pdf_response("ideon")
 
 
 @reports.route('/applications/get-all/repayment/company/<identifier>/amount', methods=['GET'])
@@ -514,6 +422,34 @@ def _repayment_report_apps(identifier):
     return comp_code, comp_name, period, query.all()
 
 
+def _repayment_pdf_response(identifier, **account):
+    """The repayment report PDF, one format for admin and HR/finance. `account` overrides the account named in the
+    payment instructions (account_name, account_number)."""
+    comp_code, comp_name, month, apps = _repayment_report_apps(identifier)
+
+    if not apps:
+        return jsonify({"message": f"No unpaid disbursed applications found for {comp_name} in {month}."}), 404
+
+    total_amount = sum(Decimal(str(app.repayment_amount or 0)) for app in apps)
+    df_apps = [app.to_rep_exp() for app in apps]
+
+    from website.report_service import CompanyReportPDFGenerator
+
+    pdf_buffer = CompanyReportPDFGenerator.generate_repayment_report(
+        company_name=comp_name,
+        company_code=comp_code,
+        month=month,
+        apps=df_apps,
+        total_amount=total_amount,
+        **account
+    )
+
+    # Return bytes, not send_file(BytesIO): the host's Passenger file wrapper calls fileno() on the buffer and crashes.
+    response = Response(pdf_buffer.getvalue(), mimetype="application/pdf")
+    response.headers["Content-Disposition"] = f'attachment; filename="{comp_name}_Repayment_Report_{month}.pdf"'
+    return response
+
+
 @reports.route('/applications/get-all/repayment/company/<identifier>/excel', methods=['GET'])
 @jwt_required()
 @role_required("admin", "hr", "finance")
@@ -555,28 +491,8 @@ Paybill Number: 880100 (Deposit reference: {comp_code.upper()})
 @role_required("admin", "hr", "finance")
 def get_company_repayment_pdf(identifier):
     """Export repayment report in PDF format for any company."""
-    comp_code, comp_name, month, apps = _repayment_report_apps(identifier)
+    return _repayment_pdf_response(identifier)
 
-    if not apps:
-        return jsonify({"message": f"No unpaid disbursed applications found for {comp_name} in {month}."}), 404
-
-    total_amount = sum(Decimal(str(app.repayment_amount or 0)) for app in apps)
-    df_apps = [app.to_rep_exp() for app in apps]
-    
-    from website.report_service import CompanyReportPDFGenerator
-    
-    pdf_buffer = CompanyReportPDFGenerator.generate_repayment_report(
-        company_name=comp_name,
-        company_code=comp_code,
-        month=month,
-        apps=df_apps,
-        total_amount=total_amount
-    )
-
-    # Return bytes, not send_file(BytesIO): the host's Passenger file wrapper calls fileno() on the buffer and crashes.
-    response = Response(pdf_buffer.getvalue(), mimetype="application/pdf")
-    response.headers["Content-Disposition"] = f'attachment; filename="{comp_name}_Repayment_Report_{month}.pdf"'
-    return response
 
 @reports.route('/aging/<identifier>', methods=['GET'])
 @jwt_required()
