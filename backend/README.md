@@ -334,6 +334,8 @@ Admin
 }
 ```
 
+`loan_limit` is the most the applicant can apply for in one application, a whole number of shillings (a number or numeric text; surrounding spaces are fine). An empty value, `null` or `0` removes the limit. Anything else (negative, decimals, text, 1,000,000,000 or more, or a missing `loan_limit`) answers 400 with a message and leaves the limit unchanged. Admins set it on the applicant's details page (Manage Applicants).
+
 #### Endpoint: set_interest_rate
 
 ```http

@@ -367,14 +367,25 @@ def change_password():
 @jwt_required()
 @role_required('admin')
 def set_loan_limit(applicant_id):
+    """Set the most an applicant may borrow in one application. Empty or 0 means no limit."""
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict) or 'loan_limit' not in data:
+        return jsonify({'message': 'Please send a loan limit.'}), 400
 
-    data = request.get_json()
+    raw = data['loan_limit']
+    try:
+        limit = None if raw in (None, '') else int(str(raw).strip())
+    except ValueError:
+        limit = -1
+    if limit is not None and not 0 <= limit < 1_000_000_000:
+        return jsonify({'message': 'Please enter a whole number of shillings, 0 or more.'}), 400
+
     applicant = Applicant.query.get(applicant_id)
 
     if not applicant:
         return jsonify({'message': 'Applicant does not exist'}), 404
 
-    applicant.loan_limit = data['loan_limit']
+    applicant.loan_limit = limit or None
 
     db.session.commit()
 
