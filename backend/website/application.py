@@ -17,7 +17,7 @@ from website.export_service import escalation_to_pdf
 from website.system_email_utils import send_email_smtp
 from website.models import Application, Applicant, ApplicationDocument, HrEmail, Email, ApplicationAudit, User, StatementEntry, Company, ApplicantDocument
 from website import db, Config
-from website.role_decorator import role_required
+from website.role_decorator import role_required, can_access_application
 from website.upload_paths import upload_path
 from website.notifications import notify_hr_of_application
 from flask import Response
@@ -1447,6 +1447,96 @@ def amend_application(application_id):
         sync_terms_to_ledger(app)
     db.session.commit()
     return jsonify({"message": "Amended", "application": app.to_dict()}), 200
+
+def _amend_amount(application_id):
+    """HR's and finance's "Amend Amount": change the amount of a loan that is waiting for review.
+    A role never reviews its own role's loans: HR handles applicants' and finance staff's, finance handles applicants' and
+    HR staff's. Fees and repayment are worked out from the new amount the way they are at application time, the
+    status becomes "amended" and the change is written to the audit trail and the ledger."""
+    role = get_jwt().get("role")
+    me = Applicant.query.get(get_jwt_identity())
+    app = Application.query.filter_by(id=application_id).first()
+    if not app or not can_access_application(app):
+        return jsonify({"message": "Application not found"}), 404
+    owner = Applicant.query.get(app.applicant_id)
+    if owner is None:
+        return jsonify({"message": "Application not found"}), 404
+    if owner.id == get_jwt_identity():
+        return jsonify({"message": "You cannot change the amount of your own application."}), 403
+    if owner.role == role:
+        who = "HR staff are reviewed by finance" if role == "hr" else "finance staff are reviewed by HR"
+        return jsonify({"message": f"Loans of {who}."}), 403
+    if app.loan_status not in ("pending_processing", "amended"):
+        return jsonify({"message": "Only an application that is waiting for review can be amended."}), 400
+
+    data = request.get_json(silent=True) or {}
+    try:
+        amount = Decimal(str(data.get("amount_applied"))).quantize(Decimal("0.01"))
+    except InvalidOperation:
+        amount = None
+    if amount is None or not amount.is_finite() or amount <= 0 or amount >= MAX_LOAN_AMOUNT:
+        return jsonify({"message": "Please enter a valid loan amount."}), 400
+    if owner.loan_limit and amount > owner.loan_limit:
+        return jsonify({"message": f"This applicant's loan limit is KES {owner.loan_limit:,}."}), 400
+    old_amount = Decimal(str(app.amount_applied))
+    if amount == old_amount:
+        return jsonify({"message": f"The application is already for KES {old_amount:,.2f}."}), 400
+
+    rate = Decimal(str(app.interest_rate or 0))
+    if rate > 1:  # tolerate a whole-number percent, as the ledger sync does
+        rate = rate / 100
+    processing = round(amount * Decimal("0.03"), 2)
+    access = round(amount * Decimal("0.02"), 2) if app.loan_type == "salary_advance" else Decimal(0)
+    legal = Decimal(str(app.legal_fees or 0))
+    disbursement = round(amount - (processing + access + legal), 2)
+    if disbursement <= 0:
+        return jsonify({"message": "That amount is too small to cover the fees."}), 400
+    repayment = round(amount * (rate + 1), 2)
+    old_repayment = Decimal(str(app.repayment_amount))
+    outstanding = Decimal(str(app.outstanding_balance)) if app.outstanding_balance else old_repayment
+
+    actor_email = me.email if me else "Unknown"
+    actor_company = (me.applicant_type if me else None) or "Leocap Invest"
+    db.session.add(ApplicationAudit(
+        application_id=app.id,
+        application_old_loan_amount=float(old_amount),
+        application_new_loan_amount=float(amount),
+        application_old_repayment_amount=float(old_repayment),
+        application_new_repayment_amount=float(repayment),
+        field_name="amount_applied",
+        old_status=str(old_amount),
+        new_status=str(amount),
+        changed_by_email=actor_email,
+        changed_by_role=role,
+        changed_by_company=actor_company,
+        notes=f"Amount amended by {role}"
+    ))
+    app.amount_applied = amount
+    app.processing_fees = str(processing)
+    app.access_fees = str(access)
+    app.disbursement_amount = str(disbursement)
+    app.repayment_amount = str(repayment)
+    app.outstanding_balance = str(round(outstanding + (repayment - old_repayment), 2))
+    if app.loan_status != "amended":
+        update_loan_status(app, "amended", actor_email, role, actor_company, commit=False)
+    sync_terms_to_ledger(app)
+    db.session.commit()
+    return jsonify({"message": "Application amended", "application": app.to_dict()}), 200
+
+
+@application.route('/applications/hr/amend/<string:application_id>', methods=['PATCH'])
+@jwt_required()
+@role_required("hr")
+def hr_amend_application(application_id):
+    return _amend_amount(application_id)
+
+
+@application.route('/applications/finance/amend/<string:application_id>', methods=['PATCH'])
+@jwt_required()
+@role_required("finance")
+def finance_amend_application(application_id):
+    return _amend_amount(application_id)
+
 
 @application.route('/applications/approve/<string:application_id>', methods=['PATCH'])
 @jwt_required()

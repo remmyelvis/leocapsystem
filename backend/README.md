@@ -475,6 +475,8 @@ files = File // accepted types are .pdf, .xls & .xlsx, application documents to 
     PATCH /applications/hr/amend/<string:application_id>
 ```
 
+Changes the amount of a loan that is waiting for review (status `pending_processing` or `amended`). Processing and access fees, the disbursement and the repayment are worked out again from the new amount, the status becomes `amended`, and the change is written to the audit trail and the ledger. HR and finance only reach their own company's loans and never their own loan, and a role does not amend its own role's loans (HR amends applicants' and finance staff's loans, finance amends applicants' and HR staff's). The applicant's loan limit still applies. Errors come back as `{"message": ...}` with 400 (invalid amount, same amount, amount too small for the fees, over the loan limit, loan not waiting for review), 403 or 404.
+
 #### Permissions
 ```http
 hr
@@ -497,6 +499,8 @@ hr
 ```http
     PATCH /applications/finance/amend/<string:application_id>
 ```
+
+Same rules as `amend_hr`, for finance users.
 
 #### Permissions
 ```http
