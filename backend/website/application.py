@@ -270,8 +270,6 @@ def create_application():
 @jwt_required()
 @role_required("admin")
 def mark_as_paid(application_id):
-    from flask_jwt_extended import get_jwt_identity
-    email = get_jwt_identity()
     role = get_jwt().get("role")
     
     app = db.session.query(Application).with_for_update().filter_by(id=application_id).first()
@@ -283,41 +281,27 @@ def mark_as_paid(application_id):
         db.session.rollback()
         return jsonify({'message': 'Already paid'}), 200
         
-    old_status = app.repayment_status
-    app.repayment_status = 'paid'
-    
-    from decimal import Decimal
-    stmt = StatementEntry(
+    # The ledger credit is what was still owed: the tracked balance, or the repayment amount on older loans without one.
+    # repayment_amount is kept (the loan's total) so interest income and reports still see the loan.
+    balance_due = Decimal(app.outstanding_balance) if app.outstanding_balance and Decimal(app.outstanding_balance) > 0 else Decimal(app.repayment_amount)
+    db.session.add(StatementEntry(
         applicant_id=app.applicant_id,
         application_id=app.id,
         memo="Loan paid",
         debit=Decimal(0),
-        credit=Decimal(app.outstanding_balance) if app.outstanding_balance and float(app.outstanding_balance) > 0 else Decimal(app.repayment_amount),
-        balance=Decimal(0),
-        company=app.company
-    )
-    db.session.add(stmt)
-    
+        credit=balance_due,
+        balance=Decimal(0)
+    ))
     app.outstanding_balance = "0"
-    app.repayment_amount = "0"
-    
-    audit = AuditTrail(
-        application_id=app.id,
-        old_status=old_status,
-        new_status="paid",
-        application_old_loan_amount=float(app.amount_applied or 0),
-        application_new_loan_amount=float(app.amount_applied or 0),
-        application_old_repayment_amount=float(app.repayment_amount or 0),
-        application_new_repayment_amount=0.0,
-        changed_by_email=email,
-        changed_by_role=role,
-        changed_by_company="Leocap",
-        notes="Loan paid in full"
+
+    user = User.query.get(get_jwt_identity())
+    update_repayment_status(
+        app, "paid", user.email if user else "unknown", role, "Leocap Invest",
+        notes="Loan paid in full", commit=False
     )
-    db.session.add(audit)
-    
+
     db.session.commit()
-    
+
     return jsonify({
         'message': 'Application marked as paid',
         'application': app.to_dict()
