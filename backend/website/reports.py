@@ -242,106 +242,21 @@ def get_all_repayment_ideon_amount():
 @jwt_required()
 @role_required("admin","hr","finance")
 def get_all_repayment_nakama_excel():
-    month = request.args.get("month")
-    
-    apps = (
-        Application.query
-        .filter_by(repayment_status="unpaid", company="nakama", loan_status = "disbursed", month=month)
-        .all()
-    )
+    return _repayment_excel_response("nakama", **NAKAMA_ACCOUNT)
 
-    total_amount = Decimal("0")
-    for app in apps:
-        total_amount += Decimal(str(app.repayment_amount))
-
-    if len(apps) < 1:
-        return jsonify({
-            "message":"There are no applications of this status"
-        })
-
-    records = [
-        app.to_rep_exp()
-        for app in apps
-    ]
-
-    df_excel = pd.DataFrame(records)
-    
-    bank_details = """
-    1. Account Details:
-    Account Name: ELVIS KAREMI NYAGA
-    NCBA BANK KENYA PLC
-    Account Number:8460950033
-    Branch Name: PRESTIGE
-    Swift Code: CBAFKENX
-    Paybill Number: 880100 (For deposits from Mpesa to NCBA Bank)"""
-
-    excel_sheet = dataframe_to_excel(df_excel,
-        title="Nakama Tech LTD: Repayment Report", total_amount=total_amount, payment_details=bank_details)
-
-    response = Response(
-        excel_sheet.getvalue(),
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-    response.headers["Content-Disposition"] = (
-        "attachment; filename=repayment_nakama_export.xlsx"
-    )
-    return response, 200
 
 @reports.route('/applications/get-all/repayment/ideon/excel', methods=['GET'])
 @jwt_required()
 @role_required("admin","hr","finance")
 def get_all_repayment_ideon_excel():
-    month = request.args.get("month")
-    
-    apps = (
-        Application.query
-        .filter_by(repayment_status="unpaid", company="ideon", loan_status="disbursed", month=month)
-        .all()
-    )
-
-    total_amount = Decimal("0")
-    for app in apps:
-        total_amount += Decimal(str(app.repayment_amount))
-
-    if len(apps) < 1:
-        return jsonify({
-            "message":"There are no applications of this status"
-        })
-
-    records = [
-        app.to_rep_exp()
-        for app in apps
-    ]
-
-    df_excel = pd.DataFrame(records)
-    
-    bank_details = """
-    1. Account Details:
-    Account Name: LEOCAP INVEST
-    NCBA BANK KENYA PLC
-    Account Number:9710240013
-    Branch Name: PRESTIGE
-    Swift Code: CBAFKENX
-    Paybill Number: 880100 (For deposits from Mpesa to NCBA Bank)"""
-
-    excel_sheet = dataframe_to_excel(df_excel,
-        title="IDEON LTD: Repayment Report", total_amount=total_amount, payment_details=bank_details)
-
-    response = Response(
-        excel_sheet.getvalue(),
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-    response.headers["Content-Disposition"] = (
-        "attachment; filename=repayment_ideon_export.xlsx"
-    )
-    return response, 200
+    return _repayment_excel_response("ideon")
 
 @reports.route('/applications/get-all/repayment/nakama/pdf', methods=['GET'])
 @jwt_required()
 @role_required("admin","hr","finance")
 def get_all_repayment_nakama_pdf():
     # Same report as the admin one; Nakama's payment instructions name Nakama's own account.
-    return _repayment_pdf_response("nakama", account_name="ELVIS KAREMI NYAGA", account_number="8460950033")
+    return _repayment_pdf_response("nakama", **NAKAMA_ACCOUNT)
 
 
 @reports.route('/applications/get-all/repayment/ideon/pdf', methods=['GET'])
@@ -422,6 +337,42 @@ def _repayment_report_apps(identifier):
     return comp_code, comp_name, period, query.all()
 
 
+# Nakama's repayment reports (PDF and Excel) name Nakama's own account; every other company's name the Leocap account.
+NAKAMA_ACCOUNT = {"account_name": "ELVIS KAREMI NYAGA", "account_number": "8460950033"}
+
+
+def _repayment_excel_response(identifier, account_name="LEOCAP INVEST", account_number="9710240013"):
+    """The repayment report as Excel: the same loans, month and payment instructions as the PDF."""
+    comp_code, comp_name, month, apps = _repayment_report_apps(identifier)
+
+    if not apps:
+        return jsonify({"message": f"No unpaid disbursed applications found for {comp_name} in {month}."}), 404
+
+    total_amount = sum(Decimal(str(app.repayment_amount or 0)) for app in apps)
+    df = pd.DataFrame([app.to_rep_exp() for app in apps])
+
+    bank_details = f"""
+1. Account Details:
+Account Name: {account_name}
+NCBA BANK KENYA PLC
+Account Number: {account_number}
+Branch Name: PRESTIGE
+Swift Code: CBAFKENX
+Paybill Number: 880100 (Deposit reference: {comp_code.upper()})
+"""
+
+    excel_sheet = dataframe_to_excel(
+        df,
+        title=f"{comp_name}: Repayment Report ({month})",
+        total_amount=total_amount,
+        payment_details=bank_details
+    )
+
+    response = Response(excel_sheet.getvalue(), mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response.headers["Content-Disposition"] = f"attachment; filename=repayment_{comp_code}_{month}.xlsx"
+    return response, 200
+
+
 def _repayment_pdf_response(identifier, **account):
     """The repayment report PDF, one format for admin and HR/finance. `account` overrides the account named in the
     payment instructions (account_name, account_number)."""
@@ -455,35 +406,7 @@ def _repayment_pdf_response(identifier, **account):
 @role_required("admin", "hr", "finance")
 def get_company_repayment_excel(identifier):
     """Export repayment report in Excel format for any company."""
-    comp_code, comp_name, month, apps = _repayment_report_apps(identifier)
-
-    if not apps:
-        return jsonify({"message": f"No unpaid disbursed applications found for {comp_name} in {month}."}), 404
-
-    total_amount = sum(Decimal(str(app.repayment_amount or 0)) for app in apps)
-    df_apps = [app.to_rep_exp() for app in apps]
-    df = pd.DataFrame(df_apps)
-
-    bank_details = f"""
-1. Account Details:
-Account Name: LEOCAP INVEST
-NCBA BANK KENYA PLC
-Account Number: 9710240013
-Branch Name: PRESTIGE
-Swift Code: CBAFKENX
-Paybill Number: 880100 (Deposit reference: {comp_code.upper()})
-"""
-
-    excel_sheet = dataframe_to_excel(
-        df,
-        title=f"{comp_name}: Repayment Report ({month})",
-        total_amount=total_amount,
-        payment_details=bank_details
-    )
-
-    response = Response(excel_sheet.getvalue(), mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    response.headers["Content-Disposition"] = f"attachment; filename=repayment_{comp_code}_{month}.xlsx"
-    return response, 200
+    return _repayment_excel_response(identifier)
 
 
 @reports.route('/applications/get-all/repayment/company/<identifier>/pdf', methods=['GET'])
