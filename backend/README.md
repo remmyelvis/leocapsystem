@@ -129,6 +129,8 @@ Authenticated user
   PUT /forgot-password
 ```
 
+Public. Emails a password reset link to the account (applicants, HR and finance). The answer is always the same ("If an account exists for this email, a password reset link has been sent to it.") whether or not the address is registered; suspended accounts get no email. At most one email per address per minute and 100 per hour overall (counted per server process). The link is `FRONTEND_URL` + `/reset-password?token=...` (`FRONTEND_URL` in `website/.env`, default `https://app.leocapinvest.co.ke`; it is never taken from the request). The token is signed with `SECRET_KEY`, valid for 60 minutes and works once (it stops working as soon as the password changes). Email sending needs `SENDER_ADDRESS`, `SENDER_PASSWORD` (and optionally `SMTP_HOST`, `SMTP_PORT`) in `website/.env`.
+
 | Parameter | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
 | `email`      | `string` | **Required**. Email of the user trying to login |
@@ -140,6 +142,24 @@ Authenticated user
     "email":"moisendungu@gmail.com"
 }
 ```
+#### Endpoint: reset_password
+
+```http
+  POST /reset-password
+```
+
+Public. Sets a new password from the emailed link.
+
+#### Request body
+
+```http
+{
+    "token":"<token from the link>",
+    "new_password":"at least 6 and at most 128 characters"
+}
+```
+A bad, tampered, used or expired token answers 400 "This reset link is invalid or has expired". Admin accounts (the `users` table) have no self-service reset.
+
 #### Endpoint: change_password
 
 ```http

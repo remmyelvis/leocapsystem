@@ -117,32 +117,6 @@ def update(id):
         'user': user.to_dict()
     }), 200
 
-@auth.route('/forgot-password', methods=['PUT'])
-@role_required("admin")
-def forgot_password():
-    data = request.get_json()
-    request_email = data.get('email')
-    
-    user_obj = User.query.filter_by(email=request_email).first()
-    if not user_obj:
-        return jsonify({'message': 'User does not exist with this email'}), 400
-        
-    # SECURITY PATCH: Generate token instead of plaintext password
-    reset_token = ''.join(random.choices(string.punctuation + string.digits + string.ascii_letters, k=32))
-    user_obj.reset_token = reset_token
-    from datetime import datetime, timedelta
-    user_obj.reset_token_expiry = datetime.utcnow() + timedelta(hours=1)
-    
-    db.session.commit()
-    
-    link = os.getenv("SYSTEM_URL")
-    # In a real scenario, this would send an email with a link like:
-    # f"{link}/reset-password?token={reset_token}"
-    return jsonify({'message': 'Password reset link sent to your email'}), 200
-
-
-
-
 @auth.route('/change-password', methods=['PUT'])
 @jwt_required()
 def change_password():
@@ -164,8 +138,8 @@ def change_password():
 
     if new_password != confirm_new_password:
         return jsonify({
-            "message":"New passwords do not much"
-        })
+            "message":"New passwords do not match"
+        }), 400
 
     user = User.query.get(user_id)
 

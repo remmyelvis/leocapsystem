@@ -40,6 +40,7 @@ import Page27 from './pages/finance/my-loans/page';
 import Page28 from './pages/finance/page';
 import Page29 from './pages/finance/profile/page';
 import Page30 from './pages/forgot-password/page';
+import ResetPasswordPage from './pages/reset-password/page';
 import Page31 from './pages/hr/applications/page';
 import Page32 from './pages/hr/applications/pending/[id]/page';
 import Page33 from './pages/hr/applications/[id]/page';
@@ -128,6 +129,7 @@ function App() {
 
       {/* Public Routes */}
       <Route path="/forgot-password" element={<Page30 />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/login/admin" element={<Page42 />} />
       <Route path="/login/applicant" element={<Page43 />} />
       <Route path="/login/finance" element={<Page44 />} />

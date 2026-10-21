@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
 
       setSubmittedEmail(data.email);
       setSubmitted(true);
-      toast.success("Password reset email sent");
+      toast.success("Check your email");
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -78,8 +78,8 @@ export default function ForgotPasswordPage() {
               </h1>
               <p className="text-slate-400 text-sm mt-1">
                 {submitted
-                  ? "We've sent a new password to your email address"
-                  : "Enter your email and we'll send you a new password"}
+                  ? "If your email is registered, a reset link is on its way"
+                  : "Enter your email and we'll send you a link to choose a new password"}
               </p>
             </div>
 
@@ -133,7 +133,7 @@ export default function ForgotPasswordPage() {
                         Sending…
                       </>
                     ) : (
-                      "Send New Password"
+                      "Send Reset Link"
                     )}
                   </Button>
                 </form>
@@ -141,8 +141,9 @@ export default function ForgotPasswordPage() {
                 {/* Info message */}
                 <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mt-6 text-sm text-brand-blue">
                   <p>
-                    If the email exists in our system, you&apos;ll receive a new password
-                    shortly. Check your spam folder if you don&apos;t see it.
+                    If the email exists in our system, you&apos;ll receive a reset link
+                    shortly. The link works once and expires in 1 hour. Check your spam
+                    folder if you don&apos;t see it.
                   </p>
                 </div>
               </>
@@ -156,10 +157,10 @@ export default function ForgotPasswordPage() {
                 </div>
 
                 <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-800 mb-6">
-                  <p className="font-semibold mb-1">Password reset email sent</p>
+                  <p className="font-semibold mb-1">Check your email</p>
                   <p>
-                    A new password has been sent to <strong>{submittedEmail}</strong>.
-                    Check your inbox and use it to sign in.
+                    If <strong>{submittedEmail}</strong> is registered, we&apos;ve sent it a link to
+                    choose a new password. The link works once and expires in 1 hour.
                   </p>
                 </div>
 

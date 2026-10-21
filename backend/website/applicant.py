@@ -11,6 +11,8 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 
 from website.role_decorator import role_required, optional_claims
 from website.upload_paths import upload_path
+from website import password_reset
+from sqlalchemy import func
 from website.system_email_utils import send_email_smtp
 from dotenv import load_dotenv
 load_dotenv()
@@ -282,25 +284,35 @@ def update(id):
 
 @applicant.route('/forgot-password', methods=['PUT'])
 def forgot_password():
-    data = request.get_json()
-    request_email = data.get('email')
-    
-    user_obj = Applicant.query.filter_by(email=request_email).first()
-    if not user_obj:
-        return jsonify({'message': 'User does not exist with this email'}), 400
-        
-    # SECURITY PATCH: Generate token instead of plaintext password
-    reset_token = ''.join(random.choices(string.punctuation + string.digits + string.ascii_letters, k=32))
-    user_obj.reset_token = reset_token
-    from datetime import datetime, timedelta
-    user_obj.reset_token_expiry = datetime.utcnow() + timedelta(hours=1)
-    
+    """Email a reset link. The answer is the same whether or not the address has an account, so it cannot be used
+    to find out who is registered."""
+    data = request.get_json(silent=True) or {}
+    email = str(data.get('email') or '').strip()
+    if not email:
+        return jsonify({'message': 'Please enter your email'}), 400
+
+    account = Applicant.query.filter(func.lower(Applicant.email) == email.lower()).first()
+    if account and account.applicant_status != 'suspended' and password_reset.may_send(account.email):
+        password_reset.send_reset_email(account)
+
+    return jsonify({'message': 'If an account exists for this email, a password reset link has been sent to it.'}), 200
+
+
+@applicant.route('/reset-password', methods=['POST'])
+def reset_password():
+    """Set a new password from the link in the reset email (applicants, HR and finance)."""
+    data = request.get_json(silent=True) or {}
+    new_password = str(data.get('new_password') or '')
+    if not 6 <= len(new_password) <= 128:
+        return jsonify({'message': 'Password must be between 6 and 128 characters'}), 400
+
+    account = password_reset.applicant_from_reset_token(str(data.get('token') or ''))
+    if not account:
+        return jsonify({'message': 'This reset link is invalid or has expired. Please request a new one.'}), 400
+
+    account.password = generate_password_hash(new_password)
     db.session.commit()
-    
-    link = os.getenv("SYSTEM_URL")
-    # In a real scenario, this would send an email with a link like:
-    # f"{link}/reset-password?token={reset_token}"
-    return jsonify({'message': 'Password reset link sent to your email'}), 200
+    return jsonify({'message': 'Your password has been updated. You can now sign in.'}), 200
 
 
 
@@ -326,8 +338,8 @@ def change_password():
 
     if new_password != confirm_new_password:
         return jsonify({
-            "message":"New passwords do not much"
-        })
+            "message":"New passwords do not match"
+        }), 400
 
     applicant = Applicant.query.get(user_id)
 

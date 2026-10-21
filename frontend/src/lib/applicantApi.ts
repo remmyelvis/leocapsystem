@@ -145,6 +145,16 @@ export const applicantApi = {
       }
     ),
 
+  resetPassword: (token: string, newPassword: string) =>
+    apiCall<{ message: string }>(
+      `/api/auth/applicant/reset-password`,
+      {
+        method: "POST",
+        body: { token, new_password: newPassword },
+        requiresAuth: false,
+      }
+    ),
+
   changePassword: (currentPassword: string, newPassword: string) =>
     apiCall<{ message: string }>(
       `/api/auth/applicant/change-password`,
