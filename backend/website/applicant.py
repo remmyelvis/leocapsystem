@@ -10,6 +10,7 @@ from werkzeug.utils import secure_filename
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt, set_access_cookies
 
 from website.role_decorator import role_required, optional_claims
+from website.upload_paths import upload_path
 from website.system_email_utils import send_email_smtp
 from dotenv import load_dotenv
 load_dotenv()
@@ -23,6 +24,19 @@ import uuid
 
 applicant = Blueprint('applicant',__name__, url_prefix='/api/auth/applicant')
 
+# What a person may change on their own profile. Loan limit, interest rate, company and status are not here:
+# they are set by admins through their own routes.
+PROFILE_FIELDS = ("name", "email", "phone_number", "id_number", "kra_pin", "payroll_number")
+
+
+def _valid_name(name):
+    """A name ends up in PDFs, emails and download file names: no path separators or control characters."""
+    name = (name or "").strip()
+    if not 2 <= len(name) <= 100 or any(c in "/\\" or ord(c) < 32 for c in name):
+        return None
+    return name
+
+
 @applicant.route('/register', methods=['POST'])
 def register():
 
@@ -33,6 +47,10 @@ def register():
 
     if Applicant.query.filter_by(email=data['email']).first():
         return jsonify({'message': 'Applicant already exist'}), 409
+
+    name = _valid_name(data.get('name'))
+    if not name:
+        return jsonify({'message': 'Please enter a valid name'}), 400
 
     # The company must be one of the active companies offered on the sign-up page
     company_code = str(data.get('applicant_type') or '').strip().lower()
@@ -47,7 +65,7 @@ def register():
         role = data['role']
 
     new_applicant = Applicant(
-        name=data.get('name'),
+        name=name,
         phone_number=data.get('phone_number'),
         email=data.get('email'),
         password=hashed_password,
@@ -177,7 +195,7 @@ def delete(id):
 
 @applicant.route('/update/<string:id>', methods=['PATCH'])
 @jwt_required()
-@role_required("admin","hr","applicant")
+@role_required("admin", "super_admin", "hr", "finance", "applicant")
 def update(id):
 
     applicant = Applicant.query.get(id)
@@ -185,28 +203,40 @@ def update(id):
     if not applicant:
         return jsonify({'message': 'Applicant does not exist'}), 404
 
-    from flask_jwt_extended import get_jwt_identity, get_jwt
-    role = get_jwt().get('role')
-    if role == 'applicant' and applicant.id != get_jwt_identity():
-       return jsonify({'message': 'You are unauthorized to perform update'}), 403
+    # An admin may edit anyone; everyone else (applicant, HR, finance) only their own profile
+    if get_jwt().get('role') not in ('admin', 'super_admin') and applicant.id != get_jwt_identity():
+        return jsonify({'message': 'You are unauthorized to perform update'}), 403
 
     data = request.form
 
-    files = request.files.items()
+    # Check the profile fields before anything is saved
+    changes = {}
+    for key in PROFILE_FIELDS:
+        if key not in data:
+            continue
+        value = data[key].strip()
+        if key in ("name", "email", "phone_number") and not value:
+            continue  # a form that sends one of these empty must not blank it
+        if key == "name":
+            value = _valid_name(value)
+            if not value:
+                return jsonify({'message': 'Please enter a valid name'}), 400
+        if key == "email" and Applicant.query.filter(Applicant.email == value, Applicant.id != id).first():
+            return jsonify({'message': 'Another account already uses this email'}), 409
+        changes[key] = value
 
-    folder = os.path.join(current_app.config["APPLICANT_DOCUMENTS"], applicant.name)
-    os.makedirs(folder, exist_ok=True)
-
-    for field_name,file in files:
+    for field_name,file in request.files.items():
 
         valid, error = Config.validate_file(file)
         if not valid:
             return {"error": error}, 400
 
         filename = secure_filename(file.filename)
-        unique_name = f"{applicant.name}_{field_name}_{filename}"
-
-        filepath = os.path.join(folder, unique_name)
+        try:
+            folder, filepath = upload_path(current_app.config["APPLICANT_DOCUMENTS"], applicant.id, field_name, filename)
+        except ValueError:
+            return {"error": "Invalid file name"}, 400
+        os.makedirs(folder, exist_ok=True)
 
         existing_doc = ApplicantDocument.query.filter_by(
             applicant_id=id,
@@ -240,9 +270,8 @@ def update(id):
         db.session.add(doc)
 
 
-    for key, value in data.items():
-        if hasattr(applicant, key) and key != "id" and key != "role":
-            setattr(applicant, key, value)
+    for key, value in changes.items():
+        setattr(applicant, key, value)
 
     db.session.commit()
 
@@ -399,6 +428,10 @@ def bulk_upload_employees():
         name = str(row['name']).strip() if pd.notna(row['name']) else ''
         if not email or not name:
             errors.append({"row": index + 2, "error": "Missing required field: name or email"})
+            continue
+        name = _valid_name(name)
+        if not name:
+            errors.append({"row": index + 2, "error": "Invalid name (2-100 characters, no slashes)"})
             continue
 
         if Applicant.query.filter_by(email=email).first():

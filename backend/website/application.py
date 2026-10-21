@@ -17,6 +17,7 @@ from website.system_email_utils import send_email_smtp
 from website.models import Application, Applicant, ApplicationDocument, HrEmail, Email, ApplicationAudit, User, StatementEntry, Company, ApplicantDocument
 from website import db, Config
 from website.role_decorator import role_required
+from website.upload_paths import upload_path
 from flask import Response
 from sqlalchemy.orm.attributes import get_history
 from dateutil.relativedelta import relativedelta
@@ -236,18 +237,17 @@ def create_application():
     
     files = request.files.items()
     if files:
-        folder = os.path.join(current_app.config["APPLICATION_DOCUMENTS"], f"{applicant.name}_{application_id}")
-        os.makedirs(folder, exist_ok=True)
-        
         for field_name, file in files:
             valid, error = Config.validate_file(file)
             if not valid:
                 continue
                 
             filename = secure_filename(file.filename)
-            unique_name = f"{applicant.name}_{field_name}_{filename}"
-            filepath = os.path.join(folder, unique_name)
-            
+            try:
+                folder, filepath = upload_path(current_app.config["APPLICATION_DOCUMENTS"], application_id, field_name, filename)
+            except ValueError:
+                continue
+            os.makedirs(folder, exist_ok=True)
             file.save(filepath)
             
             doc = ApplicationDocument(

@@ -12,6 +12,7 @@ from website.models import ApplicantDocument, Applicant, Application
 from website.models import User
 from website.config import Config
 from website.role_decorator import role_required, can_access_applicant
+from website.upload_paths import upload_path
 
 applicant_documents = Blueprint("applicant_documents", __name__, url_prefix='/api/applicant')
 
@@ -28,9 +29,6 @@ def upload_applicant_documents(applicant_id):
         return {"error": "Unauthorized"}, 403
     
     files = request.files.items()
-    
-    folder = os.path.join(current_app.config["APPLICANT_DOCUMENTS"], f"{applicant.name}")
-    os.makedirs(folder, exist_ok=True)
 
     for field_name, file in files:
 
@@ -39,9 +37,11 @@ def upload_applicant_documents(applicant_id):
             return {"error": error}, 400
 
         filename = secure_filename(file.filename)
-        unique_name = f"{applicant.name}_{field_name}_{filename}"
-
-        filepath = os.path.join(folder, unique_name)
+        try:
+            folder, filepath = upload_path(current_app.config["APPLICANT_DOCUMENTS"], applicant.id, field_name, filename)
+        except ValueError:
+            return {"error": "Invalid file name"}, 400
+        os.makedirs(folder, exist_ok=True)
 
         existing_doc = ApplicantDocument.query.filter_by(
             applicant_id=applicant_id,
@@ -108,19 +108,16 @@ def update_applicant_document(doc_id):
         if not valid:
             return {"error": error}, 400
 
+        filename = secure_filename(file.filename)
+        try:
+            folder, filepath = upload_path(current_app.config["APPLICANT_DOCUMENTS"], applicant.id, doc.document_type, filename)
+        except ValueError:
+            return {"error": "Invalid file name"}, 400
+
         if os.path.exists(doc.filepath):
             os.remove(doc.filepath)
 
-        filename = secure_filename(file.filename)
-        unique_name = f"{applicant.name}_{filename}"
-
-        folder = os.path.join(
-            current_app.config["APPLICANT_DOCUMENTS"],
-            applicant.name
-        )
         os.makedirs(folder, exist_ok=True)
-
-        filepath = os.path.join(folder, unique_name)
         file.save(filepath)
 
 

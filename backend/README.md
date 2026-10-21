@@ -225,7 +225,7 @@ Admin role
 
 #### Permissions
 ```http
-Authenticated user
+Admin (any applicant) or the applicant / HR / finance user themselves (own profile only)
 ```
 
 | Parameter | Type     | Description                       |
@@ -235,9 +235,10 @@ Authenticated user
 #### Form-data
 
 ```http
-any of applicant fields = Text including payroll_number
-files = File // accepted types are .pdf, .xls & .xlsx, applicant documents to upload
+name, email, phone_number, id_number, kra_pin, payroll_number = Text // only these fields are applied; any other field is ignored (loan limit, interest rate, company and status are set by admins through their own routes)
+files = File // accepted types are .pdf, .xls, .xlsx, .jpg, .jpeg & .png, applicant documents to upload
 ```
+Names cannot contain `/`, `\` or control characters. A blank `name`, `email` or `phone_number` is ignored, and an email already used by another account answers 409. Uploaded files are stored under `applicant_documents/<applicant id>/` (loan documents under `application_documents/<application id>/`); the folder never comes from a name or from anything the browser sends.
 #### Endpoint: forgot_password
 
 ```http
