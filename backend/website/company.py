@@ -7,6 +7,7 @@ from datetime import datetime
 from website import db
 from website.models import Company, Application, ApplicationAudit, User, Applicant
 from website.role_decorator import role_required, optional_claims
+from website.notifications import notify_loans_repaid
 
 company_bp = Blueprint('company', __name__, url_prefix='/api')
 
@@ -336,6 +337,7 @@ def mark_company_loans_as_paid(identifier):
 
     try:
         db.session.commit()
+        notify_loans_repaid(applications)
         return jsonify({
             "success": True,
             "message": f"Successfully marked {updated_count} {comp_name} loans as paid for {month}.",

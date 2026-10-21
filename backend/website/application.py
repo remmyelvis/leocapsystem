@@ -19,7 +19,7 @@ from website.models import Application, Applicant, ApplicationDocument, HrEmail,
 from website import db, Config
 from website.role_decorator import role_required, can_access_application
 from website.upload_paths import upload_path
-from website.notifications import notify_hr_of_application
+from website.notifications import notify_hr_of_application, notify_loans_repaid
 from flask import Response
 from sqlalchemy.orm.attributes import get_history
 from dateutil.relativedelta import relativedelta
@@ -353,9 +353,35 @@ def mark_as_paid(application_id):
 
     db.session.commit()
 
+    notify_loans_repaid([app])
+
     return jsonify({
         'message': 'Application marked as paid',
         'application': app.to_dict()
+    }), 200
+
+
+def _mark_salary_advances_paid(company_code):
+    """Mark every disbursed salary advance of one company as paid and tell the borrowers whose loan this just cleared."""
+    apps = (
+        Application.query
+        .filter(
+            Application.loan_type == "salary_advance",
+            Application.loan_status == "disbursed",
+            Application.company == company_code,
+            Application.repayment_status != "paid"
+        )
+        .all()
+    )
+    for app in apps:
+        app.repayment_status = "paid"
+
+    db.session.commit()
+
+    notify_loans_repaid(apps)
+
+    return jsonify({
+        'message': 'Applications marked as paid successfully'
     }), 200
 
 
@@ -363,49 +389,15 @@ def mark_as_paid(application_id):
 @jwt_required()
 @role_required("admin")
 def mark_nakama_as_paid():
-    updated = (
-        Application.query
-        .filter(
-            Application.loan_type == "salary_advance",
-            Application.loan_status == "disbursed",
-            Application.company == "nakama"
-        )
-        .update(
-            {"repayment_status": "paid"},
-            synchronize_session=False
-        )
-    )
-
-    db.session.commit()
-
-    return jsonify({
-        'message': 'Applications marked as paid successfully'
-    }), 200
+    return _mark_salary_advances_paid("nakama")
 
 
 @application.route('/applications/ideon/paid', methods=['PATCH'])
 @jwt_required()
 @role_required("admin")
 def mark_ideon_as_paid():
-    updated = (
-        Application.query
-        .filter(
-            Application.loan_type == "salary_advance",
-            Application.loan_status == "disbursed",
-            Application.company == "ideon"
-        )
-        .update(
-            {"repayment_status": "paid"},
-            synchronize_session=False
-        )
-    )
+    return _mark_salary_advances_paid("ideon")
 
-    db.session.commit()
-
-    return jsonify({
-        'message': 'Applications marked as paid successfully'
-    }), 200
-    
 @application.route('/applications/bulk/paid', methods=['PATCH'])
 @jwt_required()
 @role_required("admin")
@@ -420,6 +412,7 @@ def mark_bulk_as_paid():
     
     apps = Application.query.filter(Application.id.in_(application_ids)).all()
     count = 0
+    paid_now = []
     for app in apps:
         if app.repayment_status == 'paid':
             continue
@@ -455,19 +448,12 @@ def mark_bulk_as_paid():
             notes="Marked as paid via bulk action"
         )
         db.session.add(audit)
-        try:
-            from website.system_email_utils import send_email_background
-            applicant_obj = Applicant.query.get(app.applicant_id)
-            if applicant_obj:
-                subject = "Loan Fully Repaid - Congratulations"
-                body = f"Dear {applicant_obj.name},<br/><br/>Your loan (ID: {app.id}) has been fully repaid. Thank you for using Leocap."
-                send_email_background(applicant_obj.email, subject, body, html=True)
-        except Exception as e:
-            pass
-            
+        paid_now.append(app)
         count += 1
 
     db.session.commit()
+
+    notify_loans_repaid(paid_now)
 
     return jsonify({
         'message': f'{count} applications marked as paid successfully'
