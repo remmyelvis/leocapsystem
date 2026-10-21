@@ -32,7 +32,7 @@ import {
 } from "@/components/loans/LoanBreakdownCard";
 import { LOAN_SETTINGS } from "@/configs/loanSettings";
 import { applicationApi, type CreateApplicationPayload } from "@/lib/applicationApi";
-import type { UserRole } from "@/types/user";
+import { companyLabel as getCompanyLabel } from "@/lib/company";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -179,9 +179,8 @@ export default function FinanceApplyPage() {
   const getProfile = useFinanceProfileStore((s) => s.getProfile);
   const serverProfile = getProfile(session?.user?.id ?? "");
 
-  const role = session?.user?.role as UserRole | undefined;
-  const company = role === "FINANCE_IDEON" ? "ideon" : "nakama";
-  const companyLabel = company === "ideon" ? "Ideon Limited" : "Nakama";
+  const company = (session?.user?.company ?? "").toLowerCase();
+  const companyLabel = getCompanyLabel(company, session?.user?.companyName);
 
   const profileCompletion = useProfileCompletion();
 
@@ -321,7 +320,7 @@ export default function FinanceApplyPage() {
         basicPayMonth3: data.basicPayMonth3,
         amountRequested: data.amountRequested,
         loanPurpose: data.loanPurpose,
-        companyName: company === "ideon" ? "Ideon" : "Nakama",
+        companyName: companyLabel,
         termsAccepted: data.termsAccepted,
         calculatedLoanAmount: calc.loanAmount,
         calculatedProcessingFees: calc.processingFees,
@@ -727,7 +726,7 @@ export default function FinanceApplyPage() {
             {/* Terms text box */}
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 max-h-64 overflow-y-auto">
               <pre className="text-xs text-slate-600 whitespace-pre-wrap leading-relaxed font-sans">
-                {getTermsText(company === "ideon" ? "Ideon Limited" : "Nakama Tech Limited")}
+                {getTermsText(companyLabel)}
               </pre>
             </div>
 

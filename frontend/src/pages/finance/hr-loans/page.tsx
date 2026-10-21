@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { useSession } from "@/contexts/AuthContext";
 import { Eye, Info, Loader2 } from "lucide-react";
 import { applicationApi, type GetAllApplicationItem } from "@/lib/applicationApi";
-import type { UserRole } from "@/types/user";
+import { companyLabel as getCompanyLabel } from "@/lib/company";
 
 const KES = new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -29,9 +29,8 @@ const mapStatus = (status: string) => {
 
 export default function FinanceHRLoansPage() {
   const { data: session } = useSession();
-  const role = session?.user?.role as UserRole | undefined;
-  const company = role === "FINANCE_IDEON" ? "ideon" : "nakama";
-  const companyLabel = company === "ideon" ? "Ideon Limited" : "Nakama";
+  const company = (session?.user?.company ?? "").toLowerCase();
+  const companyLabel = getCompanyLabel(company, session?.user?.companyName);
 
   const [hrLoans, setHrLoans] = useState<GetAllApplicationItem[]>([]);
   const [loading, setLoading] = useState(true);

@@ -53,7 +53,6 @@ function transformApplication(item: AdminApplicationItem): TransformedApplicatio
   // Parse interest rate - try direct field first
   let interestRate = parseFloat(app.interest_rate || "0") || 0;
   
-  console.log("[transformApplication] Raw interest_rate from backend:", app.interest_rate, "-> parsed:", interestRate);
   
   // IMPORTANT: Backend stores interest rate as decimal (0.10 = 10%)
   // Keep it as decimal here, the UI will convert to percentage when displaying
@@ -63,15 +62,8 @@ function transformApplication(item: AdminApplicationItem): TransformedApplicatio
   if (interestRate === 0 && amountApplied > 0 && totalRepayment > amountApplied) {
     const interestAmount = totalRepayment - amountApplied;
     interestRate = interestAmount / amountApplied;
-    console.log("[transformApplication] Derived interest rate:", {
-      totalRepayment,
-      amountApplied,
-      interestAmount,
-      derivedRate: interestRate,
-    });
   }
   
-  console.log("[transformApplication] Final interestRate (decimal):", interestRate);
 
   return {
     id: app.id || crypto.randomUUID(),

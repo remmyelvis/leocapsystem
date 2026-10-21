@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { signIn, useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import SessionExpiredNotice from "@/components/global/SessionExpiredNotice";
@@ -14,6 +14,7 @@ import { AlertCircle, ArrowLeft, Eye, EyeOff, Loader2, Lock, Mail } from "lucide
 import { applicantApi } from "@/lib/applicantApi";
 import { setToken, clearToken, clearAdminUser } from "@/lib/apiClient";
 import { useAuthStore } from "@/store/authStore";
+import { fetchCompanyName } from "@/lib/company";
 import type { UserRole } from "@/types/user";
 
 const loginSchema = z.object({
@@ -23,20 +24,10 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-function getRoleHome(role: string, applicantType: string): { url: string; userRole: UserRole } {
+function getRoleHome(role: string): { url: string; userRole: UserRole } {
   const r = role?.toLowerCase();
-  const t = applicantType?.toLowerCase();
-
-  if (r === "hr") {
-    return t === "nakama"
-      ? { url: "/hr/nakama", userRole: "HR_NAKAMA" }
-      : { url: "/hr/ideon", userRole: "HR_IDEON" };
-  }
-  if (r === "finance") {
-    return t === "nakama"
-      ? { url: "/finance", userRole: "FINANCE_NAKAMA" }
-      : { url: "/finance", userRole: "FINANCE_IDEON" };
-  }
+  if (r === "hr") return { url: "/hr/dashboard", userRole: "HR" };
+  if (r === "finance") return { url: "/finance/dashboard", userRole: "FINANCE" };
   return { url: "/dashboard", userRole: "USER" };
 }
 
@@ -71,10 +62,10 @@ export default function ApplicantLoginPage() {
       }
 
       const { applicant, access_token } = res.data;
-      const { url: redirectUrl, userRole } = getRoleHome(
-        applicant.role ?? "",
-        applicant.applicant_type ?? ""
-      );
+      const { url: redirectUrl, userRole } = getRoleHome(applicant.role ?? "");
+      const company = applicant.applicant_type ?? "";
+      const companyName =
+        userRole !== "USER" && company ? await fetchCompanyName(company) : undefined;
 
       setToken(access_token, "applicant");
       const userData = {
@@ -82,6 +73,8 @@ export default function ApplicantLoginPage() {
         name: applicant.name,
         email: applicant.email,
         role: userRole,
+        company,
+        companyName,
         createdAt: new Date(),
       };
       setStoreUser(userData);
@@ -92,14 +85,6 @@ export default function ApplicantLoginPage() {
         localStorage.setItem("leocap_user_company", applicant.applicant_type);
       }
 
-      // Populate NextAuth session so middleware can read the role
-      await signIn("credentials", {
-        email: data.email,
-        password: data.password,
-        redirect: false,
-      });
-
-      await new Promise((r) => setTimeout(r, 400));
       navigate(redirectUrl);
 
     } catch {

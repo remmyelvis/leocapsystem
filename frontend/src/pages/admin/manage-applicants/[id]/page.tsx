@@ -57,7 +57,7 @@ const IDEON_NAKAMA_DOC: DocDef = {
 
 function getRequiredDocs(applicantType: string): DocDef[] {
   const t = applicantType?.toLowerCase() || "";
-  if (t === "ideon" || t === "nakama") {
+  if (t !== "personal" && t !== "") {
     return [...BASE_DOCS, IDEON_NAKAMA_DOC];
   }
   return BASE_DOCS;
@@ -236,13 +236,9 @@ export default function ApplicantDetailsPage() {
       // Fetch loans
       setLoadingLoans(true);
       try {
-        console.log("Fetching loans for applicant:", params.id);
         const loansRes = await adminApplicationsApi.getAll();
-        console.log("Loans API response:", loansRes);
         if (!loansRes.error && loansRes.data) {
-          console.log("Total loans fetched:", loansRes.data.length);
           const filtered = loansRes.data.filter(a => a.application.applicant_id === params.id || a.application.applicant_id === response.data?.applicant?.id || a.bio_data?.email === response.data?.applicant?.email);
-          console.log("Filtered loans:", filtered.length, filtered);
           filtered.sort((a,b) => new Date(b.application.created_at || b.application.date_submitted || 0).getTime() - new Date(a.application.created_at || a.application.date_submitted || 0).getTime());
           setApplicantLoans(filtered);
         } else {
@@ -323,13 +319,9 @@ export default function ApplicantDetailsPage() {
       // Fetch loans
       setLoadingLoans(true);
       try {
-        console.log("Fetching loans for applicant:", params.id);
         const loansRes = await adminApplicationsApi.getAll();
-        console.log("Loans API response:", loansRes);
         if (!loansRes.error && loansRes.data) {
-          console.log("Total loans fetched:", loansRes.data.length);
           const filtered = loansRes.data.filter(a => a.application.applicant_id === params.id || a.application.applicant_id === response.data?.applicant?.id || a.bio_data?.email === response.data?.applicant?.email);
-          console.log("Filtered loans:", filtered.length, filtered);
           filtered.sort((a,b) => new Date(b.application.created_at || b.application.date_submitted || 0).getTime() - new Date(a.application.created_at || a.application.date_submitted || 0).getTime());
           setApplicantLoans(filtered);
         } else {
@@ -398,13 +390,9 @@ export default function ApplicantDetailsPage() {
       // Fetch loans
       setLoadingLoans(true);
       try {
-        console.log("Fetching loans for applicant:", params.id);
         const loansRes = await adminApplicationsApi.getAll();
-        console.log("Loans API response:", loansRes);
         if (!loansRes.error && loansRes.data) {
-          console.log("Total loans fetched:", loansRes.data.length);
           const filtered = loansRes.data.filter(a => a.application.applicant_id === params.id || a.application.applicant_id === response.data?.applicant?.id || a.bio_data?.email === response.data?.applicant?.email);
-          console.log("Filtered loans:", filtered.length, filtered);
           filtered.sort((a,b) => new Date(b.application.created_at || b.application.date_submitted || 0).getTime() - new Date(a.application.created_at || a.application.date_submitted || 0).getTime());
           setApplicantLoans(filtered);
         } else {
@@ -447,13 +435,9 @@ export default function ApplicantDetailsPage() {
       // Fetch loans
       setLoadingLoans(true);
       try {
-        console.log("Fetching loans for applicant:", params.id);
         const loansRes = await adminApplicationsApi.getAll();
-        console.log("Loans API response:", loansRes);
         if (!loansRes.error && loansRes.data) {
-          console.log("Total loans fetched:", loansRes.data.length);
           const filtered = loansRes.data.filter(a => a.application.applicant_id === params.id || a.application.applicant_id === response.data?.applicant?.id || a.bio_data?.email === response.data?.applicant?.email);
-          console.log("Filtered loans:", filtered.length, filtered);
           filtered.sort((a,b) => new Date(b.application.created_at || b.application.date_submitted || 0).getTime() - new Date(a.application.created_at || a.application.date_submitted || 0).getTime());
           setApplicantLoans(filtered);
         } else {

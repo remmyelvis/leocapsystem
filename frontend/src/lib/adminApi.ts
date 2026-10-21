@@ -262,12 +262,6 @@ export const adminApplicationsApi = {
       loan_status: "rate_set",
     };
 
-    console.log("========== setLoanTerms API DEBUG ==========");
-    console.log("[API] Application ID:", applicationId);
-    console.log("[API] Terms received:", terms);
-    console.log("[API] Interest rate (decimal):", terms.interestRate, "-> as string:", terms.interestRate.toString());
-    console.log("[API] Body being sent:", body);
-    console.log("=============================================");
 
     return apiCall<{ message: string; application?: ApplicationDetails }>(`/api/applications/amend/${applicationId}`, {
       method: "PATCH",

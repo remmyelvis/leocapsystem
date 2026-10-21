@@ -9,10 +9,3 @@ export async function signOut(options?: { callbackUrl?: string; redirect?: boole
   localStorage.removeItem("leocap_user_type");
   window.location.href = options?.callbackUrl || "/login";
 }
-
-export async function signIn(provider?: string, options?: any) {
-  if (options?.redirect !== false) {
-    window.location.href = options?.callbackUrl || "/login";
-  }
-  return { error: null, ok: true, status: 200, url: null };
-}

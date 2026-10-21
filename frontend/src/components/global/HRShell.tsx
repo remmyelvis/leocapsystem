@@ -18,6 +18,7 @@ import {
   Users,
 } from "lucide-react";
 import type { UserRole } from "@/types/user";
+import { companyLabel as getCompanyLabel } from "@/lib/company";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -28,6 +29,8 @@ interface HRUser {
   email: string;
   name: string;
   role: UserRole;
+  company?: string;
+  companyName?: string;
 }
 
 interface HRShellProps {
@@ -169,8 +172,7 @@ export default function HRShell({ user, children }: HRShellProps) {
     onNavClick: () => setSidebarOpen(false),
   };
 
-  const companyLabel =
-    user.role === "HR_IDEON" ? "Ideon Limited" : "Nakama";
+  const companyLabel = getCompanyLabel(user.company, user.companyName);
 
   return (
     <div className="flex h-screen bg-slate-50/50 overflow-hidden">

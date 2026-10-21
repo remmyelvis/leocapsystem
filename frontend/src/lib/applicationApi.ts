@@ -127,11 +127,9 @@ export const applicationApi = {
    * Uses dedicated endpoint: PATCH /api/applications/rate-confirmed/:id
    */
   confirmRate: async (id: string) => {
-    console.log("[ConfirmRate] Calling PATCH /api/applications/rate-confirmed/" + id);
     const response = await apiCall<{ message: string; application?: Record<string, unknown> }>(`/api/applications/rate-confirmed/${id}`, {
       method: "PATCH",
     });
-    console.log("[ConfirmRate] Response:", response);
     return response;
   },
 
@@ -140,11 +138,9 @@ export const applicationApi = {
    * Uses dedicated endpoint: PATCH /api/applications/rate-declined/:id
    */
   declineRate: async (id: string) => {
-    console.log("[DeclineRate] Calling PATCH /api/applications/rate-declined/" + id);
     const response = await apiCall<{ message: string; application?: Record<string, unknown> }>(`/api/applications/rate-declined/${id}`, {
       method: "PATCH",
     });
-    console.log("[DeclineRate] Response:", response);
     return response;
   },
 

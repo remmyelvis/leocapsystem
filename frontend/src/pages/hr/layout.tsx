@@ -15,10 +15,10 @@ export default function HRLayout() {
   }
 
   if (!user) {
-    return <Navigate to="/login/hr" replace />;
+    return <Navigate to="/login/applicant" replace />;
   }
 
-  if (user.role !== "HR_IDEON" && user.role !== "HR_NAKAMA") {
+  if (user.role !== "HR") {
     return <Navigate to="/login" replace />;
   }
 
@@ -36,6 +36,8 @@ export default function HRLayout() {
           email: user.email ?? "",
           name: user.name ?? "",
           role: user.role,
+          company: user.company,
+          companyName: user.companyName,
         }}
       >
         <Outlet />

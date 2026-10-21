@@ -25,8 +25,6 @@ export default function ApplicationsPage() {
     async function fetchApplications() {
       setLoading(true);
       const { data, error } = await applicationApi.getAll();
-      console.log("RAW API RESPONSE:", JSON.stringify(data, null, 2));
-      console.log("ERROR:", error);
       if (error) {
         setError(error);
       } else if (Array.isArray(data)) {

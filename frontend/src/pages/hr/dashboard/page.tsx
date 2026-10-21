@@ -12,12 +12,11 @@ import {
   ArrowRight,
   Building2,
 } from "lucide-react";
-import { getFinanceLoansForCompany, getMyLoans } from "@/lib/mockStaff";
 import { applicantApi } from "@/lib/applicantApi";
 import { applicationApi } from "@/lib/applicationApi";
 import type { GetAllApplicationItem } from "@/lib/applicationApi";
 import { useHrProfileStore } from "@/store/hrProfileStore";
-import type { UserRole } from "@/types/user";
+import { companyLabel as getCompanyLabel } from "@/lib/company";
 import { ProfileIncompleteBanner } from "@/components/profile/ProfileCompletion";
 
 const KES = new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -50,7 +49,6 @@ function StatCard({
 
 export default function HRDashboardPage() {
   const { data: session } = useSession();
-  const role = session?.user?.role as UserRole | undefined;
   const userId = session?.user?.id ?? "";
 
   const setProfile = useHrProfileStore((s) => s.setProfile);
@@ -83,8 +81,8 @@ export default function HRDashboardPage() {
     });
   }, [userId, setProfile]);
 
-  const company = role === "HR_IDEON" ? "IDEON" : "NAKAMA";
-  const companyLabel = company === "IDEON" ? "Ideon Limited" : "Nakama";
+  const company = (session?.user?.company ?? "").toLowerCase();
+  const companyLabel = getCompanyLabel(company, session?.user?.companyName);
 
   const [apiApps, setApiApps] = useState<GetAllApplicationItem[]>([]);
   const [_appsLoading, _setAppsLoading] = useState(true);
@@ -97,7 +95,7 @@ export default function HRDashboardPage() {
       if (Array.isArray(data)) {
         // Filter by the HR's company
         const filtered = data.filter(
-          (item) => item.application.company?.toUpperCase() === company
+          (item) => item.application.company?.toLowerCase() === company
         );
         setApiApps(filtered);
       } else {
@@ -125,10 +123,6 @@ export default function HRDashboardPage() {
       submittedAt: item.application.created_at,
     };
   });
-
-  // Keep mock data for finance loans and my loans for now
-  const financeLoans = getFinanceLoansForCompany(company);
-  const myLoans = getMyLoans(userId);
 
   const pending = companyApps.filter((a) => a.status === "Pending").length;
   const approved = companyApps.filter((a) => a.status === "Approved").length;
@@ -234,7 +228,7 @@ export default function HRDashboardPage() {
               {recentApps.map((app) => (
                 <Link
                   key={app.id}
-                  href={`/hr/applications/pending/${app.id}`}
+                  to={`/hr/applications/pending/${app.id}`}
                   className="flex items-center gap-4 px-6 py-3.5 hover:bg-slate-50 transition-colors"
                 >
                   <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-800 text-xs font-black flex-shrink-0">

@@ -7,7 +7,7 @@
  * Keyed by userId so multiple users on the same device stay separate.
  *
  * When real staff profile update APIs are available, replace the `save`
- * action with an API call and sync the values back into the NextAuth session.
+ * action with an API call and sync the values back into the signed-in user.
  */
 
 import { create } from "zustand";

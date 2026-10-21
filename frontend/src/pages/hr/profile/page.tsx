@@ -29,6 +29,8 @@ import { useProfileCompletion } from "@/hooks/useProfileCompletion";
 import { ProfileProgressBar } from "@/components/profile/ProfileCompletion";
 import { ChangePasswordSection } from "@/components/profile/ChangePassword";
 import { apiCall } from "@/lib/apiClient";
+import { useAuthStore } from "@/store/authStore";
+import { companyLabel as getCompanyLabel } from "@/lib/company";
 
 // ---------------------------------------------------------------------------
 // Schemas
@@ -104,7 +106,7 @@ const IDEON_NAKAMA_DOC: DocDef = {
 
 function getRequiredDocs(applicantType: string): DocDef[] {
   const t = applicantType.toLowerCase();
-  if (t === "ideon" || t === "nakama") {
+  if (t !== "personal" && t !== "") {
     return [...BASE_DOCS, IDEON_NAKAMA_DOC];
   }
   return BASE_DOCS;
@@ -251,7 +253,7 @@ function DocumentRow({
 // ---------------------------------------------------------------------------
 
 export default function HRProfilePage() {
-  const { data: session, status, update } = useSession();
+  const { data: session, status } = useSession();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<Record<string, File>>({});
@@ -265,8 +267,7 @@ export default function HRProfilePage() {
   const setProfile = useHrProfileStore((s) => s.setProfile);
   const serverProfile = getProfile(userId);
 
-  const role = session?.user?.role;
-  const companyLabel = role === "HR_IDEON" ? "Ideon Limited" : "Nakama";
+  const companyLabel = getCompanyLabel(session?.user?.company, session?.user?.companyName);
 
   // ---------------------------------------------------------------------------
   // Fetch applicant details from backend → store
@@ -350,15 +351,8 @@ export default function HRProfilePage() {
         return;
       }
 
-      // Update session JWT
-      await update({
-        name: data.name,
-        email: data.email,
-        phoneNumber: data.phone,
-        idNumber: data.idNumber,
-        kraPin: data.kraPin,
-        payrollNumber: data.payrollNumber,
-      });
+      // Keep the signed-in name and email in step with the saved profile
+      useAuthStore.getState().updateUser({ name: data.name, email: data.email });
 
       // Re-fetch server profile to sync store
       await refreshProfile();

@@ -35,7 +35,6 @@ import Page22 from './pages/finance/apply/page';
 import Page23 from './pages/finance/dashboard/page';
 import Page24 from './pages/finance/hr-loans/page';
 import Page25 from './pages/finance/hr-loans/pending/[id]/page';
-import Page26 from './pages/finance/hr-loans/[id]/page';
 import Page27 from './pages/finance/my-loans/page';
 import Page28 from './pages/finance/page';
 import Page29 from './pages/finance/profile/page';
@@ -46,20 +45,16 @@ import Page32 from './pages/hr/applications/pending/[id]/page';
 import Page33 from './pages/hr/applications/[id]/page';
 import Page34 from './pages/hr/apply/page';
 import Page35 from './pages/hr/dashboard/page';
-import Page36 from './pages/hr/finance-loans/page';
-import Page37 from './pages/hr/ideon/page';
 import Page38 from './pages/hr/my-loans/page';
-import Page39 from './pages/hr/nakama/page';
 import Page40 from './pages/hr/page';
 import Page41 from './pages/hr/profile/page';
 import Page42 from './pages/login/admin/page';
 import Page43 from './pages/login/applicant/page';
-import Page44 from './pages/login/finance/page';
-import Page45 from './pages/login/hr/page';
 import Page46 from './pages/login/page';
 import Page47 from './pages/page';
 import Page48 from './pages/privacy-policy/page';
 import Page49 from './pages/register/page';
+import NotFoundPage from './pages/not-found';
 
 function App() {
   return (
@@ -106,7 +101,6 @@ function App() {
         <Route path="dashboard" element={<Page23 />} />
         <Route path="hr-loans" element={<Page24 />} />
         <Route path="hr-loans/pending/:id" element={<Page25 />} />
-        <Route path="hr-loans/:id" element={<Page26 />} />
         <Route path="my-loans" element={<Page27 />} />
         <Route path="" element={<Page28 />} />
         <Route path="profile" element={<Page29 />} />
@@ -119,10 +113,7 @@ function App() {
         <Route path="applications/:id" element={<Page33 />} />
         <Route path="apply" element={<Page34 />} />
         <Route path="dashboard" element={<Page35 />} />
-        <Route path="finance-loans" element={<Page36 />} />
-        <Route path="ideon" element={<Page37 />} />
         <Route path="my-loans" element={<Page38 />} />
-        <Route path="nakama" element={<Page39 />} />
         <Route path="" element={<Page40 />} />
         <Route path="profile" element={<Page41 />} />
       </Route>
@@ -132,12 +123,11 @@ function App() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/login/admin" element={<Page42 />} />
       <Route path="/login/applicant" element={<Page43 />} />
-      <Route path="/login/finance" element={<Page44 />} />
-      <Route path="/login/hr" element={<Page45 />} />
       <Route path="/login" element={<Page46 />} />
       <Route path="/" element={<Page47 />} />
       <Route path="/privacy-policy" element={<Page48 />} />
       <Route path="/register" element={<Page49 />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

@@ -10,7 +10,6 @@ import { useLoanStore } from "@/store/loanStore";
 import { useApplicantProfileStore } from "@/store/applicantProfileStore";
 import { toast } from "sonner";
 import { useProfileCompletion } from "@/hooks/useProfileCompletion";
-import { sendApplicationConfirmation } from "@/services/notificationService";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, CheckCircle2, ChevronLeft, Info, Loader2 } from "lucide-react";
 import type { LoanType } from "@/types/loan";
@@ -356,10 +355,6 @@ export default function SalaryAdvancePage() {
         agreedInterestRate: LOAN_SETTINGS.salaryAdvance.interestRate,
       });
 
-      sendApplicationConfirmation(
-        { name: data.customerName, email: data.emailAddress },
-        { id: apiData.application?.id ?? (apiData as Record<string, unknown>).id } as Parameters<typeof sendApplicationConfirmation>[1]
-      );
       setSubmittedCalc(calc);
       toast.success("Application submitted successfully!");
       setSubmitted(true);

@@ -5,13 +5,13 @@ import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { signIn, useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import SessionExpiredNotice from "@/components/global/SessionExpiredNotice";
 import BrandLogo from "@/components/global/BrandLogo";
 import { AlertCircle, Eye, EyeOff, Loader2, Lock, Mail, Shield } from "lucide-react";
-import { adminApi, SUPER_ADMIN_EMAIL, isSuperAdmin } from "@/lib/adminApi";
+import { adminApi } from "@/lib/adminApi";
 import { setToken, setAdminUser, clearToken, clearAdminUser } from "@/lib/apiClient";
 
 const loginSchema = z.object({
@@ -43,36 +43,6 @@ export default function AdminLoginPage() {
     setError(null);
 
     try {
-      // ── Super Admin (hardcoded credentials) ─────────────────────────────
-      if (isSuperAdmin(data.email)) {
-        const result = await signIn("credentials", {
-          email: data.email,
-          password: data.password,
-          redirect: false,
-        });
-
-        if (result?.error) {
-          setError("Invalid email or password.");
-          return;
-        }
-
-        const adminUser = {
-          id: "super-admin-1",
-          name: "Super Admin",
-          email: SUPER_ADMIN_EMAIL,
-          number: "",
-          role: "ADMIN",
-        };
-        setAdminUser(adminUser);
-        setUser(adminUser);
-
-        await new Promise((r) => setTimeout(r, 400));
-        navigate("/admin/dashboard");
-
-        return;
-      }
-
-      // ── Regular Admin (backend API) ──────────────────────────────────────
       const res = await adminApi.login(data.email, data.password);
 
       // Check if login was successful (backend returns user object with role)
@@ -100,14 +70,6 @@ export default function AdminLoginPage() {
       setAdminUser(newAdminUser);
       setUser(newAdminUser);
 
-      // Populate NextAuth session so middleware allows /admin/* access
-      await signIn("credentials", {
-        email: data.email,
-        password: data.password,
-        redirect: false,
-      });
-
-      await new Promise((r) => setTimeout(r, 400));
       navigate("/admin/dashboard");
 
     } catch {

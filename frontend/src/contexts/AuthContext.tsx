@@ -4,7 +4,7 @@ import { useAuthStore } from '@/store/authStore';
 
 // Re-export plain helpers from their own module so this file only
 // contains React components/hooks (required for Vite Fast Refresh).
-export { signIn, signOut } from '@/lib/authHelpers';
+export { signOut } from '@/lib/authHelpers';
 
 interface User {
   id: string;
@@ -65,7 +65,7 @@ export function useAuth() {
   return context;
 }
 
-// NextAuth mock exports to minimize refactoring
+// Session-shaped view of the signed-in user (the pages read session.user)
 export function useSession() {
   const { user, isLoading } = useAuth();
   return React.useMemo(() => ({

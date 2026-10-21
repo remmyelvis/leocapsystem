@@ -13,12 +13,11 @@ import {
   Building2,
   Calculator,
 } from "lucide-react";
-import { getMyLoans } from "@/lib/mockStaff";
 import { applicantApi } from "@/lib/applicantApi";
 import { applicationApi } from "@/lib/applicationApi";
 import type { GetAllApplicationItem } from "@/lib/applicationApi";
 import { useFinanceProfileStore } from "@/store/financeProfileStore";
-import type { UserRole } from "@/types/user";
+import { companyLabel as getCompanyLabel } from "@/lib/company";
 import { ProfileIncompleteBanner } from "@/components/profile/ProfileCompletion";
 
 const KES = new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -51,7 +50,6 @@ function StatCard({
 
 export default function FinanceDashboardPage() {
   const { data: session } = useSession();
-  const role = session?.user?.role as UserRole | undefined;
   const userId = session?.user?.id ?? "";
   const setProfile = useFinanceProfileStore((s) => s.setProfile);
 
@@ -83,8 +81,8 @@ export default function FinanceDashboardPage() {
     });
   }, [userId, setProfile]);
 
-  const company = role === "FINANCE_IDEON" ? "IDEON" : "NAKAMA";
-  const companyLabel = company === "IDEON" ? "Ideon Limited" : "Nakama";
+  const company = (session?.user?.company ?? "").toLowerCase();
+  const companyLabel = getCompanyLabel(company, session?.user?.companyName);
 
   const [apiApps, setApiApps] = useState<GetAllApplicationItem[]>([]);
   const [appsLoading, setAppsLoading] = useState(true);
@@ -97,7 +95,7 @@ export default function FinanceDashboardPage() {
       if (data) {
         // Filter by the Finance team's company
         const filtered = data.filter(
-          (item) => item.application.company?.toUpperCase() === company
+          (item) => item.application.company?.toLowerCase() === company
         );
         setApiApps(filtered);
       }
@@ -123,8 +121,6 @@ export default function FinanceDashboardPage() {
       submittedAt: item.application.created_at,
     };
   });
-
-  const myLoans = getMyLoans(userId);
 
   const pending = companyApps.filter((a) => a.status === "Pending").length;
   const approved = companyApps.filter((a) => a.status === "Approved").length;
@@ -242,7 +238,7 @@ export default function FinanceDashboardPage() {
               {recentApps.map((app) => (
                 <Link
                   key={app.id}
-                  href={`/finance/applications/${app.id}`}
+                  to={`/finance/applications/${app.id}`}
                   className="flex items-center gap-4 px-6 py-3.5 hover:bg-slate-50 transition-colors"
                 >
                   <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-800 text-xs font-black flex-shrink-0">

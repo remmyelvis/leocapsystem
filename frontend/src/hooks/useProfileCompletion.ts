@@ -15,7 +15,7 @@
  *   • id_copy
  *   • kra_certificate
  *
- * Additional document required for Ideon / Nakama users:
+ * Additional document required for company (non-personal) users:
  *   • contract_document
  */
 
@@ -24,7 +24,6 @@ import { useSession } from "@/contexts/AuthContext";
 import { useApplicantProfileStore } from "@/store/applicantProfileStore";
 import { useHrProfileStore } from "@/store/hrProfileStore";
 import { useFinanceProfileStore } from "@/store/financeProfileStore";
-import type { UserRole } from "@/types/user";
 
 // --------------- types -------------------------------------------------------
 
@@ -73,14 +72,7 @@ export interface ProfileCompletion {
 
 // --------------- helpers -----------------------------------------------------
 
-function deriveCompany(company?: string, role?: UserRole): string | undefined {
-  if (company) return company;
-  if (role === "HR_IDEON" || role === "FINANCE_IDEON") return "ideon";
-  if (role === "HR_NAKAMA" || role === "FINANCE_NAKAMA") return "nakama";
-  return undefined;
-}
-
-function isIdeonOrNakama(applicantType?: string | null, company?: string): boolean {
+function isCompanyUser(applicantType?: string | null, company?: string): boolean {
   const t = (applicantType ?? company ?? "").toLowerCase();
   return t !== "personal" && t !== "";
 }
@@ -100,9 +92,9 @@ export function useProfileCompletion(): ProfileCompletion {
     const role = user?.role;
 
     let getProfile: any = getApplicantProfile;
-    if (role === "HR_IDEON" || role === "HR_NAKAMA") {
+    if (role === "HR") {
       getProfile = getHrProfile;
-    } else if (role === "FINANCE_IDEON" || role === "FINANCE_NAKAMA") {
+    } else if (role === "FINANCE") {
       getProfile = getFinanceProfile;
     }
 
@@ -116,7 +108,7 @@ export function useProfileCompletion(): ProfileCompletion {
     const kraPin = serverProfile?.kraPin ?? user?.kraPin;
     const payrollNumber = serverProfile?.payrollNumber ?? user?.payrollNumber;
 
-    const company = deriveCompany(user?.company, user?.role as UserRole | undefined);
+    const company = user?.company;
     const applicantType = serverProfile?.applicantType;
 
     // ── 1. Personal details ──────────────────────────────────────────────────
@@ -135,7 +127,7 @@ export function useProfileCompletion(): ProfileCompletion {
       hasKraPin: Boolean(kraPin),
     };
 
-    if (isIdeonOrNakama(applicantType, company)) {
+    if (isCompanyUser(applicantType, company)) {
       checks.hasPayrollNumber = Boolean(payrollNumber);
     }
 
@@ -160,7 +152,7 @@ export function useProfileCompletion(): ProfileCompletion {
       },
     ];
 
-    if (isIdeonOrNakama(applicantType, company)) {
+    if (isCompanyUser(applicantType, company)) {
       requiredDocuments.push({
         key: "contract_document",
         label: "Contract Document",

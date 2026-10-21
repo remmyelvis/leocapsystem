@@ -23,13 +23,13 @@ src/
 │   ├── dashboard/         # applicant portal (apply, applications, profile)
 │   ├── admin/             # admin portal (applicants, staff, companies,
 │   │                      #   audit-trail, reports, calculators, settings)
-│   ├── hr/                # HR portal (applications, ideon, nakama)
+│   ├── hr/                # HR portal (dashboard, applications, apply, profile)
 │   └── finance/           # finance portal (applications, hr-loans, my-loans)
 ├── components/            # global/ (shell, navbar), loans/, profile/, ui/
 ├── contexts/              # AuthContext
 ├── store/                 # Zustand stores (auth, loan, admin, profiles, ...)
 ├── repositories/ services/ hooks/ schemas/ types/ configs/
-└── lib/                   # API clients + loan math (NOT in git, see Notes)
+└── lib/                   # API clients, loan math, company helpers
 
 ## Backend API Endpoints
 
@@ -80,7 +80,9 @@ GET   /api/application/emails/get-email/:email_id
 ## Authentication Flow
 
 - Applicants: login via /api/auth/applicant/login
-- Admin/HR/Finance: login via /api/auth/users/login
+- Admin: login via /api/auth/users/login
+- HR and finance staff are stored with the applicants (their role is hr or
+  finance and `applicant_type` is their company) and sign in on /login/applicant
 - Backend issues a JWT (Flask-JWT-Extended) as the `access_token_cookie`
   cookie (also accepts an Authorization header); the role is in the token
 - Client side: `AuthContext` + Zustand `authStore`, helpers in `src/lib/`
@@ -92,9 +94,8 @@ GET   /api/application/emails/get-email/:email_id
 | Role      | Portal     | Access               |
 | --------- | ---------- | -------------------- |
 | applicant | /dashboard | own loans only       |
-| hr_nakama | /hr        | Nakama applications  |
-| hr_ideon  | /hr        | Ideon applications   |
-| finance   | /finance   | HR loan applications |
+| hr        | /hr        | their company's applications (any company) |
+| finance   | /finance   | their company's HR loan applications |
 | admin     | /admin     | everything           |
 
 ## Loan Types
@@ -168,8 +169,8 @@ Progress bar: 50% personal info + 50% documents
 
 ## HR Portal
 
-- hr_ideon sees only Ideon applications
-- hr_nakama sees only Nakama applications
+- HR sees only the applications of their own company (the server enforces it;
+  the signed-in user carries `company` and `companyName` from the login)
 - HR can adjust amount applied on applications
 - HR can apply for personal loans (received by finance role)
 - Finance receives HR loan applications
@@ -204,6 +205,3 @@ Progress bar: 50% personal info + 50% documents
 - macOS: port 5000 is taken by AirPlay Receiver. Run Flask on another port and
   update the proxy target in vite.config.ts (or turn AirPlay Receiver off)
 - Demo mode: `DEMO_MODE=True` stops real emails (see ../start_demo.bat)
-- `src/lib/` is NOT in git: the root .gitignore has `lib/` (a Python template
-  rule), so a fresh clone is missing apiClient, applicantApi, etc. and won't build
-- Leftover Next.js file: `middleware.ts` (imports `@/lib/auth`, unused by Vite)

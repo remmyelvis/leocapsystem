@@ -116,8 +116,6 @@ export async function apiCall<T>(
     ? (import.meta.env.VITE_BACKEND_URL || "http://localhost:5000")
     : BASE_URL;
 
-  console.log("[apiCall] Called with endpoint:", endpoint, "method:", method);
-
   const headers: Record<string, string> = {};
 
   if (!isFormData) {
@@ -131,19 +129,6 @@ export async function apiCall<T>(
     }
   }
 
-  // Debug logging for API calls
-  const isAmendCall = endpoint.includes("/amend/");
-  const isDocUpload = endpoint.includes("/applicant/update/");
-  const shouldLog = isAmendCall || isDocUpload;
-  if (shouldLog) {
-    console.log("========== API CLIENT DEBUG ==========");
-    console.log("[API] URL:", `${baseUrl}${endpoint}`);
-    console.log("[API] Method:", method);
-    console.log("[API] Headers:", headers);
-    if (!isFormData) console.log("[API] Body:", body);
-    if (isFormData && formData) console.log("[API] FormData keys:", Array.from(formData.keys()));
-  }
-
   try {
     const config: AxiosRequestConfig = {
       url: `${baseUrl}${endpoint}`,
@@ -154,27 +139,13 @@ export async function apiCall<T>(
 
     const response = await axiosInstance(config);
 
-    if (shouldLog) {
-      console.log("[API] Response Status:", response.status);
-    }
-
     if (response.status === 204) {
-      if (shouldLog) console.log("[API] 204 No Content response");
       return { data: null, error: null, status: 204 };
-    }
-
-    if (shouldLog) {
-      console.log("[API] Response Data:", response.data);
-      console.log("=========================================");
     }
 
     return { data: response.data, error: null, status: response.status };
   } catch (err: any) {
     console.error("API call failed:", err);
-    if (shouldLog) {
-      console.log("[API] EXCEPTION:", err);
-      console.log("=========================================");
-    }
 
     if (axios.isAxiosError(err)) {
       const status = err.response?.status || 0;

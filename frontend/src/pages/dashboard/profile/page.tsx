@@ -28,6 +28,7 @@ import { useProfileCompletion } from "@/hooks/useProfileCompletion";
 import { ProfileProgressBar } from "@/components/profile/ProfileCompletion";
 import { ChangePasswordSection } from "@/components/profile/ChangePassword";
 import { apiCall } from "@/lib/apiClient";
+import { useAuthStore } from "@/store/authStore";
 
 // ---------------------------------------------------------------------------
 // Schemas
@@ -251,7 +252,7 @@ function DocumentRow({
 // ---------------------------------------------------------------------------
 
 export default function ProfilePage() {
-  const { data: session, status, update } = useSession();
+  const { data: session, status } = useSession();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<Record<string, File>>({});
@@ -351,19 +352,8 @@ export default function ProfilePage() {
         return;
       }
 
-      // Update session JWT (non-fatal — proceed even if this fails)
-      try {
-        await update({
-          name: data.name,
-          email: data.email,
-          phoneNumber: data.phone,
-          idNumber: data.idNumber,
-          kraPin: data.kraPin,
-          payrollNumber: data.payrollNumber,
-        });
-      } catch {
-        // session update failure is non-fatal
-      }
+      // Keep the signed-in name and email in step with the saved profile
+      useAuthStore.getState().updateUser({ name: data.name, email: data.email });
 
       // Re-fetch server profile to sync store
       await refreshProfile();

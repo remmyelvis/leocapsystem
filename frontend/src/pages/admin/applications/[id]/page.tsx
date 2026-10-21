@@ -261,12 +261,6 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
   // Initialize editable fields when app data loads
   useEffect(() => {
     if (app) {
-      console.log("========== LOADING APP DATA INTO FORM ==========");
-      console.log("[Load] app.amountApplied:", app.amountApplied);
-      console.log("[Load] app.processingFees:", app.processingFees);
-      console.log("[Load] app.legalFees:", app.legalFees);
-      console.log("[Load] app.accessFees:", app.accessFees);
-      console.log("[Load] app.interestRate (raw):", app.interestRate);
 
       setLoanAmount(app.amountApplied?.toString() || "");
       // Convert processing fees to percentage (3% by default)
@@ -293,14 +287,11 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
         const rateValue = app.interestRate <= 1
           ? (app.interestRate * 100).toFixed(2)  // Convert 0.10 to 10
           : app.interestRate.toString();         // Already 10, keep as is
-        console.log("[Load] Interest rate converted to percentage:", rateValue);
         setInterestRate(rateValue);
       } else {
         // Default to 10% for new applications
-        console.log("[Load] No interest rate found, defaulting to 10%");
         setInterestRate("10");
       }
-      console.log("================================================");
     }
   }, [app]);
 
@@ -533,16 +524,6 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
       const interestAmount = amount * rateDecimal;
       const repaymentAmount = amount + interestAmount;
 
-      console.log("========== SET LOAN TERMS DEBUG ==========");
-      console.log("[Terms] Application ID:", app.id);
-      console.log("[Terms] Current app status:", app.status);
-      console.log("[Terms] Loan amount:", amount);
-      console.log("[Terms] Processing fees:", procFees);
-      console.log("[Terms] Legal fees:", legFees);
-      console.log("[Terms] Access fees:", accFees);
-      console.log("[Terms] Interest rate (decimal):", rateDecimal);
-      console.log("[Terms] Calculated breakdown:", { disbursementAmount, interestAmount, repaymentAmount });
-      console.log("[Terms] Calling API: PATCH /api/applications/amend/" + app.id);
 
       // Use the amend endpoint with all editable loan values
       const response = await adminApplicationsApi.setLoanTerms(app.id, {
@@ -555,11 +536,6 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
         repaymentAmount,
       });
 
-      console.log("[Terms] API Response (full):", response);
-      console.log("[Terms] Response status:", response.status);
-      console.log("[Terms] Response data:", response.data);
-      console.log("[Terms] Response error:", response.error);
-      console.log("==============================================");
 
       if (response.error) {
         console.error("[Terms] API returned error:", response.error);
@@ -570,7 +546,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
       // Store rate details in our local rate-store so applicant can access them
       // (Backend doesn't return these fields to applicants)
       try {
-        const storeResponse = await apiCall(`/api/rate-store/${app.id}`, {
+        await apiCall(`/api/rate-store/${app.id}`, {
           method: "POST",
           body: {
             interestRate: rateDecimal,
@@ -582,17 +558,13 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
             loanAmount: amount,
           },
         });
-        const storeData = storeResponse.data;
-        console.log("[Terms] Stored in rate-store:", storeData);
       } catch (storeErr) {
         console.error("[Terms] Failed to store in rate-store:", storeErr);
         // Don't fail the whole operation if rate-store fails
       }
 
       // Check if the response actually contains updated data
-      if (response.data) {
-        console.log("[Terms] SUCCESS - Response data:", JSON.stringify(response.data, null, 2));
-      } else {
+      if (!response.data) {
         console.warn("[Terms] WARNING - No data in response, changes may not have persisted");
       }
 
@@ -600,7 +572,6 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
       setSetRateValue(rate);
 
       toast.success(`Loan terms set successfully. Applicant will be notified.`);
-      console.log("[Terms] Refetching application data...");
       refetch();
     } catch (err) {
       console.error("[Terms] EXCEPTION:", err);
@@ -612,19 +583,13 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
 
   // Email handlers
   const handleAddAttachment = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("[Attachment] handleAddAttachment triggered");
-    console.log("[Attachment] e.target.files:", e.target.files);
     const files = e.target.files;
     if (files && files.length > 0) {
-      console.log("[Attachment] Adding files:", Array.from(files).map(f => f.name));
       const newFiles = Array.from(files);
       setEmailAttachments(prev => {
         const updated = [...prev, ...newFiles];
-        console.log("[Attachment] Updated attachments count:", updated.length);
         return updated;
       });
-    } else {
-      console.log("[Attachment] No files selected");
     }
     // Reset input so same file can be selected again
     if (fileInputRef.current) {
@@ -644,10 +609,6 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
 
     setSendingEmail(true);
     try {
-      console.log("[Email] Sending email for application:", app.id);
-      console.log("[Email] Subject:", emailSubject.trim() || defaultSubject);
-      console.log("[Email] Message:", emailMessage.trim());
-      console.log("[Email] Attachments count:", emailAttachments.length);
 
       const formData = new FormData();
       formData.append("confirmation_text", emailMessage.trim());
@@ -661,7 +622,6 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
 
       const emailResponse = await emailApi.create(app.id, formData);
 
-      console.log("[Email] API Response:", emailResponse);
 
       if (emailResponse.error) {
         console.error("[Email] API Error:", emailResponse.error);
@@ -770,7 +730,6 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
   // Calculate preview legal fees
   const previewLegFees = parseFloat(legalFees) || 0;
 
-  console.log("[Preview] interestRate input:", interestRate, "-> previewRate:", previewRate);
 
   const loanPreview = canEditLoanTerms && !isNaN(previewRate) && previewRate > 0 && previewAmount > 0
     ? {

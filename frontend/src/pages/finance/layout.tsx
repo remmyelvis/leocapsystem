@@ -15,10 +15,10 @@ export default function FinanceLayout() {
   }
 
   if (!user) {
-    return <Navigate to="/login/finance" replace />;
+    return <Navigate to="/login/applicant" replace />;
   }
 
-  if (user.role !== "FINANCE_IDEON" && user.role !== "FINANCE_NAKAMA") {
+  if (user.role !== "FINANCE") {
     return <Navigate to="/login" replace />;
   }
 
@@ -36,6 +36,8 @@ export default function FinanceLayout() {
           email: user.email ?? "",
           name: user.name ?? "",
           role: user.role,
+          company: user.company,
+          companyName: user.companyName,
         }}
       >
         <Outlet />

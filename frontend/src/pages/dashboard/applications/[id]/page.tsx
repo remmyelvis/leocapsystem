@@ -115,21 +115,8 @@ function mapApiToApp(appData: Record<string, unknown>, bioData: Record<string, u
     if (totalRepayment && totalRepayment > amountApplied) {
       const interestAmount = totalRepayment - amountApplied;
       parsedInterestRate = interestAmount / amountApplied;
-      console.log("[mapApiToApp] Derived interest rate from repayment:", {
-        totalRepayment,
-        amountApplied,
-        interestAmount,
-        derivedRate: parsedInterestRate,
-      });
     }
   }
-
-  console.log("[mapApiToApp] Interest rate parsing:", {
-    raw: rawInterestRate,
-    parsed: parsedInterestRate,
-    status: appData.loan_status,
-    totalRepayment: appData.total_repayment_amount || appData.repayment_amount,
-  });
 
   // Parse financial fields from API (now returned by backend in GET response)
   const apiProcessingFees = appData.processing_fees ? Number(appData.processing_fees) : undefined;
@@ -329,32 +316,8 @@ export default function ApplicationDetailPage() {
       if (error) {
         setFetchError(error);
       } else if (data) {
-        // Debug log - remove after verifying
-        console.log("API Response (raw):", data);
         const appData = ((data as unknown) as Record<string, unknown>).application ?? data;
         const bioData = ((data as unknown) as Record<string, unknown>).bio_data ?? {};
-        console.log("Application data:", appData);
-        console.log("Amount fields:", {
-          amount_applied: appData.amount_applied,
-          disbursement_amount: appData.disbursement_amount,
-          total_repayment_amount: appData.total_repayment_amount,
-          repayment_amount: appData.repayment_amount,
-        });
-        console.log("Fee fields:", {
-          processing_fees: appData.processing_fees,
-          legal_fees: appData.legal_fees,
-          access_fees: appData.access_fees,
-        });
-        console.log("Interest rate fields:", {
-          interest_rate: appData.interest_rate,
-          interestRate: appData.interestRate,
-          agreed_interest_rate: appData.agreed_interest_rate,
-          loan_status: appData.loan_status,
-        });
-        console.log("Date fields:", {
-          created_at: appData.created_at,
-          updated_at: appData.updated_at,
-        });
         setApp(mapApiToApp(appData, bioData));
       }
       setLoading(false);
@@ -369,15 +332,11 @@ export default function ApplicationDetailPage() {
 
       // Only fetch if status is rate_set and we don't have rate from API
       if (app.status === "RATE_SET" && !app.agreedInterestRate) {
-        console.log("[RateStore] Fetching rate details for:", id);
         try {
           const response = await apiCall(`/api/rate-store/${id}`);
           if (!response.error && response.data) {
             const data = response.data as any;
-            console.log("[RateStore] Got rate details:", data);
             setRateStoreData(data);
-          } else {
-            console.log("[RateStore] No rate details found (404)");
           }
         } catch (err) {
           console.error("[RateStore] Failed to fetch rate details:", err);
@@ -446,14 +405,6 @@ export default function ApplicationDetailPage() {
   // Get interest rate - prioritize API response, then rate store
   const effectiveInterestRate = app.agreedInterestRate ?? rateStoreData?.interestRate;
 
-  // Debug: Log rate set calculation
-  console.log("[LoanBreakdown] hasRateBeenSet:", hasRateBeenSet);
-  console.log("[LoanBreakdown] agreedInterestRate (from API):", app.agreedInterestRate);
-  console.log("[LoanBreakdown] rateStoreData:", rateStoreData);
-  console.log("[LoanBreakdown] effectiveInterestRate:", effectiveInterestRate);
-  console.log("[LoanBreakdown] calculatedLoanAmount:", app.calculatedLoanAmount);
-  console.log("[LoanBreakdown] amountApplied:", app.amountApplied);
-
   // Calculate loan breakdown for RATE_SET status (general loan)
   // Priority: 1) API financial fields (most accurate), 2) Rate store, 3) Calculate from rate
   let loanBreakdown = null;
@@ -470,7 +421,6 @@ export default function ApplicationDetailPage() {
         repaymentAmount: app.apiTotalRepayment,
         interestRate: effectiveInterestRate,
       };
-      console.log("[LoanBreakdown] Using API values:", loanBreakdown);
     } else if (rateStoreData) {
       // Fallback: use rate store data
       loanBreakdown = {
@@ -482,13 +432,9 @@ export default function ApplicationDetailPage() {
         repaymentAmount: rateStoreData.repaymentAmount,
         interestRate: rateStoreData.interestRate,
       };
-      console.log("[LoanBreakdown] Using rate store data:", loanBreakdown);
     } else if (effectiveInterestRate) {
       // Fallback: calculate from effective rate
       loanBreakdown = calculateGeneralLoan(loanAmount, effectiveInterestRate);
-      console.log("[LoanBreakdown] Calculated breakdown:", loanBreakdown);
-    } else {
-      console.log("[LoanBreakdown] No breakdown available - waiting for rate data");
     }
   }
 
@@ -506,7 +452,6 @@ export default function ApplicationDetailPage() {
   const handleConfirmRate = async () => {
     setConfirming(true);
     try {
-      console.log("[Rate Confirm] Confirming rate for application:", app.id);
       const { error } = await applicationApi.confirmRate(app.id);
       if (error) {
         console.error("[Rate Confirm] Error:", error);
@@ -514,7 +459,6 @@ export default function ApplicationDetailPage() {
         setConfirming(false);
         return;
       }
-      console.log("[Rate Confirm] Success!");
       toast.success("Interest rate accepted! Your application is being processed.");
       // Also update local store for immediate UI feedback
       confirmLoanRate(app.id);
@@ -531,14 +475,12 @@ export default function ApplicationDetailPage() {
 
   const handleDeclineRate = async () => {
     try {
-      console.log("[Rate Decline] Declining rate for application:", app.id);
       const { error } = await applicationApi.declineRate(app.id);
       if (error) {
         console.error("[Rate Decline] Error:", error);
         toast.error(`Could not decline rate: ${error}`);
         return;
       }
-      console.log("[Rate Decline] Success!");
       toast.success("Interest rate declined. The lender will be notified.");
       setTimeout(() => {
         navigate("/dashboard/applications");

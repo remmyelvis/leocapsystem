@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { useSession } from "@/contexts/AuthContext";
 import { Search, Eye, Loader2, FileDown, FileSpreadsheet } from "lucide-react";
 import { apiCall, downloadFile } from "@/lib/apiClient";
-import type { UserRole } from "@/types/user";
+import { companyLabel as getCompanyLabel, repaymentReportPath } from "@/lib/company";
 import { toast } from "sonner";
 
 const KES = new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -66,9 +66,8 @@ interface ApplicationItem {
 
 export default function FinanceCompanyApplicationsPage() {
   const { data: session } = useSession();
-  const role = session?.user?.role as UserRole | undefined;
-  const company = role === "FINANCE_IDEON" ? "ideon" : "nakama";
-  const companyLabel = company === "ideon" ? "Ideon Limited" : "Nakama Tech Limited";
+  const company = (session?.user?.company ?? "").toLowerCase();
+  const companyLabel = getCompanyLabel(company, session?.user?.companyName);
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -150,8 +149,8 @@ export default function FinanceCompanyApplicationsPage() {
     setDownloadingPdf(true);
     const capitalizedMonth = selectedMonth ? selectedMonth.charAt(0).toUpperCase() + selectedMonth.slice(1) : "";
     const url = capitalizedMonth
-      ? `/api/reports/applications/get-all/repayment/${company}/pdf?month=${capitalizedMonth}`
-      : `/api/reports/applications/get-all/repayment/${company}/pdf`;
+      ? `${repaymentReportPath(company, "pdf")}?month=${capitalizedMonth}`
+      : repaymentReportPath(company, "pdf");
     const { error } = await downloadFile(
       url,
       `repayment_${company}_export.pdf`
@@ -164,8 +163,8 @@ export default function FinanceCompanyApplicationsPage() {
     setDownloadingExcel(true);
     const capitalizedMonth = selectedMonth ? selectedMonth.charAt(0).toUpperCase() + selectedMonth.slice(1) : "";
     const url = capitalizedMonth
-      ? `/api/reports/applications/get-all/repayment/${company}/excel?month=${capitalizedMonth}`
-      : `/api/reports/applications/get-all/repayment/${company}/excel`;
+      ? `${repaymentReportPath(company, "excel")}?month=${capitalizedMonth}`
+      : repaymentReportPath(company, "excel");
     const { error } = await downloadFile(
       url,
       `repayment_${company}_export.xlsx`

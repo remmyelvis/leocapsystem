@@ -10,7 +10,6 @@ import { useLoanStore } from "@/store/loanStore";
 import { toast } from "sonner";
 import { useProfileCompletion } from "@/hooks/useProfileCompletion";
 import { useApplicantProfileStore } from "@/store/applicantProfileStore";
-import { sendApplicationConfirmation } from "@/services/notificationService";
 import { Button } from "@/components/ui/button";
 import {
   AlertCircle,
@@ -486,10 +485,6 @@ export default function GeneralLoanPage() {
         loanPurpose: data.loanPurpose,
       });
 
-      sendApplicationConfirmation(
-        { name: data.customerName, email: data.emailAddress },
-        { id: apiData.application?.id ?? (apiData as Record<string, unknown>).id } as Parameters<typeof sendApplicationConfirmation>[1]
-      );
       toast.success("Application submitted successfully!");
       setSubmitted(true);
     } catch {
