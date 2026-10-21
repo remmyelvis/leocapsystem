@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 from datetime import datetime, timedelta
 
@@ -12,7 +13,9 @@ _LOAN_TYPES = {"salary_advance": "salary advance", "personal": "personal loan"}
 
 def hr_recipients(application, applicant):
     """Who is told about a new application: the HR staff accounts of the applicant's company plus the HR address(es)
-    on the company record, each address once. Suspended staff and the applicant themselves are left out."""
+    on the company record, each address once. Personal applicants have no employer, so the shared HR mailbox from
+    the server .env (HR_EMAIL) is told instead of the Personal company's own address (that one is the fallback when
+    HR_EMAIL is not set). Suspended staff and the applicant themselves are left out."""
     found = {}
 
     def add(address):
@@ -25,9 +28,11 @@ def hr_recipients(application, applicant):
             add(staff.email)
 
     company = Company.query.filter_by(code=application.company).first()
-    if company and company.hr_email:
-        for address in re.split(r"[,;\s]+", company.hr_email):
-            add(address)
+    addresses = company.hr_email if company and company.hr_email else ""
+    if application.company == "personal" and (os.getenv("HR_EMAIL") or "").strip():
+        addresses = os.getenv("HR_EMAIL")
+    for address in re.split(r"[,;\s]+", addresses):
+        add(address)
 
     found.pop((applicant.email or "").strip().lower(), None)
     return list(found.values())
