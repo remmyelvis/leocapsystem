@@ -1,7 +1,6 @@
 import logging
 import os
 import re
-import threading
 from datetime import datetime, timedelta
 
 from flask import current_app
@@ -10,6 +9,7 @@ from website.extensions import db
 from website.models import Applicant, AuditAction, AuditLog, Company
 from website.password_reset import frontend_url
 from website import system_email_utils
+from website.system_email_utils import run_after_response
 
 _ADDRESS = re.compile(r"^[^@\s,;<>]+@[^@\s,;<>]+\.[^@\s,;<>]+$")
 _LOAN_TYPES = {"salary_advance": "salary advance", "personal": "personal loan"}
@@ -88,9 +88,9 @@ def _record_email(kind, address, application_id, ok, error, subject, mask_addres
 
 
 def _deliver(kind, messages, mask_address=False):
-    """Send (address, subject, body, application_id[, kind]) messages one after another in a single background thread (the mail
-    host limits how fast it takes mail) and write an audit log row for each. Nothing here can block or fail the
-    request that asked for it; a problem is only logged."""
+    """Send (address, subject, body, application_id[, kind]) messages one after another once the answer has been sent
+    (the mail host limits how fast it takes mail) and write an audit log row for each. Nothing here can delay or fail
+    the answer to the request that asked for it; a problem is only logged."""
     app = current_app._get_current_object()
 
     def _run():
@@ -108,12 +108,12 @@ def _deliver(kind, messages, mask_address=False):
             except Exception:
                 logging.exception("Could not write the audit log for the %s email to %s", what, address)
 
-    threading.Thread(target=_run, daemon=True).start()
+    run_after_response(_run)
 
 
 def notify_hr_of_application(application, applicant):
     """Email HR about a new loan application. It runs after the application has been saved and can never get in its
-    way: sending is in the background and any problem is only logged."""
+    way: sending happens after the answer has been sent and any problem is only logged."""
     try:
         recipients = hr_recipients(application, applicant)
         finance = finance_recipients(application, applicant)

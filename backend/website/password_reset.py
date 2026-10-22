@@ -9,7 +9,7 @@ from flask import current_app
 from itsdangerous import BadSignature, URLSafeTimedSerializer
 
 from website.models import Applicant
-from website.system_email_utils import send_email_smtp
+from website.system_email_utils import run_after_response, send_email_smtp
 
 RESET_LINK_MINUTES = 60
 EMAIL_COOLDOWN_SECONDS = 60        # one reset email per address per minute
@@ -67,7 +67,7 @@ def frontend_url():
 
 
 def send_reset_email(applicant):
-    """Email the reset link in the background, so the answer to the request takes the same time whether or not an
+    """Email the reset link after the answer has been sent, so the answer to the request takes the same time whether or not an
     account exists. The link base is a server setting, never taken from the request."""
     link = f"{frontend_url()}/reset-password?token={make_reset_token(applicant)}"
     body = (
@@ -88,4 +88,4 @@ def send_reset_email(applicant):
         except Exception:
             logging.exception("Password reset email to %s failed", recipient)
 
-    threading.Thread(target=_send, daemon=True).start()
+    run_after_response(_send)
