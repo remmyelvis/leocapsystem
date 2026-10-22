@@ -1,5 +1,6 @@
 
 
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { signOut } from "@/contexts/AuthContext";
@@ -14,6 +15,7 @@ import {
   Calculator
 } from "lucide-react";
 import type { UserRole } from "@/types/user";
+import { formatName } from "@/lib/formatName";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -52,6 +54,12 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
 
   const handleSignOut = () => signOut({ callbackUrl: "/login" });
 
+  // Same compact sizing as the admin portal (root font and controls, see globals.css).
+  useEffect(() => {
+    document.documentElement.classList.add("admin-ui");
+    return () => document.documentElement.classList.remove("admin-ui");
+  }, []);
+
   // Shared nav link renderer
   const renderNavLinks = (collapsed: boolean, onNav?: () => void) =>
     navItems.map(({ href, label, icon: Icon }) => {
@@ -81,8 +89,8 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
       {/* ── Desktop sidebar (md+): full labels ── */}
       <aside className="hidden md:flex lg:hidden flex-col w-16 bg-slate-900 flex-shrink-0">
         {/* Logo icon only */}
-        <div className="h-16 border-b border-slate-800 flex items-center justify-center flex-shrink-0">
-          <BrandLogo size="sm" />
+        <div className="h-16 bg-white border-b border-slate-200 flex items-center justify-center flex-shrink-0">
+          <BrandLogo src="/logo-mark.png" height="1.5rem" width="1.5rem" />
         </div>
         {/* Nav */}
         <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
@@ -102,8 +110,8 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
 
       {/* ── Desktop sidebar (lg+): full with labels ── */}
       <aside className="hidden lg:flex lg:flex-col w-64 bg-slate-900 flex-shrink-0">
-        <div className="px-6 py-5 border-b border-slate-800 flex-shrink-0">
-          <BrandLogo size="sm" />
+        <div className="h-16 pl-5 pr-3 bg-white border-b border-slate-200 flex items-center flex-shrink-0">
+          <BrandLogo src="/logo-wordmark.png" height="2rem" />
         </div>
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
           {renderNavLinks(false)}
@@ -125,8 +133,8 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
         <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-sm z-40 sticky top-0 px-4 sm:px-6 h-16 flex items-center gap-4 flex-shrink-0">
           <div className="flex-1" />
           <UserMenu 
-            name={user.name}
-            roleLabel={user.role.toLowerCase()}
+            name={formatName(user.name)}
+            roleLabel="Applicant"
             bgColorClass="bg-slate-900"
             profileHref="/dashboard/profile"
           />

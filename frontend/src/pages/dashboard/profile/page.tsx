@@ -29,6 +29,7 @@ import { ProfileProgressBar } from "@/components/profile/ProfileCompletion";
 import { ChangePasswordSection } from "@/components/profile/ChangePassword";
 import { apiCall } from "@/lib/apiClient";
 import { useAuthStore } from "@/store/authStore";
+import { formatName } from "@/lib/formatName";
 
 // ---------------------------------------------------------------------------
 // Schemas
@@ -62,9 +63,9 @@ type ProfileForm = z.infer<typeof profileSchema>;
 // ---------------------------------------------------------------------------
 
 const inputClass =
-  "w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-colors placeholder:text-gray-300 disabled:bg-slate-50 disabled:text-slate-400";
-const labelClass = "block text-sm font-semibold text-gray-700 mb-2";
-const errorClass = "text-red-500 text-xs mt-1.5 flex items-center gap-1";
+  "w-full px-3 py-1.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-colors placeholder:text-gray-300 disabled:bg-slate-50 disabled:text-slate-400";
+const labelClass = "block text-[13px] font-semibold text-slate-700 mb-1";
+const errorClass = "text-red-500 text-xs mt-1 flex items-center gap-1";
 
 const ACCEPTED_DOC_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
 const MAX_DOC_SIZE_MB = 9;
@@ -154,8 +155,8 @@ function DocumentRow({
   // Disabled state
   if (disabled) {
     return (
-      <div className="flex items-start gap-4 p-4 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 opacity-60">
-        <div className="mt-0.5 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-slate-100 text-slate-400">
+      <div className="flex items-start gap-4 p-4 rounded-lg border-2 border-dashed border-slate-200 bg-slate-50/50 opacity-60">
+        <div className="mt-0.5 w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-slate-100 text-slate-400">
           <Lock className="h-4 w-4" />
         </div>
         <div className="flex-1 min-w-0">
@@ -171,7 +172,7 @@ function DocumentRow({
 
   return (
     <div
-      className={`flex items-start gap-4 p-4 rounded-xl border transition-colors ${isUploaded
+      className={`flex items-start gap-4 p-4 rounded-lg border transition-colors ${isUploaded
         ? "border-emerald-200 bg-emerald-50/40"
         : selectedFile
           ? "border-blue-200 bg-blue-50/40"
@@ -180,7 +181,7 @@ function DocumentRow({
     >
       {/* Icon */}
       <div
-        className={`mt-0.5 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isUploaded ? "bg-emerald-100 text-emerald-600" : selectedFile ? "bg-blue-100 text-blue-600" : "bg-blue-50 text-blue-600"
+        className={`mt-0.5 w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${isUploaded ? "bg-emerald-100 text-emerald-600" : selectedFile ? "bg-blue-100 text-blue-600" : "bg-blue-50 text-blue-600"
           }`}
       >
         {isUploaded ? (
@@ -220,7 +221,7 @@ function DocumentRow({
             type="button"
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
-            className="rounded-xl text-xs font-semibold border-slate-200"
+            className="rounded-lg text-xs font-semibold border-slate-200"
           >
             {selectedFile ? (
               <>
@@ -430,39 +431,39 @@ export default function ProfilePage() {
   // ---------------------------------------------------------------------------
   if (loading) {
     return (
-      <div className="p-6 w-full space-y-6">
-        <Skeleton className="h-8 w-40 rounded-xl" />
-        <Skeleton className="h-28 rounded-xl" />
-        <Skeleton className="h-64 rounded-xl" />
-        <Skeleton className="h-48 rounded-xl" />
+      <div className="p-4 sm:p-6 w-full space-y-5">
+        <Skeleton className="h-8 w-40 rounded-lg" />
+        <Skeleton className="h-28 rounded-lg" />
+        <Skeleton className="h-64 rounded-lg" />
+        <Skeleton className="h-48 rounded-lg" />
       </div>
     );
   }
 
   return (
-    <div className="p-6 w-full space-y-6">
+    <div className="p-4 sm:p-6 w-full space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-black text-slate-900">My Profile</h1>
+        <h1 className="text-lg font-bold text-slate-900">My Profile</h1>
         <p className="text-slate-500 text-sm mt-1">
           View and update your personal information and documents.
         </p>
       </div>
 
       {/* Avatar + name */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6 flex items-center gap-5">
-        <div className="w-16 h-16 rounded-xl bg-blue-900 flex items-center justify-center text-white text-2xl font-black select-none flex-shrink-0">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 flex items-center gap-4">
+        <div className="w-12 h-12 rounded-lg bg-blue-900 flex items-center justify-center text-white text-lg font-bold select-none flex-shrink-0">
           {user?.name?.charAt(0).toUpperCase() ?? "?"}
         </div>
         <div>
-          <p className="text-xl font-black text-slate-900">{user?.name}</p>
-          <p className="text-slate-400 text-sm mt-0.5">{user?.email}</p>
+          <p className="text-lg font-bold text-slate-900">{formatName(user?.name)}</p>
+          <p className="text-slate-500 text-[13px] mt-0.5">{user?.email}</p>
           <div className="flex items-center gap-2 mt-2">
-            <span className="text-xs bg-blue-100 text-blue-700 font-bold px-2.5 py-1 rounded-full capitalize">
-              {user?.role?.toLowerCase()}
+            <span className="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded-full">
+              Applicant
             </span>
             {applicantType && (
-              <span className="text-xs bg-slate-100 text-slate-600 font-semibold px-2.5 py-1 rounded-full capitalize">
+              <span className="text-xs bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded-full capitalize">
                 {applicantType}
               </span>
             )}
@@ -478,11 +479,11 @@ export default function ProfilePage() {
       />
 
       {/* Personal Information */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <User className="h-4 w-4 text-slate-400" />
-            <h2 className="text-base font-black text-slate-900">Personal Information</h2>
+            <h2 className="text-[13px] font-bold text-slate-900">Personal Information</h2>
             {completion.personalDetailsComplete && (
               <CheckCircle2 className="h-4 w-4 text-emerald-500" />
             )}
@@ -492,7 +493,7 @@ export default function ProfilePage() {
               variant="outline"
               size="sm"
               onClick={() => setEditing(true)}
-              className="rounded-xl border-slate-200 text-sm font-semibold"
+              className="rounded-lg border-slate-200 text-sm font-semibold"
             >
               <Edit3 className="mr-1.5 h-3.5 w-3.5" />
               Edit
@@ -505,7 +506,7 @@ export default function ProfilePage() {
                 setEditing(false);
                 resetProfile();
               }}
-              className="rounded-xl border-slate-200 text-sm font-semibold text-slate-500"
+              className="rounded-lg border-slate-200 text-sm font-semibold text-slate-500"
             >
               <X className="mr-1.5 h-3.5 w-3.5" />
               Cancel
@@ -513,11 +514,11 @@ export default function ProfilePage() {
           )}
         </div>
 
-        <div className="p-6">
+        <div className="p-4">
           {editing ? (
             <form
               onSubmit={handleProfileSubmit(onSaveProfile)}
-              className="space-y-5"
+              className="space-y-4"
               noValidate
             >
               <div>
@@ -618,7 +619,7 @@ export default function ProfilePage() {
               <Button
                 type="submit"
                 disabled={saving}
-                className="bg-blue-900 hover:bg-slate-800 text-white font-bold rounded-xl w-full sm:w-auto"
+                className="bg-blue-900 hover:bg-slate-800 text-white font-bold rounded-lg w-full sm:w-auto"
               >
                 <Save className="mr-2 h-4 w-4" />
                 {saving ? "Saving…" : "Save Changes"}
@@ -627,7 +628,7 @@ export default function ProfilePage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               {[
-                { label: "Full Name", value: serverProfile?.name ?? user?.name },
+                { label: "Full Name", value: formatName(serverProfile?.name ?? user?.name) },
                 { label: "Email Address", value: serverProfile?.email ?? user?.email },
                 { label: "Phone Number", value: serverProfile?.phoneNumber || user?.phoneNumber || "Not set" },
                 {
@@ -644,7 +645,7 @@ export default function ProfilePage() {
                 }] : []),
               ].map(({ label, value }) => (
                 <div key={label}>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">
                     {label}
                   </p>
                   <p
@@ -661,10 +662,10 @@ export default function ProfilePage() {
       </div>
 
       {/* Documents */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-5 border-b border-slate-100 flex items-center gap-2">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-2">
           <FileText className="h-4 w-4 text-slate-400" />
-          <h2 className="text-base font-black text-slate-900">Documents</h2>
+          <h2 className="text-[13px] font-bold text-slate-900">Documents</h2>
           {completion.documentsComplete && (
             <CheckCircle2 className="h-4 w-4 text-emerald-500" />
           )}
@@ -673,9 +674,9 @@ export default function ProfilePage() {
           </span>
         </div>
 
-        <div className="p-6 space-y-3">
+        <div className="p-4 space-y-3">
           {!completion.personalDetailsComplete && (
-            <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-700 mb-2">
+            <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-[13px] text-amber-700 mb-2">
               <Lock className="h-4 w-4 flex-shrink-0" />
               <span>Save your personal information above to unlock document uploads.</span>
             </div>
@@ -687,7 +688,7 @@ export default function ProfilePage() {
               {[1, 2].map((i) => (
                 <div
                   key={i}
-                  className="h-20 rounded-xl bg-slate-100 animate-pulse"
+                  className="h-20 rounded-lg bg-slate-100 animate-pulse"
                 />
               ))}
             </div>
@@ -713,7 +714,7 @@ export default function ProfilePage() {
                   <Button
                     type="submit"
                     disabled={uploadingDocs}
-                    className="bg-blue-900 hover:bg-slate-800 text-white font-bold rounded-xl"
+                    className="bg-blue-900 hover:bg-slate-800 text-white font-bold rounded-lg"
                   >
                     <Upload className="mr-2 h-4 w-4" />
                     {uploadingDocs ? "Uploading..." : "Upload all documents"}

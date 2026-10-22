@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { useSession } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { applicationApi } from "@/lib/applicationApi";
+import { statusDisplay } from "@/lib/loanStatus";
+
+const KES = new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 interface Application {
   id: string;
@@ -59,113 +62,98 @@ export default function ApplicationsPage() {
     });
   }
 
-  function getStatusDisplay(status: string): { label: string; className: string } {
-    const map: Record<string, { label: string; className: string }> = {
-      Pending:            { label: "Pending Review", className: "bg-amber-100 text-amber-700" },
-      pending_processing: { label: "Pending Review", className: "bg-amber-100 text-amber-700" },
-      pending:            { label: "Pending Review", className: "bg-amber-100 text-amber-700" },
-      // Rate workflow statuses
-      rate_set:           { label: "Review Rate", className: "bg-indigo-100 text-indigo-700" },
-      RATE_SET:           { label: "Review Rate", className: "bg-indigo-100 text-indigo-700" },
-      rate_confirmed:     { label: "Rate Accepted", className: "bg-cyan-100 text-cyan-700" },
-      RATE_CONFIRMED:     { label: "Rate Accepted", className: "bg-cyan-100 text-cyan-700" },
-      rate_declined:      { label: "Rate Declined", className: "bg-orange-100 text-orange-700" },
-      RATE_DECLINED:      { label: "Rate Declined", className: "bg-orange-100 text-orange-700" },
-      // Final statuses
-      Approved:           { label: "Approved",       className: "bg-emerald-100 text-emerald-700" },
-      approved:           { label: "Approved",       className: "bg-emerald-100 text-emerald-700" },
-      Declined:           { label: "Declined",       className: "bg-red-100 text-red-700" },
-      declined:           { label: "Declined",       className: "bg-red-100 text-red-700" },
-      rejected:           { label: "Declined",       className: "bg-red-100 text-red-700" },
-      Disbursed:          { label: "Disbursed",      className: "bg-purple-100 text-purple-700" },
-      disbursed:          { label: "Disbursed",      className: "bg-purple-100 text-purple-700" },
-    };
-    return map[status] ?? { label: status, className: "bg-slate-100 text-gray-700" };
-  }
-
   function getLoanTypeLabel(loan_type: string, company: string): string {
     if (loan_type === "salary_advance" && company === "ideon") return "Ideon Salary Advance";
     if (loan_type === "salary_advance" && company === "nakama") return "Nakama Salary Advance";
     return "Personal Loan";
   }
 
+  const amount = (app: Application) => (app.amount_applied ? KES.format(Number(app.amount_applied)) : "—");
+
   return (
-    <div className="p-6 w-full space-y-6">
+    <div className="p-4 sm:p-6 w-full space-y-5">
       <div>
-        <h1 className="text-2xl font-black text-slate-900">My Applications</h1>
-        <p className="text-slate-500 text-sm mt-1">
-          Track the status of all your loan applications.
-        </p>
+        <h1 className="text-lg font-bold text-slate-900">My Applications</h1>
+        <p className="text-slate-500 text-[13px] mt-0.5">Track the status of all your loan applications.</p>
       </div>
 
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-slate-400">
-            Loading applications...
-          </div>
+          <div className="p-6 text-center text-slate-500 text-[13px]">Loading applications...</div>
         ) : error ? (
-          <div className="p-8 text-center">
-            <p className="text-red-500">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-3 text-blue-600 text-sm underline"
-            >
+          <div className="p-6 text-center">
+            <p className="text-red-500 text-[13px]">{error}</p>
+            <button onClick={() => window.location.reload()} className="mt-2 text-blue-600 text-[13px] underline">
               Retry
             </button>
           </div>
         ) : applications.length === 0 ? (
-          <div className="p-8 text-center text-slate-400">
+          <div className="p-6 text-center text-slate-500 text-[13px]">
             No applications yet.{" "}
             <Link to="/dashboard/apply" className="text-blue-600 underline">
               Apply now
             </Link>
           </div>
         ) : (
-          <div className="w-full overflow-x-auto">
-<table className="w-full text-sm">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-100">
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Loan Type</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Amount Applied</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {applications.map((app) => {
-                const status = getStatusDisplay(app.loan_status);
-                return (
-                  <tr key={app.id} className="hover:bg-blue-50/50 transition-colors">
-                    <td className="px-6 py-4 text-sm text-slate-500">
-                      {formatDate(app.date_submitted)}
-                    </td>
-                    <td className="px-6 py-4 text-sm font-semibold text-slate-800">
-                      {getLoanTypeLabel(app.loan_type, app.company)}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {app.amount_applied
-                        ? `KES ${Number(app.amount_applied).toLocaleString()}`
-                        : "—"}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`rounded-full px-3 py-1 text-xs font-bold ${status.className}`}>
-                        {status.label}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <Link to={`/dashboard/applications/${app.id}`}
-                        className="text-blue-600 text-sm font-semibold hover:underline"
-                      >
-                        View
-                      </Link>
-                    </td>
+          <>
+            <div className="hidden md:block w-full overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100 text-left text-[11px] font-bold uppercase tracking-wide text-slate-500">
+                    <th className="px-4 py-2">Date</th>
+                    <th className="px-4 py-2">Loan Type</th>
+                    <th className="px-4 py-2">Amount Applied</th>
+                    <th className="px-4 py-2">Status</th>
+                    <th className="px-4 py-2" />
                   </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {applications.map((app) => {
+                    const status = statusDisplay(app.loan_status);
+                    return (
+                      <tr key={app.id} className="hover:bg-slate-50/60 transition-colors">
+                        <td className="px-4 py-2 text-xs text-slate-500 whitespace-nowrap">{formatDate(app.date_submitted)}</td>
+                        <td className="px-4 py-2 font-semibold text-slate-800 whitespace-nowrap">{getLoanTypeLabel(app.loan_type, app.company)}</td>
+                        <td className="px-4 py-2 text-slate-700 whitespace-nowrap">{amount(app)}</td>
+                        <td className="px-4 py-2">
+                          <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold whitespace-nowrap ${status.className}`}>
+                            {status.label}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2 text-right">
+                          <Link to={`/dashboard/applications/${app.id}`} className="text-blue-600 text-[13px] font-semibold hover:underline">
+                            View
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <ul className="md:hidden divide-y divide-slate-100">
+              {applications.map((app) => {
+                const status = statusDisplay(app.loan_status);
+                return (
+                  <li key={app.id}>
+                    <Link to={`/dashboard/applications/${app.id}`} className="block px-4 py-3 hover:bg-slate-50 transition-colors">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm font-semibold text-slate-800">{getLoanTypeLabel(app.loan_type, app.company)}</p>
+                        <p className="text-sm font-bold text-slate-800 whitespace-nowrap">{amount(app)}</p>
+                      </div>
+                      <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
+                        <span className={`inline-flex rounded-full px-2 py-0.5 font-semibold whitespace-nowrap ${status.className}`}>
+                          {status.label}
+                        </span>
+                        <span>{formatDate(app.date_submitted)}</span>
+                      </div>
+                    </Link>
+                  </li>
                 );
               })}
-            </tbody>
-          </table>
-</div>
+            </ul>
+          </>
         )}
       </div>
     </div>

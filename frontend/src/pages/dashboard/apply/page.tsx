@@ -55,12 +55,12 @@ export default function ApplyPage() {
 
   if (routeState === "unknown_company") {
     return (
-      <div className="p-6 w-full max-w-lg mx-auto mt-12">
-        <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-8 flex flex-col items-center text-center gap-4">
-          <div className="w-14 h-14 bg-amber-50 rounded-xl flex items-center justify-center">
+      <div className="p-4 w-full max-w-lg mx-auto mt-12">
+        <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-6 flex flex-col items-center text-center gap-4">
+          <div className="w-14 h-14 bg-amber-50 rounded-lg flex items-center justify-center">
             <AlertCircle className="h-7 w-7 text-amber-500" />
           </div>
-          <h2 className="text-lg font-black text-slate-900">Account type not set</h2>
+          <h2 className="text-lg font-bold text-slate-900">Account type not set</h2>
           <p className="text-sm text-slate-500 leading-relaxed">
             Your account doesn&apos;t have a loan type assigned. Please contact Leocap
             Invest support or sign out and register again.
@@ -77,7 +77,7 @@ export default function ApplyPage() {
 
   // "loading" or "redirecting" — show spinner
   return (
-    <div className="p-6 flex items-center justify-center min-h-64">
+    <div className="p-4 flex items-center justify-center min-h-64">
       <Loader2 className="h-6 w-6 animate-spin text-brand-blue" />
     </div>
   );

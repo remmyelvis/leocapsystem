@@ -19,6 +19,7 @@ import type { GetAllApplicationItem } from "@/lib/applicationApi";
 import { useFinanceProfileStore } from "@/store/financeProfileStore";
 import { companyLabel as getCompanyLabel } from "@/lib/company";
 import { ProfileIncompleteBanner } from "@/components/profile/ProfileCompletion";
+import { formatName } from "@/lib/formatName";
 
 const KES = new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -114,7 +115,7 @@ export default function FinanceDashboardPage() {
 
     return {
       id: item.application.id,
-      customerName: item.bio_data.full_name || "Unknown",
+      customerName: formatName(item.bio_data.full_name) || "Unknown",
       designation: item.application.designation || "N/A",
       amountApplied: Number(item.application.amount_applied || 0),
       status,

@@ -6,18 +6,20 @@ import { ArrowLeft, Mail } from "lucide-react";
 import { apiCall } from "@/lib/apiClient";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { formatName } from "@/lib/formatName";
 
 const mapStatus = (status: string) => {
-  if (status === "pending_processing") return "PENDING";
-  return status.replace(/_/g, " ").toUpperCase();
+  if (status === "pending_processing") return "Pending";
+  return status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 };
 
 const statusBadge = (status: string) => {
-  const s = mapStatus(status);
-  if (s.includes("PENDING")) return "bg-amber-100 text-amber-700";
-  if (s.includes("APPROVE")) return "bg-emerald-100 text-emerald-700";
-  if (s.includes("DECLINE")) return "bg-red-100 text-red-700";
-  if (s.includes("DISBURSE")) return "bg-blue-100 text-blue-700";
+  const s = mapStatus(status).toLowerCase();
+  if (s.includes("pending")) return "bg-amber-100 text-amber-700";
+  if (s.includes("amend")) return "bg-blue-100 text-blue-700";
+  if (s.includes("approve")) return "bg-emerald-100 text-emerald-700";
+  if (s.includes("decline") || s.includes("reject")) return "bg-red-100 text-red-700";
+  if (s.includes("disburse")) return "bg-blue-100 text-blue-700";
   return "bg-amber-100 text-amber-700";
 };
 
@@ -253,7 +255,7 @@ export default function FinanceHRPendingApplicationDetailPage() {
 
       {/* Bio Data */}
       <Section title="BIO DATA">
-        <Field label="Full Name" value={bio_data.full_name} />
+        <Field label="Full Name" value={formatName(bio_data.full_name)} />
         <Field label="ID Number" value={bio_data.id_number} />
         <Field label="Phone Number" value={bio_data.phone_number} />
         <Field label="Email Address" value={bio_data.email} />
@@ -271,7 +273,9 @@ export default function FinanceHRPendingApplicationDetailPage() {
 
       {/* Notice box */}
       <div className="bg-yellow-50 border border-yellow-100 rounded-lg px-3 py-2 text-yellow-700 text-[13px] font-medium">
-        Your application is under review. You will be notified once a decision is made (within 24 hours).
+        {["pending_processing", "amended"].includes(application.loan_status)
+          ? "Awaiting your decision: approve, reject or amend the amount above."
+          : `This application is ${mapStatus(application.loan_status).toLowerCase()}.`}
       </div>
 
       {/* Messages from Admin */}
@@ -279,11 +283,11 @@ export default function FinanceHRPendingApplicationDetailPage() {
         <div className="flex items-center gap-2 mb-4">
           <Mail className="h-4 w-4 text-violet-700" />
           <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
-            MESSAGES FROM ADMIN
+            ADMIN MESSAGES
           </h2>
         </div>
         <p className="text-[13px] text-slate-500">
-          No messages yet. Admin communications regarding your application will appear here.
+          No admin messages on this application yet.
         </p>
       </div>
     </div>

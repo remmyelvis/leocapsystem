@@ -24,6 +24,8 @@ export default function BrandLogo({ size = "md", className = "", width, height, 
     targetPath = "/dashboard";
   } else if (location.pathname.startsWith("/hr")) {
     targetPath = "/hr/dashboard";
+  } else if (location.pathname.startsWith("/finance")) {
+    targetPath = "/finance/dashboard";
   } else if (location.pathname.startsWith("/admin")) {
     targetPath = "/admin/dashboard";
   }

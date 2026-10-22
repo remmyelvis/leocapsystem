@@ -5,18 +5,20 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Mail } from "lucide-react";
 import { apiCall } from "@/lib/apiClient";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatName } from "@/lib/formatName";
 
 const mapStatus = (status: string) => {
-  if (status === "pending_processing") return "PENDING";
-  return status.replace(/_/g, " ").toUpperCase();
+  if (status === "pending_processing") return "Pending";
+  return status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 };
 
 const statusBadge = (status: string) => {
-  const s = mapStatus(status);
-  if (s.includes("PENDING")) return "bg-amber-100 text-amber-700";
-  if (s.includes("APPROVE")) return "bg-emerald-100 text-emerald-700";
-  if (s.includes("DECLINE")) return "bg-red-100 text-red-700";
-  if (s.includes("DISBURSE")) return "bg-blue-100 text-blue-700";
+  const s = mapStatus(status).toLowerCase();
+  if (s.includes("pending")) return "bg-amber-100 text-amber-700";
+  if (s.includes("amend")) return "bg-blue-100 text-blue-700";
+  if (s.includes("approve")) return "bg-emerald-100 text-emerald-700";
+  if (s.includes("decline") || s.includes("reject")) return "bg-red-100 text-red-700";
+  if (s.includes("disburse")) return "bg-blue-100 text-blue-700";
   return "bg-amber-100 text-amber-700";
 };
 
@@ -186,7 +188,7 @@ export default function HRApplicationDetailPage() {
 
       {/* Bio Data */}
       <Section title="BIO DATA">
-        <Field label="Full Name" value={bio_data.full_name} />
+        <Field label="Full Name" value={formatName(bio_data.full_name)} />
         <Field label="ID Number" value={bio_data.id_number} />
         <Field label="Phone Number" value={bio_data.phone_number} />
         <Field label="Email Address" value={bio_data.email} />
@@ -203,9 +205,11 @@ export default function HRApplicationDetailPage() {
       </Section>
 
       {/* Notice box */}
-      <div className="bg-yellow-50 border border-yellow-100 rounded-lg px-3 py-2 text-yellow-700 text-[13px] font-medium">
-        Your application is under review. You will be notified once a decision is made (within 24 hours).
-      </div>
+      {["pending_processing", "amended"].includes(application.loan_status) && (
+        <div className="bg-yellow-50 border border-yellow-100 rounded-lg px-3 py-2 text-yellow-700 text-[13px] font-medium">
+          Your application is under review. You will be notified once a decision is made (within 24 hours).
+        </div>
+      )}
 
       {/* Messages from Admin */}
       <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">

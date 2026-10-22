@@ -11,22 +11,13 @@ import type { LoanStatus, PaymentStatus } from "@/types/loan";
 import { paymentStatusFromRepayment } from "@/lib/paymentStatus";
 import { applicationApi } from "@/lib/applicationApi";
 import { downloadFile, apiCall } from "@/lib/apiClient";
+import { statusDisplay } from "@/lib/loanStatus";
 import { emailApi, type Email, type EmailDocument } from "@/lib/emailApi";
+import { formatName } from "@/lib/formatName";
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
-
-const STATUS_STYLES: Record<LoanStatus, string> = {
-  PENDING: "bg-yellow-100 text-yellow-700",
-  RATE_SET: "bg-indigo-100 text-indigo-700",
-  RATE_CONFIRMED: "bg-cyan-100 text-cyan-700",
-  RATE_DECLINED: "bg-orange-100 text-orange-700",
-  CONFIRMED: "bg-cyan-100 text-cyan-700",
-  APPROVED: "bg-green-100 text-green-700",
-  DECLINED: "bg-red-100 text-red-700",
-  DISBURSED: "bg-purple-100 text-purple-700",
-};
 
 const PAYMENT_STATUS_STYLES: Record<PaymentStatus, string> = {
   UNPAID: "bg-orange-100 text-orange-700",
@@ -207,7 +198,7 @@ function Field({
         : String(value);
   return (
     <div>
-      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+      <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-0.5">
         {label}
       </p>
       <p className="text-sm text-slate-800 font-medium">{display}</p>
@@ -223,11 +214,11 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6">
-      <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide mb-5">
+    <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
+      <h2 className="text-[13px] font-bold text-slate-900 uppercase tracking-wide mb-3">
         {title}
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">{children}</div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4">{children}</div>
     </div>
   );
 }
@@ -374,7 +365,7 @@ export default function ApplicationDetailPage() {
 
   if (loading) {
     return (
-      <div className="p-8 text-center text-slate-400">
+      <div className="p-6 text-center text-slate-400">
         Loading application...
       </div>
     );
@@ -382,12 +373,12 @@ export default function ApplicationDetailPage() {
 
   if (fetchError || !app) {
     return (
-      <div className="p-8 text-center">
+      <div className="p-6 text-center">
         <p className="text-slate-500">{fetchError ?? "Application not found."}</p>
         <Button
           onClick={() => navigate(-1)}
           variant="outline"
-          className="mt-4 rounded-xl"
+          className="mt-4 rounded-lg"
         >
           Go Back
         </Button>
@@ -492,33 +483,30 @@ export default function ApplicationDetailPage() {
   };
 
   return (
-    <div className="p-6 w-full space-y-6">
+    <div className="p-4 sm:p-6 w-full space-y-5">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 rounded-xl hover:bg-slate-100 transition-colors text-slate-400 hover:text-gray-700"
+          className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-400 hover:text-gray-700"
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="h-4 w-4" />
         </button>
         <div>
-          <h1 className="text-xl font-black text-slate-900">
+          <h1 className="text-lg font-bold text-slate-900">
             {LOAN_TYPE_LABELS[app.loanType] ?? app.loanType}
           </h1>
           <p className="text-slate-400 text-xs mt-0.5 font-mono">
             {app.id.slice(0, 8)}…
           </p>
         </div>
-        <span
-          className={`ml-auto text-xs font-bold px-2.5 py-1 rounded-full ${STATUS_STYLES[(app.status as LoanStatus) ?? "PENDING"]
-            }`}
-        >
-          {app.status}
+        <span className={`ml-auto text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${statusDisplay(app.status).className}`}>
+          {statusDisplay(app.status).label}
         </span>
       </div>
 
       {/* Summary strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {[
           {
             label: "Date Submitted",
@@ -535,9 +523,9 @@ export default function ApplicationDetailPage() {
         ].map(({ label, value }) => (
           <div
             key={label}
-            className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-4"
+            className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4"
           >
-            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">
+            <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wide mb-0.5">
               {label}
             </p>
             <p className="text-sm font-bold text-slate-800">{value}</p>
@@ -547,7 +535,7 @@ export default function ApplicationDetailPage() {
 
       {/* Bio Data */}
       <Section title="Bio Data">
-        <Field label="Full Name" value={app.customerName} />
+        <Field label="Full Name" value={formatName(app.customerName)} />
         <Field label="ID Number" value={app.idNumber} />
         <Field label="Phone Number" value={app.phoneNumber} />
         <Field label="Email Address" value={app.emailAddress} />
@@ -557,10 +545,10 @@ export default function ApplicationDetailPage() {
       {/* ── LOAN DETAILS ── */}
       <Section title="Loan Details">
         <Field label="Loan Type" value={LOAN_TYPE_LABELS[app.loanType] ?? app.loanType} />
-        <Field label="Amount Applied" value={`Ksh ${app.amountApplied ?? 0}`} />
-        <Field label="Processing Fees" value={`Ksh ${app.apiProcessingFees ?? 0}`} />
-        <Field label="Legal Fees" value={`Ksh ${app.apiLegalFees ?? 0}`} />
-        <Field label="Access Fees" value={`Ksh ${app.apiAccessFees ?? 0}`} />
+        <Field label="Amount Applied" value={KES.format(Number(app.amountApplied ?? 0))} />
+        <Field label="Processing Fees" value={KES.format(Number(app.apiProcessingFees ?? 0))} />
+        <Field label="Legal Fees" value={KES.format(Number(app.apiLegalFees ?? 0))} />
+        <Field label="Access Fees" value={KES.format(Number(app.apiAccessFees ?? 0))} />
         <Field
           label="Interest Rate"
           value={effectiveInterestRate
@@ -568,8 +556,8 @@ export default function ApplicationDetailPage() {
             : null
           }
         />
-        <Field label="Disbursement Amount" value={`Ksh ${app.apiDisbursementAmount ?? 0}`} />
-        <Field label="Repayment Amount" value={`Ksh ${app.apiTotalRepayment ?? 0}`} />
+        <Field label="Disbursement Amount" value={KES.format(Number(app.apiDisbursementAmount ?? 0))} />
+        <Field label="Repayment Amount" value={KES.format(Number(app.apiTotalRepayment ?? 0))} />
       </Section>
 
       {/* ── DOCUMENTS ── */}
@@ -577,11 +565,11 @@ export default function ApplicationDetailPage() {
         <Section title="Documents">
           {app.documents.map((doc: any) => (
             <div key={doc.id} className="col-span-1 sm:col-span-2 flex flex-col gap-2">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">
                 {doc.document_type.replace(/_/g, " ")}
               </p>
 
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-50 border border-slate-100 rounded-xl p-4 transition-colors hover:bg-slate-100/80 gap-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-50 border border-slate-100 rounded-lg p-4 transition-colors hover:bg-slate-100/80 gap-4">
                 <div className="flex items-center gap-4 overflow-hidden w-full sm:w-auto">
                   <div className="bg-white p-2 rounded-lg ring-1 ring-slate-200 shadow-sm flex-shrink-0">
                     <FileText className="h-5 w-5 text-blue-600" />
@@ -601,7 +589,7 @@ export default function ApplicationDetailPage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="rounded-xl bg-white shadow-sm border-slate-200 text-gray-700 hover:text-blue-700 hover:border-blue-200 hover:bg-blue-50"
+                    className="rounded-lg bg-white shadow-sm border-slate-200 text-gray-700 hover:text-blue-700 hover:border-blue-200 hover:bg-blue-50"
                     onClick={async () => {
                       const { error } = await downloadFile(`/api/application/documents/download/${doc.id}`, doc.file_name);
                       if (error) toast.error(error);
@@ -616,7 +604,7 @@ export default function ApplicationDetailPage() {
 
               {/* Update Document Inline Form */}
               {editingDocId === doc.id && (
-                <div className="mt-2 p-4 bg-blue-50/50 border border-blue-100 rounded-xl">
+                <div className="mt-2 p-4 bg-blue-50/50 border border-blue-100 rounded-lg">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-bold text-blue-900">Update Document</h4>
                     <button onClick={() => setEditingDocId(null)} className="text-slate-400 hover:text-slate-600">
@@ -631,7 +619,7 @@ export default function ApplicationDetailPage() {
                       <input
                         type="file"
                         onChange={(e) => setUpdateFile(e.target.files?.[0] || null)}
-                        className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-slate-200 rounded-xl p-1 bg-white"
+                        className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-slate-200 rounded-lg p-1 bg-white"
                       />
                     </div>
                     <div>
@@ -643,7 +631,7 @@ export default function ApplicationDetailPage() {
                         placeholder="Enter passcode"
                         value={updatePasscode}
                         onChange={(e) => setUpdatePasscode(e.target.value)}
-                        className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+                        className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
                       />
                     </div>
                   </div>
@@ -652,7 +640,7 @@ export default function ApplicationDetailPage() {
                       size="sm"
                       onClick={() => handleUpdateDocument(doc.document_type)}
                       disabled={isUpdating || !updateFile}
-                      className="bg-brand-blue hover:bg-slate-800 text-white rounded-xl"
+                      className="bg-brand-blue hover:bg-slate-800 text-white rounded-lg"
                     >
                       {isUpdating ? "Updating..." : "Save Changes"}
                     </Button>
@@ -699,7 +687,7 @@ export default function ApplicationDetailPage() {
 
       {/* Already confirmed/declined note */}
       {isSalaryAdvance && app.status === "APPROVED" && (
-        <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-5 py-4 text-sm text-emerald-700">
+        <div className="bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2 text-[13px] text-emerald-700">
           <div className="flex items-center gap-2">
             <CheckCircle className="h-4 w-4" />
             <span className="font-semibold">Your loan has been approved</span>
@@ -746,12 +734,12 @@ export default function ApplicationDetailPage() {
 
       {/* Fallback: Rate set but interest rate not available */}
       {hasRateBeenSet && !loanBreakdown && (
-        <div className="bg-amber-50 border-2 border-amber-200 rounded-xl overflow-hidden">
-          <div className="bg-amber-100 px-6 py-4 border-b border-amber-200">
+        <div className="bg-amber-50 border-2 border-amber-200 rounded-lg overflow-hidden">
+          <div className="bg-amber-100 px-4 py-2.5 border-b border-amber-200">
             <div className="flex items-center gap-3">
               <AlertCircle className="h-5 w-5 text-amber-600" />
               <div>
-                <h2 className="font-black text-amber-900">
+                <h2 className="font-bold text-amber-900">
                   Rate Pending Review
                 </h2>
                 <p className="text-sm text-amber-700 mt-0.5">
@@ -760,11 +748,11 @@ export default function ApplicationDetailPage() {
               </div>
             </div>
           </div>
-          <div className="p-6">
+          <div className="p-4">
             <Button
               onClick={() => window.location.reload()}
               variant="outline"
-              className="rounded-xl border-amber-300 text-amber-700 hover:bg-amber-100"
+              className="rounded-lg border-amber-300 text-amber-700 hover:bg-amber-100"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh Page
@@ -775,12 +763,12 @@ export default function ApplicationDetailPage() {
 
       {/* Rate Confirmation Section - Shows when rate has been set (RATE_SET status or pending with interest rate) */}
       {hasRateBeenSet && loanBreakdown && (
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-xl overflow-hidden">
-          <div className="bg-blue-100 px-6 py-4 border-b border-blue-200">
+        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg overflow-hidden">
+          <div className="bg-blue-100 px-4 py-2.5 border-b border-blue-200">
             <div className="flex items-center gap-3">
               <Clock className="h-5 w-5 text-blue-600" />
               <div>
-                <h2 className="font-black text-blue-900">
+                <h2 className="font-bold text-blue-900">
                   Action Required: Confirm Your Loan Terms
                 </h2>
                 <p className="text-sm text-blue-700 mt-0.5">
@@ -790,14 +778,14 @@ export default function ApplicationDetailPage() {
             </div>
           </div>
 
-          <div className="p-6 space-y-6">
+          <div className="p-4 space-y-6">
             {/* Interest Rate Badge */}
             <div className="flex items-center justify-center">
-              <div className="bg-white border-2 border-blue-300 rounded-xl px-8 py-4 text-center">
+              <div className="bg-white border-2 border-blue-300 rounded-lg px-6 py-3 text-center">
                 <p className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">
                   Proposed Interest Rate
                 </p>
-                <p className="text-4xl font-black text-blue-900">
+                <p className="text-4xl font-bold text-blue-900">
                   {((effectiveInterestRate ?? 0) * 100).toFixed(0)}%
                 </p>
                 <p className="text-xs text-blue-600 mt-1">
@@ -807,8 +795,8 @@ export default function ApplicationDetailPage() {
             </div>
 
             {/* Loan Breakdown */}
-            <div className="bg-white rounded-xl border border-blue-200 p-5">
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-wide mb-4">
+            <div className="bg-white rounded-lg border border-blue-200 p-4">
+              <h3 className="text-[13px] font-bold text-slate-900 uppercase tracking-wide mb-3">
                 Loan Breakdown
               </h3>
               <div className="space-y-3">
@@ -830,11 +818,11 @@ export default function ApplicationDetailPage() {
                     - {formatKES(loanBreakdown.legalFees)}
                   </span>
                 </div>
-                <div className="flex justify-between items-center py-2 border-b border-slate-200 bg-emerald-50 -mx-5 px-5">
+                <div className="flex justify-between items-center py-2 border-b border-slate-200 bg-emerald-50 -mx-4 px-4">
                   <span className="text-sm font-semibold text-emerald-700">
                     You Will Receive
                   </span>
-                  <span className="text-lg font-black text-emerald-700">
+                  <span className="text-[15px] font-bold text-emerald-700">
                     {formatKES(loanBreakdown.disbursementAmount)}
                   </span>
                 </div>
@@ -846,11 +834,11 @@ export default function ApplicationDetailPage() {
                     {formatKES(loanBreakdown.interestAmount)}
                   </span>
                 </div>
-                <div className="flex justify-between items-center py-2 bg-slate-50 -mx-5 px-5 rounded-b-xl">
+                <div className="flex justify-between items-center py-2 bg-slate-50 -mx-4 px-4 rounded-b-xl">
                   <span className="text-sm font-semibold text-gray-700">
                     Total Repayment
                   </span>
-                  <span className="text-lg font-black text-slate-900">
+                  <span className="text-[15px] font-bold text-slate-900">
                     {formatKES(loanBreakdown.repaymentAmount)}
                   </span>
                 </div>
@@ -862,21 +850,21 @@ export default function ApplicationDetailPage() {
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={handleConfirmRate}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
                   <CheckCircle className="h-5 w-5" />
                   I Accept These Terms
                 </button>
                 <button
                   onClick={handleDeclineRate}
-                  className="flex-1 border-2 border-red-300 hover:border-red-400 hover:bg-red-50 text-red-700 font-bold px-6 py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 border-2 border-red-300 hover:border-red-400 hover:bg-red-50 text-red-700 font-bold px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
                   <AlertCircle className="h-5 w-5" />
                   I Reject This Rate
                 </button>
               </div>
             ) : (
-              <div className="bg-emerald-100 border border-emerald-200 rounded-xl px-6 py-4 text-center">
+              <div className="bg-emerald-100 border border-emerald-200 rounded-lg px-4 py-2.5 text-center">
                 <CheckCircle className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
                 <p className="text-emerald-800 font-semibold">
                   Terms Confirmed! Redirecting...
@@ -893,8 +881,8 @@ export default function ApplicationDetailPage() {
 
       {/* Documents */}
       {(app.idCopyUrl || app.kraPinDocUrl || app.payslipUrl) && (
-        <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6">
-          <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide mb-4">
+        <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
+          <h2 className="text-[13px] font-bold text-slate-900 uppercase tracking-wide mb-3">
             Documents Submitted
           </h2>
           <div className="space-y-2">
@@ -925,14 +913,14 @@ export default function ApplicationDetailPage() {
 
       {/* Payment Status - Only show for disbursed loans */}
       {app.status === "DISBURSED" && (
-        <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6">
+        <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide">
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
               Payment Status
             </h2>
             {app.paymentStatus && (
               <span
-                className={`text-xs font-bold px-2.5 py-1 rounded-full ${PAYMENT_STATUS_STYLES[(app.paymentStatus as PaymentStatus) ?? "UNPAID"]
+                className={`text-xs font-semibold px-2 py-0.5 rounded-full ${PAYMENT_STATUS_STYLES[(app.paymentStatus as PaymentStatus) ?? "UNPAID"]
                   }`}
               >
                 {PAYMENT_STATUS_LABELS[(app.paymentStatus as PaymentStatus) ?? "UNPAID"]}
@@ -965,11 +953,11 @@ export default function ApplicationDetailPage() {
 
             return (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-slate-50 rounded-xl p-4">
+                <div className="bg-slate-50 rounded-lg p-4">
                   <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">
                     Loan Amount
                   </p>
-                  <p className="text-lg font-bold text-slate-800">
+                  <p className="text-[15px] font-bold text-slate-800">
                     {KES.format(
                       isSalaryAdvance
                         ? (app.amountRequested ?? app.amountApplied ?? 0)
@@ -977,19 +965,19 @@ export default function ApplicationDetailPage() {
                     )}
                   </p>
                 </div>
-                <div className="bg-emerald-50 rounded-xl p-4">
+                <div className="bg-emerald-50 rounded-lg p-4">
                   <p className="text-xs text-emerald-600 font-bold uppercase tracking-wider mb-1">
                     Amount Paid
                   </p>
-                  <p className="text-lg font-bold text-emerald-700">
+                  <p className="text-[15px] font-bold text-emerald-700">
                     {KES.format(displayAmountPaid)}
                   </p>
                 </div>
-                <div className="bg-orange-50 rounded-xl p-4">
+                <div className="bg-orange-50 rounded-lg p-4">
                   <p className="text-xs text-orange-600 font-bold uppercase tracking-wider mb-1">
                     Amount Remaining
                   </p>
-                  <p className="text-lg font-bold text-orange-700">
+                  <p className="text-[15px] font-bold text-orange-700">
                     {KES.format(displayAmountRemaining)}
                   </p>
                 </div>
@@ -999,7 +987,7 @@ export default function ApplicationDetailPage() {
 
           {/* Payment status messages */}
           {app.paymentStatus === "FULLY_PAID" && (
-            <div className="mt-4 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3 text-sm text-emerald-700">
+            <div className="mt-4 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2 text-[13px] text-emerald-700">
               Your loan has been fully paid. Thank you!
               {app.lastPaymentDate && (
                 <span className="text-emerald-600 ml-1">
@@ -1009,18 +997,18 @@ export default function ApplicationDetailPage() {
             </div>
           )}
           {app.paymentStatus === "PARTIALLY_PAID" && (
-            <div className="mt-4 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-700">
+            <div className="mt-4 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 text-[13px] text-blue-700">
               You have made partial payments. Please continue with the remaining balance.
             </div>
           )}
           {app.paymentStatus === "DELINQUENT" && (
-            <div className="mt-4 bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-700">
+            <div className="mt-4 bg-red-50 border border-red-100 rounded-lg px-3 py-2 text-[13px] text-red-700">
               Your loan is overdue and a collection fee has been added to the balance. Please pay the outstanding
               balance as soon as possible or contact Leocap Invest.
             </div>
           )}
           {(app.paymentStatus === "UNPAID" || !app.paymentStatus) && (
-            <div className="mt-4 bg-orange-50 border border-orange-100 rounded-xl px-4 py-3 text-sm text-orange-700">
+            <div className="mt-4 bg-orange-50 border border-orange-100 rounded-lg px-3 py-2 text-[13px] text-orange-700">
               {app.loanType === "GENERAL_LOAN"
                 ? "Your loan is disbursed. Please make your payment before the due date."
                 : "Your salary advance is disbursed. The amount will be deducted from your salary."
@@ -1032,13 +1020,13 @@ export default function ApplicationDetailPage() {
 
       {/* Status note */}
       {app.status === "PENDING" && (
-        <div className="bg-yellow-50 border border-yellow-100 rounded-xl px-5 py-4 text-sm text-yellow-700">
+        <div className="bg-yellow-50 border border-yellow-100 rounded-lg px-3 py-2 text-[13px] text-yellow-700">
           Your application is under review. You will be notified once a
           decision is made (within 24 hours).
         </div>
       )}
       {app.status === "CONFIRMED" && (
-        <div className="bg-cyan-50 border border-cyan-100 rounded-xl px-5 py-4 text-sm text-cyan-700">
+        <div className="bg-cyan-50 border border-cyan-100 rounded-lg px-3 py-2 text-[13px] text-cyan-700">
           <div className="flex items-center gap-2 mb-1">
             <CheckCircle className="h-4 w-4" />
             <span className="font-semibold">Terms Confirmed</span>
@@ -1048,22 +1036,22 @@ export default function ApplicationDetailPage() {
         </div>
       )}
       {app.status === "APPROVED" && (
-        <div className="bg-green-50 border border-green-100 rounded-xl px-5 py-4 text-sm text-green-700">
+        <div className="bg-green-50 border border-green-100 rounded-lg px-3 py-2 text-[13px] text-green-700">
           Your application has been approved. Disbursement is being processed.
         </div>
       )}
       {app.status === "DECLINED" && (
-        <div className="bg-red-50 border border-red-100 rounded-xl px-5 py-4 text-sm text-red-700">
+        <div className="bg-red-50 border border-red-100 rounded-lg px-3 py-2 text-[13px] text-red-700">
           Your application was not approved at this time. Contact us for more
           information.
         </div>
       )}
 
       {/* ── Messages from Admin ── */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
         <div className="flex items-center gap-2 mb-4">
           <Mail className="h-5 w-5 text-blue-600" />
-          <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide">
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
             Messages from Admin
           </h2>
         </div>
@@ -1079,7 +1067,7 @@ export default function ApplicationDetailPage() {
             {emails.map((email) => (
               <div
                 key={email.id}
-                className="bg-slate-50 rounded-xl p-4 border border-slate-100"
+                className="bg-slate-50 rounded-lg p-4 border border-slate-100"
               >
                 <div className="flex items-start justify-between mb-2">
                   <p className="text-xs text-slate-500">
@@ -1099,7 +1087,7 @@ export default function ApplicationDetailPage() {
                 {/* Attachments */}
                 {email.documents && email.documents.length > 0 && (
                   <div className="mt-3 pt-3 border-t border-slate-200">
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">
                       Attachments
                     </p>
                     <div className="space-y-2">
@@ -1126,14 +1114,14 @@ export default function ApplicationDetailPage() {
       </div>
 
       {app.notes && (
-        <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6">
+        <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
           <div className="flex items-center gap-2 mb-4">
             <FileText className="h-5 w-5 text-blue-600" />
-            <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide">
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
               Admin Notes
             </h2>
           </div>
-          <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
+          <div className="bg-amber-50 rounded-lg p-4 border border-amber-100">
             <p className="text-sm text-amber-800 whitespace-pre-wrap">
               {String(app.notes)}
             </p>

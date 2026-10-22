@@ -165,11 +165,11 @@ type FullFormData = z.infer<typeof fullSchema>;
 // ---------------------------------------------------------------------------
 
 const inputClass =
-  "w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-colors placeholder:text-gray-300";
+  "w-full px-3 py-1.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-colors placeholder:text-gray-300";
 
-const labelClass = "block text-sm font-semibold text-gray-700 mb-2";
+const labelClass = "block text-[13px] font-semibold text-slate-700 mb-1";
 
-const errorClass = "text-red-500 text-xs mt-1.5 flex items-center gap-1";
+const errorClass = "text-red-500 text-xs mt-1 flex items-center gap-1";
 
 const STEP_LABELS = [
   "Employment",
@@ -190,7 +190,7 @@ function StepIndicator({
   total: number;
 }) {
   return (
-    <div className="flex items-center justify-center mb-8 select-none">
+    <div className="flex items-center justify-center mb-5 select-none">
       {Array.from({ length: total }, (_, i) => {
         const step = i + 1;
         const isDone = step < currentStep;
@@ -199,7 +199,7 @@ function StepIndicator({
           <div key={step} className="flex items-center">
             {/* Circle */}
             <div
-              className={`relative flex items-center justify-center w-9 h-9 rounded-full border-2 text-sm font-black transition-colors ${isDone
+              className={`relative flex items-center justify-center w-9 h-9 rounded-full border-2 text-sm font-bold transition-colors ${isDone
                 ? "bg-slate-900 border-slate-900 text-white"
                 : isCurrent
                   ? "bg-brand-blue border-brand-blue text-white"
@@ -256,7 +256,7 @@ function RadioPill<T extends string>({
       {options.map((opt) => (
         <label
           key={opt.value}
-          className={`flex items-center gap-2 cursor-pointer px-5 py-3 rounded-xl border text-sm font-medium transition-colors select-none ${value === opt.value
+          className={`flex items-center gap-2 cursor-pointer px-3 py-1.5 rounded-lg border text-[13px] font-medium transition-colors select-none ${value === opt.value
             ? "bg-slate-900 border-slate-900 text-white"
             : "border-slate-200 text-slate-600 hover:border-blue-300"
             }`}
@@ -497,12 +497,12 @@ export default function GeneralLoanPage() {
   // ── Success screen ──
   if (submitted) {
     return (
-      <div className="p-6 w-full max-w-2xl mx-auto space-y-6">
-        <div className="bg-white rounded-3xl ring-1 ring-slate-200 shadow-sm p-8 flex flex-col items-center text-center gap-4">
-          <div className="w-20 h-20 bg-green-50 rounded-xl flex items-center justify-center">
+      <div className="p-4 sm:p-6 w-full max-w-2xl mx-auto space-y-5">
+        <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-6 flex flex-col items-center text-center gap-4">
+          <div className="w-20 h-20 bg-green-50 rounded-lg flex items-center justify-center">
             <span className="text-4xl">🎉</span>
           </div>
-          <h2 className="text-2xl font-black text-slate-900">
+          <h2 className="text-[13px] font-bold text-slate-900">
             Application Received!
           </h2>
           <p className="text-slate-500 text-sm max-w-md">
@@ -512,7 +512,7 @@ export default function GeneralLoanPage() {
           </p>
           <Button
             onClick={() => navigate("/dashboard/applications")}
-            className="mt-4 bg-blue-900 hover:bg-slate-800 text-white font-bold rounded-xl px-6"
+            className="mt-4 bg-blue-900 hover:bg-slate-800 text-white font-bold rounded-lg px-6"
           >
             View My Applications
           </Button>
@@ -522,20 +522,20 @@ export default function GeneralLoanPage() {
   }
 
   return (
-    <div className="p-6 w-full space-y-6">
+    <div className="p-4 sm:p-6 w-full max-w-3xl mx-auto space-y-5">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-5">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-gray-700 transition-colors mb-4"
+          className="flex items-center gap-1.5 text-[13px] text-slate-500 hover:text-slate-800 transition-colors mb-3"
         >
           <ChevronLeft className="h-4 w-4" />
           Back
         </button>
-        <h1 className="text-2xl font-black text-slate-900">
+        <h1 className="text-lg font-bold text-slate-900">
           Personal / General Loan
         </h1>
-        <p className="text-slate-500 text-sm mt-1">
+        <p className="text-slate-500 text-[13px] mt-0.5">
           Complete all {TOTAL_STEPS} steps to submit your application.
         </p>
       </div>
@@ -546,10 +546,10 @@ export default function GeneralLoanPage() {
       </div>
 
       {/* Card */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6 sm:p-8">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 sm:p-5">
         {/* Step-level errors */}
         {stepErrors.length > 0 && (
-          <div className="flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 mb-6 text-sm">
+          <div className="flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-lg px-3 py-2 mb-4 text-[13px]">
             <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
             <div>
               {stepErrors.map((msg, i) => (
@@ -570,10 +570,10 @@ export default function GeneralLoanPage() {
           ════════════════════════════════════════════════════════════════ */}
           {currentStep === 1 && (
             <div>
-              <h2 className="text-lg font-black text-slate-900 mb-1">
+              <h2 className="text-[13px] font-bold text-slate-900 mb-1">
                 Employment Type
               </h2>
-              <p className="text-slate-400 text-sm mb-6">
+              <p className="text-slate-500 text-[13px] mb-3">
                 How are you currently employed?
               </p>
 
@@ -607,15 +607,15 @@ export default function GeneralLoanPage() {
               STEP 2 — Bio Data
           ════════════════════════════════════════════════════════════════ */}
           {currentStep === 2 && (
-            <div className="space-y-5">
+            <div className="space-y-4">
               <div>
-                <h2 className="text-lg font-black text-slate-900 mb-1">
+                <h2 className="text-[13px] font-bold text-slate-900 mb-1">
                   Bio Data
                 </h2>
-                <p className="text-slate-400 text-sm mb-4">
+                <p className="text-slate-500 text-[13px] mb-3">
                   Your personal and contact information.
                 </p>
-                <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 flex items-start gap-2 text-xs text-blue-700 mb-6">
+                <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 flex items-start gap-2 text-xs text-blue-700 mb-4">
                   <AlertCircle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
                   <span>Personal details are pre-filled from your profile and cannot be edited here. To update them, visit your <strong>Profile</strong> page.</span>
                 </div>
@@ -633,7 +633,7 @@ export default function GeneralLoanPage() {
               </div>
 
               {/* ID + Phone */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className={labelClass}>ID No.</label>
                   <input
@@ -655,7 +655,7 @@ export default function GeneralLoanPage() {
               </div>
 
               {/* KRA PIN + Email */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className={labelClass}>KRA PIN No.</label>
                   <input
@@ -737,15 +737,15 @@ export default function GeneralLoanPage() {
               STEP 3 — Document Uploads
           ════════════════════════════════════════════════════════════════ */}
           {currentStep === 3 && (
-            <div className="space-y-5">
+            <div className="space-y-4">
               <div>
-                <h2 className="text-lg font-black text-slate-900 mb-1">
+                <h2 className="text-[13px] font-bold text-slate-900 mb-1">
                   Document Uploads
                 </h2>
                 <p className="text-slate-400 text-sm mb-1">
                   PDF only, max 9 MB per file.
                 </p>
-                <p className="text-xs text-amber-600 mb-6">
+                <p className="text-xs text-amber-600 mb-4">
                   All documents are required*
                 </p>
               </div>
@@ -758,10 +758,10 @@ export default function GeneralLoanPage() {
                   control={control}
                   render={({ field }) => (
                     <label
-                      className={`flex items-center gap-4 px-4 py-4 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${field.value ? "border-blue-300 bg-blue-50" : "border-slate-200 hover:border-blue-300"
+                      className={`flex items-center gap-3 px-3 py-3 rounded-lg border-2 border-dashed cursor-pointer transition-colors ${field.value ? "border-blue-300 bg-blue-50" : "border-slate-200 hover:border-blue-300"
                         }`}
                     >
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${field.value ? "bg-blue-100" : "bg-slate-100"}`}>
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${field.value ? "bg-blue-100" : "bg-slate-100"}`}>
                         <Upload className={`h-5 w-5 ${field.value ? "text-blue-700" : "text-slate-400"}`} />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -809,10 +809,10 @@ export default function GeneralLoanPage() {
                   control={control}
                   render={({ field }) => (
                     <label
-                      className={`flex items-center gap-4 px-4 py-4 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${field.value ? "border-blue-300 bg-blue-50" : "border-slate-200 hover:border-blue-300"
+                      className={`flex items-center gap-3 px-3 py-3 rounded-lg border-2 border-dashed cursor-pointer transition-colors ${field.value ? "border-blue-300 bg-blue-50" : "border-slate-200 hover:border-blue-300"
                         }`}
                     >
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${field.value ? "bg-blue-100" : "bg-slate-100"}`}>
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${field.value ? "bg-blue-100" : "bg-slate-100"}`}>
                         <Upload className={`h-5 w-5 ${field.value ? "text-blue-700" : "text-slate-400"}`} />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -861,10 +861,10 @@ export default function GeneralLoanPage() {
                     control={control}
                     render={({ field }) => (
                       <label
-                        className={`flex items-center gap-4 px-4 py-4 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${field.value ? "border-blue-300 bg-blue-50" : "border-slate-200 hover:border-blue-300"
+                        className={`flex items-center gap-3 px-3 py-3 rounded-lg border-2 border-dashed cursor-pointer transition-colors ${field.value ? "border-blue-300 bg-blue-50" : "border-slate-200 hover:border-blue-300"
                           }`}
                       >
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${field.value ? "bg-blue-100" : "bg-slate-100"}`}>
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${field.value ? "bg-blue-100" : "bg-slate-100"}`}>
                           <Upload className={`h-5 w-5 ${field.value ? "text-blue-700" : "text-slate-400"}`} />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -911,18 +911,18 @@ export default function GeneralLoanPage() {
               STEP 4 — Terms & Conditions + Amount
           ════════════════════════════════════════════════════════════════ */}
           {currentStep === 4 && (
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div>
-                <h2 className="text-lg font-black text-slate-900 mb-1">
+                <h2 className="text-[13px] font-bold text-slate-900 mb-1">
                   Terms &amp; Conditions
                 </h2>
-                <p className="text-slate-400 text-sm mb-4">
+                <p className="text-slate-500 text-[13px] mb-3">
                   Read carefully before accepting.
                 </p>
               </div>
 
               {/* Terms text box */}
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 max-h-64 overflow-y-auto">
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 max-h-64 overflow-y-auto">
                 <pre className="text-xs text-slate-600 whitespace-pre-wrap leading-relaxed font-sans">
                   {TERMS_TEXT}
                 </pre>
@@ -935,14 +935,14 @@ export default function GeneralLoanPage() {
                     name="termsAccepted"
                     control={control}
                     render={({ field }) => (
-                      <label className="flex items-start gap-3 cursor-pointer px-5 py-4 rounded-xl border border-slate-200 hover:bg-blue-50 transition-colors select-none">
+                      <label className="flex items-start gap-3 cursor-pointer px-3 py-2.5 rounded-lg border border-slate-200 hover:bg-blue-50 transition-colors select-none">
                         <input
                           type="checkbox"
                           checked={field.value === true}
                           onChange={(e) => field.onChange(e.target.checked)}
-                          className="w-5 h-5 mt-0.5 rounded border-gray-300 text-blue-900 cursor-pointer flex-shrink-0"
+                          className="w-4 h-4 mt-0.5 rounded border-gray-300 text-blue-900 cursor-pointer flex-shrink-0"
                         />
-                        <span className="text-sm font-medium text-gray-700">
+                        <span className="text-[13px] font-medium text-slate-700">
                           I have read and accepted the Loan Agreement and Terms & Conditions.
                         </span>
                       </label>
@@ -961,14 +961,14 @@ export default function GeneralLoanPage() {
                     name="privacyAccepted"
                     control={control}
                     render={({ field }) => (
-                      <label className="flex items-start gap-3 cursor-pointer px-5 py-4 rounded-xl border border-slate-200 hover:bg-blue-50 transition-colors select-none">
+                      <label className="flex items-start gap-3 cursor-pointer px-3 py-2.5 rounded-lg border border-slate-200 hover:bg-blue-50 transition-colors select-none">
                         <input
                           type="checkbox"
                           checked={field.value === true}
                           onChange={(e) => field.onChange(e.target.checked)}
-                          className="w-5 h-5 mt-0.5 rounded border-gray-300 text-blue-900 cursor-pointer flex-shrink-0"
+                          className="w-4 h-4 mt-0.5 rounded border-gray-300 text-blue-900 cursor-pointer flex-shrink-0"
                         />
-                        <span className="text-sm font-medium text-gray-700">
+                        <span className="text-[13px] font-medium text-slate-700">
                           I have read and understood the <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Privacy Policy</a> and consent to the processing of my personal data in accordance with the Data Protection Act, 2019.
                         </span>
                       </label>
@@ -1037,10 +1037,10 @@ export default function GeneralLoanPage() {
                 if (m1 && m2 && m3 && m1 > 0 && m2 > 0 && m3 > 0) {
                   const estimate = estimateGeneralLoan(m1, m2, m3);
                   return (
-                    <div className="px-4 py-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                    <div className="px-3 py-2 bg-emerald-50 rounded-lg border border-emerald-100">
                       <p className="text-sm text-emerald-800 font-semibold">
                         Based on your earnings, your maximum eligible amount is approximately{" "}
-                        <span className="font-black">{formatKES(estimate.maxLoanAmount)}</span>
+                        <span className="font-bold">{formatKES(estimate.maxLoanAmount)}</span>
                       </p>
                       <p className="text-xs text-emerald-600 mt-1">
                         Final amount will be confirmed after review.
@@ -1054,12 +1054,12 @@ export default function GeneralLoanPage() {
 
 
               {/* How General Loan Approval Works */}
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                     <Clock className="h-5 w-5 text-blue-600" />
                   </div>
-                  <h3 className="text-base font-bold text-blue-900">
+                  <h3 className="text-[13px] font-bold text-blue-900">
                     How General Loan Approval Works
                   </h3>
                 </div>
@@ -1101,7 +1101,7 @@ export default function GeneralLoanPage() {
               type="button"
               variant="outline"
               onClick={currentStep === 1 ? () => navigate(-1) : handleBack}
-              className="rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold"
+              className="rounded-lg border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold"
             >
               <ChevronLeft className="mr-1 h-4 w-4" />
               {currentStep === 1 ? "Cancel" : "Back"}
@@ -1111,7 +1111,7 @@ export default function GeneralLoanPage() {
               <Button
                 type="button"
                 onClick={handleNext}
-                className="bg-blue-900 hover:bg-slate-800 text-white font-bold rounded-xl"
+                className="bg-blue-900 hover:bg-slate-800 text-white font-bold rounded-lg"
               >
                 Next
                 <ChevronRight className="ml-1 h-4 w-4" />
@@ -1120,7 +1120,7 @@ export default function GeneralLoanPage() {
               <Button
                 type="submit"
                 disabled={isSubmitting || !termsAccepted || !privacyAccepted}
-                className={`font-bold rounded-xl px-6 transition-all ${isSubmitting || !termsAccepted || !privacyAccepted
+                className={`font-bold rounded-lg px-6 transition-all ${isSubmitting || !termsAccepted || !privacyAccepted
                   ? "bg-gray-300 text-slate-500 cursor-not-allowed opacity-50"
                   : "bg-brand-blue hover:bg-slate-800 text-white transition-colors"
                   }`}

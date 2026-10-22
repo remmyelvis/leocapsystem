@@ -8,6 +8,7 @@ import { Search, Eye, Loader2, FileDown, FileSpreadsheet } from "lucide-react";
 import { apiCall, downloadFile } from "@/lib/apiClient";
 import { companyLabel as getCompanyLabel, repaymentReportPath } from "@/lib/company";
 import { toast } from "sonner";
+import { formatName } from "@/lib/formatName";
 
 const KES = new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -30,7 +31,7 @@ const statusBadge = (status: string) => {
 // One list row, read from an API item (shared by the table and the card list)
 const rowOf = (item: any) => {
   const app = item.application || item;
-  const name = item.bio_data?.full_name || app.applicant_id || "Unknown";
+  const name = formatName(item.bio_data?.full_name) || app.applicant_id || "Unknown";
   return {
     id: app.id as string,
     name: name as string,

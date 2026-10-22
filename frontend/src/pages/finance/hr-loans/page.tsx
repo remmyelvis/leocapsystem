@@ -6,6 +6,7 @@ import { useSession } from "@/contexts/AuthContext";
 import { Eye, Info, Loader2 } from "lucide-react";
 import { applicationApi, type GetAllApplicationItem } from "@/lib/applicationApi";
 import { companyLabel as getCompanyLabel } from "@/lib/company";
+import { formatName } from "@/lib/formatName";
 
 const KES = new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -95,11 +96,11 @@ export default function FinanceHRLoansPage() {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-800 text-xs font-bold flex-shrink-0">
-                    {bio.full_name.charAt(0).toUpperCase()}
+                    {formatName(bio.full_name).charAt(0)}
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-slate-800 truncate">
-                      {bio.full_name}
+                      {formatName(bio.full_name)}
                     </p>
                     <p className="text-xs text-slate-500">{loan.designation}</p>
                   </div>
