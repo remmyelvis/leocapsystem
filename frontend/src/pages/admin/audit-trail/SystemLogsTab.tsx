@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
   Search, Eye, Loader2, ShieldCheck, Filter, RotateCcw, Trash2, X, AlertTriangle,
@@ -29,26 +29,15 @@ export default function SystemLogsTab() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [search, setSearch] = useState("");
-  const [actions, setActions] = useState<string[]>(DEFAULT_ACTIONS);
+  const [query, setQuery] = useState(""); // the search text once typing has paused; the server does the searching
+  const actions = DEFAULT_ACTIONS;
   const [refreshKey, setRefreshKey] = useState(0);
 
   const [showDelete, setShowDelete] = useState(false);
 
-  // Discover valid AuditAction values from the backend's 400 validation message
-  // (this request fails validation before any audit row is written).
-  useEffect(() => {
-    apiCall("/api/audit-logs/get-all?action=__discover__&page_size=1").then((res) => {
-      const match = res.error?.match(/Allowed values:\s*\[(.*)\]/);
-      if (match) {
-        const list = match[1].split(",").map((s) => s.trim().replace(/^['"]|['"]$/g, "")).filter(Boolean);
-        if (list.length) setActions(list);
-      }
-    });
-  }, []);
-
   const fetchLogs = useCallback(async () => {
     setLoading(true);
-    const qs = buildQuery({ ...applied, page, page_size: pageSize });
+    const qs = buildQuery({ ...applied, q: query, page, page_size: pageSize });
     const res = await apiCall<AuditLogListResponse>(`/api/audit-logs/get-all?${qs}`);
     if (res.error) {
       toast.error(res.error);
@@ -59,11 +48,16 @@ export default function SystemLogsTab() {
       setPagination(res.data.pagination || null);
     }
     setLoading(false);
-  }, [applied, page, pageSize]);
+  }, [applied, query, page, pageSize]);
 
   useEffect(() => {
     fetchLogs();
   }, [fetchLogs, refreshKey]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => { setQuery(search.trim()); setPage(1); }, 350);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const applyFilters = () => {
     if (draft.start_date && draft.end_date && draft.start_date > draft.end_date) {
@@ -78,20 +72,13 @@ export default function SystemLogsTab() {
     setDraft(EMPTY_FILTERS);
     setApplied(EMPTY_FILTERS);
     setSearch("");
+    setQuery("");
     setPage(1);
   };
 
-  const activeFilterCount = Object.values(applied).filter(Boolean).length;
+  const activeFilterCount = Object.values(applied).filter(Boolean).length + (query ? 1 : 0);
 
-  // Quick search within the currently loaded page
-  const visibleLogs = useMemo(() => {
-    if (!search) return logs;
-    const q = search.toLowerCase();
-    return logs.filter((l) =>
-      [l.description, l.actor_email, l.endpoint, l.entity_type, l.entity_id, l.actor_id]
-        .some((v) => typeof v === "string" && v.toLowerCase().includes(q))
-    );
-  }, [logs, search]);
+  const visibleLogs = logs;
 
   const totalPages = pagination?.total_pages || 1;
   const from = pagination && pagination.total_records > 0 ? (pagination.page - 1) * pagination.page_size + 1 : 0;
@@ -173,7 +160,7 @@ export default function SystemLogsTab() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Quick search this page (description, email, endpoint, entity)..."
+              placeholder="Search everything: what happened, who, endpoint, loan or applicant ID…"
               className={`${inputCls} pl-10`}
             />
           </div>
@@ -215,7 +202,7 @@ export default function SystemLogsTab() {
           </div>
         ) : visibleLogs.length === 0 ? (
           <div className="p-12 text-center text-slate-400 text-sm">
-            {logs.length > 0 ? "No logs on this page match your search." : "No audit logs found for the selected filters."}
+            No audit logs found for the selected filters.
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -225,8 +212,8 @@ export default function SystemLogsTab() {
                   <th className="text-left px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap">Date</th>
                   <th className="text-left px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide">Actor</th>
                   <th className="text-left px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide">Action</th>
-                  <th className="text-left px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide hidden lg:table-cell">Description</th>
-                  <th className="text-left px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide hidden md:table-cell">Endpoint</th>
+                  <th className="text-left px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide hidden md:table-cell">Description</th>
+                  <th className="text-left px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide hidden xl:table-cell">Endpoint</th>
                   <th className="text-left px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide">Status</th>
                   <th className="px-4 py-4" />
                 </tr>
@@ -248,10 +235,10 @@ export default function SystemLogsTab() {
                         </span>
                         {log.entity_type && <p className="text-[11px] text-slate-400 mt-1">{log.entity_type}</p>}
                       </td>
-                      <td className="px-4 py-4 hidden lg:table-cell text-slate-600 max-w-[320px]">
+                      <td className="px-4 py-4 hidden md:table-cell text-slate-600 max-w-[360px]">
                         <p className="line-clamp-2">{log.description || "—"}</p>
                       </td>
-                      <td className="px-4 py-4 hidden md:table-cell">
+                      <td className="px-4 py-4 hidden xl:table-cell">
                         <div className="flex items-center gap-2">
                           {method && (
                             <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${METHOD_STYLES[method] || "bg-slate-100 text-slate-600"}`}>

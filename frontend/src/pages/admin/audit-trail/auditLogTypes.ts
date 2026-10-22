@@ -53,8 +53,8 @@ export const EMPTY_FILTERS: AuditLogFilters = {
   actor_role: "",
 };
 
-// Fallback list; replaced at runtime by the backend's allowed values when discoverable.
-export const DEFAULT_ACTIONS = ["create", "view", "update", "delete", "login", "logout"];
+// The values the backend accepts for "action".
+export const DEFAULT_ACTIONS = ["create", "update", "delete", "login", "export", "view", "logout", "other"];
 export const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"];
 export const ACTOR_ROLES = ["admin", "super_admin", "hr", "finance", "applicant"];
 export const PAGE_SIZES = [10, 25, 50, 100];
@@ -85,6 +85,7 @@ export const ACTION_STYLES: Record<string, string> = {
   view: "bg-slate-100 text-slate-700",
   login: "bg-blue-50 text-blue-700",
   logout: "bg-indigo-50 text-indigo-700",
+  export: "bg-cyan-50 text-cyan-700",
 };
 
 export const METHOD_STYLES: Record<string, string> = {

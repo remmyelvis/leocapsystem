@@ -1,8 +1,6 @@
-
-
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Eye, Loader2, ArrowUpDown, History } from "lucide-react";
+import { Search, Eye, Loader2, ArrowUpDown, History, ExternalLink } from "lucide-react";
 import { apiCall } from "@/lib/apiClient";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -10,6 +8,9 @@ import { Button } from "@/components/ui/button";
 interface AuditTrail {
   id: string;
   application_id: string;
+  applicant_name: string | null;
+  company: string | null;
+  loan_type: string | null;
   application_new_loan_amount: number;
   application_new_repayment_amount: number;
   application_old_loan_amount: number;
@@ -33,94 +34,73 @@ interface PaginationData {
   total_pages: number;
 }
 
+const KES = new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const label = (value?: string | null) => (value ? value.replace(/_/g, " ") : "—");
+const sentence = (value?: string | null) => label(value).replace(/^\w/, (c) => c.toUpperCase());
+
+// One readable line for what a row changed: "Loan status: pending processing → approved", "Amount applied: KES 20,000.00 → KES 30,000.00"
+function formatValue(field: string, value?: string | null) {
+  if (value === null || value === undefined || value === "") return "empty";
+  if (/amount|fee|balance|limit/.test(field) && value.trim() !== "" && !isNaN(Number(value))) return KES.format(Number(value));
+  return label(value);
+}
+
+function summarize(item: AuditTrail) {
+  // A payment keeps the loan "partially paid": there is no before/after, so the note ("Partial repayment of KES ...") is the news.
+  if (item.old_status === item.new_status && item.notes) return item.notes;
+  return `${sentence(item.field_name)}: ${formatValue(item.field_name, item.old_status)} → ${formatValue(item.field_name, item.new_status)}`;
+}
+
+const PERIODS = [
+  { value: "all", label: "All Time" },
+  { value: "today", label: "Last 24 Hours" },
+  { value: "7d", label: "Past 7 Days" },
+  { value: "30d", label: "Past 30 Days" },
+];
+
+const selectCls =
+  "px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors bg-white w-full sm:w-auto min-w-[150px]";
+
 export default function ApplicationChangesTab() {
   const [data, setData] = useState<AuditTrail[]>([]);
+  const [fields, setFields] = useState<string[]>([]);
   const [pagination, setPagination] = useState<PaginationData | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [query, setQuery] = useState(""); // the search text once typing has paused; the server does the searching
   const [page, setPage] = useState(1);
-  const [sortField, setSortField] = useState<keyof AuditTrail>("changed_at");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
-  const [timeFilter, setTimeFilter] = useState("all");
+  const [period, setPeriod] = useState("all");
+  const [field, setField] = useState("");
+  const [order, setOrder] = useState<"desc" | "asc">("desc");
+
+  useEffect(() => {
+    const timer = setTimeout(() => { setQuery(search.trim()); setPage(1); }, 350);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
-      try {
-        const res = await apiCall(`/api/applications/audit-trails?page=${page}&period=${timeFilter}`);
-        if (res.error) {
-          toast.error(res.error);
-        } else if (res.data) {
-          // Type assertion for the expected response format
-          const responseData = res.data as { data: AuditTrail[]; pagination: PaginationData };
-          setData(responseData.data || []);
-          setPagination(responseData.pagination || null);
-        }
-      } catch (error) {
-        console.error(error);
-        toast.error("Failed to load audit trails");
-      } finally {
-        setLoading(false);
+      const params = new URLSearchParams({ page: String(page), period, order });
+      if (query) params.set("q", query);
+      if (field) params.set("field", field);
+      const res = await apiCall<{ data: AuditTrail[]; fields: string[]; pagination: PaginationData }>(`/api/applications/audit-trails?${params}`);
+      if (res.error || !res.data) {
+        toast.error(res.error ?? "Failed to load audit trails");
+        setData([]);
+        setPagination(null);
+      } else {
+        setData(res.data.data || []);
+        setFields(res.data.fields || []);
+        setPagination(res.data.pagination || null);
       }
+      setLoading(false);
     }
     fetchData();
-  }, [page, timeFilter]);
+  }, [page, period, field, order, query]);
 
-  const handleSort = (field: keyof AuditTrail) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("desc");
-    }
-  };
-
-  const filteredAndSortedData = useMemo(() => {
-    let result = [...data];
-
-    // Time Filter (Fallback if backend doesn't handle period)
-    if (timeFilter !== "all") {
-      const now = new Date();
-      result = result.filter(item => {
-        const itemDate = new Date(item.changed_at);
-        const diffTime = now.getTime() - itemDate.getTime();
-        const diffDays = diffTime / (1000 * 60 * 60 * 24);
-        
-        if (timeFilter === "today") return diffDays <= 1;
-        if (timeFilter === "7d") return diffDays <= 7;
-        if (timeFilter === "30d") return diffDays <= 30;
-        return true;
-      });
-    }
-
-    // Search
-    if (search) {
-      const q = search.toLowerCase();
-      result = result.filter(
-        (item) =>
-          item.changed_by_email?.toLowerCase().includes(q) ||
-          item.changed_by_company?.toLowerCase().includes(q) ||
-          item.application_id?.toLowerCase().includes(q) ||
-          item.notes?.toLowerCase().includes(q) ||
-          item.field_name?.toLowerCase().includes(q)
-      );
-    }
-
-    // Sort
-    result.sort((a, b) => {
-      const aValue = a[sortField];
-      const bValue = b[sortField];
-
-      if (aValue === null || aValue === undefined) return sortDirection === "asc" ? -1 : 1;
-      if (bValue === null || bValue === undefined) return sortDirection === "asc" ? 1 : -1;
-
-      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
-      return 0;
-    });
-
-    return result;
-  }, [data, search, sortField, sortDirection, timeFilter]);
+  const filtered = Boolean(query || field || period !== "all");
 
   return (
     <div className="w-full space-y-6">
@@ -131,22 +111,20 @@ export default function ApplicationChangesTab() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by email, application ID, or notes..."
+            placeholder="Search by borrower, company, who changed it, notes or loan ID…"
             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors"
           />
         </div>
-        <select
-          value={timeFilter}
-          onChange={(e) => {
-            setTimeFilter(e.target.value);
-            setPage(1);
-          }}
-          className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors bg-white w-full sm:w-auto min-w-[150px]"
-        >
-          <option value="all">All Time</option>
-          <option value="today">Last 24 Hours</option>
-          <option value="7d">Past 7 Days</option>
-          <option value="30d">Past 30 Days</option>
+        <select value={field} onChange={(e) => { setField(e.target.value); setPage(1); }} className={selectCls}>
+          <option value="">Everything changed</option>
+          {fields.map((f) => (
+            <option key={f} value={f}>{sentence(f)}</option>
+          ))}
+        </select>
+        <select value={period} onChange={(e) => { setPeriod(e.target.value); setPage(1); }} className={selectCls}>
+          {PERIODS.map((p) => (
+            <option key={p.value} value={p.value}>{p.label}</option>
+          ))}
         </select>
       </div>
 
@@ -155,10 +133,10 @@ export default function ApplicationChangesTab() {
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <History className="h-4 w-4 text-slate-400" />
-            <h2 className="text-sm font-black text-slate-900">Activity Logs</h2>
+            <h2 className="text-sm font-black text-slate-900">Loan Changes</h2>
           </div>
           <span className="text-xs text-slate-400">
-            {filteredAndSortedData.length} result{filteredAndSortedData.length !== 1 ? "s" : ""}
+            {pagination ? `${pagination.total_items.toLocaleString()} change${pagination.total_items !== 1 ? "s" : ""}` : ""}
           </span>
         </div>
 
@@ -168,40 +146,30 @@ export default function ApplicationChangesTab() {
           </div>
         ) : data.length === 0 ? (
           <div className="p-12 text-center text-slate-400 text-sm">
-            No audit trails found.
+            {filtered ? "No changes match your search." : "No loan changes recorded yet."}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100">
-                  <th className="text-left px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => handleSort("changed_at")}>
-                    <div className="flex items-center gap-1">
-                      Date <ArrowUpDown className="h-3 w-3" />
-                    </div>
+                  <th
+                    className="text-left px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide cursor-pointer hover:bg-slate-50 transition-colors"
+                    onClick={() => { setOrder(order === "desc" ? "asc" : "desc"); setPage(1); }}
+                    title={order === "desc" ? "Newest first (click for oldest first)" : "Oldest first (click for newest first)"}
+                  >
+                    <div className="flex items-center gap-1">Date <ArrowUpDown className="h-3 w-3" /></div>
                   </th>
-                  <th className="text-left px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => handleSort("changed_by_email")}>
-                    <div className="flex items-center gap-1">
-                      User <ArrowUpDown className="h-3 w-3" />
-                    </div>
-                  </th>
-                  <th className="text-left px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide hidden md:table-cell cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => handleSort("application_id")}>
-                    <div className="flex items-center gap-1">
-                      Application ID <ArrowUpDown className="h-3 w-3" />
-                    </div>
-                  </th>
-                  <th className="text-left px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide hidden sm:table-cell cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => handleSort("field_name")}>
-                    <div className="flex items-center gap-1">
-                      Action <ArrowUpDown className="h-3 w-3" />
-                    </div>
-                  </th>
+                  <th className="text-left px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide">Changed by</th>
+                  <th className="text-left px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide hidden md:table-cell">Borrower</th>
+                  <th className="text-left px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide">What changed</th>
                   <th className="px-4 py-4" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {filteredAndSortedData.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="px-6 py-4 text-xs text-slate-500">
+                {data.map((item) => (
+                  <tr key={item.id} className="hover:bg-slate-50/60 transition-colors align-top">
+                    <td className="px-6 py-4 text-xs text-slate-500 whitespace-nowrap">
                       {new Date(item.changed_at).toLocaleString("en-GB", {
                         day: "2-digit",
                         month: "short",
@@ -211,23 +179,28 @@ export default function ApplicationChangesTab() {
                       })}
                     </td>
                     <td className="px-4 py-4">
-                      <div>
-                        <p className="font-semibold text-slate-800">{item.changed_by_email}</p>
-                        <p className="text-xs text-slate-400 capitalize">
-                          {item.changed_by_role}
-                          {item.changed_by_company ? ` • ${item.changed_by_company}` : ""}
-                        </p>
-                      </div>
+                      <p className="font-semibold text-slate-800 break-all">{item.changed_by_email}</p>
+                      <p className="text-xs text-slate-400 capitalize">
+                        {item.changed_by_role}
+                        {item.changed_by_company ? ` • ${item.changed_by_company}` : ""}
+                      </p>
                     </td>
                     <td className="px-4 py-4 hidden md:table-cell">
-                      <span className="font-mono text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-md">
-                        {item.application_id.substring(0, 8)}...
-                      </span>
+                      <Link
+                        to={`/admin/applications/${item.application_id}`}
+                        className="inline-flex items-center gap-1 font-semibold text-slate-800 hover:text-blue-700 transition-colors"
+                        title={`Open loan ${item.application_id}`}
+                      >
+                        {item.applicant_name || "Unknown borrower"}
+                        <ExternalLink className="h-3 w-3 text-slate-400" />
+                      </Link>
+                      <p className="text-xs text-slate-400 capitalize">
+                        {item.company ? label(item.company) : "—"} • {item.application_id.substring(0, 8)}
+                      </p>
                     </td>
-                    <td className="px-4 py-4 hidden sm:table-cell">
-                      <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 capitalize">
-                        {item.field_name.replace(/_/g, " ")}
-                      </span>
+                    <td className="px-4 py-4 max-w-[420px]">
+                      <p className="font-medium text-slate-800">{summarize(item)}</p>
+                      {item.notes && !(item.old_status === item.new_status) && <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{item.notes}</p>}
                     </td>
                     <td className="px-4 py-4 text-right">
                       <Link to={`/admin/audit-trail/${item.id}`}

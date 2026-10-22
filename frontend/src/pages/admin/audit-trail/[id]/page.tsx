@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 interface AuditTrailDetail {
   id: string;
   application_id: string;
+  applicant_name?: string | null;
+  company?: string | null;
   application_new_loan_amount: number | null;
   application_new_repayment_amount: number | null;
   application_old_loan_amount: number | null;
@@ -182,6 +184,8 @@ export default function AuditTrailDetailPage() {
               </Button>
             </div>
           </div>
+          <Field label="Borrower" value={data.applicant_name} />
+          <Field label="Company" value={data.company ? data.company.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : null} />
           <Field label="Modified Field" value={actionName} />
         </DetailCard>
       </div>
@@ -213,7 +217,7 @@ export default function AuditTrailDetailPage() {
               {/* Status Row */}
               {(data.old_status || data.new_status) && (
                 <tr className="hover:bg-slate-50/50">
-                  <td className="px-4 py-3 font-semibold text-gray-700">Application Status</td>
+                  <td className="px-4 py-3 font-semibold text-gray-700">{actionName}</td>
                   <td className="px-4 py-3 text-slate-500 capitalize">{data.old_status?.replace(/_/g, " ") || "—"}</td>
                   <td className="px-4 py-3 text-blue-700 font-semibold capitalize">{data.new_status?.replace(/_/g, " ") || "—"}</td>
                 </tr>
