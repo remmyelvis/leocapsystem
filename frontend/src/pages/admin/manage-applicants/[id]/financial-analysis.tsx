@@ -171,10 +171,10 @@ export default function FinancialAnalysisPage() {
   };
 
   return (
-    <div className="p-6 w-full max-w-[1200px] mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400">
+    <div className="p-4 sm:p-6 w-full max-w-[1200px] mx-auto space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <button onClick={() => navigate(-1)} aria-label="Back" className="p-2 rounded-xl hover:bg-slate-100 text-slate-400">
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
@@ -208,7 +208,7 @@ export default function FinancialAnalysisPage() {
         )}
       </div>
 
-      <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
+      <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
         <h2 className="text-lg font-bold mb-4">1. Upload Statement & Loan Request</h2>
           <div className="mb-4">
             <label className="block text-sm font-medium text-slate-700 mb-1">Loan Ask Amount (KES) - Optional, used to guide affordability analysis</label>
@@ -217,24 +217,24 @@ export default function FinancialAnalysisPage() {
               placeholder="e.g. 50000" 
               value={loanAsk} 
               onChange={(e) => setLoanAsk(e.target.value)} 
-              className="border p-2 rounded w-64 text-slate-700 bg-white" 
+              className="border p-2 rounded w-full sm:w-64 text-slate-700 bg-white" 
             />
           </div>
         <div className="flex flex-wrap gap-4 items-center mb-6">
-          <select value={source} onChange={(e) => setSource(e.target.value)} className="border p-2 rounded w-48 bg-slate-50 text-slate-700">
+          <select value={source} onChange={(e) => setSource(e.target.value)} className="border p-2 rounded w-full sm:w-48 bg-slate-50 text-slate-700">
             <option value="mpesa">M-Pesa Statement</option>
             <option value="bank">Bank Statement</option>
           </select>
-          <input type="file" accept=".pdf" onChange={(e) => { setFile(e.target.files?.[0] || null); setUploadId(null); }} className="border p-2 rounded w-64" />
-          <input type="text" placeholder="PDF Password (if locked)" value={password} onChange={(e) => setPassword(e.target.value)} className="border p-2 rounded w-64" />
-          <Button onClick={handleUpload} disabled={isUploading || !file || uploadId !== null} className="bg-slate-800 hover:bg-slate-900">
-            {isUploading ? "Uploading..." : uploadId ? "Uploaded ?" : "Upload Document"}
+          <input type="file" accept=".pdf" onChange={(e) => { setFile(e.target.files?.[0] || null); setUploadId(null); }} className="border p-2 rounded w-full sm:w-64" />
+          <input type="text" placeholder="PDF Password (if locked)" value={password} onChange={(e) => setPassword(e.target.value)} className="border p-2 rounded w-full sm:w-64" />
+          <Button onClick={handleUpload} disabled={isUploading || !file || uploadId !== null} className="bg-slate-800 hover:bg-slate-900 w-full sm:w-auto">
+            {isUploading ? "Uploading..." : uploadId ? "Uploaded ✓" : "Upload Document"}
           </Button>
         </div>
         
         <h2 className="text-lg font-bold mb-4 pt-6 border-t border-slate-100">2. Run Analysis</h2>
-        <div className="flex gap-4 items-center">
-          <Button onClick={handleAnalyze} disabled={isAnalyzing || !uploadId} className="w-64 bg-emerald-600 hover:bg-emerald-700">
+        <div className="flex flex-wrap gap-x-4 gap-y-2 items-center">
+          <Button onClick={handleAnalyze} disabled={isAnalyzing || !uploadId} className="w-full sm:w-64 bg-emerald-600 hover:bg-emerald-700">
             {isAnalyzing ? "Processing AI Analysis..." : "Run AI Analysis"}
           </Button>
           {!uploadId && <p className="text-sm text-slate-400">Please upload a document first to enable analysis.</p>}
@@ -248,7 +248,7 @@ export default function FinancialAnalysisPage() {
           <h3 className="font-bold text-slate-800 mb-4">Uploaded Statements</h3>
           <div className="space-y-3">
             {history.map((stmt: any) => (
-              <div key={stmt.id} className="flex items-center justify-between p-3 border border-slate-100 rounded-lg">
+              <div key={stmt.id} className="flex flex-wrap items-center justify-between gap-2 p-3 border border-slate-100 rounded-lg">
                 <div>
                   <p className="font-semibold text-sm">{stmt.filename}</p>
                   <p className="text-xs text-slate-500">Uploaded: {new Date(stmt.uploaded_at).toLocaleString()}</p>
@@ -268,7 +268,7 @@ export default function FinancialAnalysisPage() {
         {analysis.gemini_narrative && (
           <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl border border-indigo-100 shadow-sm mb-6">
             <h3 className="font-bold text-indigo-900 mb-2 flex items-center gap-2">
-              ? AI Executive Summary
+              AI Executive Summary
             </h3>
             <p className="text-slate-800 text-sm whitespace-pre-wrap leading-relaxed">
               {analysis.gemini_narrative}
@@ -276,8 +276,8 @@ export default function FinancialAnalysisPage() {
           </div>
         )}
 
-        <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
             <h2 className="text-lg font-bold">Analysis Results</h2>
             <div className="flex gap-2">
               {analysis.credit_analysis.mpesa && (

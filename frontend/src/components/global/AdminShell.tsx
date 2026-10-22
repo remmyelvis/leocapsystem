@@ -1,6 +1,6 @@
 
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useLocation, useSearchParams } from "react-router-dom";
 import { signOut } from "@/contexts/AuthContext";
@@ -215,6 +215,12 @@ export default function AdminShell({ user, children }: AdminShellProps) {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+
+  // Desktop admin pages use a slightly smaller root font size (see globals.css).
+  useEffect(() => {
+    document.documentElement.classList.add("admin-ui");
+    return () => document.documentElement.classList.remove("admin-ui");
+  }, []);
 
   const navProps = {
     pathname,

@@ -8,7 +8,7 @@ export default function CalculatorsPage() {
   const [activeModule, setActiveModule] = useState("1");
 
   return (
-    <div className="p-6 w-full space-y-6 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 w-full space-y-5 max-w-[1600px] mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
@@ -16,7 +16,7 @@ export default function CalculatorsPage() {
           </h1>
           <p className="text-slate-500 text-sm mt-1">Unified toolkit for all loan calculations and simulations</p>
         </div>
-        <div className="flex flex-wrap bg-slate-50 p-1 rounded-xl w-max gap-1">
+        <div className="flex bg-slate-100 p-1 rounded-xl w-full sm:w-fit max-w-full gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {[
             { id: "1", label: "Personal Loan" },
             { id: "2", label: "Salary Advance" },
@@ -27,7 +27,7 @@ export default function CalculatorsPage() {
             <button
               key={tab.id}
               onClick={() => setActiveModule(tab.id)}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+              className={`shrink-0 px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
                 activeModule === tab.id
                   ? "bg-white text-brand-blue shadow-sm ring-1 ring-slate-900/5"
                   : "text-slate-500 hover:text-slate-700"

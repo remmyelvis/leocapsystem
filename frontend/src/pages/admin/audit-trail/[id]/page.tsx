@@ -1,5 +1,6 @@
 
 
+import { formatName } from "@/lib/formatName";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, History, FileText, User, Calendar, Activity, AlertTriangle, RefreshCw } from "lucide-react";
@@ -131,7 +132,7 @@ export default function AuditTrailDetailPage() {
   const actionName = data.field_name.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 
   return (
-    <div className="p-6 w-full space-y-6 max-w-5xl mx-auto">
+    <div className="p-4 sm:p-6 w-full space-y-5 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-start gap-4">
         <button
@@ -184,7 +185,7 @@ export default function AuditTrailDetailPage() {
               </Button>
             </div>
           </div>
-          <Field label="Borrower" value={data.applicant_name} />
+          <Field label="Borrower" value={formatName(data.applicant_name)} />
           <Field label="Company" value={data.company ? data.company.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : null} />
           <Field label="Modified Field" value={actionName} />
         </DetailCard>

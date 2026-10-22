@@ -1,5 +1,6 @@
 
 
+import { formatName } from "@/lib/formatName";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -488,24 +489,25 @@ export default function ApplicantDetailsPage() {
   const { applicant, docs } = data;
 
   return (
-    <div className="p-6 w-full max-w-[800px] mx-auto space-y-6">
+    <div className="p-4 sm:p-6 w-full max-w-5xl mx-auto space-y-5">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-3">
         <button
           onClick={() => navigate(-1)}
+          aria-label="Back"
           className="p-2 rounded-xl hover:bg-slate-100 transition-colors text-slate-400 hover:text-gray-700"
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <div>
-          <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
-            {applicant.name}
+        <div className="flex-1 min-w-[200px]">
+          <h1 className="text-2xl font-black text-slate-900 break-words">
+            {formatName(applicant.name)}
           </h1>
           <p className="text-sm text-slate-500 mt-1">
             Applicant Details
           </p>
         </div>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="sm:ml-auto flex items-center gap-2 basis-full sm:basis-auto">
           <Link to={`/admin/manage-applicants/${params.id}/financial-analysis`}>
             <Button variant="outline" className="gap-2 rounded-xl">
               <Search className="w-4 h-4" /> Financial Analysis
@@ -517,9 +519,9 @@ export default function ApplicantDetailsPage() {
 
       {riskProfile && (
         <div className="bg-white rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60 overflow-hidden mt-6 mb-6">
-          <div className={`p-4 border-b bg-${riskProfile.color}-50 border-${riskProfile.color}-100 flex justify-between items-center`}>
+          <div className={`p-4 border-b bg-${riskProfile.color}-50 border-${riskProfile.color}-100 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3`}>
             <div>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-x-4 gap-y-2 flex-wrap">
                 <h2 className={`text-lg font-black text-${riskProfile.color}-900`}>Credit Risk Profile</h2>
                 <Button 
                   onClick={async () => {
@@ -541,7 +543,7 @@ export default function ApplicantDetailsPage() {
               </div>
               <p className={`text-xs text-${riskProfile.color}-700 mt-1`}>Automated algorithmic assessment</p>
             </div>
-            <div className="text-right">
+            <div className="sm:text-right">
               <div className={`text-2xl font-black text-${riskProfile.color}-600`}>{riskProfile.score} / {riskProfile.max_score}</div>
               <div className={`text-sm font-bold text-${riskProfile.color}-800`}>{riskProfile.tier} ({riskProfile.risk_level})</div>
             </div>

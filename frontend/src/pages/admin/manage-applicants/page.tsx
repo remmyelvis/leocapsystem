@@ -16,6 +16,18 @@ import {
   FileDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { formatName } from "@/lib/formatName";
+import { formatDate } from "@/lib/formatDate";
+
+const thCls = "px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap";
+
+function TypeBadge({ type }: { type?: string | null }) {
+  return (
+    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-brand-blue capitalize whitespace-nowrap">
+      {type || "—"}
+    </span>
+  );
+}
 
 export default function ManageApplicantsPage() {
   const navigate = useNavigate();
@@ -110,6 +122,10 @@ export default function ManageApplicantsPage() {
 
     const sortedApplicants = useMemo(() => {
     return [...filteredApplicants].sort((a, b) => {
+      if (sortField === "name") {
+        const byName = formatName(a.name).localeCompare(formatName(b.name), undefined, { sensitivity: "base" });
+        return sortDir === "asc" ? byName : -byName;
+      }
       const aValue = a[sortField];
       const bValue = b[sortField];
       if (aValue === null) return 1;
@@ -169,20 +185,51 @@ export default function ManageApplicantsPage() {
     window.open(`${import.meta.env.VITE_BACKEND_URL}/api/auth/applicant/bulk-upload/template`, "_blank");
   };
 
+  const actions = (app: ManageApplicant) => (
+    <>
+      <button
+        onClick={() => navigate(`/admin/manage-applicants/${app.id}`)}
+        className="p-2 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
+        title="View Details"
+        aria-label="View details"
+      >
+        <Eye className="h-4 w-4" />
+      </button>
+      <button
+        onClick={() => handleDownloadDossier(app.id, formatName(app.name))}
+        disabled={downloadingDossier === app.id}
+        className="p-2 rounded-lg text-teal-600 hover:bg-teal-50 transition-colors disabled:opacity-40"
+        title="Export Debt Collection Dossier"
+        aria-label="Export debt collection dossier"
+      >
+        {downloadingDossier === app.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+      </button>
+      <button
+        onClick={() => handleDelete(app.id)}
+        disabled={isDeleting === app.id}
+        className="p-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+        title="Suspend Applicant"
+        aria-label="Suspend applicant"
+      >
+        {isDeleting === app.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Ban className="h-4 w-4" />}
+      </button>
+    </>
+  );
+
   return (
-    <div className="p-6 w-full max-w-[1600px] mx-auto space-y-6">
+    <div className="p-4 sm:p-6 w-full max-w-[1600px] mx-auto space-y-5">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
-            <Users className="h-6 w-6 text-brand-blue" />
+          <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2.5">
+            <Users className="h-6 w-6 text-brand-blue shrink-0" />
             Manage Applicants
           </h1>
           <p className="text-sm text-slate-500 mt-1">
             View, search, and manage registered applicants.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 self-start md:self-auto">
           <Button onClick={fetchApplicants} disabled={isLoading} variant="outline" className="rounded-xl">
             <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
             Refresh
@@ -191,11 +238,11 @@ export default function ManageApplicantsPage() {
       </div>
 
       {/* Bulk Upload Section */}
-      <div className="bg-white p-6 rounded-xl ring-1 ring-slate-200 shadow-sm">
-        <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center">
+      <div className="bg-white p-4 sm:p-5 rounded-xl ring-1 ring-slate-200 shadow-sm">
+        <h2 className="text-base font-bold text-slate-900 mb-3 flex items-center">
           <Upload className="h-5 w-5 mr-2 text-blue-600" /> Bulk Employee Upload
         </h2>
-        <div className="flex flex-col md:flex-row items-center gap-4">
+        <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
           <input
             type="file"
             accept=".csv, .xlsx"
@@ -231,7 +278,7 @@ export default function ManageApplicantsPage() {
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white p-4 rounded-xl ring-1 ring-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div className="bg-white p-3 sm:p-4 rounded-xl ring-1 ring-slate-200 shadow-sm flex flex-col md:flex-row gap-3 md:gap-4 md:items-center justify-between">
         <div className="relative w-full md:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
           <input
@@ -242,105 +289,82 @@ export default function ManageApplicantsPage() {
             className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-shadow"
           />
         </div>
-        <div className="text-sm text-slate-500 font-medium whitespace-nowrap">
-          {sortedApplicants.length} applicant{sortedApplicants.length !== 1 && "s"} found
+        <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto">
+          <select
+            aria-label="Sort applicants"
+            value={`${sortField}:${sortDir}`}
+            onChange={(e) => { const [f, d] = e.target.value.split(":"); setSortField(f as keyof ManageApplicant); setSortDir(d as "asc" | "desc"); }}
+            className="xl:hidden px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white"
+          >
+            <option value="created_at:desc">Newest first</option>
+            <option value="created_at:asc">Oldest first</option>
+            <option value="name:asc">Name A–Z</option>
+            <option value="name:desc">Name Z–A</option>
+          </select>
+          <div className="text-sm text-slate-500 font-medium whitespace-nowrap">
+            {sortedApplicants.length} applicant{sortedApplicants.length !== 1 && "s"}
+          </div>
         </div>
       </div>
 
-      {/* Table */}
+      {/* Table (wide screens) / cards (narrower ones: six columns do not fit) */}
       <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-slate-50/80 border-b border-slate-100">
-              <tr>
-                <th className="px-6 py-4 font-black text-slate-900 uppercase tracking-wide cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort("name")}>
-                  Name {sortField === "name" && (sortDir === "asc" ? "↑" : "↓")}
-                </th>
-                <th className="px-6 py-4 font-black text-slate-900 uppercase tracking-wide cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort("email")}>
-                  Email {sortField === "email" && (sortDir === "asc" ? "↑" : "↓")}
-                </th>
-                <th className="px-6 py-4 font-black text-slate-900 uppercase tracking-wide cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort("id_number")}>
-                  ID Number {sortField === "id_number" && (sortDir === "asc" ? "↑" : "↓")}
-                </th>
-                <th className="px-6 py-4 font-black text-slate-900 uppercase tracking-wide cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort("applicant_type")}>
-                  Type {sortField === "applicant_type" && (sortDir === "asc" ? "↑" : "↓")}
-                </th>
-                <th className="px-6 py-4 font-black text-slate-900 uppercase tracking-wide cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort("created_at")}>
-                  Joined {sortField === "created_at" && (sortDir === "asc" ? "↑" : "↓")}
-                </th>
-                <th className="px-6 py-4 font-black text-slate-900 uppercase tracking-wide text-right">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
-                    <div className="flex items-center justify-center">
-                      <RefreshCw className="h-6 w-6 animate-spin text-brand-blue" />
-                    </div>
-                  </td>
-                </tr>
-              ) : sortedApplicants.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
-                    No applicants found.
-                  </td>
-                </tr>
-              ) : (
-                sortedApplicants.map((app) => (
-                  <tr key={app.id} className="hover:bg-blue-50/30 transition-colors">
-                    <td className="px-6 py-4 font-medium text-slate-900">{app.name}</td>
-                    <td className="px-6 py-4 text-slate-600">{app.email}</td>
-                    <td className="px-6 py-4 text-slate-600">{app.id_number}</td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-brand-blue capitalize">
-                        {app.applicant_type}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-slate-500 text-xs">
-                      {new Date(app.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => navigate(`/admin/manage-applicants/${app.id}`)}
-                          className="p-2 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
-                          title="View Details"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDownloadDossier(app.id, app.name)}
-                          disabled={downloadingDossier === app.id}
-                          className="p-2 rounded-lg text-teal-600 hover:bg-teal-50 transition-colors disabled:opacity-40"
-                          title="Export Debt Collection Dossier"
-                        >
-                          {downloadingDossier === app.id
-                            ? <RefreshCw className="h-4 w-4 animate-spin" />
-                            : <FileDown className="h-4 w-4" />}
-                        </button>
-                        <button
-                          onClick={() => handleDelete(app.id)}
-                          disabled={isDeleting === app.id}
-                          className="p-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
-                          title="Suspend Applicant"
-                        >
-                          {isDeleting === app.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Ban className="h-4 w-4" />}
-                        </button>
-                      </div>
-                    </td>
+        {isLoading ? (
+          <div className="px-6 py-12 flex items-center justify-center"><RefreshCw className="h-6 w-6 animate-spin text-brand-blue" /></div>
+        ) : sortedApplicants.length === 0 ? (
+          <div className="px-6 py-12 text-center text-slate-400 text-sm">No applicants found.</div>
+        ) : (
+          <>
+            <div className="hidden xl:block overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50/80 border-b border-slate-100">
+                  <tr>
+                    {([["name", "Name"], ["email", "Email"], ["id_number", "ID Number"], ["applicant_type", "Type"], ["created_at", "Joined"]] as [keyof ManageApplicant, string][]).map(([field, label]) => (
+                      <th key={field} className={`${thCls} cursor-pointer hover:bg-slate-100 transition-colors`} onClick={() => handleSort(field)}>
+                        {label} {sortField === field && (sortDir === "asc" ? "↑" : "↓")}
+                      </th>
+                    ))}
+                    <th className={`${thCls} text-right`}>Actions</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-        
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {paginated.map((app) => (
+                    <tr key={app.id} className="hover:bg-blue-50/30 transition-colors">
+                      <td className="px-4 py-3 font-semibold text-slate-900 whitespace-nowrap">{formatName(app.name) || "—"}</td>
+                      <td className="px-4 py-3 text-slate-600 max-w-[260px]"><span className="block truncate" title={app.email}>{app.email}</span></td>
+                      <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{app.id_number || "—"}</td>
+                      <td className="px-4 py-3"><TypeBadge type={app.applicant_type} /></td>
+                      <td className="px-4 py-3 text-slate-500 text-xs whitespace-nowrap">{formatDate(app.created_at)}</td>
+                      <td className="px-4 py-3"><div className="flex items-center justify-end gap-1">{actions(app)}</div></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <ul className="xl:hidden divide-y divide-slate-100">
+              {paginated.map((app) => (
+                <li key={app.id} className="p-4 space-y-2.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="font-semibold text-slate-900 break-words">{formatName(app.name) || "—"}</p>
+                    <TypeBadge type={app.applicant_type} />
+                  </div>
+                  <p className="text-sm text-slate-600 break-all">{app.email}</p>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-xs text-slate-500">
+                      {app.id_number ? `ID ${app.id_number} · ` : ""}Joined {formatDate(app.created_at)}
+                    </p>
+                    <div className="flex items-center gap-1 shrink-0">{actions(app)}</div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
         {/* Pagination Controls */}
         {!isLoading && filteredApplicants.length > itemsPerPage && (
-          <div className="flex items-center justify-between border-t border-slate-100 px-6 py-4 bg-slate-50">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-slate-100 px-4 sm:px-6 py-3 bg-slate-50">
             <div className="text-sm text-slate-500">
               Showing <span className="font-medium text-slate-900">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-medium text-slate-900">{Math.min(currentPage * itemsPerPage, filteredApplicants.length)}</span> of <span className="font-medium text-slate-900">{filteredApplicants.length}</span> results
             </div>

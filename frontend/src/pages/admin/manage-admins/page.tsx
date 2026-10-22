@@ -125,7 +125,7 @@ export default function ManageAdminsPage() {
   };
 
   return (
-    <div className="p-6 w-full space-y-6">
+    <div className="p-4 sm:p-6 w-full max-w-[1600px] mx-auto space-y-5">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-black text-slate-900">Manage Admins</h1>
@@ -169,10 +169,10 @@ export default function ManageAdminsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
         {/* ── Current Admins Table ── */}
         <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+          <div className="px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
             <h2 className="text-base font-black text-slate-900">
               Current Admins
             </h2>
@@ -194,7 +194,7 @@ export default function ManageAdminsPage() {
                 return (
                   <div
                     key={admin.id}
-                    className="px-6 py-4 flex items-center gap-4"
+                    className="px-4 sm:px-6 py-3.5 flex items-center gap-3 sm:gap-4"
                   >
                     <div className="w-9 h-9 rounded-full bg-[#1E3A8A] flex items-center justify-center text-white text-sm font-black select-none flex-shrink-0">
                       {admin.name.charAt(0).toUpperCase()}

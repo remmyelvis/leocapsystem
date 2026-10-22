@@ -1,5 +1,6 @@
 
 
+import { formatName } from "@/lib/formatName";
 import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -63,7 +64,7 @@ function Field({ label, value }: { label: string; value?: string | number | bool
       <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
         {label}
       </p>
-      <p className="text-sm text-slate-800 font-medium">{display}</p>
+      <p className={`text-sm text-slate-800 font-medium break-words ${/^[a-z][a-z _-]*$/.test(display) ? "capitalize" : ""}`}>{display}</p>
     </div>
   );
 }
@@ -76,8 +77,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6">
-      <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide mb-5">
+    <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-4 sm:p-5">
+      <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide mb-4">
         {title}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -790,19 +791,20 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
   };
 
   return (
-    <div className="p-6 w-full space-y-6">
-      {/* Header */}
-      <div className="flex items-start gap-4">
+    <div className="p-4 sm:p-6 w-full max-w-[1600px] mx-auto space-y-5">
+      {/* Header: back + name/status on one row, the action buttons on their own row below (side by side only on very wide screens) */}
+      <div className="flex flex-wrap items-start gap-x-3 gap-y-3">
         <button
           onClick={() => navigate(-1)}
-          className="mt-1 p-2 rounded-xl hover:bg-slate-100 transition-colors text-slate-400 hover:text-gray-700"
+          aria-label="Back"
+          className="mt-0.5 p-2 rounded-xl hover:bg-slate-100 transition-colors text-slate-400 hover:text-gray-700"
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl font-black text-slate-900">
-              {app.customerName}
+        <div className="flex-1 min-w-[220px]">
+          <div className="flex items-center gap-x-3 gap-y-1.5 flex-wrap">
+            <h1 className="text-2xl font-black text-slate-900 break-words">
+              {formatName(app.customerName)}
             </h1>
             <span
               className={`text-xs font-bold px-2.5 py-1 rounded-full ${statusDisplay.style}`}
@@ -818,13 +820,13 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
               </span>
             )}
           </div>
-          <p className="text-slate-400 text-sm mt-1 font-mono">
+          <p className="text-slate-400 text-xs mt-1 font-mono break-all">
             ID: {app.id}
           </p>
         </div>
 
         {/* Action buttons */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap basis-full 2xl:basis-auto">
             <Button
               onClick={handleDownloadDossier}
               disabled={downloadingDossier}
@@ -995,7 +997,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
           </Button>
         </div>
 
-        {renderDeclineForm("top")}
+        <div className="basis-full">{renderDeclineForm("top")}</div>
       </div>
 
       {showPartialPayment && (
@@ -1184,7 +1186,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
       )}
 
       <Section title="Applicant Information">
-        <Field label="Full Name" value={app.customerName} />
+        <Field label="Full Name" value={formatName(app.customerName)} />
         <Field label="Email Address" value={app.email} />
         <Field label="Phone Number" value={app.phone} />
         <Field label="ID Number" value={app.idNumber} />

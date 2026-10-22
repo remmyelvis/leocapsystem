@@ -1,3 +1,4 @@
+import { formatName } from "@/lib/formatName";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -527,7 +528,7 @@ function Who({ row, companyName }: { row: LoanRow; companyName: string }) {
         to={`/admin/applications/${row.id}`}
         className="font-semibold text-slate-900 underline-offset-2 transition-colors hover:text-[#0F2C59] hover:underline focus-visible:outline-none focus-visible:underline"
       >
-        {row.applicant_name || row.applicant_id || "Unknown"}
+        {formatName(row.applicant_name) || row.applicant_id || "Unknown"}
       </Link>
       <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-500 sm:gap-x-2">
         <span className="font-medium text-slate-600">{companyName}</span>

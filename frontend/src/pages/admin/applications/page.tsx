@@ -15,6 +15,7 @@ import {
 } from "@/hooks/useAdminData";
 import { adminApplicationsApi } from "@/lib/adminApi";
 import { apiCall } from "@/lib/apiClient";
+import { formatName } from "@/lib/formatName";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -32,6 +33,29 @@ const DATE_RANGES = [
   { label: "Last 30 Days", value: "30" },
   { label: "Last 7 Days", value: "7" },
 ] as const;
+
+const shortDate = (value: string) =>
+  new Date(value).toLocaleDateString("en-KE", { day: "2-digit", month: "short", year: "numeric" });
+
+const repaymentStyle = (status?: string | null) => {
+  const v = status?.toLowerCase();
+  if (v === "paid") return "bg-emerald-100 text-emerald-700";
+  if (v === "defaulted" || v === "delinquent") return "bg-red-100 text-red-700";
+  if (v === "partially_paid") return "bg-blue-100 text-blue-700";
+  return "bg-slate-100 text-gray-700";
+};
+
+const Pill = ({ className, children }: { className: string; children: React.ReactNode }) => (
+  <span className={`inline-flex shrink-0 text-xs font-bold px-2.5 py-1 rounded-full whitespace-nowrap capitalize ${className}`}>{children}</span>
+);
+
+const ViewButton = ({ id }: { id: string }) => (
+  <Link to={`/admin/applications/${id}`} aria-label="View details" title="View Details">
+    <Button size="sm" variant="outline" className="h-8 px-2.5 rounded-lg border-slate-200 gap-1.5">
+      <Eye className="h-3.5 w-3.5" /> <span className="xl:hidden text-xs font-semibold">View</span>
+    </Button>
+  </Link>
+);
 
 // ---------------------------------------------------------------------------
 // Page
@@ -193,7 +217,7 @@ export default function AllApplicationsPage() {
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
 
 return (
-    <div className="p-6 w-full space-y-6">
+    <div className="p-4 sm:p-6 w-full max-w-[1600px] mx-auto space-y-5">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -266,11 +290,11 @@ return (
       )}
 
       {/* ── Filter bar ── */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-4 flex flex-wrap gap-3 items-center">
-        <Filter className="h-4 w-4 text-slate-400 flex-shrink-0" />
+      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-3 sm:p-4 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center">
+        <Filter className="hidden sm:block h-4 w-4 text-slate-400 flex-shrink-0" />
 
         {/* Search */}
-        <div className="relative flex-1 min-w-[180px]">
+        <div className="relative col-span-2 sm:col-span-1 flex-1 sm:min-w-[180px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
             type="text"
@@ -285,7 +309,7 @@ return (
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-sm border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white"
+          className="w-full sm:w-auto text-sm border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white"
         >
           <option value="all">All Statuses</option>
           <option value="pending_processing">Pending Processing</option>
@@ -302,7 +326,7 @@ return (
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
           disabled={urlType !== "all"}
-          className="text-sm border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"
+          className="w-full sm:w-auto text-sm border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"
         >
           <option value="all">All Types</option>
           <option value="salary_advance">Salary Advance</option>
@@ -313,7 +337,7 @@ return (
         <select
           value={companyFilter}
           onChange={(e) => setCompanyFilter(e.target.value)}
-          className="text-sm border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white"
+          className="w-full sm:w-auto text-sm border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white"
         >
           <option value="all">All Companies</option>
           {companyOptions.map((c) => (
@@ -325,7 +349,7 @@ return (
         <select
           value={dateRange}
           onChange={(e) => setDateRange(e.target.value as "all" | "7" | "30")}
-          className="text-sm border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white"
+          className="w-full sm:w-auto text-sm border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white"
         >
           {DATE_RANGES.map(({ label, value }) => (
             <option key={value} value={value}>
@@ -348,125 +372,117 @@ return (
             <p className="text-slate-400 text-sm">No applications match your filters.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 bg-slate-50/80 text-xs uppercase tracking-wider text-slate-500 font-semibold sticky top-0 backdrop-blur-md">
-                  <th className="px-4 py-3 text-left">
-                    <input 
-                      type="checkbox" 
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-600 cursor-pointer w-4 h-4"
-                      checked={filtered.length > 0 && selectedAppIds.length === filtered.length}
-                      onChange={(e) => handleSelectAll(e.target.checked)}
-                    />
-                  </th>
-                  {[
-                    "ID",
-                    "Date",
-                    "Applicant",
-                    "Loan Type",
-                    "Company",
-                    "Amount",
-                    "Status",
-                    "Repayment",
-                    "Actions",
-                  ].map((h) => (
-                    <th
-                      key={h}
-                      className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap"
-                    >
-                      {h}
+          <>
+            {/* Wide screens (xl): a table. Narrower ones get cards below, where every figure stays readable. */}
+            <div className="hidden xl:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50/80 text-xs uppercase tracking-wide text-slate-500">
+                    <th className="pl-5 pr-2 py-3 text-left w-8">
+                      <input
+                        type="checkbox"
+                        aria-label="Select all"
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-600 cursor-pointer w-4 h-4"
+                        checked={filtered.length > 0 && selectedAppIds.length === filtered.length}
+                        onChange={(e) => handleSelectAll(e.target.checked)}
+                      />
                     </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
+                    {["Applicant", "Loan", "Amount", "Status", "Repayment", "Applied"].map((h) => (
+                      <th key={h} className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
+                    ))}
+                    <th className="pl-4 pr-5 py-3" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {paginated.map((app: TransformedApplication) => {
+                    const statusDisplay = getStatusDisplay(app.status);
+                    return (
+                      <tr key={app.id} className="hover:bg-slate-50/60 transition-colors">
+                        <td className="pl-5 pr-2 py-3.5">
+                          <input
+                            type="checkbox"
+                            aria-label="Select application"
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-600 cursor-pointer w-4 h-4"
+                            checked={selectedAppIds.includes(app.id)}
+                            onChange={(e) => handleSelectOne(app.id, e.target.checked)}
+                          />
+                        </td>
+                        <td className="px-4 py-3.5 max-w-[240px]">
+                          <p className="font-semibold text-slate-800 truncate" title={formatName(app.customerName)}>{formatName(app.customerName)}</p>
+                          <p className="text-xs text-slate-400 truncate" title={app.email}>{app.email}</p>
+                        </td>
+                        <td className="px-4 py-3.5 whitespace-nowrap">
+                          <p className="text-slate-700">{getLoanTypeDisplay(app.loanType)}</p>
+                          <p className="text-xs text-slate-400 capitalize">{app.company || "—"}</p>
+                        </td>
+                        <td className="px-4 py-3.5 text-slate-800 font-medium whitespace-nowrap">{app.amountApplied ? KES.format(app.amountApplied) : "—"}</td>
+                        <td className="px-4 py-3.5 whitespace-nowrap"><Pill className={statusDisplay.style}>{statusDisplay.label}</Pill></td>
+                        <td className="px-4 py-3.5 whitespace-nowrap"><Pill className={repaymentStyle(app.repaymentStatus)}>{app.repaymentStatus?.replace(/_/g, " ") || "—"}</Pill></td>
+                        <td className="px-4 py-3.5 whitespace-nowrap">
+                          <p className="text-slate-600">{shortDate(app.submittedAt)}</p>
+                          <p className="text-[11px] text-slate-400 font-mono">{app.id.slice(0, 8)}</p>
+                        </td>
+                        <td className="pl-4 pr-5 py-3.5 text-right"><ViewButton id={app.id} /></td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="xl:hidden">
+              <label className="flex items-center gap-2.5 px-4 py-2.5 border-b border-slate-100 bg-slate-50/80 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                <input
+                  type="checkbox"
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-600 cursor-pointer w-4 h-4"
+                  checked={filtered.length > 0 && selectedAppIds.length === filtered.length}
+                  onChange={(e) => handleSelectAll(e.target.checked)}
+                />
+                Select all {filtered.length}
+              </label>
+              <ul className="divide-y divide-slate-100">
                 {paginated.map((app: TransformedApplication) => {
                   const statusDisplay = getStatusDisplay(app.status);
-
                   return (
-                    <tr
-                      key={app.id}
-                      className="hover:bg-slate-50/60 transition-colors"
-                    >
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <input 
-                          type="checkbox" 
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-600 cursor-pointer w-4 h-4"
-                          checked={selectedAppIds.includes(app.id)}
-                          onChange={(e) => handleSelectOne(app.id, e.target.checked)}
-                        />
-                      </td>
-                      <td className="px-4 py-4 text-xs text-slate-400 font-mono whitespace-nowrap">
-                        {app.id.slice(0, 8)}…
-                      </td>
-                      <td className="px-4 py-4 text-sm text-slate-500 whitespace-nowrap">
-                        {new Date(app.submittedAt).toLocaleDateString("en-KE", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap max-w-[200px]">
-                        <div>
-                          <p className="text-sm font-semibold text-slate-800 truncate">
-                            {app.customerName}
-                          </p>
-                          <p className="text-xs text-slate-400 truncate">{app.email}</p>
+                    <li key={app.id} className="flex gap-3 px-4 py-4">
+                      <input
+                        type="checkbox"
+                        aria-label="Select application"
+                        className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-600 cursor-pointer w-4 h-4 shrink-0"
+                        checked={selectedAppIds.includes(app.id)}
+                        onChange={(e) => handleSelectOne(app.id, e.target.checked)}
+                      />
+                      <div className="flex-1 min-w-0 space-y-1.5">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="font-semibold text-slate-800 break-words">{formatName(app.customerName)}</p>
+                            <p className="text-xs text-slate-400 truncate">{app.email}</p>
+                          </div>
+                          <Pill className={statusDisplay.style}>{statusDisplay.label}</Pill>
                         </div>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-slate-600 whitespace-nowrap">
-                        {getLoanTypeDisplay(app.loanType)}
-                      </td>
-                      <td className="px-4 py-4 text-sm text-slate-600 whitespace-nowrap capitalize">
-                        {app.company || "—"}
-                      </td>
-                      <td className="px-4 py-4 text-sm text-gray-700 whitespace-nowrap">
-                        {app.amountApplied ? KES.format(app.amountApplied) : "—"}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex text-xs font-bold px-2.5 py-1 rounded-full ${statusDisplay.style}`}
-                        >
-                          {statusDisplay.label}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap capitalize">
-                        <span className={`inline-flex text-xs font-bold px-2.5 py-1 rounded-full ${
-                          app.repaymentStatus?.toLowerCase() === 'paid' ? 'bg-emerald-100 text-emerald-700' :
-                          (app.repaymentStatus?.toLowerCase() === 'defaulted' || app.repaymentStatus?.toLowerCase() === 'delinquent') ? 'bg-red-100 text-red-700' :
-                          app.repaymentStatus?.toLowerCase() === 'partially_paid' ? 'bg-blue-100 text-blue-700' :
-                          'bg-slate-100 text-gray-700'
-                        }`}>
-                          {app.repaymentStatus?.replace(/_/g, " ") || "—"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <Link to={`/admin/applications/${app.id}`}>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-7 px-2 rounded-lg border-slate-200"
-                              title="View Details"
-                            >
-                              <Eye className="h-3.5 w-3.5" />
-                            </Button>
-                          </Link>
-
+                        <p className="text-sm text-slate-600">
+                          <span className="font-semibold text-slate-800">{app.amountApplied ? KES.format(app.amountApplied) : "—"}</span>
+                          {" · "}{getLoanTypeDisplay(app.loanType)}{" · "}<span className="capitalize">{app.company || "—"}</span>
+                        </p>
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2 flex-wrap text-xs text-slate-400">
+                            <Pill className={repaymentStyle(app.repaymentStatus)}>{app.repaymentStatus?.replace(/_/g, " ") || "—"}</Pill>
+                            <span>{shortDate(app.submittedAt)}</span>
+                          </div>
+                          <ViewButton id={app.id} />
                         </div>
-                      </td>
-                    </tr>
+                      </div>
+                    </li>
                   );
                 })}
-              </tbody>
-            </table>
-          </div>
+              </ul>
+            </div>
+          </>
         )}
         
         {/* Pagination Controls */}
         {!isLoading && filtered.length > itemsPerPage && (
-          <div className="flex items-center justify-between border-t border-slate-100 px-6 py-4 bg-slate-50">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-slate-100 px-4 sm:px-6 py-3 bg-slate-50">
             <div className="text-sm text-slate-500">
               Showing <span className="font-medium text-slate-900">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-medium text-slate-900">{Math.min(currentPage * itemsPerPage, filtered.length)}</span> of <span className="font-medium text-slate-900">{filtered.length}</span> results
             </div>

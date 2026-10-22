@@ -1,3 +1,4 @@
+import { formatName } from "@/lib/formatName";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Search, Eye, Loader2, ArrowUpDown, History, ExternalLink } from "lucide-react";
@@ -65,7 +66,7 @@ function Borrower({ item }: { item: AuditTrail }) {
         className="inline-flex items-center gap-1 max-w-[240px] font-semibold text-slate-800 hover:text-blue-700 transition-colors"
         title={`Open loan ${item.application_id}`}
       >
-        <span className="truncate">{item.applicant_name || "Unknown borrower"}</span>
+        <span className="truncate">{formatName(item.applicant_name) || "Unknown borrower"}</span>
         <ExternalLink className="h-3 w-3 shrink-0 text-slate-400" />
       </Link>
       <p className="text-xs text-slate-400 capitalize">{item.company ? label(item.company) : "—"} • {item.application_id.substring(0, 8)}</p>

@@ -3,6 +3,7 @@ import { X, Eye, EyeOff, Loader2, UserPlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { applicantApi, getAllApplicants } from "@/lib/applicantApi";
 import { apiCall } from "@/lib/apiClient";
+import { formatName } from "@/lib/formatName";
 
 interface StaffMember {
   id: string;
@@ -143,8 +144,8 @@ export default function ManageStaffPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto pb-12">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+    <div className="p-4 sm:p-6 w-full max-w-[1600px] mx-auto space-y-5">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Manage HR & Finance</h1>
           <p className="text-slate-400 text-sm mt-1">
@@ -168,7 +169,7 @@ export default function ManageStaffPage() {
       </div>
 
       {formRole && (
-        <div className="mb-10 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <h2 className="text-sm font-bold text-slate-700 flex items-center gap-2">
               <UserPlus className="h-4 w-4 text-brand-blue" />
@@ -179,7 +180,7 @@ export default function ManageStaffPage() {
             </button>
           </div>
 
-          <form onSubmit={handleRegister} className="p-6">
+          <form onSubmit={handleRegister} className="p-4 sm:p-6">
             {formError && (
               <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600 flex items-start gap-3">
                 <span className="block mt-0.5"><X className="h-4 w-4" /></span>
@@ -187,7 +188,7 @@ export default function ManageStaffPage() {
               </div>
             )}
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6">
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Assign Company</label>
                 <select
@@ -286,17 +287,17 @@ export default function ManageStaffPage() {
       )}
 
       {/* Lists */}
-      <div className="space-y-10">
+      <div className="space-y-5">
         {companies.map(comp => {
           const compStaff = staffList.filter(s => s.applicant_type === comp.code);
           
           return (
             <div key={comp.code} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-              <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+              <div className="px-4 sm:px-6 py-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between gap-3">
                 <h3 className="font-black text-slate-800 uppercase tracking-wider text-sm">{comp.name}</h3>
                 <span className="text-xs text-slate-500 font-mono bg-slate-200/50 px-2 py-1 rounded-md">{comp.code}</span>
               </div>
-              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                 {/* HR */}
                 <div>
                   <h4 className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-4 border-b border-emerald-100 pb-2 flex justify-between">
@@ -310,10 +311,10 @@ export default function ManageStaffPage() {
                       compStaff.filter(s => s.role === "hr").map(m => (
                         <div key={m.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-emerald-200 hover:shadow-sm transition-all group">
                           <div>
-                            <p className="text-sm font-bold text-slate-800">{m.name}</p>
-                            <p className="text-xs text-slate-500">{m.email}</p>
+                            <p className="text-sm font-bold text-slate-800 break-words">{formatName(m.name)}</p>
+                            <p className="text-xs text-slate-500 break-all">{m.email}</p>
                           </div>
-                          <button onClick={() => handleDeleteClick(m)} className={`p-2 rounded-lg transition-colors ${pendingDeleteId === m.id ? 'bg-red-500 text-white' : 'text-slate-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-500'}`}>
+                          <button onClick={() => handleDeleteClick(m)} className={`p-2 rounded-lg transition-colors ${pendingDeleteId === m.id ? 'bg-red-500 text-white' : 'text-slate-400 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 hover:bg-red-50 hover:text-red-500'}`}>
                             {deletingId === m.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                           </button>
                         </div>
@@ -334,10 +335,10 @@ export default function ManageStaffPage() {
                       compStaff.filter(s => s.role === "finance").map(m => (
                         <div key={m.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-violet-200 hover:shadow-sm transition-all group">
                           <div>
-                            <p className="text-sm font-bold text-slate-800">{m.name}</p>
-                            <p className="text-xs text-slate-500">{m.email}</p>
+                            <p className="text-sm font-bold text-slate-800 break-words">{formatName(m.name)}</p>
+                            <p className="text-xs text-slate-500 break-all">{m.email}</p>
                           </div>
-                          <button onClick={() => handleDeleteClick(m)} className={`p-2 rounded-lg transition-colors ${pendingDeleteId === m.id ? 'bg-red-500 text-white' : 'text-slate-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-500'}`}>
+                          <button onClick={() => handleDeleteClick(m)} className={`p-2 rounded-lg transition-colors ${pendingDeleteId === m.id ? 'bg-red-500 text-white' : 'text-slate-400 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 hover:bg-red-50 hover:text-red-500'}`}>
                             {deletingId === m.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                           </button>
                         </div>

@@ -194,7 +194,7 @@ export default function AdminProfilePage() {
 
   if (loading) {
     return (
-      <div className="p-6 w-full space-y-6">
+      <div className="p-4 sm:p-6 w-full max-w-3xl mx-auto space-y-5">
         <Skeleton className="h-8 w-40 rounded-xl" />
         <Skeleton className="h-64 rounded-xl" />
         <Skeleton className="h-32 rounded-xl" />
@@ -205,7 +205,7 @@ export default function AdminProfilePage() {
   const isSuper = isSuperAdmin(adminData?.email);
 
   return (
-    <div className="p-6 w-full space-y-6">
+    <div className="p-4 sm:p-6 w-full max-w-3xl mx-auto space-y-5">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-black text-slate-900">Admin Profile</h1>

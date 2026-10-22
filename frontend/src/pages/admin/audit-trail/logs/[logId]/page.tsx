@@ -108,7 +108,7 @@ export default function AuditLogDetailPage() {
 
   if (loading) {
     return (
-      <div className="p-6 w-full space-y-6 max-w-5xl mx-auto">
+      <div className="p-4 sm:p-6 w-full space-y-5 max-w-5xl mx-auto">
         <Skeleton className="h-10 w-64 rounded-xl" />
         <Skeleton className="h-48 rounded-xl" />
         <Skeleton className="h-48 rounded-xl" />
@@ -141,7 +141,7 @@ export default function AuditLogDetailPage() {
   };
 
   return (
-    <div className="p-6 w-full space-y-6 max-w-5xl mx-auto">
+    <div className="p-4 sm:p-6 w-full space-y-5 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-start gap-4">
         <button

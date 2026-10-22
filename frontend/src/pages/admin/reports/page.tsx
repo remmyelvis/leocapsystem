@@ -121,9 +121,9 @@ export default function ReportsPage() {
   const firstLoad = loading && rows.length === 0 && !error;
 
   return (
-    <div className="min-h-full bg-slate-50 pb-10">
+    <div className="min-h-full pb-8 w-full max-w-[1600px] mx-auto">
       {/* Header */}
-      <header className="flex flex-col gap-4 px-4 pt-6 sm:px-6 lg:flex-row lg:items-end lg:justify-between lg:px-8">
+      <header className="flex flex-col gap-4 px-4 pt-4 sm:px-6 sm:pt-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-[#081430]">Reports &amp; Analytics</h1>
           <div className="mt-1 max-w-2xl text-sm text-slate-600" aria-live="polite">
@@ -149,11 +149,11 @@ export default function ReportsPage() {
       </header>
 
       {/* Filters stay in view while the list scrolls */}
-      <div className="z-20 mt-5 bg-slate-50/95 px-4 pb-3 pt-1 backdrop-blur sm:px-6 md:sticky md:top-0 lg:px-8">
+      <div className="z-20 mt-5 bg-slate-50/95 px-4 pb-3 pt-1 backdrop-blur sm:px-6 md:sticky md:top-0">
         <FilterBar filters={filters} companies={companies} onChange={changeFilters} onClear={clearFilters} />
       </div>
 
-      <div className="space-y-6 px-4 pt-3 sm:px-6 lg:px-8">
+      <div className="space-y-6 px-4 pt-3 sm:px-6">
         <BookPanel
           loading={firstLoad}
           count={pagination.total_records}

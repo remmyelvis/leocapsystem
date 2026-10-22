@@ -74,11 +74,11 @@ export default function CustomReportBuilder() {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-5">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-blue-900">Custom Report Builder</h1>
-          <p className="text-slate-500">Select columns and filters to generate a dynamic Excel report.</p>
+          <h1 className="text-2xl font-black text-slate-900">Custom Report Builder</h1>
+          <p className="text-slate-500 text-sm mt-1">Select columns and filters to generate a dynamic Excel report.</p>
         </div>
         <Button onClick={handleExport} disabled={isExporting || selectedCols.length === 0} className="bg-brand-blue hover:bg-slate-800 text-white">
           <Download className="w-4 h-4 mr-2" />
@@ -86,7 +86,7 @@ export default function CustomReportBuilder() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         {/* Filters */}
         <div className="md:col-span-1 bg-white rounded-xl shadow-sm border border-slate-100 p-5 space-y-4">
           <h3 className="font-semibold text-slate-800 flex items-center border-b pb-2">
