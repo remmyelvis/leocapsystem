@@ -143,7 +143,7 @@ export default function AuditTrailDetailPage() {
         </button>
         <div className="flex-1">
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-xl font-bold text-slate-900">
+            <h1 className="text-lg font-bold text-slate-900">
               Audit Trail Record
             </h1>
             <span className="text-xs font-bold px-3 py-1 rounded-full bg-blue-100 text-brand-blue">

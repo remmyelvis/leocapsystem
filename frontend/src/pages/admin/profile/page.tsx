@@ -43,7 +43,7 @@ type PasswordForm = z.infer<typeof passwordSchema>;
 // ---------------------------------------------------------------------------
 
 const inputClass =
-  "w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-colors placeholder:text-gray-300 disabled:bg-slate-50 disabled:text-slate-400";
+  "w-full px-3 py-1.5 rounded-lg border border-slate-200 text-[13px] focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-colors placeholder:text-gray-300 disabled:bg-slate-50 disabled:text-slate-400";
 
 const labelClass = "block text-[13px] font-semibold text-gray-700 mb-1";
 const errorClass = "text-red-500 text-xs mt-1.5 flex items-center gap-1";
@@ -52,7 +52,7 @@ const errorClass = "text-red-500 text-xs mt-1.5 flex items-center gap-1";
 // Page
 // ---------------------------------------------------------------------------
 
-export default function AdminProfilePage() {
+export default function AdminProfilePage({ embedded = false }: { embedded?: boolean }) {
   const { data: session, status } = useSession();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -206,29 +206,31 @@ export default function AdminProfilePage() {
 
   return (
     <div className="p-4 sm:p-6 w-full max-w-3xl mx-auto space-y-5">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-slate-900">Admin Profile</h1>
-        <p className="text-slate-500 text-[13px] mt-0.5">
-          View and update your administrator information.
-        </p>
-      </div>
+      {/* Header (the Admin Control Panel already has one) */}
+      {!embedded && (
+        <div>
+          <h1 className="text-lg font-bold text-slate-900">Admin Profile</h1>
+          <p className="text-slate-500 text-[13px] mt-0.5">
+            View and update your administrator information.
+          </p>
+        </div>
+      )}
 
       {/* Avatar + name */}
       <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-3 sm:p-4 flex items-center gap-4">
-        <div className="w-12 h-12 rounded-lg bg-blue-900 flex items-center justify-center text-white text-xl font-black select-none flex-shrink-0">
+        <div className="w-10 h-10 rounded-lg bg-blue-900 flex items-center justify-center text-white text-base font-black select-none flex-shrink-0">
           {adminData?.name?.charAt(0).toUpperCase() ?? "A"}
         </div>
         <div className="flex-1">
-          <p className="text-lg font-bold text-slate-900">{adminData?.name || "Admin"}</p>
-          <p className="text-slate-400 text-[13px]">{adminData?.email}</p>
-          <div className="flex items-center gap-2 mt-1.5">
-            <span className="inline-flex items-center gap-1.5 text-xs bg-blue-100 text-blue-700 font-bold px-2.5 py-1 rounded-full">
+          <p className="text-sm font-bold text-slate-900">{adminData?.name || "Admin"}</p>
+          <p className="text-slate-400 text-xs">{adminData?.email}</p>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="inline-flex items-center gap-1 text-[11px] bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-full">
               <Shield className="h-3 w-3" />
               Administrator
             </span>
             {isSuper && (
-              <span className="inline-flex items-center gap-1.5 text-xs bg-purple-100 text-purple-700 font-bold px-2.5 py-1 rounded-full">
+              <span className="inline-flex items-center gap-1 text-[11px] bg-purple-100 text-purple-700 font-bold px-2 py-0.5 rounded-full">
                 Super Admin
               </span>
             )}
@@ -238,11 +240,11 @@ export default function AdminProfilePage() {
 
       {/* Super Admin Notice */}
       {isSuper && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-700 flex items-start gap-3">
+        <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-[13px] text-amber-700 flex items-start gap-2.5">
           <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-semibold">Super Admin Account</p>
-            <p className="text-amber-600 mt-1">
+            <p className="text-amber-600 mt-0.5">
               This is the primary administrator account. Profile information is managed through system configuration.
             </p>
           </div>
@@ -251,10 +253,10 @@ export default function AdminProfilePage() {
 
       {/* ── Profile Info ── */}
       <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+        <div className="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <User className="h-4 w-4 text-slate-400" />
-            <h2 className="text-base font-black text-slate-900">
+            <h2 className="text-[13px] font-bold text-slate-900">
               Personal Information
             </h2>
           </div>
@@ -264,7 +266,7 @@ export default function AdminProfilePage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setEditing(true)}
-                className="rounded-lg border-slate-200 text-sm font-semibold"
+                className="rounded-lg border-slate-200 text-[13px] font-semibold"
               >
                 <Edit3 className="mr-1.5 h-3.5 w-3.5" />
                 Edit
@@ -276,7 +278,7 @@ export default function AdminProfilePage() {
                 onClick={() => {
                   setEditing(false);
                 }}
-                className="rounded-lg border-slate-200 text-sm font-semibold text-slate-500"
+                className="rounded-lg border-slate-200 text-[13px] font-semibold text-slate-500"
               >
                 <X className="mr-1.5 h-3.5 w-3.5" />
                 Cancel
@@ -357,37 +359,37 @@ export default function AdminProfilePage() {
               </div>
             </form>
           ) : (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <p className="text-xs text-slate-400 uppercase tracking-wider font-bold mb-1">
+                  <p className="text-[11px] text-slate-400 uppercase tracking-wide font-bold mb-0.5">
                     Full Name
                   </p>
-                  <p className="text-slate-800 font-medium">
+                  <p className="text-[13px] text-slate-800 font-medium">
                     {adminData?.name || "—"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400 uppercase tracking-wider font-bold mb-1">
+                  <p className="text-[11px] text-slate-400 uppercase tracking-wide font-bold mb-0.5">
                     Email Address
                   </p>
-                  <p className="text-slate-800 font-medium">
+                  <p className="text-[13px] text-slate-800 font-medium">
                     {adminData?.email || "—"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400 uppercase tracking-wider font-bold mb-1">
+                  <p className="text-[11px] text-slate-400 uppercase tracking-wide font-bold mb-0.5">
                     Phone Number
                   </p>
-                  <p className="text-slate-800 font-medium">
+                  <p className="text-[13px] text-slate-800 font-medium">
                     {adminData?.number || "Not provided"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400 uppercase tracking-wider font-bold mb-1">
+                  <p className="text-[11px] text-slate-400 uppercase tracking-wide font-bold mb-0.5">
                     Role
                   </p>
-                  <p className="text-slate-800 font-medium capitalize">
+                  <p className="text-[13px] text-slate-800 font-medium capitalize">
                     {isSuper ? "Super Administrator" : "Administrator"}
                   </p>
                 </div>
@@ -399,9 +401,9 @@ export default function AdminProfilePage() {
 
       {/* ── Security Section ── */}
       <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-2">
+        <div className="px-4 py-2.5 border-b border-slate-100 flex items-center gap-2">
           <Shield className="h-4 w-4 text-slate-400" />
-          <h2 className="text-base font-black text-slate-900">
+          <h2 className="text-[13px] font-bold text-slate-900">
             Security Settings
           </h2>
         </div>
@@ -410,7 +412,7 @@ export default function AdminProfilePage() {
             <>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-slate-800">Password</p>
+                  <p className="text-[13px] font-semibold text-slate-800">Password</p>
                   <p className="text-xs text-slate-400 mt-1">
                     Manage your account password
                   </p>
@@ -419,16 +421,16 @@ export default function AdminProfilePage() {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowPasswordForm(true)}
-                  className="rounded-lg border-slate-200 text-sm font-semibold"
+                  className="rounded-lg border-slate-200 text-[13px] font-semibold"
                 >
                   Change Password
                 </Button>
               </div>
             </>
           ) : (
-            <form onSubmit={handlePwdSubmit(onChangePassword)} className="space-y-4" noValidate>
+            <form onSubmit={handlePwdSubmit(onChangePassword)} className="space-y-3" noValidate>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-slate-800">Change Password</h3>
+                <h3 className="text-[13px] font-semibold text-slate-800">Change Password</h3>
                 <Button
                   variant="ghost"
                   size="sm"

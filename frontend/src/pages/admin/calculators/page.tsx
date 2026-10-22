@@ -11,7 +11,7 @@ export default function CalculatorsPage() {
     <div className="p-4 sm:p-6 w-full space-y-5 max-w-[1600px] mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+          <h1 className="text-lg font-bold text-slate-900 flex items-center gap-2">
             <Calculator className="h-6 w-6 text-blue-600" /> Loan Simulators & Calculators
           </h1>
           <p className="text-slate-500 text-[13px] mt-0.5">Unified toolkit for all loan calculations and simulations</p>
@@ -27,7 +27,7 @@ export default function CalculatorsPage() {
             <button
               key={tab.id}
               onClick={() => setActiveModule(tab.id)}
-              className={`shrink-0 px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
+              className={`shrink-0 px-3 py-1.5 rounded-md text-[13px] font-semibold whitespace-nowrap transition-all ${
                 activeModule === tab.id
                   ? "bg-white text-brand-blue shadow-sm ring-1 ring-slate-900/5"
                   : "text-slate-500 hover:text-slate-700"
@@ -299,7 +299,7 @@ function CompareLoansModule() {
           </div>
         </div>
       </div>
-      <div className="flex justify-center"><Button onClick={compare} className="bg-gray-900 px-8 py-6 text-lg"><ArrowRight className="mr-2"/> Run Comparison</Button></div>
+      <div className="flex justify-center"><Button onClick={compare} className="bg-gray-900 px-5 py-2 text-sm"><ArrowRight className="mr-2"/> Run Comparison</Button></div>
       {resA && resB && (
         <div className="w-full overflow-x-auto">
 <table className="w-full text-sm mt-6 border rounded-lg overflow-hidden">

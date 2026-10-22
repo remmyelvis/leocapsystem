@@ -221,7 +221,7 @@ export default function ManageApplicantsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2.5">
+          <h1 className="text-lg font-bold text-slate-900 flex items-center gap-2.5">
             <Users className="h-6 w-6 text-brand-blue shrink-0" />
             Manage Applicants
           </h1>
@@ -238,7 +238,7 @@ export default function ManageApplicantsPage() {
       </div>
 
       {/* Bulk Upload Section */}
-      <div className="bg-white p-4 sm:p-5 rounded-lg ring-1 ring-slate-200 shadow-sm">
+      <div className="bg-white p-4 rounded-lg ring-1 ring-slate-200 shadow-sm">
         <h2 className="text-base font-bold text-slate-900 mb-3 flex items-center">
           <Upload className="h-5 w-5 mr-2 text-blue-600" /> Bulk Employee Upload
         </h2>

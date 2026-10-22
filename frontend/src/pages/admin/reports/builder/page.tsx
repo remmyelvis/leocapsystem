@@ -77,7 +77,7 @@ export default function CustomReportBuilder() {
     <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-5">
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Custom Report Builder</h1>
+          <h1 className="text-lg font-bold text-slate-900">Custom Report Builder</h1>
           <p className="text-slate-500 text-[13px] mt-0.5">Select columns and filters to generate a dynamic Excel report.</p>
         </div>
         <Button onClick={handleExport} disabled={isExporting || selectedCols.length === 0} className="bg-brand-blue hover:bg-slate-800 text-white">

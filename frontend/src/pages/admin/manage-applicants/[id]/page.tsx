@@ -500,7 +500,7 @@ export default function ApplicantDetailsPage() {
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="flex-1 min-w-[200px]">
-          <h1 className="text-xl font-bold text-slate-900 break-words">
+          <h1 className="text-lg font-bold text-slate-900 break-words">
             {formatName(applicant.name)}
           </h1>
           <p className="text-[13px] text-slate-500 mt-0.5">

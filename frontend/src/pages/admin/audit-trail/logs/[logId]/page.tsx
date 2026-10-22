@@ -152,7 +152,7 @@ export default function AuditLogDetailPage() {
         </button>
         <div className="flex-1">
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-xl font-bold text-slate-900">Audit Log Entry</h1>
+            <h1 className="text-lg font-bold text-slate-900">Audit Log Entry</h1>
             <span className={`text-xs font-bold px-3 py-1 rounded-full ${actionStyle(log.action)}`}>{formatAction(log.action)}</span>
             <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full capitalize ${failed ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>
               <span className={`h-1.5 w-1.5 rounded-full ${failed ? "bg-red-500" : "bg-emerald-500"}`} />

@@ -7,18 +7,18 @@ import ProfilePage from "../profile/page";
 // Dummy settings component for the actual "Settings" tab content
 function GeneralSettings() {
   return (
-    <div className="bg-white rounded-2xl ring-1 ring-slate-900/5 shadow-sm p-4 sm:p-5">
+    <div className="bg-white rounded-lg ring-1 ring-slate-900/5 shadow-sm p-4">
       <h2 className="text-base font-bold text-slate-900 mb-4">System Settings</h2>
       <div className="space-y-3 max-w-md">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Company Name</label>
-          <input type="text" defaultValue="LeoCap Invest" className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20 text-sm" />
+          <label className="block text-[13px] font-medium text-slate-700 mb-1">Company Name</label>
+          <input type="text" defaultValue="LeoCap Invest" className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20 text-[13px]" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Support Email</label>
-          <input type="email" defaultValue="support@leocap.com" className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20 text-sm" />
+          <label className="block text-[13px] font-medium text-slate-700 mb-1">Support Email</label>
+          <input type="email" defaultValue="support@leocap.com" className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20 text-[13px]" />
         </div>
-        <button className="px-4 py-2 bg-brand-blue hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors">
+        <button className="px-3 py-1.5 bg-brand-blue hover:bg-slate-800 text-white text-[13px] font-medium rounded-lg transition-colors">
           Save Changes
         </button>
       </div>
@@ -40,8 +40,8 @@ export default function UnifiedSettingsPage() {
     <div className="p-4 sm:p-6 w-full space-y-5 max-w-[1600px] mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <Settings className="h-6 w-6 text-brand-blue" /> Admin Control Panel
+          <h1 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <Settings className="h-5 w-5 text-brand-blue" /> Admin Control Panel
           </h1>
           <p className="text-slate-500 text-[13px] mt-0.5">Manage system configurations, administrators, and view audit logs.</p>
         </div>
@@ -55,27 +55,27 @@ export default function UnifiedSettingsPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex shrink-0 items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
+              className={`flex shrink-0 items-center gap-2 px-3 py-1.5 rounded-md text-[13px] font-semibold whitespace-nowrap transition-all ${
                 activeTab === tab.id
                   ? "bg-white text-brand-blue shadow-sm ring-1 ring-slate-900/5"
                   : "text-slate-500 hover:text-slate-700"
               }`}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-3.5 w-3.5" />
               {tab.label}
             </button>
           );
         })}
       </div>
 
-      {/* Content */}
-      {/* The embedded pages bring their own page padding; this wrapper cancels it so it is not doubled */}
-      <div className="[&>div]:!p-0 [&>div]:!max-w-none">
-        {activeTab === "profile" && <ProfilePage />}
-        {activeTab === "manage-admins" && <ManageAdmins />}
-        {activeTab === "audit-trail" && <AuditTrail />}
-        {activeTab === "general" && <GeneralSettings />}
-      </div>
+      {/* Content: the embedded pages bring their own page padding, which this wrapper cancels so it is not doubled */}
+      {activeTab === "general" ? <GeneralSettings /> : (
+        <div className="[&>div]:!p-0 [&>div]:!max-w-none">
+          {activeTab === "profile" && <ProfilePage embedded />}
+          {activeTab === "manage-admins" && <ManageAdmins embedded />}
+          {activeTab === "audit-trail" && <AuditTrail embedded />}
+        </div>
+      )}
     </div>
   );
 }

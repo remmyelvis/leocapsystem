@@ -47,7 +47,7 @@ const labelClass = "block text-sm font-semibold text-gray-700 mb-1.5";
 // Page
 // ---------------------------------------------------------------------------
 
-export default function ManageAdminsPage() {
+export default function ManageAdminsPage({ embedded = false }: { embedded?: boolean }) {
   const admins = useAdminStore((s) => s.admins);
   const addAdmin = useAdminStore((s) => s.addAdmin);
   const removeAdmin = useAdminStore((s) => s.removeAdmin);
@@ -126,20 +126,22 @@ export default function ManageAdminsPage() {
 
   return (
     <div className="p-4 sm:p-6 w-full max-w-[1600px] mx-auto space-y-5">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-slate-900">Manage Admins</h1>
-        <p className="text-slate-500 text-[13px] mt-0.5">
-          Add or remove administrator accounts.
-        </p>
-      </div>
+      {/* Header (the Admin Control Panel already has one) */}
+      {!embedded && (
+        <div>
+          <h1 className="text-lg font-bold text-slate-900">Manage Admins</h1>
+          <p className="text-slate-500 text-[13px] mt-0.5">
+            Add or remove administrator accounts.
+          </p>
+        </div>
+      )}
 
       {/* Info banner */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm text-blue-700 flex items-start gap-3">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-[13px] text-blue-700 flex items-start gap-2.5">
         <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
         <div>
           <p className="font-semibold">Admin Management</p>
-          <p className="text-blue-600 mt-1">
+          <p className="text-blue-600 mt-0.5">
             New admins will be able to log in using their email and password. They will have access to view loan applications and manage the system.
           </p>
         </div>
@@ -147,11 +149,11 @@ export default function ManageAdminsPage() {
 
       {/* Super Admin Only Notice */}
       {!currentUserIsSuperAdmin && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-700 flex items-start gap-3">
+        <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-[13px] text-amber-700 flex items-start gap-2.5">
           <Shield className="h-4 w-4 flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-semibold">Limited Access</p>
-            <p className="text-amber-600 mt-1">
+            <p className="text-amber-600 mt-0.5">
               Only the super admin (<code className="bg-amber-100 px-1 rounded">{SUPER_ADMIN_EMAIL}</code>) can add or remove administrator accounts.
             </p>
           </div>

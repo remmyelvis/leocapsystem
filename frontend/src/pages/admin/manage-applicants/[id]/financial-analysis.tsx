@@ -178,7 +178,7 @@ export default function FinancialAnalysisPage() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-xl font-bold text-slate-900">Financial Flow & CRB Analysis</h1>
+            <h1 className="text-lg font-bold text-slate-900">Financial Flow & CRB Analysis</h1>
             <p className="text-sm text-slate-500">M-Pesa & Bank Statement Engine</p>
           </div>
         </div>

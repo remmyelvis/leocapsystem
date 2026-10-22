@@ -116,6 +116,14 @@ html {
 @media (min-width: 1025px) {
   html.admin-ui { font-size: 15px; }
   html.admin-ui .text-xs { font-size: 12px; line-height: 1rem; }
+
+  /* One control size across every admin page (about 30px tall), whatever each page asked for. Pages that set a fixed height keep it. */
+  html.admin-ui main :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]), select) {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    font-size: 13px;
+    line-height: 1.25rem;
+  }
 }
 
 /* Prevent Flex/Grid text overflow blowouts */

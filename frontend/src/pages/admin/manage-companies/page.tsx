@@ -231,14 +231,14 @@ export default function CompaniesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Manage Companies</h1>
+          <h1 className="text-lg font-bold text-slate-900">Manage Companies</h1>
           <p className="text-slate-500 text-[13px] mt-0.5">
             Add and configure partner companies.
           </p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 bg-brand-blue hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors self-start sm:self-auto"
+          className="inline-flex items-center justify-center gap-2 bg-brand-blue hover:bg-slate-800 text-white text-[13px] font-medium px-3 py-1.5 rounded-lg transition-colors self-start sm:self-auto"
         >
           <Plus className="h-4 w-4" />
           Add Company

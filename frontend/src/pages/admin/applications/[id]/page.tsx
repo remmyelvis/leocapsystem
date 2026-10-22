@@ -77,7 +77,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 sm:p-5">
+    <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
       <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide mb-4">
         {title}
       </h2>
@@ -748,7 +748,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
   const renderDeclineForm = (position: "top" | "bottom") => {
     if (activeDeclineForm !== position) return null;
     return (
-      <div className="bg-red-50 border border-red-100 rounded-lg p-5 mt-4 w-full">
+      <div className="bg-red-50 border border-red-100 rounded-lg p-4 mt-4 w-full">
         <h3 className="text-sm font-black text-red-900 mb-3">Reason for Rejection</h3>
         <div className="flex flex-col sm:flex-row gap-3 items-end">
           <div className="flex-1 w-full">
@@ -803,7 +803,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
         </button>
         <div className="flex-1 min-w-[220px]">
           <div className="flex items-center gap-x-3 gap-y-1.5 flex-wrap">
-            <h1 className="text-xl font-bold text-slate-900 break-words">
+            <h1 className="text-lg font-bold text-slate-900 break-words">
               {formatName(app.customerName)}
             </h1>
             <span
@@ -1001,7 +1001,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
       </div>
 
       {showPartialPayment && (
-        <div className="bg-blue-50 border border-blue-100 rounded-lg p-5 mt-4">
+        <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mt-4">
           <h3 className="text-sm font-black text-blue-900 mb-3">Mark as Partially Paid</h3>
           <div className="flex flex-col sm:flex-row gap-3 items-end">
             <div className="flex-1 w-full">
@@ -1061,7 +1061,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
       )}
 
       {showChargeInterest && (
-        <div className="bg-purple-50 border border-purple-100 rounded-lg p-5 mt-4">
+        <div className="bg-purple-50 border border-purple-100 rounded-lg p-4 mt-4">
           <h3 className="text-sm font-black text-purple-900 mb-3">Charge Interest</h3>
           <div className="flex flex-col sm:flex-row gap-3 items-end">
             <div className="flex-1 w-full">
@@ -1378,7 +1378,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
 
             {/* Preview Breakdown */}
             {loanPreview && (
-              <div className="bg-white rounded-lg border border-indigo-200 p-5">
+              <div className="bg-white rounded-lg border border-indigo-200 p-4">
                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-wide mb-4">
                   Loan Breakdown Preview
                 </h3>
@@ -1492,7 +1492,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
             <Button
               onClick={() => handleStatus("Approved")}
               disabled={updating}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold flex-1 py-6"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold flex-1 py-2"
             >
               <CheckCircle2 className="mr-2 h-5 w-5" />
               Approve Application
@@ -1501,7 +1501,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
               onClick={() => setActiveDeclineForm(activeDeclineForm === "bottom" ? null : "bottom")}
               disabled={updating}
               variant="outline"
-              className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg font-bold flex-1 py-6"
+              className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg font-bold flex-1 py-2"
             >
               <XCircle className="mr-2 h-5 w-5" />
               Decline Application

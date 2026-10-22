@@ -127,7 +127,7 @@ export default function ReportsPage() {
       {/* Header */}
       <header className="flex flex-col gap-2 px-4 pt-4 sm:px-6 sm:pt-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-[#081430]">Reports &amp; Analytics</h1>
+          <h1 className="text-lg font-bold tracking-tight text-[#081430]">Reports &amp; Analytics</h1>
           <div className="mt-0.5 max-w-2xl text-[13px] text-slate-600" aria-live="polite">
             {loading && rows.length === 0 && !error ? <Skeleton className="mt-1.5 h-3.5 w-64" /> : error && rows.length === 0 ? (
               <span className="text-rose-700">The loan list did not load. Try again below.</span>

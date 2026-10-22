@@ -147,7 +147,7 @@ export default function ManageStaffPage() {
     <div className="p-4 sm:p-6 w-full max-w-[1600px] mx-auto space-y-5">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Manage HR & Finance</h1>
+          <h1 className="text-lg font-bold text-slate-900">Manage HR & Finance</h1>
           <p className="text-slate-400 text-[13px] mt-0.5">
             Register and manage HR and Finance staff accounts dynamically for all active companies.
           </p>
