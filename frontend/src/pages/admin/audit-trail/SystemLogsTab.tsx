@@ -108,7 +108,7 @@ export default function SystemLogsTab() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
           <div>
             <label className={labelCls}>From</label>
             <input type="date" className={inputCls} value={draft.start_date}
@@ -119,7 +119,7 @@ export default function SystemLogsTab() {
             <input type="date" className={inputCls} value={draft.end_date}
               onChange={(e) => setDraft({ ...draft, end_date: e.target.value })} />
           </div>
-          <div>
+          <div className="col-span-2 sm:col-span-1">
             <label className={labelCls}>Action</label>
             <select className={inputCls} value={draft.action}
               onChange={(e) => setDraft({ ...draft, action: e.target.value })}>
@@ -144,7 +144,7 @@ export default function SystemLogsTab() {
               {HTTP_METHODS.map((m) => <option key={m} value={m}>{m}</option>)}
             </select>
           </div>
-          <div>
+          <div className="col-span-2 sm:col-span-1">
             <label className={labelCls}>Actor Role</label>
             <select className={inputCls} value={draft.actor_role}
               onChange={(e) => setDraft({ ...draft, actor_role: e.target.value })}>
@@ -160,11 +160,11 @@ export default function SystemLogsTab() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search everything: what happened, who, endpoint, loan or applicant ID…"
+              placeholder="Search: what happened, who, endpoint, loan ID…"
               className={`${inputCls} pl-10`}
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 [&>button]:flex-1 sm:[&>button]:flex-none">
             <Button variant="outline" onClick={resetFilters} className="rounded-xl border-slate-200">
               <RotateCcw className="h-4 w-4 mr-1.5" /> Reset
             </Button>
@@ -180,11 +180,11 @@ export default function SystemLogsTab() {
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-slate-400" />
-            <h2 className="text-sm font-black text-slate-900">System Audit Logs</h2>
+            <h2 className="text-sm font-black text-slate-900 whitespace-nowrap">System Audit Logs</h2>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-400">
-              {pagination ? `${pagination.total_records.toLocaleString()} total record${pagination.total_records !== 1 ? "s" : ""}` : ""}
+            <span className="text-xs text-slate-400 whitespace-nowrap">
+              {pagination ? `${pagination.total_records.toLocaleString()} record${pagination.total_records !== 1 ? "s" : ""}` : ""}
             </span>
             <button
               onClick={() => setRefreshKey((k) => k + 1)}
@@ -205,71 +205,81 @@ export default function SystemLogsTab() {
             No audit logs found for the selected filters.
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="text-left px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap">Date</th>
-                  <th className="text-left px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide">Actor</th>
-                  <th className="text-left px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide">Action</th>
-                  <th className="text-left px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide hidden md:table-cell">Description</th>
-                  <th className="text-left px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide hidden xl:table-cell">Endpoint</th>
-                  <th className="text-left px-4 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide">Status</th>
-                  <th className="px-4 py-4" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {visibleLogs.map((log) => {
-                  const failed = (log.status || "").toLowerCase() !== "success";
-                  const method = (log.http_method || "").toUpperCase();
-                  return (
-                    <tr key={log.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="px-6 py-4 text-xs text-slate-500 whitespace-nowrap">{formatDateTime(log.created_at)}</td>
-                      <td className="px-4 py-4">
-                        <p className="font-semibold text-slate-800 truncate max-w-[200px]">{log.actor_email || log.actor_id || "Unknown"}</p>
-                        <p className="text-xs text-slate-400 capitalize">{log.actor_role?.replace(/_/g, " ") || "—"}</p>
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${actionStyle(log.action)}`}>
-                          {formatAction(log.action)}
-                        </span>
-                        {log.entity_type && <p className="text-[11px] text-slate-400 mt-1">{log.entity_type}</p>}
-                      </td>
-                      <td className="px-4 py-4 hidden md:table-cell text-slate-600 max-w-[360px]">
-                        <p className="line-clamp-2">{log.description || "—"}</p>
-                      </td>
-                      <td className="px-4 py-4 hidden xl:table-cell">
-                        <div className="flex items-center gap-2">
-                          {method && (
-                            <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${METHOD_STYLES[method] || "bg-slate-100 text-slate-600"}`}>
-                              {method}
-                            </span>
-                          )}
-                          <span className="font-mono text-xs text-slate-500 truncate max-w-[220px]" title={log.endpoint || ""}>
-                            {log.endpoint || "—"}
+          <>
+            {/* Wide screens (xl): a table. Narrower ones get cards below, because six columns do not fit and the description matters most. */}
+            <div className="hidden xl:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <th className={`${thCls} pl-6`}>Date</th>
+                    <th className={thCls}>Actor</th>
+                    <th className={thCls}>Action</th>
+                    <th className={thCls}>What happened</th>
+                    <th className={thCls}>Status</th>
+                    <th className="px-4 py-3" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {visibleLogs.map((log) => {
+                    const failed = (log.status || "").toLowerCase() !== "success";
+                    const [day, time] = formatDateTime(log.created_at).split(", ");
+                    return (
+                      <tr key={log.id} className="hover:bg-slate-50/60 transition-colors align-top">
+                        <td className="pl-6 pr-4 py-3.5 whitespace-nowrap">
+                          <p className="text-xs font-semibold text-slate-700">{day}</p>
+                          {time && <p className="text-xs text-slate-400">{time}</p>}
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <p className="font-semibold text-slate-800 truncate max-w-[180px] 2xl:max-w-[260px]" title={log.actor_email || log.actor_id || ""}>
+                            {log.actor_email || log.actor_id || "Unknown"}
+                          </p>
+                          <p className="text-xs text-slate-400 capitalize">{log.actor_role?.replace(/_/g, " ") || "—"}</p>
+                        </td>
+                        <td className="px-4 py-3.5 whitespace-nowrap">
+                          <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full ${actionStyle(log.action)}`}>
+                            {formatAction(log.action)}
                           </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${failed ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>
-                          <span className={`h-1.5 w-1.5 rounded-full ${failed ? "bg-red-500" : "bg-emerald-500"}`} />
-                          {log.status || "—"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 text-right">
-                        <Link
-                          to={`/admin/audit-trail/logs/${log.id}`}
-                          className="inline-flex items-center gap-1.5 text-sm font-bold text-blue-700 hover:text-brand-blue transition-colors"
-                        >
-                          <Eye className="h-4 w-4" /> View
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                          {log.entity_type && <p className="text-[11px] text-slate-400 mt-1">{log.entity_type}</p>}
+                        </td>
+                        <td className="px-4 py-3.5 w-full max-w-0 min-w-[260px] text-slate-700">
+                          <p className="line-clamp-3 break-words" title={log.description || ""}>{log.description || "—"}</p>
+                          <Endpoint log={log} />
+                        </td>
+                        <td className="px-4 py-3.5 whitespace-nowrap"><StatusBadge failed={failed} status={log.status} /></td>
+                        <td className="pl-4 pr-6 py-3.5 text-right whitespace-nowrap"><ViewLink id={log.id} /></td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <ul className="xl:hidden divide-y divide-slate-100">
+              {visibleLogs.map((log) => {
+                const failed = (log.status || "").toLowerCase() !== "success";
+                return (
+                  <li key={log.id} className="px-4 sm:px-6 py-4 space-y-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-xs text-slate-500">{formatDateTime(log.created_at)}</span>
+                      <StatusBadge failed={failed} status={log.status} />
+                    </div>
+                    <p className="text-sm font-medium text-slate-800 break-words">{log.description || "—"}</p>
+                    <Endpoint log={log} />
+                    <div className="flex items-center justify-between gap-3 pt-1">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-slate-700 truncate">{log.actor_email || log.actor_id || "Unknown"}</p>
+                        <p className="text-xs text-slate-400 capitalize">{log.actor_role?.replace(/_/g, " ") || "—"}</p>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap ${actionStyle(log.action)}`}>{formatAction(log.action)}</span>
+                        <ViewLink id={log.id} />
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
         )}
       </div>
 
@@ -315,6 +325,37 @@ export default function SystemLogsTab() {
         />
       )}
     </div>
+  );
+}
+
+const thCls = "text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap";
+
+// "POST /api/applications/bulk/paid": the technical detail, kept small under the description so it never takes a column.
+function Endpoint({ log }: { log: AuditLog }) {
+  const method = (log.http_method || "").toUpperCase();
+  if (!method && !log.endpoint) return null;
+  return (
+    <div className="flex items-center gap-2 mt-1 min-w-0">
+      {method && <span className={`shrink-0 text-[10px] font-black px-1.5 py-0.5 rounded ${METHOD_STYLES[method] || "bg-slate-100 text-slate-600"}`}>{method}</span>}
+      {log.endpoint && <span className="font-mono text-[11px] text-slate-400 truncate" title={log.endpoint}>{log.endpoint}</span>}
+    </div>
+  );
+}
+
+function StatusBadge({ failed, status }: { failed: boolean; status?: string | null }) {
+  return (
+    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full capitalize whitespace-nowrap ${failed ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${failed ? "bg-red-500" : "bg-emerald-500"}`} />
+      {status || "—"}
+    </span>
+  );
+}
+
+function ViewLink({ id }: { id: string }) {
+  return (
+    <Link to={`/admin/audit-trail/logs/${id}`} className="inline-flex items-center gap-1.5 text-sm font-bold text-blue-700 hover:text-brand-blue transition-colors whitespace-nowrap">
+      <Eye className="h-4 w-4" /> View
+    </Link>
   );
 }
 

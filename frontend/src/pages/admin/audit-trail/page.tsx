@@ -13,7 +13,7 @@ export default function AuditTrailPage() {
   const tab = searchParams.get("tab") === "applications" ? "applications" : "system";
 
   return (
-    <div className="p-6 w-full space-y-6">
+    <div className="p-4 sm:p-6 w-full space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-black text-slate-900">Audit Trails</h1>
@@ -21,12 +21,12 @@ export default function AuditTrailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-slate-100 rounded-xl w-fit">
+      <div className="flex gap-1 p-1 bg-slate-100 rounded-xl w-full sm:w-fit">
         {TABS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setSearchParams(key === "system" ? {} : { tab: key })}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors ${
+            className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-colors ${
               tab === key ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"
             }`}
           >
