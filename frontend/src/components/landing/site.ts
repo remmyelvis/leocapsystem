@@ -9,3 +9,26 @@ export const PHONES = [
 ];
 export const ADDRESS = "Applewood Adams, Along Ngong Road, Nairobi";
 export const MAPS_URL = "https://www.google.com/maps/search/?api=1&query=Applewood+Adams+Ngong+Road+Nairobi";
+
+// Where a signed-in person's own portal starts.
+export function portalFor(role?: string) {
+  switch ((role ?? "").toUpperCase()) {
+    case "ADMIN":
+      return "/admin/dashboard";
+    case "HR":
+      return "/hr/dashboard";
+    case "FINANCE":
+      return "/finance/dashboard";
+    default:
+      return "/dashboard";
+  }
+}
+
+export const initials = (name?: string) =>
+  (name ?? "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase() || "ME";

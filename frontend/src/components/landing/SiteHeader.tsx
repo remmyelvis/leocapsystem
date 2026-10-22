@@ -6,7 +6,11 @@ import BrandLogo from "@/components/global/BrandLogo";
 import { MarkMotif, navy } from "@/components/global/brandArt";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActiveSection, useScrollProgress, useScrolled } from "./motion";
-import { APPLY_TO, EMAIL, PHONES, SIGN_IN_TO } from "./site";
+import { APPLY_TO, EMAIL, initials, PHONES, portalFor, SIGN_IN_TO } from "./site";
+
+// Two small half-circle bites out of the stub's left and right edges, like the tear notches on a slip.
+const STUB_NOTCH =
+  "radial-gradient(circle 4.5px at 0 50%, #0000 4px, #000 4.5px), radial-gradient(circle 4.5px at 100% 50%, #0000 4px, #000 4.5px)";
 
 // The landing page sections (scroll within the page) and the FAQ (its own page), in the order they are offered.
 const NAV: { label: string; id: string; page?: string }[] = [
@@ -16,29 +20,6 @@ const NAV: { label: string; id: string; page?: string }[] = [
   { label: "FAQs", id: "faq", page: "/faq" },
   { label: "Contact", id: "contact" },
 ];
-
-// Where a signed-in person's own portal starts.
-function portalFor(role?: string) {
-  switch ((role ?? "").toUpperCase()) {
-    case "ADMIN":
-      return "/admin/dashboard";
-    case "HR":
-      return "/hr/dashboard";
-    case "FINANCE":
-      return "/finance/dashboard";
-    default:
-      return "/dashboard";
-  }
-}
-
-const initials = (name?: string) =>
-  (name ?? "")
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((w) => w[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase() || "ME";
 
 /**
  * `home`     the landing page itself: the links scroll within the page and the current section is marked.
@@ -61,13 +42,12 @@ export default function SiteHeader({ home = true, current, skipTo = "#main-conte
 
   const close = useCallback(() => setOpen(false), []);
 
-  // The red marker glides under the current link instead of jumping.
+  // The stub behind the current link glides to it instead of jumping.
   const measure = useCallback(() => {
     const nav = navRef.current;
     const el = active ? nav?.querySelector<HTMLElement>(`[data-nav="${active}"]`) : null;
     if (!nav || !el) return setGlide(null);
-    const pad = parseFloat(getComputedStyle(el).paddingLeft) || 0;
-    setGlide({ left: el.offsetLeft + pad, width: el.offsetWidth - pad * 2 });
+    setGlide({ left: el.offsetLeft, width: el.offsetWidth });
   }, [active]);
   useLayoutEffect(measure, [measure]);
   useEffect(() => {
@@ -140,20 +120,29 @@ export default function SiteHeader({ home = true, current, skipTo = "#main-conte
           <BrandLogo src="/logo-wordmark.png" height={scrolled ? "2rem" : "2.25rem"} className="transition-[height] duration-300 motion-reduce:transition-none" onClick={goTop} />
 
           {/* Desktop nav */}
-          <nav ref={navRef} aria-label="Main" className="relative hidden items-center gap-0.5 md:flex">
+          <nav ref={navRef} aria-label="Main" className="relative hidden items-center gap-1 md:flex">
+            {/* The current link sits on a stub: one soft tint with a small notch bitten out of each end, like the tear on a loan slip */}
+            <span
+              aria-hidden
+              className={`pointer-events-none absolute left-0 top-1/2 h-[34px] rounded-[9px] bg-brand-blue/[0.07] motion-reduce:transition-none ${glideReady ? "transition-[transform,width,opacity] duration-[420ms] ease-[cubic-bezier(0.25,1.12,0.4,1)]" : ""}`}
+              style={{
+                width: glide?.width ?? 0,
+                transform: `translate(${glide?.left ?? 0}px, -50%)`,
+                opacity: glide ? 1 : 0,
+                WebkitMaskImage: STUB_NOTCH,
+                maskImage: STUB_NOTCH,
+                WebkitMaskComposite: "source-in",
+                maskComposite: "intersect",
+              }}
+            />
             {NAV.map((n) =>
               link(
                 n,
-                `rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40 ${
-                  active === n.id ? "text-brand-blue" : "text-slate-600 hover:text-brand-blue"
+                `relative z-10 rounded-[10px] px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40 ${
+                  active === n.id ? "text-brand-blue" : "text-slate-600 hover:bg-brand-blue/[0.04] hover:text-brand-blue"
                 }`
               )
             )}
-            <span
-              aria-hidden
-              className={`pointer-events-none absolute -bottom-0.5 left-0 h-0.5 rounded-full bg-red-600 motion-reduce:transition-none ${glideReady ? "transition-[transform,width,opacity] duration-300 ease-out" : ""}`}
-              style={{ width: glide?.width ?? 0, transform: `translateX(${glide?.left ?? 0}px)`, opacity: glide ? 1 : 0 }}
-            />
           </nav>
 
           <div className="hidden items-center gap-3 md:flex">
