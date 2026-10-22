@@ -7,9 +7,10 @@ interface BrandLogoProps {
   height?: number | string;
   /** Another image to show (for example the tight wordmark), instead of the padded square logo. */
   src?: string;
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 }
 
-export default function BrandLogo({ size = "md", className = "", width, height, src = "/logo.png" }: BrandLogoProps) {
+export default function BrandLogo({ size = "md", className = "", width, height, src = "/logo.png", onClick }: BrandLogoProps) {
   const location = useLocation();
 
   let defaultHeightClass = "h-16";
@@ -31,7 +32,7 @@ export default function BrandLogo({ size = "md", className = "", width, height, 
   }
 
   return (
-    <Link to={targetPath} className="inline-block transition-opacity hover:opacity-90 active:opacity-80">
+    <Link to={targetPath} onClick={onClick} className="inline-block transition-opacity hover:opacity-90 active:opacity-80">
       <img
         src={src}
         alt="Leocap Invest"

@@ -136,7 +136,7 @@ export default function FaqPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <SiteHeader home={false} />
+      <SiteHeader home={false} current="faq" />
 
       {/* Title band with the search */}
       <section className="relative isolate overflow-hidden px-4 pb-16 pt-28 text-white sm:px-6 lg:px-8" style={navy("linear-gradient(160deg, #0F2C59 0%, #0b2246 55%, #081430 100%)")}>
@@ -190,7 +190,7 @@ export default function FaqPage() {
         </div>
       </section>
 
-      <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:grid lg:grid-cols-[210px_minmax(0,1fr)] lg:gap-12 lg:px-8">
+      <main id="main-content" className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:grid lg:grid-cols-[210px_minmax(0,1fr)] lg:gap-12 lg:px-8">
         {/* Topics */}
         <nav aria-label="Topics" className="mb-8 lg:mb-0">
           <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:sticky lg:top-24 lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-0">
