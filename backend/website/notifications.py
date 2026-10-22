@@ -4,10 +4,12 @@ import re
 import threading
 from datetime import datetime, timedelta
 
-from website.models import Applicant, Company
+from flask import current_app
+
+from website.extensions import db
+from website.models import Applicant, AuditAction, AuditLog, Company
 from website.password_reset import frontend_url
 from website import system_email_utils
-from website.system_email_utils import send_email_background
 
 _ADDRESS = re.compile(r"^[^@\s,;<>]+@[^@\s,;<>]+\.[^@\s,;<>]+$")
 _LOAN_TYPES = {"salary_advance": "salary advance", "personal": "personal loan"}
@@ -40,12 +42,66 @@ def hr_recipients(application, applicant):
     return list(found.values())
 
 
+def _mask(address):
+    name, _, domain = address.partition("@")
+    return f"{name[:2]}***@{domain}"
+
+
+def _record_email(kind, address, application_id, ok, error, subject, mask_address):
+    """One audit log row per email the app tried to send, so a missing email can be traced to what happened to it."""
+    shown = _mask(address) if mask_address else address
+    db.session.add(AuditLog(
+        action=AuditAction.CREATE,
+        description=f"Emailed {kind} to {shown}" + ("" if ok else " (failed)"),
+        status="success" if ok else "failure",
+        error_message=None if ok else str(error)[:300],
+        actor_id="system", actor_role="system",
+        entity_type="Application", entity_id=application_id,
+        new_values={"to": shown, "subject": subject},
+    ))
+    db.session.commit()
+
+
+def _deliver(kind, messages, mask_address=False):
+    """Send (address, subject, body, application_id) messages one after another in a single background thread (the mail
+    host limits how fast it takes mail) and write an audit log row for each. Nothing here can block or fail the
+    request that asked for it; a problem is only logged."""
+    app = current_app._get_current_object()
+
+    def _run():
+        for address, subject, body, application_id in messages:
+            try:
+                ok, error = system_email_utils.send_email_smtp(address, subject, body, False)
+            except Exception as exc:  # the mail layer should not raise, but a bug there must not stop the others
+                ok, error = False, f"{type(exc).__name__}: {exc}"
+            if not ok:
+                logging.error("%s email to %s failed: %s", kind, address, error)
+            try:
+                with app.app_context():
+                    _record_email(kind, address, application_id, ok, error, subject, mask_address)
+            except Exception:
+                logging.exception("Could not write the audit log for the %s email to %s", kind, address)
+
+    threading.Thread(target=_run, daemon=True).start()
+
+
 def notify_hr_of_application(application, applicant):
     """Email HR about a new loan application. It runs after the application has been saved and can never get in its
     way: sending is in the background and any problem is only logged."""
     try:
         recipients = hr_recipients(application, applicant)
         if not recipients:
+            # Not an error, but worth a trace: nobody was told (for example the only HR address is the applicant's own).
+            db.session.add(AuditLog(
+                action=AuditAction.CREATE,
+                description="No HR notice sent for a new application: nobody to notify",
+                status="failure",
+                error_message="No HR address for this company (or the only one is the applicant's own).",
+                actor_id="system", actor_role="system",
+                entity_type="Application", entity_id=application.id,
+                new_values={"company": application.company},
+            ))
+            db.session.commit()
             return
 
         company = Company.query.filter_by(code=application.company).first()
@@ -62,8 +118,7 @@ def notify_hr_of_application(application, applicant):
             f"{frontend_url()}/hr/applications/pending/{application.id}\n\n"
             "Leocap Invest"
         )
-        for recipient in recipients:
-            send_email_background(recipient, subject, body)
+        _deliver("HR about a new application", [(r, subject, body, application.id) for r in recipients])
     except Exception:
         logging.exception("Could not notify HR about application %s", application.id)
 
@@ -86,7 +141,7 @@ def _repaid_message(application):
         f"You can sign in to see your account, or apply again, at {frontend_url()}\n\n"
         "Leocap Invest"
     )
-    return address, "Your loan has been fully repaid", body
+    return address, "Your loan has been fully repaid", body, application.id
 
 
 def notify_loans_repaid(applications):
@@ -106,16 +161,7 @@ def notify_loans_repaid(applications):
         if not messages:
             return
 
-        def _send_all():
-            for address, subject, body in messages:
-                try:
-                    ok, error = system_email_utils.send_email_smtp(address, subject, body, False)
-                    if not ok:
-                        logging.error("Repaid email to %s failed: %s", address, error)
-                except Exception:
-                    logging.exception("Repaid email to %s failed", address)
-
-        threading.Thread(target=_send_all, daemon=True).start()
+        _deliver("a borrower: loan fully repaid", messages, mask_address=True)
     except Exception:
         logging.exception("Could not send the repaid emails")
 

@@ -1,6 +1,6 @@
 from datetime import datetime, time, timedelta, timezone
 from flask import Blueprint, request, jsonify, g, has_request_context
-from sqlalchemy import or_
+from sqlalchemy import cast, or_, String
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 
 from website import db
@@ -84,6 +84,25 @@ def _record_audit_log(
     if commit:
         db.session.commit()
     return log_entry
+
+
+def _readable(query):
+    """The log rows as plain columns. The action is read as text: the live table holds old rows whose action is no longer
+    one of AuditAction (or that use a label the database's enum type lacks), and loading those as AuditLog objects
+    answered 500 for any page that contained one."""
+    return query.with_entities(
+        AuditLog.id, cast(AuditLog.action, String).label("action"), AuditLog.description, AuditLog.endpoint,
+        AuditLog.http_method, AuditLog.status, AuditLog.error_message, AuditLog.actor_id, AuditLog.actor_email,
+        AuditLog.actor_role, AuditLog.entity_type, AuditLog.entity_id, AuditLog.old_values, AuditLog.new_values,
+        AuditLog.created_at,
+    )
+
+
+def _row_dict(row):
+    data = row._asdict()
+    data["action"] = (data["action"] or "").split(".")[-1].lower()
+    data["created_at"] = data["created_at"].isoformat() if data["created_at"] else None
+    return data
 
 
 def _parse_datetime(date_str, is_end=False):
@@ -179,7 +198,7 @@ def get_all_audit_logs():
                 "error": f"Invalid action '{action_param}'. Allowed values: {valid_actions}"
             }), 400
 
-        query = query.filter(AuditLog.action == action_enum)
+        query = query.filter(cast(AuditLog.action, String) == action_enum.name)
         applied_filters["action"] = action_enum.value
 
     # Filter: http_method
@@ -220,7 +239,7 @@ def get_all_audit_logs():
     page_size = request.args.get("page_size", default=50, type=int)
     page_size = min(max(page_size, 1), 500)
 
-    pagination = query.paginate(
+    pagination = _readable(query).paginate(
         page=page,
         per_page=page_size,
         error_out=False
@@ -228,7 +247,7 @@ def get_all_audit_logs():
 
     return jsonify({
         "message": "Audit logs retrieved successfully",
-        "data": [log.to_dict() for log in pagination.items],
+        "data": [_row_dict(row) for row in pagination.items],
         "pagination": {
             "page": pagination.page,
             "page_size": pagination.per_page,
@@ -248,13 +267,13 @@ def get_all_audit_logs():
 @role_required("admin")
 def get_audit_log(log_id):
     """View a single audit log entry by ID."""
-    log = AuditLog.query.filter_by(id=log_id).first()
+    log = _readable(AuditLog.query.filter_by(id=log_id)).first()
     if not log:
         return jsonify({"error": "Audit log not found"}), 404
 
     return jsonify({
         "message": "Audit log retrieved successfully",
-        "data": log.to_dict()
+        "data": _row_dict(log)
     }), 200
 
 

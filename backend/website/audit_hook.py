@@ -171,7 +171,7 @@ def _record(response):
     else:
         if not actor_id and "/cron/" not in path and "/register" not in path and "/forgot-password" not in path and "/reset-password" not in path:
             return  # anonymous noise (scanners, expired sessions) is not worth a row
-        action = {"POST": AuditAction.CREATE, "PUT": AuditAction.UPDATE, "PATCH": AuditAction.UPDATE, "DELETE": AuditAction.DELETE}.get(method, AuditAction.OTHER)
+        action = {"POST": AuditAction.CREATE, "PUT": AuditAction.UPDATE, "PATCH": AuditAction.UPDATE, "DELETE": AuditAction.DELETE}.get(method, AuditAction.UPDATE)
 
     failed = response.status_code >= 400
     error = None
