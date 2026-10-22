@@ -139,6 +139,22 @@ export default function ManageStaffPage() {
     loadData();
   };
 
+  const deleteButton = (m: StaffMember) => {
+    const armed = pendingDeleteId === m.id;
+    return (
+      <button
+        onClick={() => handleDeleteClick(m)}
+        disabled={deletingId === m.id}
+        title={armed ? "Click again to remove" : "Remove staff member"}
+        aria-label={armed ? `Click again to remove ${m.name}` : `Remove ${m.name}`}
+        className={`flex items-center gap-1.5 p-2 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 ${armed ? "bg-red-500 text-white" : "text-slate-400 hover:bg-red-50 hover:text-red-500"}`}
+      >
+        {deletingId === m.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+        {armed && "Confirm?"}
+      </button>
+    );
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center min-h-[50vh]"><Loader2 className="w-8 h-8 animate-spin text-brand-blue" /></div>;
   }
@@ -314,9 +330,7 @@ export default function ManageStaffPage() {
                             <p className="text-sm font-bold text-slate-800 break-words">{formatName(m.name)}</p>
                             <p className="text-xs text-slate-500 break-all">{m.email}</p>
                           </div>
-                          <button onClick={() => handleDeleteClick(m)} className={`p-2 rounded-lg transition-colors ${pendingDeleteId === m.id ? 'bg-red-500 text-white' : 'text-slate-400 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 hover:bg-red-50 hover:text-red-500'}`}>
-                            {deletingId === m.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                          </button>
+                          {deleteButton(m)}
                         </div>
                       ))
                     )}
@@ -338,9 +352,7 @@ export default function ManageStaffPage() {
                             <p className="text-sm font-bold text-slate-800 break-words">{formatName(m.name)}</p>
                             <p className="text-xs text-slate-500 break-all">{m.email}</p>
                           </div>
-                          <button onClick={() => handleDeleteClick(m)} className={`p-2 rounded-lg transition-colors ${pendingDeleteId === m.id ? 'bg-red-500 text-white' : 'text-slate-400 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 hover:bg-red-50 hover:text-red-500'}`}>
-                            {deletingId === m.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                          </button>
+                          {deleteButton(m)}
                         </div>
                       ))
                     )}

@@ -180,20 +180,58 @@ def suspend(id):
     return jsonify({'message': 'Applicant account suspended'}), 200
     
     
-@applicant.route('/delete/<string:id>', methods=['DELETE'])
+@applicant.route('/activate/<string:id>', methods=['PATCH'])
 @jwt_required()
 @role_required("admin","hr")
+def activate(id):
+    applicant = Applicant.query.get(id)
+
+    if not applicant:
+        return jsonify({'message': 'Applicant does not exist'}), 404
+
+    applicant.applicant_status = "active"
+    db.session.commit()
+
+    return jsonify({'message': 'Applicant account reactivated'}), 200
+
+
+@applicant.route('/delete/<string:id>', methods=['DELETE'])
+@jwt_required()
+@role_required("admin", "super_admin")
 def delete(id):
     applicant = Applicant.query.get(id)
 
     if not applicant:
         return jsonify({'message': 'Applicant does not exist'}), 404
 
-    
-    db.session.delete(applicant)
-    db.session.commit()
+    # Deleting a person also erases their loans (and the repayment history), so an account with loans is suspended, not deleted.
+    loans = Application.query.filter_by(applicant_id=id).count()
+    if loans:
+        return jsonify({'message': f"{applicant.name} has {loans} loan application{'s' if loans != 1 else ''} on record, so the account can't be deleted. Suspend it instead."}), 409
 
-    return jsonify({'message': 'Applicant account suspended'}), 200
+    # Uploaded statements (and their parsed rows) have no cascade, so they go first; their files are removed once the delete succeeds.
+    from website.models import StatementUpload, ParsedTransaction
+    statements = StatementUpload.query.filter_by(applicant_id=id).all()
+    files = [s.filepath for s in statements] + [d.filepath for d in applicant.documents]
+    try:
+        ParsedTransaction.query.filter_by(applicant_id=id).delete()
+        for s in statements:
+            db.session.delete(s)
+        db.session.delete(applicant)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Could not delete applicant %s", id)
+        return jsonify({'message': 'Could not delete this account. Nothing was changed.'}), 500
+
+    for path in files:
+        if path and os.path.exists(path):
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+
+    return jsonify({'message': 'Account deleted'}), 200
 
 @applicant.route('/update/<string:id>', methods=['PATCH'])
 @jwt_required()

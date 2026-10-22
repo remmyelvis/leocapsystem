@@ -54,9 +54,14 @@ export default function ManageAdminsPage({ embedded = false }: { embedded?: bool
   const isLoading = useAdminStore((s) => s.isLoading);
   const storeError = useAdminStore((s) => s.error);
   const clearError = useAdminStore((s) => s.clearError);
+  const fetchAdmins = useAdminStore((s) => s.fetchAdmins);
   
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
   const [currentAdminEmail, setCurrentAdminEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchAdmins();
+  }, [fetchAdmins]);
 
   // Load current admin info
   useEffect(() => {
@@ -227,7 +232,8 @@ export default function ManageAdminsPage({ embedded = false }: { embedded?: bool
                       <button
                         onClick={() => handleRemove(admin.id, admin.name, admin.email)}
                         disabled={isLoading}
-                        className={`p-2 rounded-lg transition-colors ${
+                        aria-label={confirmRemoveId === admin.id ? `Click again to remove ${admin.name}` : `Remove ${admin.name}`}
+                        className={`flex items-center gap-1.5 p-2 rounded-lg text-xs font-semibold transition-colors ${
                           confirmRemoveId === admin.id
                             ? "bg-red-600 text-white"
                             : "text-slate-400 hover:bg-red-50 hover:text-red-600"
@@ -239,6 +245,7 @@ export default function ManageAdminsPage({ embedded = false }: { embedded?: bool
                         }
                       >
                         <Trash2 className="h-4 w-4" />
+                        {confirmRemoveId === admin.id && "Confirm?"}
                       </button>
                     )}
                   </div>

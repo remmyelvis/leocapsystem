@@ -41,9 +41,19 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   error: null,
 
   fetchAdmins: async () => {
-    // For now, admins are managed locally + via API
-    // The backend doesn't have a "get all admins" endpoint
-    // So we keep the local state and sync with API on add/remove
+    // Replace the local list with the real one so admins added in earlier sessions can be removed too.
+    const response = await adminApi.listAdmins();
+    if (!response.data?.users) return;
+    set({
+      admins: response.data.users.map((u) => ({
+        id: u.id,
+        email: u.email.toLowerCase(),
+        name: u.name,
+        number: u.number || "",
+        addedAt: new Date(u.created_at ?? Date.now()),
+        isPrimary: isSuperAdmin(u.email),
+      })),
+    });
   },
 
   addAdmin: async (data) => {

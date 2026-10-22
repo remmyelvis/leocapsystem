@@ -10,6 +10,7 @@ import {
   RefreshCw,
   Eye,
   Ban,
+  RotateCcw,
   Users,
   Upload,
   Download,
@@ -37,6 +38,7 @@ export default function ManageApplicantsPage() {
   const [sortField, setSortField] = useState<keyof ManageApplicant>("created_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [showSuspended, setShowSuspended] = useState(false);
   const [downloadingDossier, setDownloadingDossier] = useState<string | null>(null);
 
   const handleDownloadDossier = async (applicantId: string, applicantName: string) => {
@@ -82,22 +84,26 @@ export default function ManageApplicantsPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm]);
+  }, [searchTerm, showSuspended]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to suspend this applicant? This action cannot be undone.")) return;
+  const handleStatusChange = async (app: ManageApplicant, suspend: boolean) => {
+    const name = formatName(app.name) || "this applicant";
+    const question = suspend
+      ? `Suspend ${name}? They will not be able to sign in until you reactivate them. Their loans and documents are kept.`
+      : `Reactivate ${name}? They will be able to sign in again.`;
+    if (!confirm(question)) return;
 
-    setIsDeleting(id);
+    setIsDeleting(app.id);
     try {
-      const response = await adminApplicantsApi.delete(id);
+      const response = suspend ? await adminApplicantsApi.suspend(app.id) : await adminApplicantsApi.activate(app.id);
       if (response.error) {
         toast.error(response.error);
       } else {
-        toast.success("Applicant suspended successfully.");
+        toast.success(suspend ? `${name} suspended.` : `${name} reactivated.`);
         fetchApplicants();
       }
     } catch {
-      toast.error("Failed to suspend applicant.");
+      toast.error(suspend ? "Failed to suspend applicant." : "Failed to reactivate applicant.");
     } finally {
       setIsDeleting(null);
     }
@@ -114,7 +120,7 @@ export default function ManageApplicantsPage() {
 
   const filteredApplicants = applicants.filter(
     (app) =>
-      app.applicant_status !== "suspended" &&
+      (app.applicant_status === "suspended") === showSuspended &&
       ((app.name ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (app.email ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (app.id_number ?? "").toLowerCase().includes(searchTerm.toLowerCase()))
@@ -185,7 +191,9 @@ export default function ManageApplicantsPage() {
     window.open(`${import.meta.env.VITE_BACKEND_URL}/api/auth/applicant/bulk-upload/template`, "_blank");
   };
 
-  const actions = (app: ManageApplicant) => (
+  const actions = (app: ManageApplicant) => {
+    const suspended = app.applicant_status === "suspended";
+    return (
     <>
       <button
         onClick={() => navigate(`/admin/manage-applicants/${app.id}`)}
@@ -205,16 +213,17 @@ export default function ManageApplicantsPage() {
         {downloadingDossier === app.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
       </button>
       <button
-        onClick={() => handleDelete(app.id)}
+        onClick={() => handleStatusChange(app, !suspended)}
         disabled={isDeleting === app.id}
-        className="p-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
-        title="Suspend Applicant"
-        aria-label="Suspend applicant"
+        className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${suspended ? "text-emerald-600 hover:bg-emerald-50" : "text-red-600 hover:bg-red-50"}`}
+        title={suspended ? "Reactivate Applicant" : "Suspend Applicant"}
+        aria-label={suspended ? "Reactivate applicant" : "Suspend applicant"}
       >
-        {isDeleting === app.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Ban className="h-4 w-4" />}
+        {isDeleting === app.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : suspended ? <RotateCcw className="h-4 w-4" /> : <Ban className="h-4 w-4" />}
       </button>
     </>
-  );
+    );
+  };
 
   return (
     <div className="p-4 sm:p-6 w-full max-w-[1600px] mx-auto space-y-5">
@@ -289,7 +298,7 @@ export default function ManageApplicantsPage() {
             className="w-full pl-10 pr-4 py-1.5 rounded-lg border border-slate-200 text-[13px] focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-shadow"
           />
         </div>
-        <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto">
+        <div className="flex flex-wrap items-center justify-between md:justify-end gap-x-3 gap-y-2 w-full md:w-auto">
           <select
             aria-label="Sort applicants"
             value={`${sortField}:${sortDir}`}
@@ -301,6 +310,18 @@ export default function ManageApplicantsPage() {
             <option value="name:asc">Name A–Z</option>
             <option value="name:desc">Name Z–A</option>
           </select>
+          <div className="flex rounded-lg border border-slate-200 overflow-hidden text-[13px] font-semibold" role="group" aria-label="Applicant status">
+            {([["Active", false], ["Suspended", true]] as [string, boolean][]).map(([label, value]) => (
+              <button
+                key={label}
+                onClick={() => setShowSuspended(value)}
+                aria-pressed={showSuspended === value}
+                className={`px-3 py-1.5 whitespace-nowrap transition-colors ${showSuspended === value ? "bg-brand-blue text-white" : "bg-white text-slate-600 hover:bg-slate-50"}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
           <div className="text-sm text-slate-500 font-medium whitespace-nowrap">
             {sortedApplicants.length} applicant{sortedApplicants.length !== 1 && "s"}
           </div>

@@ -11,6 +11,7 @@ from website.financial_engine.credit_analyzer import generate_credit_analysis
 from werkzeug.utils import secure_filename
 from website.financial_engine.pdf_report_generator import generate_credit_profile_pdf
 from flask import send_file
+from website.role_decorator import role_required
 from website.models import Applicant
 from website.financial_engine.gemini_agent import generate_statement_narrative, chat_with_statement
 
@@ -133,12 +134,19 @@ def list_statements(applicant_id):
 
 @statement_analysis_bp.route('/api/statements/<string:upload_id>', methods=['DELETE'])
 @jwt_required()
+@role_required("admin", "super_admin")
 def delete_statement(upload_id):
     upload = StatementUpload.query.get_or_404(upload_id)
+    path = upload.filepath
     # Also delete associated parsed transactions
     ParsedTransaction.query.filter_by(statement_id=upload.id).delete()
     db.session.delete(upload)
     db.session.commit()
+    if path and os.path.exists(path):
+        try:
+            os.remove(path)
+        except OSError:
+            pass
     return jsonify({'success': True, 'message': 'Statement deleted'})
 
 @statement_analysis_bp.route('/api/statements/chat/<string:applicant_id>', methods=['POST'])

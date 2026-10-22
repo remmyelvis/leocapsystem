@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Download, Upload, Search, BookOpen, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { apiCall } from "@/lib/apiClient";
 
 export default function FinancialAnalysisPage() {
   const params = useParams();
@@ -23,18 +24,8 @@ export default function FinancialAnalysisPage() {
 
 
   const fetchHistory = async () => {
-    try {
-      const token = localStorage.getItem("leocap_token") || "";
-      const res = await fetch(`/api/statements/list/${params.id}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setHistory(data);
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    const res = await apiCall<any[]>(`/api/statements/list/${params.id}`);
+    if (res.data) setHistory(res.data);
   };
 
   const fetchAnalysis = async () => {
@@ -94,20 +85,15 @@ export default function FinancialAnalysisPage() {
 
 
   const handleDelete = async (id: string) => {
-    try {
-      const token = localStorage.getItem("leocap_token") || "";
-      const res = await fetch(`/api/statements/${id}`, {
-        method: "DELETE",
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        toast.success("Statement deleted");
-        fetchHistory();
-        fetchAnalysis();
-      }
-    } catch (e) {
-      toast.error("Failed to delete");
+    if (!confirm("Delete this statement and the transactions read from it? This cannot be undone.")) return;
+    const res = await apiCall(`/api/statements/${id}`, { method: "DELETE" });
+    if (res.error) {
+      toast.error(res.error);
+      return;
     }
+    toast.success("Statement deleted");
+    fetchHistory();
+    fetchAnalysis();
   };
 
 

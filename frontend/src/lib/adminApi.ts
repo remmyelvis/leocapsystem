@@ -133,6 +133,8 @@ export const adminApi = {
       body: payload,
     }),
 
+  listAdmins: () => apiCall<{ users: AdminUser[] }>("/api/auth/users/get-all"),
+
   deleteAdmin: (id: string) =>
     apiCall<{ message: string }>(`/api/auth/users/delete/${id}`, {
       method: "DELETE",
@@ -310,8 +312,13 @@ export const adminApplicantsApi = {
   getOne: (applicantId: string) =>
     apiCall<ApplicantDetailsResponse>(`/api/auth/applicant/get-applicant-details/${applicantId}`),
 
-  delete: (applicantId: string) =>
-    apiCall<{ message: string }>(`/api/auth/applicant/delete/${applicantId}`, {
-      method: "DELETE",
+  suspend: (applicantId: string) =>
+    apiCall<{ message: string }>(`/api/auth/applicant/suspend/${applicantId}`, {
+      method: "PATCH",
+    }),
+
+  activate: (applicantId: string) =>
+    apiCall<{ message: string }>(`/api/auth/applicant/activate/${applicantId}`, {
+      method: "PATCH",
     }),
 };

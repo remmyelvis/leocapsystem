@@ -15,6 +15,8 @@ from website.role_decorator import role_required
 import random
 
 from dotenv import load_dotenv
+
+SUPER_ADMIN_EMAIL = "admin@leocapinvest.com"  # same account the admin pages treat as the super admin
 load_dotenv()
 
 auth = Blueprint('auth',__name__, url_prefix='/api/auth/users')
@@ -78,6 +80,13 @@ def login():
 
     return response, 200
     
+@auth.route('/get-all', methods=['GET'])
+@jwt_required()
+@role_required("admin", "super_admin")
+def get_all():
+    users = User.query.filter(User.role.in_(("admin", "super_admin"))).order_by(User.created_at).all()
+    return jsonify({'users': [{**u.to_dict(), 'created_at': u.created_at.isoformat() if u.created_at else None} for u in users]}), 200
+
 @auth.route('/delete/<string:id>', methods=['DELETE'])
 @jwt_required()
 @role_required("admin", "super_admin")
@@ -86,6 +95,15 @@ def delete(id):
 
     if not user:
         return jsonify({'message': 'User does not exist'}), 404
+
+    # The admin page already refuses these; the server must too.
+    me = User.query.get(get_jwt_identity())
+    if user.id == get_jwt_identity():
+        return jsonify({'message': "You can't delete your own account"}), 403
+    if (user.email or "").lower() == SUPER_ADMIN_EMAIL:
+        return jsonify({'message': 'The super admin account cannot be removed'}), 403
+    if not me or (me.email or "").lower() != SUPER_ADMIN_EMAIL:
+        return jsonify({'message': 'Only the super admin can remove other administrators'}), 403
 
     db.session.delete(user)
     db.session.commit()

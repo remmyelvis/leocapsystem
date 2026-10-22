@@ -172,6 +172,7 @@ def get_hr_emails_per_application(application_id):
 
 @email_bp.route('/emails/delete-email/<string:email_id>', methods=['DELETE'])
 @jwt_required()
+@role_required("admin", "super_admin")
 def delete_email(email_id):
     if not email_id:
         return {"error": "Email id required"}, 400
