@@ -16,7 +16,7 @@ import random
 
 from dotenv import load_dotenv
 
-SUPER_ADMIN_EMAIL = "admin@leocapinvest.com"  # same account the admin pages treat as the super admin
+SUPER_ADMIN_EMAIL = "admin@leocapinvest.co.ke"  # same account the admin pages treat as the super admin
 load_dotenv()
 
 auth = Blueprint('auth',__name__, url_prefix='/api/auth/users')

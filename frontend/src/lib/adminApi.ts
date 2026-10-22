@@ -92,7 +92,7 @@ export interface SingleApplicationResponse {
 // Super Admin Configuration
 // ---------------------------------------------------------------------------
 
-export const SUPER_ADMIN_EMAIL = "admin@leocapinvest.com";
+export const SUPER_ADMIN_EMAIL = "admin@leocapinvest.co.ke";
 
 export function isSuperAdmin(email: string | undefined | null): boolean {
   return email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();

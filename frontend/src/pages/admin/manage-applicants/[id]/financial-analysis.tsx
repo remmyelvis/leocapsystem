@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Download, Upload, Search, BookOpen, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { apiCall } from "@/lib/apiClient";
+import { apiCall, downloadFile } from "@/lib/apiClient";
 
 export default function FinancialAnalysisPage() {
   const params = useParams();
@@ -29,19 +29,9 @@ export default function FinancialAnalysisPage() {
   };
 
   const fetchAnalysis = async () => {
-    try {
-      const token = localStorage.getItem("leocap_token") || "";
-      const url = loanAsk ? `/api/statements/analysis/${params.id}?loan_ask=${loanAsk}` : `/api/statements/analysis/${params.id}`;
-      const res = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setAnalysis(data);
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    const url = loanAsk ? `/api/statements/analysis/${params.id}?loan_ask=${loanAsk}` : `/api/statements/analysis/${params.id}`;
+    const res = await apiCall<any>(url);
+    if (res.data) setAnalysis(res.data);
   };
 
   useEffect(() => {
@@ -59,26 +49,13 @@ export default function FinancialAnalysisPage() {
     formData.append("source", source);
     formData.append("applicant_id", params.id || "");
 
-    try {
-      const token = localStorage.getItem("leocap_token") || "";
-      const res = await fetch("/api/statements/upload", {
-        method: "POST",
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
-      
-      const data = await res.json();
-      if (res.ok) {
-        toast.success("Document uploaded securely!");
-        setUploadId(data.upload_id);
-        fetchHistory();
-      } else {
-        toast.error(data.error || "Failed to upload");
-      }
-    } catch (e) {
-      toast.error("Upload failed");
+    const res = await apiCall<{ upload_id: number }>("/api/statements/upload", { method: "POST", isFormData: true, formData });
+    if (res.error || !res.data) {
+      toast.error(res.error || "Failed to upload");
+    } else {
+      toast.success("Document uploaded securely!");
+      setUploadId(res.data.upload_id);
+      fetchHistory();
     }
     setIsUploading(false);
   };
@@ -105,55 +82,27 @@ export default function FinancialAnalysisPage() {
     setChatQuery("");
     setIsChatting(true);
     
-    try {
-      const token = localStorage.getItem("leocap_token") || "";
-      const res = await fetch(`/api/statements/chat/${params.id}`, {
-        method: "POST",
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ message: userMsg })
-      });
-      
-      const data = await res.json();
-      if (res.ok) {
-        setChatHistory(prev => [...prev, {role: 'ai', text: data.answer}]);
-      } else {
-        toast.error("Failed to get answer");
-      }
-    } catch (e) {
-      toast.error("Chat failed");
-    } finally {
-      setIsChatting(false);
+    const res = await apiCall<{ answer: string }>(`/api/statements/chat/${params.id}`, { method: "POST", body: { message: userMsg } });
+    if (res.data) {
+      setChatHistory(prev => [...prev, {role: 'ai', text: res.data!.answer}]);
+    } else {
+      toast.error(res.error || "Failed to get answer");
     }
+    setIsChatting(false);
   };
 
   const handleAnalyze = async () => {
     if (!uploadId) return toast.error("Please upload a document first");
     setIsAnalyzing(true);
 
-    try {
-      const token = localStorage.getItem("leocap_token") || "";
-      const res = await fetch(`/api/statements/analyze/${uploadId}`, {
-        method: "POST",
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      const data = await res.json();
-      if (res.ok) {
-        toast.success("Analysis complete!");
-        fetchAnalysis();
-      } else {
-        toast.error(data.error || "Failed to analyze");
-      }
-    } catch (e) {
-      toast.error("Analysis failed");
-    } finally {
-      setIsAnalyzing(false);
+    const res = await apiCall(`/api/statements/analyze/${uploadId}`, { method: "POST" });
+    if (res.error) {
+      toast.error(res.error || "Failed to analyze");
+    } else {
+      toast.success("Analysis complete!");
+      fetchAnalysis();
     }
+    setIsAnalyzing(false);
   };
 
   return (
@@ -170,22 +119,9 @@ export default function FinancialAnalysisPage() {
         </div>
         {analysis && (
           <Button 
-            onClick={() => {
-              const token = localStorage.getItem("leocap_token") || "";
-              fetch(`/api/statements/export_report/${params.id}?loan_ask=${loanAsk || 0}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-              })
-              .then(res => res.blob())
-              .then(blob => {
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `Credit_Risk_Profile_${params.id}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-              })
-              .catch(err => toast.error("Failed to export PDF"));
+            onClick={async () => {
+              const { error } = await downloadFile(`/api/statements/export_report/${params.id}?loan_ask=${loanAsk || 0}`, `Credit_Risk_Profile_${params.id}.pdf`);
+              if (error) toast.error(error || "Failed to export PDF");
             }}
             className="bg-indigo-600 hover:bg-indigo-700 text-white"
           >
