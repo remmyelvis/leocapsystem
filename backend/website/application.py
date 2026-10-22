@@ -1,4 +1,6 @@
+import json
 import logging
+import re
 import os
 from decimal import Decimal, InvalidOperation
 from io import BytesIO
@@ -9,7 +11,7 @@ from flask import Blueprint, request, jsonify, current_app, send_file
 from werkzeug.utils import secure_filename
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from uuid import uuid4
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.exc import SQLAlchemyError
 
 from website.export_service import export_applicant, export_application, export_statement
@@ -116,6 +118,23 @@ def personal_due_date():
     return datetime.now() + relativedelta(months=1)
 
 MAX_LOAN_AMOUNT = Decimal("1000000000")  # the amount columns hold at most 10 digits before the decimal point
+
+
+def _actor():
+    """(email, role, company) of the signed-in user for audit rows: their real email (not the id in the token) and the
+    company they belong to (HR, finance and applicants have one; admins are Leocap Invest)."""
+    uid = get_jwt_identity()
+    user = User.query.get(uid) or Applicant.query.get(uid)
+    company = getattr(user, "applicant_type", None) if isinstance(user, Applicant) else None
+    return (user.email if user else "unknown"), get_jwt().get("role"), company or "Leocap Invest"
+
+
+def _same_value(old, new):
+    """True when two stored/received values mean the same thing (20000.00 and "20000" do)."""
+    try:
+        return Decimal(str(old)) == Decimal(str(new))
+    except (InvalidOperation, ValueError):
+        return str(old if old is not None else "") == str(new if new is not None else "")
 
 
 def _starting_rate(applicant):
@@ -620,31 +639,8 @@ def mark_as_partially_paid(application_id):
         changed_by_email=changed_by_email,
         changed_by_role=changed_by_role,
         changed_by_company="Leocap Invest",
-        notes="Partial repayment recorded.",
+        notes=f"Partial repayment of KES {payment_amount:,.2f} recorded; balance now KES {new_balance:,.2f}.",
         commit=False
-    )
-
-    # ---------------------------
-    # AUDIT: financial impact snapshot
-    # ---------------------------
-    audit = ApplicationAudit(
-        application_id=app.id,
-
-        application_old_loan_amount=float(app.amount_applied),
-        application_new_loan_amount=float(app.amount_applied),
-
-        application_old_repayment_amount=old_repayment_amount,
-        application_new_repayment_amount=float(app.repayment_amount),
-
-        field_name="partial_payment_adjustment",
-
-        old_status=old_repayment_status,
-        new_status=app.repayment_status,
-
-        changed_by_email=changed_by_email,
-        changed_by_role=changed_by_role,
-
-        notes="Partial payment processed and repayment balance recalculated."
     )
 
     db.session.commit()
@@ -809,49 +805,82 @@ def escalate(application_id):
     )
 
 
+_UUID_TEXT = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
+
+
+def _audit_with_borrower(row):
+    """An audit row plus who the loan belongs to, so the screens can say more than a loan id. Rows written before the
+    actor's email was recorded properly hold the user's id instead: it is looked up so the screens show an email."""
+    audit, borrower_name, company, loan_type = row
+    item = {**audit.to_dict(), "applicant_name": borrower_name, "company": company, "loan_type": loan_type}
+    who = audit.changed_by_email or ""
+    if _UUID_TEXT.match(who):
+        person = User.query.get(who) or Applicant.query.get(who)
+        if person:
+            item["changed_by_email"] = person.email
+    return item
+
+
+def _audit_query():
+    return (
+        db.session.query(ApplicationAudit, Applicant.name, Application.company, Application.loan_type)
+        .join(Application, Application.id == ApplicationAudit.application_id)
+        .outerjoin(Applicant, Applicant.id == Application.applicant_id)
+    )
+
+
 @application.route('/applications/audit-trails', methods=['GET'])
 @jwt_required()
 @role_required("admin")
 def get_audit_trails():
-    admin_id = get_jwt_identity()
-    admin = User.query.filter_by(id=admin_id).first()
-
+    """Loan changes (who changed what, when). Filters: application_id, period (today/7d/30d), field (what changed),
+    user (part of the changer's email), q (free text over email, borrower, company, notes, field, loan id),
+    order (asc/desc by date, default newest first)."""
+    admin = User.query.filter_by(id=get_jwt_identity()).first()
     if not admin:
         return jsonify({"error": "User not found"}), 404
 
-    # ---------------------------
-    # Pagination params
-    # ---------------------------
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 20, type=int)
+    page = max(request.args.get('page', 1, type=int), 1)
+    per_page = min(max(request.args.get('per_page', 20, type=int), 1), 100)
 
-    application_id = request.args.get('application_id', None)
+    query = _audit_query()
 
-    # ---------------------------
-    # Base query
-    # ---------------------------
-    query = ApplicationAudit.query
-
+    application_id = request.args.get('application_id')
     if application_id:
-        query = query.filter_by(application_id=application_id)
+        query = query.filter(ApplicationAudit.application_id == application_id)
 
     period_days = {"today": 1, "7d": 7, "30d": 30}.get(request.args.get("period"))
     if period_days:
         query = query.filter(ApplicationAudit.changed_at >= datetime.utcnow() - timedelta(days=period_days))
 
-    # Order newest first
-    query = query.order_by(ApplicationAudit.changed_at.desc())
+    field = (request.args.get("field") or "").strip()
+    if field:
+        query = query.filter(ApplicationAudit.field_name == field)
 
-    # ---------------------------
-    # Pagination
-    # ---------------------------
+    user = (request.args.get("user") or "").strip()
+    if user:
+        query = query.filter(ApplicationAudit.changed_by_email.ilike(f"%{user}%"))
+
+    search = (request.args.get("q") or "").strip()
+    if search:
+        like = f"%{search}%"
+        query = query.filter(or_(
+            ApplicationAudit.changed_by_email.ilike(like), ApplicationAudit.notes.ilike(like),
+            ApplicationAudit.field_name.ilike(like), ApplicationAudit.application_id.ilike(like),
+            ApplicationAudit.old_status.ilike(like), ApplicationAudit.new_status.ilike(like),
+            Applicant.name.ilike(like), Application.company.ilike(like),
+        ))
+
+    newest_first = request.args.get("order", "desc") != "asc"
+    query = query.order_by(ApplicationAudit.changed_at.desc() if newest_first else ApplicationAudit.changed_at.asc())
+
     paginated = query.paginate(page=page, per_page=per_page, error_out=False)
-
-    audits = [audit.to_dict() for audit in paginated.items]
+    fields = [f for (f,) in db.session.query(ApplicationAudit.field_name).distinct().order_by(ApplicationAudit.field_name).all()]
 
     return jsonify({
         "message": "Audit trails retrieved successfully",
-        "data": audits,
+        "data": [_audit_with_borrower(row) for row in paginated.items],
+        "fields": fields,
         "pagination": {
             "page": paginated.page,
             "per_page": paginated.per_page,
@@ -867,20 +896,17 @@ def get_audit_trails():
 @jwt_required()
 @role_required("admin")
 def get_audit_trail_by_id(audit_id):
-    admin_id = get_jwt_identity()
-    admin = User.query.filter_by(id=admin_id).first()
-
+    admin = User.query.filter_by(id=get_jwt_identity()).first()
     if not admin:
         return jsonify({"error": "User not found"}), 404
 
-    audit = ApplicationAudit.query.filter_by(id=audit_id).first()
-
-    if not audit:
+    row = _audit_query().filter(ApplicationAudit.id == audit_id).first()
+    if not row:
         return jsonify({"error": "Audit trail not found"}), 404
 
     return jsonify({
         "message": "Audit trail retrieved successfully",
-        "data": audit.to_dict()
+        "data": _audit_with_borrower(row)
     }), 200
 
 @application.route('/applicant/statement/<string:applicant_id>', methods=['GET'])
@@ -1456,11 +1482,21 @@ def amend_application(application_id):
     if not app:
         return jsonify({"error": "Not found"}), 404
     data = request.get_json()
-    
+    actor_email, actor_role, actor_company = _actor()
+
+    # What is about to change, for the audit trail (the two statuses are audited by their own helpers below).
+    old_loan, old_repay = float(app.amount_applied or 0), float(app.repayment_amount or 0)
+    changes = [
+        (k, getattr(app, k), v) for k, v in data.items()
+        if hasattr(app, k) and k not in ("id", "loan_status", "repayment_status") and not _same_value(getattr(app, k), v)
+    ]
+    if data.get("total_repayment_amount") is not None and not _same_value(app.repayment_amount, data["total_repayment_amount"]):
+        changes.append(("repayment_amount", app.repayment_amount, data["total_repayment_amount"]))
+
     if "loan_status" in data:
-        update_loan_status(app, data["loan_status"], get_jwt_identity(), get_jwt().get("role"), "Leocap", commit=False)
+        update_loan_status(app, data["loan_status"], actor_email, actor_role, actor_company, commit=False)
     if "repayment_status" in data:
-        update_repayment_status(app, data["repayment_status"], get_jwt_identity(), get_jwt().get("role"), "Leocap", commit=False)
+        update_repayment_status(app, data["repayment_status"], actor_email, actor_role, actor_company, commit=False)
         
     # The admin terms form sends the new repayment as "total_repayment_amount", which is not a column.
     # Save it as repayment_amount and move outstanding_balance by the same difference, so payments already made are kept.
@@ -1474,6 +1510,22 @@ def amend_application(application_id):
     for k, v in data.items():
         if hasattr(app, k):
             setattr(app, k, v)
+
+    for field, old, new in changes:
+        db.session.add(ApplicationAudit(
+            application_id=app.id,
+            application_old_loan_amount=old_loan,
+            application_new_loan_amount=float(app.amount_applied or 0),
+            application_old_repayment_amount=old_repay,
+            application_new_repayment_amount=float(app.repayment_amount or 0),
+            field_name=field,
+            old_status=str(old)[:255] if old is not None else None,
+            new_status=str(new)[:255],
+            changed_by_email=actor_email,
+            changed_by_role=actor_role,
+            changed_by_company=actor_company,
+            notes=f"{field.replace('_', ' ').capitalize()} changed from {old if old is not None else 'empty'} to {new}"[:1000]
+        ))
 
     # A rate or amount change must also show in the ledger, not only on the application.
     if any(k in data for k in ("interest_rate", "amount_applied", "total_repayment_amount")):
@@ -1578,7 +1630,7 @@ def approve_application(application_id):
     app = Application.query.filter_by(id=application_id).first()
     if not app:
         return jsonify({"error": "Not found"}), 404
-    update_loan_status(app, "approved", get_jwt_identity(), get_jwt().get("role"), "Leocap", commit=True)
+    update_loan_status(app, "approved", *_actor(), commit=True)
     return jsonify({"message": "Approved", "application": app.to_dict()}), 200
 
 @application.route('/applications/reject/<string:application_id>', methods=['PATCH'])
@@ -1590,7 +1642,7 @@ def reject_application(application_id):
         return jsonify({"error": "Not found"}), 404
     data = request.get_json(silent=True) or {}
     msg = data.get("message", "Rejected")
-    update_loan_status(app, "declined", get_jwt_identity(), get_jwt().get("role"), "Leocap", notes=msg, commit=True)
+    update_loan_status(app, "declined", *_actor(), notes=msg, commit=True)
     return jsonify({"message": "Rejected", "application": app.to_dict()}), 200
 
 @application.route('/applications/disbursed/<string:application_id>', methods=['PATCH'])
@@ -1600,7 +1652,7 @@ def disburse_application(application_id):
     app = Application.query.filter_by(id=application_id).first()
     if not app:
         return jsonify({"error": "Not found"}), 404
-    update_loan_status(app, "disbursed", get_jwt_identity(), get_jwt().get("role"), "Leocap", commit=True)
+    update_loan_status(app, "disbursed", *_actor(), commit=True)
     return jsonify({"message": "Disbursed", "application": app.to_dict()}), 200
 
 @application.route('/applications/delete/<string:application_id>', methods=['DELETE'])
@@ -1610,6 +1662,22 @@ def delete_application(application_id):
     app = Application.query.filter_by(id=application_id).first()
     if not app:
         return jsonify({"error": "Not found"}), 404
+    # A loan's own audit rows are deleted with it, so what it was and its history are kept in the system log first.
+    from website.audit_logs import _record_audit_log
+    from website.models import AuditAction
+    email, role, _ = _actor()
+    borrower = Applicant.query.get(app.applicant_id)
+    snapshot = json.loads(json.dumps({
+        "application": app.to_dict(),
+        "borrower": {"name": borrower.name, "email": borrower.email} if borrower else None,
+        "history": [a.to_dict() for a in ApplicationAudit.query.filter_by(application_id=app.id).order_by(ApplicationAudit.changed_at).limit(200)],
+    }, default=str))
+    _record_audit_log(
+        action=AuditAction.DELETE,
+        description=f"Deleted loan application {app.id[:8]} ({borrower.name if borrower else 'unknown borrower'}, KES {float(app.amount_applied):,.2f}, {app.loan_status})",
+        entity_type="Application", entity_id=app.id, actor_id=get_jwt_identity(), actor_email=email, actor_role=role,
+        old_values=snapshot,
+    )
     db.session.delete(app)
     db.session.commit()
     return jsonify({"message": "Deleted"}), 200
@@ -1624,7 +1692,7 @@ def confirm_rate(application_id):
     if not app:
         return jsonify({"error": "Not found"}), 404
         
-    update_loan_status(app, "confirmed", get_jwt_identity(), get_jwt().get("role"), "Applicant", commit=True)
+    update_loan_status(app, "confirmed", *_actor(), commit=True)
     return jsonify({"message": "Rate confirmed", "application": app.to_dict()}), 200
 
 @application.route('/applications/rate-declined/<string:application_id>', methods=['PATCH'])
@@ -1635,7 +1703,7 @@ def decline_rate(application_id):
     if not app:
         return jsonify({"error": "Not found"}), 404
         
-    update_loan_status(app, "declined", get_jwt_identity(), get_jwt().get("role"), "Applicant", commit=True)
+    update_loan_status(app, "declined", *_actor(), commit=True)
     return jsonify({"message": "Rate declined", "application": app.to_dict()}), 200
 
 
@@ -1643,9 +1711,7 @@ def decline_rate(application_id):
 @jwt_required()
 @role_required("admin")
 def mark_as_default(application_id):
-    from flask_jwt_extended import get_jwt_identity, get_jwt
-    email = get_jwt_identity()
-    role = get_jwt().get("role")
+    email, role, company = _actor()
     
     app = db.session.query(Application).with_for_update().filter_by(id=application_id).first()
     if not app:
@@ -1660,7 +1726,7 @@ def mark_as_default(application_id):
     old_status = app.repayment_status
     app.repayment_status = 'defaulted'
     
-    update_loan_status(app, "defaulted", email, role, email, commit=False)
+    update_loan_status(app, "defaulted", email, role, company, notes="Marked as defaulted", commit=False)
     db.session.commit()
     
     return jsonify({'message': 'Application marked as defaulted'}), 200

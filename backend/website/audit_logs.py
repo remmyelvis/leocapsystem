@@ -1,5 +1,6 @@
-from datetime import datetime, time, timezone
-from flask import Blueprint, request, jsonify
+from datetime import datetime, time, timedelta, timezone
+from flask import Blueprint, request, jsonify, g, has_request_context
+from sqlalchemy import or_
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 
 from website import db
@@ -7,6 +8,8 @@ from website.models import AuditLog, AuditAction, User, Applicant
 from website.role_decorator import role_required
 
 audit_logs = Blueprint('audit_logs', __name__, url_prefix='/api/audit-logs')
+
+RETENTION_DAYS = 30  # logs newer than this cannot be deleted
 
 
 def _get_actor_info():
@@ -76,6 +79,8 @@ def _record_audit_log(
         new_values=new_values
     )
     db.session.add(log_entry)
+    if has_request_context():
+        g.audit_recorded = True  # the audit hook then leaves this request alone: this entry is the detailed one
     if commit:
         db.session.commit()
     return log_entry
@@ -189,6 +194,24 @@ def get_all_audit_logs():
         query = query.filter(AuditLog.actor_role == actor_role_param.strip().lower())
         applied_filters["actor_role"] = actor_role_param.strip().lower()
 
+    # Filter: who / what (exact entity id, part of the actor's email) and free-text search over the readable columns
+    actor_email_param = (request.args.get("actor_email") or "").strip()
+    if actor_email_param:
+        query = query.filter(AuditLog.actor_email.ilike(f"%{actor_email_param}%"))
+        applied_filters["actor_email"] = actor_email_param
+    entity_id_param = (request.args.get("entity_id") or "").strip()
+    if entity_id_param:
+        query = query.filter(AuditLog.entity_id == entity_id_param)
+        applied_filters["entity_id"] = entity_id_param
+    search = (request.args.get("q") or "").strip()
+    if search:
+        like = f"%{search}%"
+        query = query.filter(or_(
+            AuditLog.description.ilike(like), AuditLog.actor_email.ilike(like), AuditLog.endpoint.ilike(like),
+            AuditLog.entity_type.ilike(like), AuditLog.entity_id.ilike(like), AuditLog.error_message.ilike(like),
+        ))
+        applied_filters["q"] = search
+
     # Order by newest first
     query = query.order_by(AuditLog.created_at.desc())
 
@@ -201,23 +224,6 @@ def get_all_audit_logs():
         page=page,
         per_page=page_size,
         error_out=False
-    )
-
-    actor_id, actor_email, actor_role = _get_actor_info()
-    _record_audit_log(
-        action=AuditAction.VIEW,
-        description="Viewed audit logs list with filters",
-        entity_type="AuditLog",
-        actor_id=actor_id,
-        actor_email=actor_email,
-        actor_role=actor_role,
-        new_values={
-            "filters": applied_filters,
-            "page": page,
-            "page_size": page_size,
-            "total_records": pagination.total
-        },
-        commit=True
     )
 
     return jsonify({
@@ -245,18 +251,6 @@ def get_audit_log(log_id):
     log = AuditLog.query.filter_by(id=log_id).first()
     if not log:
         return jsonify({"error": "Audit log not found"}), 404
-
-    actor_id, actor_email, actor_role = _get_actor_info()
-    _record_audit_log(
-        action=AuditAction.VIEW,
-        description=f"Viewed audit log {log.id}",
-        entity_type="AuditLog",
-        entity_id=log.id,
-        actor_id=actor_id,
-        actor_email=actor_email,
-        actor_role=actor_role,
-        commit=True
-    )
 
     return jsonify({
         "message": "Audit log retrieved successfully",
@@ -294,6 +288,14 @@ def delete_audit_logs_by_date():
     if start_dt > end_dt:
         return jsonify({
             "error": "'start_date' cannot be after 'end_date'."
+        }), 400
+
+    # The log is only worth anything if it cannot be wiped right after the event: keep the recent past.
+    newest_deletable = datetime.utcnow() - timedelta(days=RETENTION_DAYS)
+    if end_dt > newest_deletable:
+        return jsonify({
+            "error": f"Audit logs from the last {RETENTION_DAYS} days are kept. Choose an end date on or before "
+                     f"{newest_deletable.strftime('%Y-%m-%d')}."
         }), 400
 
     # Delete records within range

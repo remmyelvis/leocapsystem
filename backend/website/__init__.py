@@ -69,6 +69,9 @@ def create_app():
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(audit_logs)
 
+    from website.audit_hook import register_audit_hook
+    register_audit_hook(app)
+
     # Ensure default companies exist within app context
     with app.app_context():
        try:

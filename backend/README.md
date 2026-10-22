@@ -1096,6 +1096,18 @@ Authenticated user
     "body":"This is a sample confirmation message"
 }
 ```
+## Audit trail
+
+Two records, both admin-only, shown on Admin -> Audit Trails.
+
+**System audit logs** (`audit_logs` table, `/api/audit-logs`). `website/audit_hook.py` writes a row after every request that changes data (POST, PUT, PATCH, DELETE) by a signed-in user (plus sign-ups, password resets and the daily cron job), after every sign-in (failed ones too, with the email that was tried, never the password) and after downloads of sensitive records (statements, dossiers, reports, exports). A row holds who (email, role), what (a plain description such as "Approved a loan application"), the endpoint, success or failure with the reason, the entity type and id, and in `new_values` the HTTP status, the IP and the *names* of the fields sent (values only for harmless ones such as `loan_limit`, `month`; never passwords, tokens or notes). Refused requests are logged as failures. Reads, the audit log's own pages, the public calculator and anonymous noise are not logged. Deleting a loan first writes a snapshot of it and its whole change history to the log (its own audit rows are deleted with it).
+
+- `GET /api/audit-logs/get-all` filters: `q` (free text over description, email, endpoint, ids), `actor_email`, `entity_id`, `action` (create, update, delete, login, export, view, logout, other), `status`, `http_method`, `actor_role`, `start_date`, `end_date`, `page`, `page_size`.
+- `GET /api/audit-logs/get-one/<id>`.
+- `DELETE /api/audit-logs/delete-by-date?start_date=&end_date=` deletes old logs; logs from the last 30 days (`RETENTION_DAYS` in `audit_logs.py`) are kept (400 if the range reaches into them). The deletion itself is logged.
+
+**Loan changes** (`application_audits` table, `GET /api/applications/audit-trails`). One row per change to a loan: status changes, payments (the note says how much), amount edits by HR/finance, and every field an admin changes in the terms form (old value -> new value). Each row has the changer's real email, role and company. Filters: `q` (borrower, company, email, notes, field, loan id), `field`, `user`, `period` (today, 7d, 30d), `application_id`, `order` (asc/desc by date), `page`, `per_page` (max 100). Each row also carries `applicant_name`, `company` and `loan_type`; the answer lists the `fields` that exist. `GET /api/applications/audit-trails/<id>` returns one row.
+
 ## Reports
 
 Base url
