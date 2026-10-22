@@ -67,47 +67,17 @@ def team_recipients(applicant, already):
     return list(found.values())
 
 
-def _mask(address):
-    name, _, domain = address.partition("@")
-    return f"{name[:2]}***@{domain}"
-
-
-def _record_email(kind, address, entity_id, ok, error, subject, mask_address, entity_type="Application"):
-    """One audit log row per email the app tried to send, so a missing email can be traced to what happened to it.
-    A success row carries the mail server's own answer and message id, the proof that it took the message."""
-    shown = _mask(address) if mask_address else address
-    db.session.add(AuditLog(
-        action=AuditAction.CREATE,
-        description=f"Emailed {kind} to {shown}" + ("" if ok else " (failed)"),
-        status="success" if ok else "failure",
-        error_message=None if ok else str(error).replace(address, shown)[:300],  # the mail server's answer may repeat the address
-        actor_id="system", actor_role="system",
-        entity_type=entity_type, entity_id=entity_id,
-        new_values={"to": shown, "subject": subject, **({"mail_server": str(error)[:200]} if ok and error else {})},  # on success the second value is the mail server's answer (with its message id)
-    ))
-    db.session.commit()
-
-
 def _deliver(kind, messages, mask_address=False):
     """Send (address, subject, body, application_id[, kind]) messages one after another once the answer has been sent
-    (the mail host limits how fast it takes mail) and write an audit log row for each. Nothing here can delay or fail
-    the answer to the request that asked for it; a problem is only logged."""
-    app = current_app._get_current_object()
-
+    (the mail host limits how fast it takes mail), each with its audit row. Nothing here can delay or fail the answer to
+    the request that asked for it; a problem is only logged."""
     def _run():
         for address, subject, body, application_id, *own_kind in messages:
             what = own_kind[0] if own_kind else kind
-            try:
-                ok, error = system_email_utils.send_email_smtp(address, subject, body, False)
-            except Exception as exc:  # the mail layer should not raise, but a bug there must not stop the others
-                ok, error = False, f"{type(exc).__name__}: {exc}"
+            ok, error = system_email_utils.send_audited(
+                address, subject, body, purpose=what, entity_type="Application", entity_id=application_id, mask=mask_address)
             if not ok:
                 logging.error("%s email to %s failed: %s", what, address, error)
-            try:
-                with app.app_context():
-                    _record_email(what, address, application_id, ok, error, subject, mask_address)
-            except Exception:
-                logging.exception("Could not write the audit log for the %s email to %s", what, address)
 
     run_after_response(_run)
 

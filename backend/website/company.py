@@ -314,7 +314,7 @@ def download_company_mou(company_id):
 
 import tempfile
 from werkzeug.utils import secure_filename
-from website.system_email_utils import send_email_smtp
+from website.system_email_utils import send_audited
 from flask import current_app
 
 @company_bp.route('/companies/onboard/<string:company_id>', methods=['POST'])
@@ -357,7 +357,7 @@ def onboard_company(company_id):
         print("Error generating documents:", str(e))
 
     try:
-        ok, error = send_email_smtp(recipient=to_email, subject=subject, body=message, isHrEmail=False, attachments=attachment_paths)
+        ok, error = send_audited(to_email, subject, message, purpose="a company onboarding pack", entity_type="Company", entity_id=company.id, mask=False, isHrEmail=False, attachments=attachment_paths)
     except Exception as e:
         ok, error = False, str(e)
     finally:

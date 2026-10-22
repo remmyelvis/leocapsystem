@@ -10,6 +10,55 @@ from dotenv import load_dotenv
 from flask import after_this_request, has_request_context
 
 
+_APP = None
+
+
+def init_email_audit(app):
+    """Remember the app so a mail audit row can be written from anywhere (a task that runs after the response has no app context)."""
+    global _APP
+    _APP = app
+
+
+def mask_address(address):
+    name, _, domain = (address or "").partition("@")
+    return f"{name[:2]}***@{domain}"
+
+
+def record_email(purpose, recipient, ok, info, subject, entity_type=None, entity_id=None, mask=True):
+    """Write one audit log row for an email the app tried to send: who it went to, what for, and what the mail
+    server answered. A success row carries the server's own reply and message id (the id cPanel's Track Delivery lists),
+    the proof that it took the message; a failure row carries the reason. Always in its own app context, so it can
+    never commit half-finished work of the request that sent the mail. A problem here is only logged."""
+    try:
+        from website.extensions import db
+        from website.models import AuditAction, AuditLog
+        shown = mask_address(recipient) if mask else recipient
+        with _APP.app_context():
+            db.session.add(AuditLog(
+                action=AuditAction.CREATE,
+                description=f"Emailed {purpose} to {shown}" + ("" if ok else " (failed)"),
+                status="success" if ok else "failure",
+                error_message=None if ok else str(info).replace(recipient, shown)[:300],  # the server's answer may repeat the address
+                actor_id="system", actor_role="system",
+                entity_type=entity_type or "Email", entity_id=entity_id,
+                new_values={"to": shown, "subject": subject, **({"mail_server": str(info)[:200]} if ok and info else {})},
+            ))
+            db.session.commit()
+    except Exception:
+        logging.exception("Could not write the audit log for the %s email to %s", purpose, recipient)
+
+
+def send_audited(recipient, subject, body, *, purpose, entity_type=None, entity_id=None, mask=True, **options):
+    """Send an email AND leave its audit row. Every email the app sends goes through here (options as for send_email_smtp).
+    Returns (ok, info) like send_email_smtp: on success info is the mail server's answer, otherwise the reason."""
+    try:
+        ok, info = send_email_smtp(recipient, subject, body, **options)
+    except Exception as exc:  # the mail layer should not raise, but a bug there must not hide the attempt
+        ok, info = False, f"{type(exc).__name__}: {exc}"
+    record_email(purpose, recipient, ok, info, subject, entity_type, entity_id, mask)
+    return ok, info
+
+
 def run_after_response(task):
     """Run task once the answer has been sent, still inside the request that asked for it, so the caller never waits on
     the mail server. A plain background thread is not dependable on the live host: it only moved while some request was
@@ -96,11 +145,12 @@ def send_email_smtp(recipient, subject, body, isHrEmail=False, attachments=None,
         return False, str(e)
 
 
-def send_email_background(recipient, subject, body, html=False):
-    """Send an email after the answer has been sent, so the caller does not wait for the mail server. A failure is logged, never raised."""
+def send_email_background(recipient, subject, body, html=False, *, purpose="an email", entity_type=None, entity_id=None, mask=True):
+    """Send an email (with its audit row) after the answer has been sent, so the caller does not wait for the mail server.
+    A failure is logged and recorded, never raised."""
     def _send():
         try:
-            ok, error = send_email_smtp(recipient, subject, body, html=html)
+            ok, error = send_audited(recipient, subject, body, purpose=purpose, entity_type=entity_type, entity_id=entity_id, mask=mask, html=html)
             if not ok:
                 logging.error("Email to %s failed: %s", recipient, error)
         except Exception:

@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required
 
 from website import db
 from website.models import Email, Application, HrEmail, User
-from website.system_email_utils import send_email_smtp
+from website.system_email_utils import send_audited
 from website.role_decorator import role_required
 
 send_email_bp = Blueprint('send_email_bp', __name__, url_prefix='/api/application')
@@ -19,10 +19,11 @@ def send_email(email_id):
 
     attachments = [doc.filepath for doc in email.confirmation_documents]
 
-    success, error = send_email_smtp(
+    success, error = send_audited(
         email.recipient,
         email.subject,
         email.confirmation_text,
+        purpose="a saved email", entity_type="Application", entity_id=email.application_id,
         attachments=attachments,
         isHrEmail=False
     )

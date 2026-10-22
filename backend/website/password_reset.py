@@ -9,7 +9,7 @@ from flask import current_app
 from itsdangerous import BadSignature, URLSafeTimedSerializer
 
 from website.models import Applicant
-from website.system_email_utils import run_after_response, send_email_smtp
+from website.system_email_utils import run_after_response, send_audited
 
 RESET_LINK_MINUTES = 60
 EMAIL_COOLDOWN_SECONDS = 60        # one reset email per address per minute
@@ -78,22 +78,13 @@ def send_reset_email(applicant):
         "If you did not ask for this, ignore this email: your password stays the same.\n\n"
         "Leocap Invest"
     )
-    recipient, applicant_id, subject = applicant.email, applicant.id, "Reset your Leocap Invest password"
-    app = current_app._get_current_object()
+    recipient, applicant_id = applicant.email, applicant.id
 
     def _send():
-        try:
-            ok, error = send_email_smtp(recipient, subject, body, False)
-        except Exception as exc:
-            ok, error = False, f"{type(exc).__name__}: {exc}"
+        # audited like every email: the address is masked in the log and the link is never recorded
+        ok, error = send_audited(recipient, "Reset your Leocap Invest password", body, purpose="a password reset link",
+                                 entity_type="Applicant", entity_id=applicant_id, mask=True)
         if not ok:
             logging.error("Password reset email to %s failed: %s", recipient, error)
-        try:
-            # One audit row, like every other notification email. The address is masked and the link never recorded.
-            from website.notifications import _record_email  # imported here: notifications imports this module
-            with app.app_context():
-                _record_email("a password reset link", recipient, applicant_id, ok, error, subject, True, entity_type="Applicant")
-        except Exception:
-            logging.exception("Could not write the audit log for the password reset email to %s", recipient)
 
     run_after_response(_send)

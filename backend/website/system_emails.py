@@ -6,7 +6,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from uuid import uuid4
 
 from website.models import Application, ConfirmationDocument, User, Email, Applicant, HrEmail
-from website.system_email_utils import send_email_smtp
+from website.system_email_utils import send_audited
 from website import db, Config
 from website.role_decorator import role_required
 
@@ -93,10 +93,11 @@ def create_email(application_id):
     # ----------------------------
     # SEND EMAIL
     # ----------------------------
-    success, error = send_email_smtp(
+    success, error = send_audited(
         new_email.recipient,
         new_email.subject,
         new_email.confirmation_text,
+        purpose="an admin message", entity_type="Application", entity_id=new_email.application_id,
         attachments=attachments,
         isHrEmail=False
     )

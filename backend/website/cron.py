@@ -5,7 +5,7 @@ from flask import Blueprint, jsonify, request
 from website.models import Application, Applicant
 from website import db
 from datetime import datetime, timedelta
-from website.system_email_utils import send_email_smtp
+from website.system_email_utils import send_audited
 
 cron_bp = Blueprint('cron', __name__, url_prefix='/api/cron')
 
@@ -86,7 +86,8 @@ def run_reminders():
             
         if subject and body:
             try:
-                ok, _ = send_email_smtp(applicant.email, subject, body, html=True)
+                ok, _ = send_audited(applicant.email, subject, body, html=True, purpose="a delinquency notice" if "DELINQUENCY" in subject else "a repayment reminder",
+                                     entity_type="Application", entity_id=app.id, mask=True)
                 if ok:
                     count_sent += 1
             except Exception:

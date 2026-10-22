@@ -215,7 +215,8 @@ def verify_document(doc_id):
         <p>Regards,<br>LeoCap Team</p>
         """
         try:
-            send_email_background(applicant.email, "Document Rejected - Action Required", html_content, html=True)
+            send_email_background(applicant.email, "Document Rejected - Action Required", html_content, html=True,
+                                  purpose="a document rejection notice", entity_type="Applicant", entity_id=applicant.id)
         except Exception as e:
             print("Email failed", e)
             

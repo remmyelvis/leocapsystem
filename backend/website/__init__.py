@@ -15,6 +15,8 @@ def create_app():
     jwt = JWTManager(app)
 
     db.init_app(app)
+    from website import system_email_utils
+    system_email_utils.init_email_audit(app)
     migrate.init_app(app, db)
 
     os.makedirs(app.config["APPLICANT_DOCUMENTS"], exist_ok=True)
