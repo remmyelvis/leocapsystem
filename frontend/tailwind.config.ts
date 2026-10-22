@@ -69,6 +69,15 @@ const config: Config = {
       fontFamily: {
         sans: ["Plus Jakarta Sans", "Inter", "sans-serif"],
       },
+      keyframes: {
+        "auth-rise": {
+          from: { opacity: "0", transform: "translateY(10px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+      },
+      animation: {
+        "auth-rise": "auth-rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both",
+      },
     },
   },
   plugins: [],
