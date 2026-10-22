@@ -1138,6 +1138,8 @@ admin, hr, finance
 | `company`      | `string` | **Optional**|
 | `page`      | `string` | **Optional** Default = 1|
 | `page_size`      | `string` | **Optional** Default = 10|
+| `sort`      | `string` | **Optional** `created_at` (default, applied date), `borrower` (applicant name, ignoring case and stray spaces), `applied`, `disbursed`, `repay` (amount to repay), `owed` (still owed on an open loan), `status` (loan status, or the repayment status once disbursed), `due` (due date). Anything else answers 400.|
+| `order`      | `string` | **Optional** `desc` (default) or `asc`. Blank values (no due date, loans that are not open have nothing owed) always come last; ties fall back to newest first, so paging never reshuffles rows. The sort applies to the whole result, not just the current page.|
 
 #### Endpoint: get_all_disbursed_ideon
 

@@ -5,9 +5,9 @@ import { LayoutList } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiCall, downloadFile } from "@/lib/apiClient";
 import {
-  BookPanel, EMPTY_FILTERS, EmptyState, ErrorState, ExportMenu, FilterBar, LoansTable, Pagination, TableSkeleton,
+  BookPanel, DEFAULT_SORT, EMPTY_FILTERS, EmptyState, ErrorState, ExportMenu, FilterBar, LoansTable, Pagination, SortSelect, TableSkeleton,
   fmtDate, titleCase, toNumber,
-  type Aging, type Filters, type LoanRow,
+  type Aging, type Filters, type LoanRow, type SortState,
 } from "./reportParts";
 
 interface PageInfo { page: number; page_size: number; total_records: number; total_pages: number }
@@ -16,6 +16,7 @@ export default function ReportsPage() {
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [sort, setSort] = useState<SortState>(DEFAULT_SORT);
 
   const [rows, setRows] = useState<LoanRow[]>([]);
   const [totals, setTotals] = useState({ applied: 0, disbursed: 0, repayment: 0 });
@@ -36,13 +37,14 @@ export default function ReportsPage() {
     setFilters((f) => ({ ...f, ...patch }));
     setPage(1);
   }, []);
+  const changeSort = useCallback((s: SortState) => { setSort(s); setPage(1); }, []);
   const clearFilters = useCallback(() => { setFilters(EMPTY_FILTERS); setPage(1); }, []);
 
   const loadLoans = useCallback(async () => {
     const id = ++latest.current; // a slower, older answer must not overwrite a newer one
     setLoading(true);
     setError(null);
-    const params = new URLSearchParams({ page: String(page), page_size: String(pageSize) });
+    const params = new URLSearchParams({ page: String(page), page_size: String(pageSize), sort: sort.key, order: sort.dir });
     if (filters.search) params.append("search", filters.search);
     if (filters.loanType !== "all") params.append("loan_type", filters.loanType);
     if (filters.company !== "all") params.append("company", filters.company);
@@ -69,7 +71,7 @@ export default function ReportsPage() {
       if (d.pagination) setPagination(d.pagination);
     }
     setLoading(false);
-  }, [filters, page, pageSize]);
+  }, [filters, page, pageSize, sort]);
 
   useEffect(() => { loadLoans(); }, [loadLoans]);
 
@@ -168,16 +170,19 @@ export default function ReportsPage() {
         />
 
         <section aria-label="Loans" className="overflow-hidden rounded-lg bg-white shadow-[0_1px_2px_rgba(15,44,89,0.06)] ring-1 ring-slate-200">
-          <div className="flex items-baseline justify-between gap-4 px-4 py-2.5">
+          <div className="flex items-center justify-between gap-4 px-4 py-2">
             <h2 className="text-[13px] font-bold text-slate-900">Loans</h2>
-            <p className="text-[11px] text-slate-500">Select a borrower to open their application.</p>
+            <div className="flex items-center gap-3">
+              <p className="hidden text-[11px] text-slate-500 lg:block">Select a borrower to open their application.</p>
+              <SortSelect sort={sort} onSort={changeSort} />
+            </div>
           </div>
           {firstLoad ? <TableSkeleton /> : error && rows.length === 0 ? (
             <ErrorState message={error} onRetry={loadLoans} />
           ) : rows.length === 0 ? (
             <EmptyState filtered={filtered} onClear={clearFilters} />
           ) : (
-            <LoansTable rows={rows} loading={loading} companyNameOf={companyNameOf} />
+            <LoansTable rows={rows} loading={loading} companyNameOf={companyNameOf} sort={sort} onSort={changeSort} />
           )}
           <Pagination
             page={pagination.page}

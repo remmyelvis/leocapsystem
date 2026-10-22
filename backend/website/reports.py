@@ -3,7 +3,7 @@ from io import BytesIO
 
 import pandas as pd
 from flask import Blueprint, request, jsonify, current_app, send_file
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, and_, case, func
 from werkzeug.utils import secure_filename
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from uuid import uuid4
@@ -62,6 +62,44 @@ def _date_range_args():
     return start, end
 
 
+# ?sort= keys of the loans table in Reports (the column the admin clicked) -> what to order by.
+_SORT_COLUMNS = {
+    "created_at": Application.created_at,
+    "applied": Application.amount_applied,
+    "disbursed": Application.disbursement_amount,
+    "repay": Application.repayment_amount,
+    "due": Application.due_date,
+}
+
+
+def _sort_clause():
+    """ORDER BY list for ?sort=<column>&order=asc|desc (default: newest application first).
+    Computed columns match what the table shows: borrower = the applicant's name (ignoring case and stray spaces), status = the loan
+    status (or the repayment status once disbursed), owed = what is still owed on an open loan (loans that are not open have
+    none and always come last). Blank values always come last; ties fall back to newest first so pages never shuffle."""
+    sort = request.args.get("sort", "created_at")
+    order = request.args.get("order", "desc")
+    if order not in ("asc", "desc"):
+        abort(make_response(jsonify({"error": "order must be asc or desc."}), 400))
+    is_open = and_(Application.loan_status == "disbursed", Application.repayment_status != "paid")
+    computed = {
+        "borrower": func.lower(func.trim(Applicant.name)),
+        "status": case((Application.loan_status == "disbursed", Application.repayment_status), else_=Application.loan_status),
+        "owed": case((is_open, case((Application.outstanding_balance > 0, Application.outstanding_balance), else_=Application.repayment_amount)), else_=None),
+    }
+    column = _SORT_COLUMNS.get(sort)
+    if column is None:
+        column = computed.get(sort)
+    if column is None:
+        abort(make_response(jsonify({"error": "Unknown sort column."}), 400))
+    direction = column.asc() if order == "asc" else column.desc()
+    clauses = [column.is_(None), direction]  # blanks last either way
+    if sort != "created_at":
+        clauses.append(Application.created_at.desc())
+    clauses.append(Application.id)
+    return sort, clauses
+
+
 @reports.route('/applications/get-all', methods=['GET'])
 @jwt_required()
 @role_required("admin","hr","finance")
@@ -97,8 +135,10 @@ def get_applications_report():
         ))
         query = query.where(or_(Application.payroll_number.ilike(like), Application.applicant_id.in_(matching_applicants)))
 
-    # Default ordering
-    query = query.order_by(Application.created_at.desc())
+    sort, order_by = _sort_clause()
+    if sort == "borrower":
+        query = query.outerjoin(Applicant, Applicant.id == Application.applicant_id)
+    query = query.order_by(*order_by)
     
     apps = db.session.execute(query).scalars().all() 
     
