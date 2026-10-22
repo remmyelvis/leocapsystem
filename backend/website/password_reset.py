@@ -78,14 +78,22 @@ def send_reset_email(applicant):
         "If you did not ask for this, ignore this email: your password stays the same.\n\n"
         "Leocap Invest"
     )
-    recipient = applicant.email
+    recipient, applicant_id, subject = applicant.email, applicant.id, "Reset your Leocap Invest password"
+    app = current_app._get_current_object()
 
     def _send():
         try:
-            ok, error = send_email_smtp(recipient, "Reset your Leocap Invest password", body, False)
-            if not ok:
-                logging.error("Password reset email to %s failed: %s", recipient, error)
+            ok, error = send_email_smtp(recipient, subject, body, False)
+        except Exception as exc:
+            ok, error = False, f"{type(exc).__name__}: {exc}"
+        if not ok:
+            logging.error("Password reset email to %s failed: %s", recipient, error)
+        try:
+            # One audit row, like every other notification email. The address is masked and the link never recorded.
+            from website.notifications import _record_email  # imported here: notifications imports this module
+            with app.app_context():
+                _record_email("a password reset link", recipient, applicant_id, ok, error, subject, True, entity_type="Applicant")
         except Exception:
-            logging.exception("Password reset email to %s failed", recipient)
+            logging.exception("Could not write the audit log for the password reset email to %s", recipient)
 
     run_after_response(_send)

@@ -76,9 +76,21 @@ def send_email_smtp(recipient, subject, body, isHrEmail=False, attachments=None,
         with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=20) as server:
             logging.debug(f"Attempting SMTP login with: {sender_address}")
             server.login(sender_address, sender_password)
-            server.send_message(msg)
+            # Keep the mail server's answer to the message itself ("250 OK id=1vXyz-0004Ab-Cd"): that id is what
+            # cPanel's Track Delivery lists, so it ties an audit row to the mail server's own record of the message.
+            reply = {}
+            data = getattr(server, "data", None)
+            if data:
+                def _data(body, _data=data):
+                    reply["last"] = _data(body)
+                    return reply["last"]
+                server.data = _data
+            refused = server.send_message(msg)
             logging.info(f"Email sent successfully from {sender_address}")
-        return True, None
+        if refused:  # some recipients were turned away
+            return False, f"Refused by the mail server: {refused}"
+        code, text = reply.get("last", (None, b""))
+        return True, (f"{code} {text.decode(errors='replace')}".strip() if code else None)  # on success the second value is the server's answer
     except Exception as e:
         logging.error(f"Failed to send email from {sender_address}: {e}", exc_info=True)
         return False, str(e)
