@@ -1,21 +1,13 @@
-
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import BrandLogo from "@/components/global/BrandLogo";
-import {
-  AlertCircle,
-  ArrowLeft,
-  CheckCircle2,
-  Loader2,
-  Mail,
-} from "lucide-react";
-import { applicantApi } from "@/lib/applicantApi";
+import { CheckCircle2, Mail } from "lucide-react";
 import { toast } from "sonner";
+import AuthLayout from "@/components/auth/AuthLayout";
+import { AuthAlert, AuthField, AuthHeading, AuthLinkButton, AuthSubmit, BackLink } from "@/components/auth/AuthField";
+import { applicantApi } from "@/lib/applicantApi";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -32,10 +24,14 @@ export default function ForgotPasswordPage() {
   const {
     register,
     handleSubmit,
+    setFocus,
     formState: { errors },
-  } = useForm<ForgotPasswordFormData>({
-    resolver: zodResolver(forgotPasswordSchema),
-  });
+  } = useForm<ForgotPasswordFormData>({ resolver: zodResolver(forgotPasswordSchema), mode: "onTouched" });
+
+  // Cursor in the box on a desktop screen (also when someone comes back from "use a different email")
+  useEffect(() => {
+    if (!submitted && window.matchMedia("(min-width: 1024px)").matches) setFocus("email");
+  }, [submitted, setFocus]);
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setIsSubmitting(true);
@@ -60,144 +56,74 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-950 to-blue-800 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Card */}
-        <div className="bg-white rounded-3xl shadow-2xl shadow-blue-900/30 overflow-hidden">
-          {/* Top accent bar */}
-          <div className="h-1.5 bg-gradient-to-r from-blue-800 to-red-600" />
+    <AuthLayout variant="forgot">
+      <BackLink to="/login/applicant">Back to sign in</BackLink>
 
-          <div className="px-8 py-8">
-            {/* Logo */}
-            <div className="text-center mb-8">
-              <div className="flex justify-center mb-1">
-                <BrandLogo size="md" />
-              </div>
-              <h1 className="text-xl font-bold text-slate-800 mt-5">
-                {submitted ? "Check your email" : "Forgot your password?"}
-              </h1>
-              <p className="text-slate-400 text-sm mt-1">
-                {submitted
-                  ? "If your email is registered, a reset link is on its way"
-                  : "Enter your email and we'll send you a link to choose a new password"}
-              </p>
-            </div>
+      {!submitted ? (
+        <>
+          <AuthHeading title="Forgot your password?" sub="Enter your email and we will send you a link to choose a new one." />
 
-            {!submitted ? (
+          <div className="mt-6">
+            {error && <AuthAlert>{error}</AuthAlert>}
+
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+              <AuthField
+                id="forgot-email"
+                label="Email address"
+                icon={Mail}
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                error={errors.email?.message}
+                {...register("email")}
+              />
+              <AuthSubmit loading={isSubmitting} loadingLabel="Sending…">
+                Send reset link
+              </AuthSubmit>
+            </form>
+
+            <p className="mt-6 rounded-xl bg-slate-50 px-4 py-3 text-[13px] leading-relaxed text-slate-500 ring-1 ring-slate-200/70">
+              If the email is registered, the link arrives within a few minutes. It works once and expires in 1 hour. Check your spam folder if you do not see it.
+            </p>
+          </div>
+        </>
+      ) : (
+        <div role="status">
+          <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 ring-8 ring-emerald-50/60 motion-safe:animate-auth-rise">
+            <CheckCircle2 className="h-7 w-7 text-emerald-600" />
+          </div>
+          <AuthHeading
+            title="Check your email"
+            sub={
               <>
-                {/* Error alert */}
-                {error && (
-                  <div className="flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 mb-6 text-sm">
-                    <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                    <span>{error}</span>
-                  </div>
-                )}
-
-                <form
-                  onSubmit={handleSubmit(onSubmit)}
-                  className="space-y-5"
-                  noValidate
-                >
-                  {/* Email */}
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Email Address
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-                      <input
-                        {...register("email")}
-                        type="email"
-                        autoComplete="email"
-                        placeholder="you@example.com"
-                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-colors placeholder:text-gray-300"
-                      />
-                    </div>
-                    {errors.email && (
-                      <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">
-                        <AlertCircle className="h-3 w-3" />
-                        {errors.email.message}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Submit */}
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full bg-blue-900 hover:bg-slate-800 text-white font-bold h-12 rounded-xl mt-2 text-sm"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Sending…
-                      </>
-                    ) : (
-                      "Send Reset Link"
-                    )}
-                  </Button>
-                </form>
-
-                {/* Info message */}
-                <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mt-6 text-sm text-brand-blue">
-                  <p>
-                    If the email exists in our system, you&apos;ll receive a reset link
-                    shortly. The link works once and expires in 1 hour. Check your spam
-                    folder if you don&apos;t see it.
-                  </p>
-                </div>
+                If <strong className="break-all font-semibold text-slate-700">{submittedEmail}</strong> is registered, we have sent it a link to choose a new password.
               </>
-            ) : (
-              <>
-                {/* Success state */}
-                <div className="flex justify-center mb-6">
-                  <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
-                    <CheckCircle2 className="h-6 w-6 text-emerald-600" />
-                  </div>
-                </div>
-
-                <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-800 mb-6">
-                  <p className="font-semibold mb-1">Check your email</p>
-                  <p>
-                    If <strong>{submittedEmail}</strong> is registered, we&apos;ve sent it a link to
-                    choose a new password. The link works once and expires in 1 hour.
-                  </p>
-                </div>
-
-                <Button
-                  asChild
-                  className="w-full bg-blue-900 hover:bg-slate-800 text-white font-bold h-12 rounded-xl text-sm"
-                >
-                  <Link to="/login">Back to Sign In</Link>
-                </Button>
-              </>
-            )}
-
-            {!submitted && (
-              <p className="text-center text-sm text-slate-500 mt-6">
-                Remember your password?{" "}
-                <Link to="/login"
-                  className="text-brand-blue font-semibold hover:underline"
-                >
-                  Sign in
-                </Link>
-              </p>
-            )}
+            }
+          />
+          <p className="mt-5 rounded-xl bg-slate-50 px-4 py-3 text-[13px] leading-relaxed text-slate-500 ring-1 ring-slate-200/70">
+            The link works once and expires in 1 hour. Nothing there? Check your spam folder.
+          </p>
+          <div className="mt-6 space-y-3">
+            <AuthLinkButton to="/login/applicant">Back to sign in</AuthLinkButton>
+            <button
+              type="button"
+              onClick={() => setSubmitted(false)}
+              className="flex min-h-[44px] w-full items-center justify-center text-[14px] font-semibold text-brand-blue hover:underline"
+            >
+              Use a different email
+            </button>
           </div>
         </div>
+      )}
 
-        {/* Back to portal selector */}
-        {!submitted && (
-          <p className="text-center text-blue-200/80 text-sm mt-6">
-            <Link to="/login"
-              className="inline-flex items-center gap-1.5 hover:text-white transition-colors"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              Back to portal selection
-            </Link>
-          </p>
-        )}
-      </div>
-    </div>
+      {!submitted && (
+        <p className="mt-6 text-center text-[14px] text-slate-500">
+          Remember it?{" "}
+          <Link to="/login/applicant" className="font-semibold text-brand-blue hover:underline">
+            Sign in
+          </Link>
+        </p>
+      )}
+    </AuthLayout>
   );
 }

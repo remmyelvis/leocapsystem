@@ -2,9 +2,11 @@ import type { CSSProperties, ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ArrowLeft, Mail, Phone, Shield, User } from "lucide-react";
 import BrandLogo from "@/components/global/BrandLogo";
-import JourneyCard from "./JourneyCard";
+import StepsCard, { type PanelStep } from "./StepsCard";
+import { statusDisplay } from "@/lib/loanStatus";
 
 export type AuthVariant = "applicant" | "admin";
+export type AuthPage = AuthVariant | "forgot" | "reset" | "register";
 
 // Light speckle on the dark navy: a flat saturated field reads as a template, a faint grain reads as a surface.
 const GRAIN =
@@ -21,7 +23,8 @@ const PANEL: CSSProperties = {
   backgroundSize: "180px 180px, auto, auto, auto",
 };
 
-const COPY: Record<AuthVariant, { eyebrow: string; lead: string; accent: string; text: string }> = {
+// What the brand panel says on each page: a headline and one card that helps with the task in hand.
+const COPY: Record<AuthPage, { eyebrow: string; lead: string; accent: string; text: string }> = {
   applicant: {
     eyebrow: "Applicant & staff portal",
     lead: "Your loan, tracked from ",
@@ -34,7 +37,89 @@ const COPY: Record<AuthVariant, { eyebrow: string; lead: string; accent: string;
     accent: "with clarity.",
     text: "Review, price and disburse loans, with every action recorded in the audit trail.",
   },
+  forgot: {
+    eyebrow: "Account recovery",
+    lead: "Locked out? ",
+    accent: "Back in a few steps.",
+    text: "We email you a link, you choose a new password, and you carry on where you left off.",
+  },
+  reset: {
+    eyebrow: "Account recovery",
+    lead: "Almost there. ",
+    accent: "Pick a new password.",
+    text: "Choose something you do not use anywhere else. The link you followed works once.",
+  },
+  register: {
+    eyebrow: "New applicant",
+    lead: "Open your account, ",
+    accent: "then apply online.",
+    text: "Create your account in a minute, add your documents, and apply when you are ready.",
+  },
 };
+
+const status = (key: string, text: string): PanelStep => {
+  const s = statusDisplay(key);
+  return { label: s.label, chipClassName: s.className, text };
+};
+
+const RESET_STEPS: PanelStep[] = [
+  { label: "Enter your email", text: "Use the address you signed up with." },
+  { label: "Open the email we send", text: "The link works once and expires in 1 hour." },
+  { label: "Choose a new password", text: "Then sign in as usual." },
+];
+
+function PanelCard({ page }: { page: AuthPage }) {
+  switch (page) {
+    case "applicant":
+      return (
+        <StepsCard
+          title="Application journey"
+          tag="Example"
+          cycle
+          foot="These are the statuses you will see on your dashboard."
+          steps={[
+            status("pending_processing", "We check your details and documents."),
+            status("rate_set", "Personal loans: you see the rate and accept or decline it."),
+            status("approved", "Approved and waiting for payout."),
+            status("disbursed", "Funds sent. Your repayment date is on your dashboard."),
+          ]}
+        />
+      );
+    case "admin":
+      return (
+        <StepsCard
+          title="Application journey"
+          tag="Example"
+          cycle
+          foot="Applicants see these same statuses on their dashboard."
+          steps={[
+            status("pending_processing", "A new application arrives with its documents."),
+            status("rate_set", "Set the rate on personal loans."),
+            status("approved", "Sign off the application."),
+            status("disbursed", "Add the transfer note, then mark it as sent."),
+          ]}
+        />
+      );
+    case "forgot":
+      return <StepsCard title="How a reset works" foot="Nothing changes on your account until you save a new password." steps={RESET_STEPS} current={0} />;
+    case "reset":
+      return <StepsCard title="How a reset works" foot="Nothing changes on your account until you save a new password." steps={RESET_STEPS} current={2} />;
+    case "register":
+      return (
+        <StepsCard
+          title="What happens next"
+          cycle
+          foot="You can sign in as soon as your account is created."
+          steps={[
+            { label: "Create your account", text: "Choose your company so you see the right loans." },
+            { label: "Complete your profile", text: "Add your ID copy and KRA PIN document. Partner-company staff also add their contract." },
+            { label: "Apply online", text: "Salary advance or personal loan, depending on your company." },
+            { label: "Track it", text: "Follow your application until the money is sent." },
+          ]}
+        />
+      );
+  }
+}
 
 // The shape of the Leocap mark, redrawn large and faint so the panel feels like the brand without a logo on navy.
 function MarkMotif({ className = "" }: { className?: string }) {
@@ -78,39 +163,10 @@ function PortalSwitch({ variant }: { variant: AuthVariant }) {
   );
 }
 
-export default function AuthLayout({ variant, children }: { variant: AuthVariant; children: ReactNode }) {
+export default function AuthLayout({ variant, children, top = false }: { variant: AuthPage; children: ReactNode; top?: boolean }) {
   const copy = COPY[variant];
   return (
     <div className="min-h-screen bg-white xl:flex">
-      {/* Desktop: brand panel */}
-      <aside className="relative hidden flex-col justify-between overflow-hidden px-16 py-12 text-white xl:sticky xl:top-0 xl:flex xl:h-screen xl:w-1/2 xl:px-16" style={PANEL}>
-        <MarkMotif className="pointer-events-none absolute -bottom-32 -right-36 w-[520px]" />
-        <div className="relative mx-auto flex h-full w-full max-w-[520px] flex-col justify-between">
-          <div className="relative">
-            <Eyebrow>{copy.eyebrow}</Eyebrow>
-            <p className="mt-8 text-[40px] font-bold leading-[1.12] tracking-[-0.015em]">
-              {copy.lead}
-              <span className="bg-gradient-to-r from-red-300 via-red-200 to-amber-200 bg-clip-text text-transparent">{copy.accent}</span>
-            </p>
-            <p className="mt-4 max-w-[420px] text-[15px] leading-relaxed text-white/70 [@media(max-height:780px)]:hidden">{copy.text}</p>
-          </div>
-
-          <div className="relative">
-            <JourneyCard variant={variant} />
-          </div>
-
-          <div className="relative flex flex-wrap items-center gap-x-6 gap-y-1.5 text-[13px] text-white/60">
-            <span>Need help signing in?</span>
-            <a href="mailto:info@leocapinvest.co.ke" className="inline-flex items-center gap-1.5 text-white/80 hover:text-white">
-              <Mail className="h-3.5 w-3.5" /> info@leocapinvest.co.ke
-            </a>
-            <a href="tel:+254722221502" className="inline-flex items-center gap-1.5 text-white/80 hover:text-white">
-              <Phone className="h-3.5 w-3.5" /> +254 722 221 502
-            </a>
-          </div>
-        </div>
-      </aside>
-
       {/* Phones and tablets: a short brand band the form sheet overlaps */}
       <header className="relative overflow-hidden px-6 pb-14 pt-8 text-white xl:hidden" style={PANEL}>
         <MarkMotif className="pointer-events-none absolute -bottom-10 -right-8 w-52" />
@@ -133,8 +189,8 @@ export default function AuthLayout({ variant, children }: { variant: AuthVariant
             </Link>
           </div>
 
-          <div className="py-8 xl:mt-[max(0px,calc(50vh-330px))] motion-safe:animate-auth-rise">
-            <PortalSwitch variant={variant} />
+          <div className={`py-8 motion-safe:animate-auth-rise ${top ? "" : "xl:mt-[max(0px,calc(50vh-330px))]"}`}>
+            {(variant === "applicant" || variant === "admin") && <PortalSwitch variant={variant} />}
             {children}
           </div>
 
@@ -145,6 +201,35 @@ export default function AuthLayout({ variant, children }: { variant: AuthVariant
           </p>
         </div>
       </main>
+      {/* Desktop: brand panel. It comes last in the page (so keyboard and screen-reader users reach the form first) and is shown first with order. */}
+      <aside className="relative order-first hidden flex-col justify-between overflow-hidden px-16 py-12 text-white xl:sticky xl:top-0 xl:flex xl:h-screen xl:w-1/2 xl:px-16" style={PANEL}>
+        <MarkMotif className="pointer-events-none absolute -bottom-32 -right-36 w-[520px]" />
+        <div className="relative mx-auto flex h-full w-full max-w-[520px] flex-col justify-between">
+          <div className="relative">
+            <Eyebrow>{copy.eyebrow}</Eyebrow>
+            <p className="mt-8 text-[40px] font-bold leading-[1.12] tracking-[-0.015em]">
+              {copy.lead}
+              <span className="bg-gradient-to-r from-red-300 via-red-200 to-amber-200 bg-clip-text text-transparent">{copy.accent}</span>
+            </p>
+            <p className="mt-4 max-w-[420px] text-[15px] leading-relaxed text-white/70 [@media(max-height:780px)]:hidden">{copy.text}</p>
+          </div>
+
+          <div className="relative">
+            <PanelCard page={variant} />
+          </div>
+
+          <div className="relative flex flex-wrap items-center gap-x-6 gap-y-1.5 text-[13px] text-white/60">
+            <span>{variant === "register" ? "Questions before you sign up?" : "Need help signing in?"}</span>
+            <a href="mailto:info@leocapinvest.co.ke" className="inline-flex items-center gap-1.5 text-white/80 hover:text-white">
+              <Mail className="h-3.5 w-3.5" /> info@leocapinvest.co.ke
+            </a>
+            <a href="tel:+254722221502" className="inline-flex items-center gap-1.5 text-white/80 hover:text-white">
+              <Phone className="h-3.5 w-3.5" /> +254 722 221 502
+            </a>
+          </div>
+        </div>
+      </aside>
+
     </div>
   );
 }

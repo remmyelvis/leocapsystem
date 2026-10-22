@@ -48,7 +48,7 @@ def register():
         return jsonify({'message': 'Please provide both email and password'}), 400
 
     if Applicant.query.filter_by(email=data['email']).first():
-        return jsonify({'message': 'Applicant already exist'}), 409
+        return jsonify({'message': 'An account with this email already exists. Try signing in, or reset your password if you have forgotten it.'}), 409
 
     name = _valid_name(data.get('name'))
     if not name:
