@@ -312,7 +312,7 @@ export default function CompaniesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
             <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-slate-900">Add New Company</h2>
+              <h2 className="text-base font-bold text-slate-900">Add New Company</h2>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="text-slate-400 hover:text-slate-600 transition-colors"
@@ -396,7 +396,7 @@ export default function CompaniesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden max-h-[90vh] flex flex-col">
             <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-slate-900">Edit Company: {editingCompany.name}</h2>
+              <h2 className="text-base font-bold text-slate-900">Edit Company: {editingCompany.name}</h2>
               <button
                 onClick={() => setIsEditModalOpen(false)}
                 className="text-slate-400 hover:text-slate-600 transition-colors"

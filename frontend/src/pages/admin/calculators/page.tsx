@@ -66,7 +66,7 @@ function PersonalLoanModule() {
   return (
     <div className="space-y-4">
       <h2 className="text-base font-bold text-slate-800">1 Month Loan Calculator (Personal)</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase">Loan Amount</label>
@@ -93,8 +93,8 @@ function PersonalLoanModule() {
           {includeAdmin && <div className="flex justify-between text-sm"><span className="text-slate-600">Admin Fees (2%)</span><span className="font-bold">{KES.format(admin)}</span></div>}
           <div className="flex justify-between text-sm"><span className="text-slate-600">Legal Fees</span><span className="font-bold">{KES.format(legalFee)}</span></div>
           <hr className="border-blue-200" />
-          <div className="flex justify-between"><span className="font-bold text-gray-700">Disbursement (Net)</span><span className="font-black text-emerald-600 text-lg">{KES.format(disbursement)}</span></div>
-          <div className="flex justify-between"><span className="font-bold text-gray-700">Repayment (Gross)</span><span className="font-black text-amber-600 text-lg">{KES.format(repayment)}</span></div>
+          <div className="flex justify-between"><span className="font-semibold text-[13px] text-gray-700">Disbursement (Net)</span><span className="font-bold text-emerald-600 text-base">{KES.format(disbursement)}</span></div>
+          <div className="flex justify-between"><span className="font-semibold text-[13px] text-gray-700">Repayment (Gross)</span><span className="font-bold text-amber-600 text-base">{KES.format(repayment)}</span></div>
         </div>
       </div>
     </div>
@@ -118,7 +118,7 @@ function SalaryAdvanceModule() {
   return (
     <div className="space-y-4">
       <h2 className="text-base font-bold text-slate-800">Salary Advance Simulator</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-4">
           {[1, 2, 3].map(i => (
             <div key={i}>
@@ -137,8 +137,8 @@ function SalaryAdvanceModule() {
           <div className="flex justify-between text-sm"><span className="text-slate-600">Legal Charge</span><span className="font-bold">{KES.format(legal)}</span></div>
           <div className="flex justify-between text-sm"><span className="text-slate-600">Interest (10%)</span><span className="font-bold">{KES.format(interest)}</span></div>
           <hr className="border-purple-200" />
-          <div className="flex justify-between"><span className="font-bold text-gray-700">Disbursement</span><span className="font-black text-emerald-600 text-lg">{KES.format(disbursement)}</span></div>
-          <div className="flex justify-between"><span className="font-bold text-gray-700">Repayment</span><span className="font-black text-amber-600 text-lg">{KES.format(repayment)}</span></div>
+          <div className="flex justify-between"><span className="font-semibold text-[13px] text-gray-700">Disbursement</span><span className="font-bold text-emerald-600 text-base">{KES.format(disbursement)}</span></div>
+          <div className="flex justify-between"><span className="font-semibold text-[13px] text-gray-700">Repayment</span><span className="font-bold text-amber-600 text-base">{KES.format(repayment)}</span></div>
         </div>
       </div>
     </div>
@@ -170,7 +170,7 @@ function GrossLoanModule() {
       </div>
       <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-100 max-w-2xl text-center">
         <p className="text-sm text-emerald-800 font-bold mb-2">Required Gross Loan Amount</p>
-        <p className="text-4xl font-black text-emerald-600">{KES.format(gross)}</p>
+        <p className="text-2xl font-bold text-emerald-600">{KES.format(gross)}</p>
       </div>
     </div>
   );
@@ -222,10 +222,10 @@ function LoanEngineModule() {
 
       {result && (
         <div className="mt-6">
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="bg-slate-50 p-4 rounded-lg border text-center"><p className="text-xs font-bold text-slate-500 uppercase">Total Repayment</p><p className="text-xl font-black text-slate-900">{KES.format(result.breakdown.total_repayment)}</p></div>
-            <div className="bg-slate-50 p-4 rounded-lg border text-center"><p className="text-xs font-bold text-slate-500 uppercase">Total Interest</p><p className="text-xl font-black text-slate-900">{KES.format(result.breakdown.total_interest)}</p></div>
-            <div className="bg-slate-50 p-4 rounded-lg border text-center"><p className="text-xs font-bold text-slate-500 uppercase">Monthly Installment</p><p className="text-xl font-black text-slate-900">{KES.format(result.breakdown.monthly_installment)}</p></div>
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="bg-slate-50 px-3 py-2 rounded-lg border text-center"><p className="text-xs font-bold text-slate-500 uppercase">Total Repayment</p><p className="text-base font-bold text-slate-900">{KES.format(result.breakdown.total_repayment)}</p></div>
+            <div className="bg-slate-50 px-3 py-2 rounded-lg border text-center"><p className="text-xs font-bold text-slate-500 uppercase">Total Interest</p><p className="text-base font-bold text-slate-900">{KES.format(result.breakdown.total_interest)}</p></div>
+            <div className="bg-slate-50 px-3 py-2 rounded-lg border text-center"><p className="text-xs font-bold text-slate-500 uppercase">Monthly Installment</p><p className="text-base font-bold text-slate-900">{KES.format(result.breakdown.monthly_installment)}</p></div>
           </div>
           
           <div className="flex gap-2 justify-end mb-4">
@@ -234,8 +234,8 @@ function LoanEngineModule() {
           </div>
 
           <div className="w-full overflow-x-auto">
-<table className="w-full text-sm text-left">
-            <thead className="bg-slate-50"><tr><th className="px-4 py-2">Month</th><th className="px-4 py-2">Due Date</th><th className="px-4 py-2 text-right">Principal</th><th className="px-4 py-2 text-right">Interest</th><th className="px-4 py-2 text-right">Payment</th><th className="px-4 py-2 text-right">Balance</th></tr></thead>
+<table className="w-full text-[13px] text-left">
+            <thead className="bg-slate-50"><tr><th className="px-3 py-1.5">Month</th><th className="px-4 py-2">Due Date</th><th className="px-4 py-2 text-right">Principal</th><th className="px-4 py-2 text-right">Interest</th><th className="px-4 py-2 text-right">Payment</th><th className="px-4 py-2 text-right">Balance</th></tr></thead>
             <tbody className="divide-y">{result.schedule.map((row: any) => (
               <tr key={row.installment_number} className="hover:bg-slate-50"><td className="px-4 py-2">{row.installment_number}</td><td className="px-4 py-2">{row.due_date}</td><td className="px-4 py-2 text-right">{KES.format(row.principal_payment)}</td><td className="px-4 py-2 text-right">{KES.format(row.interest_payment)}</td><td className="px-4 py-2 text-right">{KES.format(row.total_payment)}</td><td className="px-4 py-2 text-right">{KES.format(row.closing_balance)}</td></tr>
             ))}</tbody>
@@ -267,47 +267,47 @@ function CompareLoansModule() {
   return (
     <div className="space-y-4">
       <h2 className="text-base font-bold text-slate-800">Side-by-Side Comparison</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div className="space-y-4 bg-blue-50 p-4 rounded-lg border border-blue-100">
-          <h3 className="font-bold text-brand-blue text-lg">Scenario A</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2.5 bg-blue-50 p-4 rounded-lg border border-blue-100">
+          <h3 className="font-bold text-brand-blue text-sm">Scenario A</h3>
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Loan Amount</label>
-            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={a.amount === "" ? "" : a.amount} onChange={e => setA({...a, amount: e.target.value ? Number(e.target.value) : ""})} className="w-full border-blue-200 rounded-lg p-2 bg-white" />
+            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={a.amount === "" ? "" : a.amount} onChange={e => setA({...a, amount: e.target.value ? Number(e.target.value) : ""})} className="w-full border border-blue-200 bg-white rounded-lg p-2 bg-white" />
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Interest Rate (%)</label>
-            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={a.rate === "" ? "" : a.rate} onChange={e => setA({...a, rate: e.target.value ? Number(e.target.value) : ""})} className="w-full border-blue-200 rounded-lg p-2 bg-white" />
+            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={a.rate === "" ? "" : a.rate} onChange={e => setA({...a, rate: e.target.value ? Number(e.target.value) : ""})} className="w-full border border-blue-200 bg-white rounded-lg p-2 bg-white" />
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Duration (Months)</label>
-            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={a.duration === "" ? "" : a.duration} onChange={e => setA({...a, duration: e.target.value ? Number(e.target.value) : ""})} className="w-full border-blue-200 rounded-lg p-2 bg-white" />
+            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={a.duration === "" ? "" : a.duration} onChange={e => setA({...a, duration: e.target.value ? Number(e.target.value) : ""})} className="w-full border border-blue-200 bg-white rounded-lg p-2 bg-white" />
           </div>
         </div>
-        <div className="space-y-4 bg-purple-50 p-4 rounded-lg border border-purple-100">
-          <h3 className="font-bold text-purple-800 text-lg">Scenario B</h3>
+        <div className="space-y-2.5 bg-purple-50 p-4 rounded-lg border border-purple-100">
+          <h3 className="font-bold text-purple-800 text-sm">Scenario B</h3>
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Loan Amount</label>
-            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={b.amount === "" ? "" : b.amount} onChange={e => setB({...b, amount: e.target.value ? Number(e.target.value) : ""})} className="w-full border-purple-200 rounded-lg p-2 bg-white" />
+            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={b.amount === "" ? "" : b.amount} onChange={e => setB({...b, amount: e.target.value ? Number(e.target.value) : ""})} className="w-full border border-purple-200 bg-white rounded-lg p-2 bg-white" />
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Interest Rate (%)</label>
-            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={b.rate === "" ? "" : b.rate} onChange={e => setB({...b, rate: e.target.value ? Number(e.target.value) : ""})} className="w-full border-purple-200 rounded-lg p-2 bg-white" />
+            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={b.rate === "" ? "" : b.rate} onChange={e => setB({...b, rate: e.target.value ? Number(e.target.value) : ""})} className="w-full border border-purple-200 bg-white rounded-lg p-2 bg-white" />
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Duration (Months)</label>
-            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={b.duration === "" ? "" : b.duration} onChange={e => setB({...b, duration: e.target.value ? Number(e.target.value) : ""})} className="w-full border-purple-200 rounded-lg p-2 bg-white" />
+            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={b.duration === "" ? "" : b.duration} onChange={e => setB({...b, duration: e.target.value ? Number(e.target.value) : ""})} className="w-full border border-purple-200 bg-white rounded-lg p-2 bg-white" />
           </div>
         </div>
       </div>
       <div className="flex justify-center"><Button onClick={compare} className="bg-gray-900 px-5 py-2 text-sm"><ArrowRight className="mr-2"/> Run Comparison</Button></div>
       {resA && resB && (
         <div className="w-full overflow-x-auto">
-<table className="w-full text-sm mt-6 border rounded-lg overflow-hidden">
-          <thead className="bg-slate-100"><tr className="text-left"><th className="p-4">Metric</th><th className="p-4">Scenario A</th><th className="p-4">Scenario B</th><th className="p-4">Difference (B - A)</th></tr></thead>
+<table className="w-full text-[13px] mt-6 border rounded-lg overflow-hidden">
+          <thead className="bg-slate-100"><tr className="text-left"><th className="px-3 py-2">Metric</th><th className="px-3 py-2">Scenario A</th><th className="px-3 py-2">Scenario B</th><th className="px-3 py-2">Difference (B - A)</th></tr></thead>
           <tbody className="divide-y bg-white">
-            <tr><td className="p-4 font-bold">Total Repayment</td><td className="p-4">{KES.format(resA.total_repayment)}</td><td className="p-4">{KES.format(resB.total_repayment)}</td><td className={`p-4 font-bold ${resB.total_repayment > resA.total_repayment ? 'text-red-600' : 'text-emerald-600'}`}>{KES.format(resB.total_repayment - resA.total_repayment)}</td></tr>
-            <tr><td className="p-4 font-bold">Total Interest</td><td className="p-4">{KES.format(resA.total_interest)}</td><td className="p-4">{KES.format(resB.total_interest)}</td><td className={`p-4 font-bold ${resB.total_interest > resA.total_interest ? 'text-red-600' : 'text-emerald-600'}`}>{KES.format(resB.total_interest - resA.total_interest)}</td></tr>
-            <tr><td className="p-4 font-bold">Monthly Installment</td><td className="p-4">{KES.format(resA.monthly_installment)}</td><td className="p-4">{KES.format(resB.monthly_installment)}</td><td className={`p-4 font-bold ${resB.monthly_installment > resA.monthly_installment ? 'text-red-600' : 'text-emerald-600'}`}>{KES.format(resB.monthly_installment - resA.monthly_installment)}</td></tr>
+            <tr><td className="px-3 py-2 font-bold">Total Repayment</td><td className="px-3 py-2">{KES.format(resA.total_repayment)}</td><td className="px-3 py-2">{KES.format(resB.total_repayment)}</td><td className={`p-4 font-bold ${resB.total_repayment > resA.total_repayment ? 'text-red-600' : 'text-emerald-600'}`}>{KES.format(resB.total_repayment - resA.total_repayment)}</td></tr>
+            <tr><td className="px-3 py-2 font-bold">Total Interest</td><td className="px-3 py-2">{KES.format(resA.total_interest)}</td><td className="px-3 py-2">{KES.format(resB.total_interest)}</td><td className={`p-4 font-bold ${resB.total_interest > resA.total_interest ? 'text-red-600' : 'text-emerald-600'}`}>{KES.format(resB.total_interest - resA.total_interest)}</td></tr>
+            <tr><td className="px-3 py-2 font-bold">Monthly Installment</td><td className="px-3 py-2">{KES.format(resA.monthly_installment)}</td><td className="px-3 py-2">{KES.format(resB.monthly_installment)}</td><td className={`p-4 font-bold ${resB.monthly_installment > resA.monthly_installment ? 'text-red-600' : 'text-emerald-600'}`}>{KES.format(resB.monthly_installment - resA.monthly_installment)}</td></tr>
           </tbody>
         </table>
 </div>
