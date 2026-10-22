@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Calculator, ArrowRight, Download } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { apiCall } from "@/lib/apiClient";
+import { apiCall, downloadFile } from "@/lib/apiClient";
 
 export default function CalculatorsPage() {
   const [activeModule, setActiveModule] = useState("1");
@@ -183,18 +183,27 @@ function LoanEngineModule() {
   const [method, setMethod] = useState("flat");
   const [result, setResult] = useState<any>(null);
 
-  const calculate = async () => {
-    try {
-      const res = await apiCall<any>("/api/loans/calculate", {
-        method: "POST",
-        body: { amount: Number(amount)||0, interest_rate: Number(rate)||0, duration_months: Number(duration)||0, method, rate_type: "monthly", processing_fee_rate: 3, access_fee_rate: 0, legal_fee: 0 }
-      });
-      if (res.data) setResult(res.data.breakdown || res.data);
-    } catch (e) { toast.error("Calculation failed"); }
+  // The same inputs feed the calculation and both downloads. A 0% rate is valid; amount and months must be filled in.
+  const loanInputs = () => {
+    if (!(Number(amount) > 0)) { toast.error("Enter a loan amount greater than 0."); return null; }
+    if (rate === "" || Number(rate) < 0) { toast.error("Enter an interest rate (0 or more)."); return null; }
+    if (!(Number(duration) >= 1)) { toast.error("Enter the number of months (1 or more)."); return null; }
+    return { amount: Number(amount), interest_rate: Number(rate), duration_months: Number(duration), method, rate_type: "monthly", processing_fee_rate: 3, access_fee_rate: 0, legal_fee: 0 };
   };
 
-  const downloadAmortization = (format: "pdf" | "excel") => {
-    window.open(`${import.meta.env.VITE_BACKEND_URL}/api/loans/amortization/${format}?amount=${Number(amount)||0}&interest_rate=${Number(rate)||0}&duration_months=${Number(duration)||0}&method=${method}&rate_type=monthly&processing_fee_rate=3&access_fee_rate=0&legal_fee=0`, '_blank');
+  const calculate = async () => {
+    const body = loanInputs();
+    if (!body) return;
+    const res = await apiCall<any>("/api/loans/calculate", { method: "POST", body });
+    if (res.error || !res.data) { setResult(null); toast.error(res.error ?? "Calculation failed"); return; }
+    setResult(res.data);
+  };
+
+  const downloadAmortization = async (format: "pdf" | "excel") => {
+    const body = loanInputs();
+    if (!body) return;
+    const { error } = await downloadFile(`/api/loans/amortization/${format}`, `amortization_schedule.${format === "excel" ? "xlsx" : "pdf"}`, { method: "POST", body });
+    if (error) toast.error(error);
   };
 
   return (
@@ -214,9 +223,9 @@ function LoanEngineModule() {
       {result && (
         <div className="mt-6">
           <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="bg-slate-50 p-4 rounded-xl border text-center"><p className="text-xs font-bold text-slate-500 uppercase">Total Repayment</p><p className="text-xl font-black text-slate-900">{KES.format(result.total_repayment)}</p></div>
-            <div className="bg-slate-50 p-4 rounded-xl border text-center"><p className="text-xs font-bold text-slate-500 uppercase">Total Interest</p><p className="text-xl font-black text-slate-900">{KES.format(result.total_interest)}</p></div>
-            <div className="bg-slate-50 p-4 rounded-xl border text-center"><p className="text-xs font-bold text-slate-500 uppercase">Monthly Installment</p><p className="text-xl font-black text-slate-900">{KES.format(result.monthly_installment)}</p></div>
+            <div className="bg-slate-50 p-4 rounded-xl border text-center"><p className="text-xs font-bold text-slate-500 uppercase">Total Repayment</p><p className="text-xl font-black text-slate-900">{KES.format(result.breakdown.total_repayment)}</p></div>
+            <div className="bg-slate-50 p-4 rounded-xl border text-center"><p className="text-xs font-bold text-slate-500 uppercase">Total Interest</p><p className="text-xl font-black text-slate-900">{KES.format(result.breakdown.total_interest)}</p></div>
+            <div className="bg-slate-50 p-4 rounded-xl border text-center"><p className="text-xs font-bold text-slate-500 uppercase">Monthly Installment</p><p className="text-xl font-black text-slate-900">{KES.format(result.breakdown.monthly_installment)}</p></div>
           </div>
           
           <div className="flex gap-2 justify-end mb-4">
@@ -226,9 +235,9 @@ function LoanEngineModule() {
 
           <div className="w-full overflow-x-auto">
 <table className="w-full text-sm text-left">
-            <thead className="bg-slate-50"><tr><th className="px-4 py-2">Month</th><th className="px-4 py-2 text-right">Principal</th><th className="px-4 py-2 text-right">Interest</th><th className="px-4 py-2 text-right">Balance</th></tr></thead>
+            <thead className="bg-slate-50"><tr><th className="px-4 py-2">Month</th><th className="px-4 py-2">Due Date</th><th className="px-4 py-2 text-right">Principal</th><th className="px-4 py-2 text-right">Interest</th><th className="px-4 py-2 text-right">Payment</th><th className="px-4 py-2 text-right">Balance</th></tr></thead>
             <tbody className="divide-y">{result.schedule.map((row: any) => (
-              <tr key={row.month} className="hover:bg-slate-50"><td className="px-4 py-2">{row.month}</td><td className="px-4 py-2 text-right">{KES.format(row.principal_payment)}</td><td className="px-4 py-2 text-right">{KES.format(row.interest_payment)}</td><td className="px-4 py-2 text-right">{KES.format(row.closing_balance)}</td></tr>
+              <tr key={row.installment_number} className="hover:bg-slate-50"><td className="px-4 py-2">{row.installment_number}</td><td className="px-4 py-2">{row.due_date}</td><td className="px-4 py-2 text-right">{KES.format(row.principal_payment)}</td><td className="px-4 py-2 text-right">{KES.format(row.interest_payment)}</td><td className="px-4 py-2 text-right">{KES.format(row.total_payment)}</td><td className="px-4 py-2 text-right">{KES.format(row.closing_balance)}</td></tr>
             ))}</tbody>
           </table>
 </div>
