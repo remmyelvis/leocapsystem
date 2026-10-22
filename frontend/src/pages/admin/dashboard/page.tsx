@@ -15,8 +15,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-const KES = new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 });
-// KPI cards show whole shillings so the long totals fit; the tables below keep the cents.
+// Whole shillings throughout the dashboard so figures scan quickly; the loan pages show the cents.
 const KES0 = new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", maximumFractionDigits: 0 });
 
 const statusLabel = (status?: string) => (status || "—").replace(/_/g, " ");
@@ -124,64 +123,68 @@ export default function AdminDashboardPage() {
     day: "numeric",
   });
 
-  // Counts first (three wide cards), then the money figures (four cards): twelve-column grid on desktop.
+  // Row one: the money. Row two: the health of the book. Four cards per row on desktop (the last cell is the period note).
   const stats = [
-    { label: "Total Applications", value: kpis?.total_applications || 0, icon: FileText, span: "lg:col-span-4" },
-    { label: "Overdue", value: kpis?.overdue_count || 0, icon: Clock, span: "lg:col-span-4" },
-    { label: "Repayment Rate", value: `${(kpis?.repayment_rate_pct || 0).toFixed(1)}%`, icon: CheckCircle, span: "lg:col-span-4" },
-    { label: "Total Disbursed", value: KES0.format(kpis?.total_disbursed_amount || 0), icon: Banknote, span: "lg:col-span-3" },
-    { label: "Outstanding", value: KES0.format(kpis?.total_outstanding || 0), icon: AlertTriangle, span: "lg:col-span-3" },
-    { label: "Fee Revenue", value: KES0.format(kpis?.revenue_from_fees || 0), icon: Banknote, span: "lg:col-span-3" },
-    { label: "Interest Income", value: KES0.format(kpis?.interest_income || 0), icon: TrendingUp, span: "lg:col-span-3" },
+    { label: "Total Disbursed", value: KES0.format(kpis?.total_disbursed_amount || 0), icon: Banknote },
+    { label: "Outstanding", value: KES0.format(kpis?.total_outstanding || 0), icon: AlertTriangle },
+    { label: "Interest Income", value: KES0.format(kpis?.interest_income || 0), icon: TrendingUp },
+    { label: "Fee Revenue", value: KES0.format(kpis?.revenue_from_fees || 0), icon: Banknote },
+    { label: "Applications", value: kpis?.total_applications || 0, icon: FileText },
+    { label: "Overdue", value: kpis?.overdue_count || 0, icon: Clock },
+    { label: "Repayment Rate", value: `${(kpis?.repayment_rate_pct || 0).toFixed(1)}%`, icon: CheckCircle },
   ];
+
+  const periodNote =
+    monthFilter === "all"
+      ? "All-time figures"
+      : (() => {
+          const [yr, mo] = monthFilter.split('-');
+          return new Date(parseInt(yr), parseInt(mo) - 1).toLocaleString('default', { month: 'long', year: 'numeric' });
+        })();
 
   const rowActions = (app: any) => (
     <>
       {app.loan_status === 'pending_processing' && (
         <>
-          <button onClick={() => handleAction(app.id, 'approve')} className="text-xs font-semibold bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-lg hover:bg-emerald-200">Approve</button>
-          <button onClick={() => handleAction(app.id, 'reject')} className="text-xs font-semibold bg-red-100 text-red-700 px-2.5 py-1 rounded-lg hover:bg-red-200">Reject</button>
+          <button onClick={() => handleAction(app.id, 'approve')} className="text-[11px] font-semibold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md hover:bg-emerald-200">Approve</button>
+          <button onClick={() => handleAction(app.id, 'reject')} className="text-[11px] font-semibold bg-red-100 text-red-700 px-2 py-0.5 rounded-md hover:bg-red-200">Reject</button>
         </>
       )}
       {app.loan_status === 'approved' && (
-        <Link to={`/admin/applications/${app.id}`} className="text-xs font-semibold bg-blue-100 text-blue-700 px-2.5 py-1 rounded-lg hover:bg-blue-200 inline-block">Disburse</Link>
+        <Link to={`/admin/applications/${app.id}`} className="text-[11px] font-semibold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md hover:bg-blue-200 inline-block">Disburse</Link>
       )}
       {app.loan_status === 'disbursed' && (
-        <button onClick={() => handleAction(app.id, 'paid')} className="text-xs font-semibold bg-green-100 text-green-700 px-2.5 py-1 rounded-lg hover:bg-green-200">Mark Paid</button>
+        <button onClick={() => handleAction(app.id, 'paid')} className="text-[11px] font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-md hover:bg-green-200">Mark Paid</button>
       )}
     </>
   );
 
   return (
-    <div className="p-4 sm:p-6 w-full max-w-[1600px] mx-auto space-y-5 min-h-full">
-      {/* Welcome Banner */}
-      <div className="relative bg-slate-900 rounded-xl p-5 sm:p-6 text-white overflow-hidden">
-        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-white/5" />
-        <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-white/5" />
-        <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <p className="text-slate-400 text-sm font-medium mb-1">Welcome back,</p>
-            <h1 className="text-2xl font-black">{session?.user?.name ?? "Admin"}</h1>
-            <p className="text-slate-400/80 text-sm mt-1">{today}</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <select
-              value={monthFilter}
-              onChange={(e) => setMonthFilter(e.target.value)}
-              className="bg-white/10 border border-white/20 text-white text-sm font-medium px-3 py-1.5 rounded-xl outline-none focus:ring-2 focus:ring-white/30 [&>option]:text-slate-900"
-            >
-              <option value="all">All Time</option>
-              {availableMonths.map((m) => {
-                const [year, month] = m.split('-');
-                const date = new Date(parseInt(year), parseInt(month) - 1);
-                const label = date.toLocaleString('default', { month: 'long', year: 'numeric' });
-                return <option key={m} value={m}>{label}</option>;
-              })}
-            </select>
-            <button onClick={fetchData} disabled={isLoading} className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-medium px-4 py-1.5 rounded-xl transition-colors disabled:opacity-50">
-              <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} /> Refresh
-            </button>
-          </div>
+    <div className="p-4 sm:p-6 w-full max-w-[1600px] mx-auto space-y-3 sm:space-y-4 min-h-full">
+      {/* Slim header strip: greeting + date on the left, period and refresh on the right */}
+      <div className="bg-slate-900 rounded-xl px-4 py-3 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+        <div className="min-w-0">
+          <h1 className="text-lg font-bold leading-tight truncate max-sm:!text-base max-sm:!leading-tight">Welcome back, {session?.user?.name ?? "Admin"}</h1>
+          <p className="text-slate-400 text-xs mt-0.5">{today}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <select
+            value={monthFilter}
+            onChange={(e) => setMonthFilter(e.target.value)}
+            aria-label="Period"
+            className="flex-1 sm:flex-none bg-white/10 border border-white/15 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg outline-none focus:ring-2 focus:ring-white/30 [&>option]:text-slate-900"
+          >
+            <option value="all">All Time</option>
+            {availableMonths.map((m) => {
+              const [year, month] = m.split('-');
+              const date = new Date(parseInt(year), parseInt(month) - 1);
+              const label = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+              return <option key={m} value={m}>{label}</option>;
+            })}
+          </select>
+          <button onClick={fetchData} disabled={isLoading} aria-label="Refresh" title="Refresh" className="inline-flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-50">
+            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} /> <span className="hidden sm:inline">Refresh</span>
+          </button>
         </div>
       </div>
 
@@ -191,53 +194,48 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* KPI Stats Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-4">
-        {loading ? Array.from({ length: 7 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl lg:col-span-3" />)
-          : stats.map(({ label, value, icon: Icon, span }) => (
-            <div key={label} className={`bg-white rounded-xl shadow-sm ring-1 ring-slate-200 p-4 max-lg:last:col-span-2 ${span}`}>
-              <div className="flex justify-between items-center gap-2">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{label}</p>
-                <div className="p-1.5 bg-slate-50 rounded-lg shrink-0"><Icon className="h-4 w-4 text-slate-400" /></div>
+      {/* KPI cards: compact, label above value */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+        {loading ? Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-[62px] rounded-lg" />)
+          : (
+            <>
+              {stats.map(({ label, value, icon: Icon }) => (
+                <div key={label} className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm px-3 py-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide truncate">{label}</p>
+                    <Icon className="h-3.5 w-3.5 text-slate-300 shrink-0" />
+                  </div>
+                  <p className="font-bold text-slate-900 mt-0.5 break-normal tabular-nums text-[clamp(1.05rem,4.6vw,1.3rem)] leading-tight">{value}</p>
+                </div>
+              ))}
+              <div className="rounded-lg border border-dashed border-slate-200 px-3 py-2.5 flex flex-col justify-center">
+                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Showing</p>
+                <p className="text-sm font-semibold text-slate-600 leading-tight mt-0.5">{periodNote}</p>
               </div>
-              <p className="font-bold text-slate-900 mt-2 break-normal text-[clamp(1.125rem,5vw,1.5rem)] lg:text-xl xl:text-2xl">{value}</p>
-            </div>
-          ))}
+            </>
+          )}
       </div>
-
-      {/* Period label */}
-      {!loading && (
-        <p className="text-xs text-slate-400 -mt-2 font-medium">
-          {monthFilter === "all"
-            ? "Showing all-time aggregated figures."
-            : (() => {
-                const [yr, mo] = monthFilter.split('-');
-                const d = new Date(parseInt(yr), parseInt(mo) - 1);
-                return `Showing figures for ${d.toLocaleString('default', { month: 'long', year: 'numeric' })}.`;
-              })()}
-        </p>
-      )}
 
       {/* Distributions */}
       {!loading && kpis && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
-          <div className="bg-white p-5 rounded-xl shadow-sm ring-1 ring-slate-200">
-            <h3 className="text-sm font-bold text-slate-800 uppercase mb-3">Loans by Status</h3>
-            <div className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3">
+          <div className="bg-white px-4 py-3 rounded-lg shadow-sm ring-1 ring-slate-200">
+            <h3 className="max-sm:!text-[11px] max-sm:!leading-4 text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Loans by status</h3>
+            <div className="divide-y divide-slate-100">
               {Object.entries(kpis.loans_by_status || {}).map(([status, count]) => (
-                <Link to={`/admin/applications?status=${status}`} key={status} className="flex justify-between gap-3 text-sm text-slate-600 border-b border-slate-100 py-1.5 px-1 hover:bg-slate-50 hover:text-brand-blue cursor-pointer transition-colors rounded -mx-1">
-                  <span className="capitalize">{status.replace('_', ' ')}</span><span className="font-bold">{count as number}</span>
+                <Link to={`/admin/applications?status=${status}`} key={status} className="flex justify-between gap-3 text-[13px] text-slate-600 py-1 px-2 -mx-2 rounded-md hover:bg-slate-50 hover:text-brand-blue transition-colors">
+                  <span className="capitalize">{status.replace(/_/g, ' ')}</span><span className="font-bold text-slate-800 tabular-nums">{count as number}</span>
                 </Link>
               ))}
             </div>
           </div>
-          <div className="bg-white p-5 rounded-xl shadow-sm ring-1 ring-slate-200">
-            <h3 className="text-sm font-bold text-slate-800 uppercase mb-3">Loans by Company</h3>
-            <div className="space-y-2">
+          <div className="bg-white px-4 py-3 rounded-lg shadow-sm ring-1 ring-slate-200">
+            <h3 className="max-sm:!text-[11px] max-sm:!leading-4 text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Loans by company</h3>
+            <div className="divide-y divide-slate-100">
               {(kpis.loans_by_company || []).map((c: any) => (
-                <Link to={`/admin/applications?company=${c.company}`} key={c.company} className="flex justify-between gap-3 text-sm text-slate-600 border-b border-slate-100 py-1.5 px-1 hover:bg-slate-50 hover:text-brand-blue cursor-pointer transition-colors rounded -mx-1">
+                <Link to={`/admin/applications?company=${c.company}`} key={c.company} className="flex justify-between gap-3 text-[13px] text-slate-600 py-1 px-2 -mx-2 rounded-md hover:bg-slate-50 hover:text-brand-blue transition-colors">
                   <span className="capitalize">{c.company}</span>
-                  <span className="font-bold text-right">{c.count} <span className="font-medium text-slate-400">({KES0.format(c.total_amount)})</span></span>
+                  <span className="text-right tabular-nums"><span className="font-bold text-slate-800">{c.count}</span> <span className="text-slate-400">· {KES0.format(c.total_amount)}</span></span>
                 </Link>
               ))}
             </div>
@@ -246,11 +244,11 @@ export default function AdminDashboardPage() {
       )}
 
       {/* Loan Pipeline Table */}
-      <div className="bg-white rounded-xl shadow-sm ring-1 ring-slate-200 overflow-hidden">
-        <div className="px-4 sm:px-5 py-3 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <h3 className="text-sm font-bold text-slate-800 uppercase">Loan Pipeline</h3>
+      <div className="bg-white rounded-lg shadow-sm ring-1 ring-slate-200 overflow-hidden">
+        <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h3 className="max-sm:!text-[11px] max-sm:!leading-4 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Loan pipeline</h3>
           <div className="grid grid-cols-2 sm:flex gap-2">
-            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="text-xs bg-white border border-slate-200 rounded-lg px-3 py-1.5 font-bold text-slate-600 focus:ring-2 focus:ring-brand-blue/20">
+            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="text-xs bg-white border border-slate-200 rounded-md px-2.5 py-1 font-semibold text-slate-600 focus:ring-2 focus:ring-brand-blue/20">
               <option value="">All Status</option>
               <option value="pending_processing">Pending</option>
               <option value="approved">Approved</option>
@@ -263,7 +261,7 @@ export default function AdminDashboardPage() {
               <option value="delinquent">Delinquent</option>
               <option value="default">Defaulted</option>
             </select>
-            <select value={companyFilter} onChange={e => setCompanyFilter(e.target.value)} className="text-xs bg-white border border-slate-200 rounded-lg px-3 py-1.5 font-bold text-slate-600 focus:ring-2 focus:ring-brand-blue/20 capitalize">
+            <select value={companyFilter} onChange={e => setCompanyFilter(e.target.value)} className="text-xs bg-white border border-slate-200 rounded-md px-2.5 py-1 font-semibold text-slate-600 focus:ring-2 focus:ring-brand-blue/20 capitalize">
               <option value="">All Companies</option>
               {companies.map(c => <option key={c.code} value={c.code}>{c.code}</option>)}
             </select>
@@ -275,31 +273,31 @@ export default function AdminDashboardPage() {
           <p className="text-center py-6 text-sm text-slate-500">No loans found.</p>
         ) : (
           <>
-            <div className="hidden xl:block overflow-auto max-h-[28rem]">
-              <table className="w-full text-sm">
+            <div className="hidden xl:block overflow-auto max-h-[26rem]">
+              <table className="w-full text-[13px]">
                 <thead className="bg-slate-50 sticky top-0 shadow-sm">
-                  <tr className="text-left text-xs font-bold text-slate-500 uppercase tracking-wide">
-                    <th className="py-3 px-4">Applicant</th>
-                    <th className="py-3 px-4">Company</th>
-                    <th className="py-3 px-4 text-right">Applied</th>
-                    <th className="py-3 px-4 text-right">Disbursed</th>
-                    <th className="py-3 px-4 text-right">Repayment</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4">Due</th>
-                    <th className="py-3 px-4" />
+                  <tr className="text-left text-[11px] font-bold text-slate-500 uppercase tracking-wide">
+                    <th className="py-2 px-4">Applicant</th>
+                    <th className="py-2 px-4">Company</th>
+                    <th className="py-2 px-4 text-right">Applied</th>
+                    <th className="py-2 px-4 text-right">Disbursed</th>
+                    <th className="py-2 px-4 text-right">Repayment</th>
+                    <th className="py-2 px-4">Status</th>
+                    <th className="py-2 px-4">Due</th>
+                    <th className="py-2 px-4" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {loans.map(app => (
                     <tr key={app.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="py-3 px-4 font-semibold text-slate-800 max-w-[200px]"><span className="block truncate" title={formatName(app.applicant_name)}>{formatName(app.applicant_name)}</span></td>
-                      <td className="py-3 px-4 text-slate-600 capitalize whitespace-nowrap">{app.company}</td>
-                      <td className="py-3 px-4 text-slate-700 text-right whitespace-nowrap">{KES.format(parseFloat(app.amount_applied || '0'))}</td>
-                      <td className="py-3 px-4 text-slate-700 text-right whitespace-nowrap">{KES.format(parseFloat(app.disbursement_amount || '0'))}</td>
-                      <td className="py-3 px-4 text-slate-700 text-right whitespace-nowrap">{KES.format(parseFloat(app.repayment_amount || '0'))}</td>
-                      <td className="py-3 px-4 whitespace-nowrap"><span className={`px-2 py-0.5 rounded-full text-xs font-semibold capitalize ${statusStyle(app.loan_status)}`}>{statusLabel(app.loan_status)}</span></td>
-                      <td className="py-3 px-4 text-slate-500 whitespace-nowrap">{app.due_date ? app.due_date.substring(0, 10) : '-'}</td>
-                      <td className="py-3 px-4"><div className="flex justify-end gap-2 whitespace-nowrap">{rowActions(app)}</div></td>
+                      <td className="py-2 px-4 font-semibold text-slate-800 max-w-[200px]"><span className="block truncate" title={formatName(app.applicant_name)}>{formatName(app.applicant_name)}</span></td>
+                      <td className="py-2 px-4 text-slate-600 capitalize whitespace-nowrap">{app.company}</td>
+                      <td className="py-2 px-4 text-slate-700 text-right whitespace-nowrap tabular-nums">{KES0.format(parseFloat(app.amount_applied || '0'))}</td>
+                      <td className="py-2 px-4 text-slate-700 text-right whitespace-nowrap tabular-nums">{KES0.format(parseFloat(app.disbursement_amount || '0'))}</td>
+                      <td className="py-2 px-4 text-slate-700 text-right whitespace-nowrap tabular-nums">{KES0.format(parseFloat(app.repayment_amount || '0'))}</td>
+                      <td className="py-2 px-4 whitespace-nowrap"><span className={`px-2 py-px rounded-full text-[11px] font-semibold capitalize ${statusStyle(app.loan_status)}`}>{statusLabel(app.loan_status)}</span></td>
+                      <td className="py-2 px-4 text-slate-500 whitespace-nowrap">{app.due_date ? app.due_date.substring(0, 10) : '-'}</td>
+                      <td className="py-2 px-4"><div className="flex justify-end gap-2 whitespace-nowrap">{rowActions(app)}</div></td>
                     </tr>
                   ))}
                 </tbody>
@@ -308,14 +306,14 @@ export default function AdminDashboardPage() {
 
             <ul className="xl:hidden divide-y divide-slate-100 max-h-[32rem] overflow-y-auto">
               {loans.map(app => (
-                <li key={app.id} className="px-4 py-3.5 space-y-1.5">
+                <li key={app.id} className="px-4 py-2.5 space-y-1">
                   <div className="flex items-start justify-between gap-3">
-                    <p className="font-semibold text-slate-800 break-words">{formatName(app.applicant_name)}</p>
-                    <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold capitalize whitespace-nowrap ${statusStyle(app.loan_status)}`}>{statusLabel(app.loan_status)}</span>
+                    <p className="text-sm font-semibold text-slate-800 break-words">{formatName(app.applicant_name)}</p>
+                    <span className={`shrink-0 px-2 py-px rounded-full text-[11px] font-semibold capitalize whitespace-nowrap ${statusStyle(app.loan_status)}`}>{statusLabel(app.loan_status)}</span>
                   </div>
                   <p className="text-sm text-slate-600">
-                    <span className="font-semibold text-slate-800">{KES.format(parseFloat(app.amount_applied || '0'))}</span> applied
-                    {" · "}repay {KES.format(parseFloat(app.repayment_amount || '0'))}
+                    <span className="font-semibold text-slate-800">{KES0.format(parseFloat(app.amount_applied || '0'))}</span> applied
+                    {" · "}repay {KES0.format(parseFloat(app.repayment_amount || '0'))}
                   </p>
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-xs text-slate-400"><span className="capitalize">{app.company}</span>{app.due_date ? ` · due ${app.due_date.substring(0, 10)}` : ""}</p>
@@ -329,13 +327,13 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Audit Trail Viewer */}
-      <div className="bg-white rounded-xl shadow-sm ring-1 ring-slate-200 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm ring-1 ring-slate-200 overflow-hidden">
         <div 
-          className="px-4 sm:px-5 py-3 bg-slate-50 border-b border-slate-200 flex justify-between items-center cursor-pointer hover:bg-slate-100"
+          className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex justify-between items-center cursor-pointer hover:bg-slate-100"
           onClick={() => setShowAudit(!showAudit)}
         >
-          <h3 className="text-sm font-bold text-slate-800 uppercase flex items-center">
-            <History className="h-4 w-4 mr-2 text-purple-600" /> Audit Trail Viewer
+          <h3 className="max-sm:!text-[11px] max-sm:!leading-4 text-[11px] font-bold text-slate-500 uppercase tracking-wide flex items-center">
+            <History className="h-3.5 w-3.5 mr-2 text-purple-500" /> Audit trail viewer
           </h3>
           <span className="text-xs text-slate-500">{showAudit ? 'Hide' : 'Show'}</span>
         </div>
