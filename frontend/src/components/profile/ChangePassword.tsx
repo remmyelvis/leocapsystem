@@ -71,19 +71,19 @@ export function ChangePasswordSection() {
   };
 
   const inputClass =
-    "w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-800/20 focus:border-blue-800 transition-colors placeholder:text-gray-300 disabled:bg-gray-50 disabled:text-gray-400";
+    "w-full px-4 py-3 [.admin-ui_&]:px-3 [.admin-ui_&]:py-1.5 rounded-xl [.admin-ui_&]:rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-800/20 focus:border-blue-800 transition-colors placeholder:text-gray-300 disabled:bg-gray-50 disabled:text-gray-400";
 
-  const labelClass = "block text-sm font-semibold text-gray-700 mb-2";
+  const labelClass = "block text-sm font-semibold text-gray-700 mb-2 [.admin-ui_&]:text-[13px] [.admin-ui_&]:text-slate-700 [.admin-ui_&]:mb-1";
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-      <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-2">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden [.admin-ui_&]:rounded-lg">
+      <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-2 [.admin-ui_&]:px-4 [.admin-ui_&]:py-3">
         <Lock className="h-4 w-4 text-gray-400" />
-        <h2 className="text-base font-black text-gray-900">Change Password</h2>
+        <h2 className="text-base font-black text-gray-900 [.admin-ui_&]:text-[13px] [.admin-ui_&]:font-bold">Change Password</h2>
       </div>
 
-      <div className="p-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+      <div className="p-6 [.admin-ui_&]:p-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 [.admin-ui_&]:space-y-4" noValidate>
           <div>
             <label className={labelClass}>Current Password</label>
             <div className="relative">

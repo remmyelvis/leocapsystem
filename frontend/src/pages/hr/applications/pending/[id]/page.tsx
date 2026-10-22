@@ -41,7 +41,7 @@ function Field({ label, value }: { label: string; value?: string | number | null
   if (value === undefined || value === null) return null;
   return (
     <div>
-      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+      <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-0.5">
         {label}
       </p>
       <p className="text-sm text-slate-900 font-medium">{value}</p>
@@ -51,11 +51,11 @@ function Field({ label, value }: { label: string; value?: string | number | null
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6">
-      <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide mb-5">
+    <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
+      <h2 className="text-[13px] font-bold text-slate-900 uppercase tracking-wide mb-3">
         {title}
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4">
         {children}
       </div>
     </div>
@@ -66,7 +66,7 @@ interface GetOneResponse {
   application: {
     id: string;
     amount_applied: string;
-    date_submitted: string;
+    created_at: string;
     loan_status: string;
     loan_type: string;
     month_one: string;
@@ -193,18 +193,18 @@ export default function HRPendingApplicationDetailPage() {
 
   if (loading) {
     return (
-      <div className="p-6 space-y-6 max-w-4xl mx-auto">
-        <Skeleton className="h-10 w-1/3" />
-        <Skeleton className="h-24 w-full rounded-xl" />
-        <Skeleton className="h-48 w-full rounded-xl" />
-        <Skeleton className="h-48 w-full rounded-xl" />
+      <div className="p-4 sm:p-6 space-y-5 max-w-4xl mx-auto">
+        <Skeleton className="h-8 w-1/3" />
+        <Skeleton className="h-24 w-full rounded-lg" />
+        <Skeleton className="h-48 w-full rounded-lg" />
+        <Skeleton className="h-48 w-full rounded-lg" />
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="p-6 text-center text-slate-400 text-sm">
+      <div className="p-6 text-center text-slate-500 text-sm">
         Application not found.
       </div>
     );
@@ -229,15 +229,15 @@ export default function HRPendingApplicationDetailPage() {
   const firstTime = application.is_first_time_applicant === "True" ? "Yes" : "No";
 
   return (
-    <div className="p-6 space-y-6 max-w-4xl mx-auto">
+    <div className="p-4 sm:p-6 space-y-5 max-w-4xl mx-auto">
       {/* Information Banner */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-        <p className="text-brand-blue text-sm font-medium">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+        <p className="text-brand-blue text-[13px] font-medium">
           Kindly review this application, amend the amount if needed and approve the application.
         </p>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -245,24 +245,24 @@ export default function HRPendingApplicationDetailPage() {
               onClick={() => navigate(-1)}
               className="text-slate-400 hover:text-slate-600 transition-colors"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4" />
             </button>
             <div>
-              <h1 className="text-xl font-black text-slate-900">
+              <h1 className="text-lg font-bold text-slate-900">
                 {mapLoanType(application.loan_type)}
               </h1>
-              <p className="text-slate-400 text-xs mt-0.5">
+              <p className="text-slate-500 text-xs mt-0.5">
                 {application.id.substring(0, 8)}...
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
             {["pending_processing", "amended"].includes(application.loan_status) && (
               <>
                 <button
                   onClick={handleApprove}
                   disabled={approveLoading}
-                  className="text-sm font-bold px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white transition-colors disabled:opacity-50"
+                  className="text-[13px] font-bold px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors disabled:opacity-50"
                 >
                   {approveLoading ? "Approving..." : "Approve"}
                 </button>
@@ -271,7 +271,7 @@ export default function HRPendingApplicationDetailPage() {
                     setShowReject(!showReject);
                     setShowAmend(false);
                   }}
-                  className="text-sm font-bold px-4 py-2 rounded-xl bg-red-50 border border-red-100 text-red-700 hover:bg-red-100 transition-colors"
+                  className="text-[13px] font-bold px-3 py-1.5 rounded-lg bg-red-50 border border-red-100 text-red-700 hover:bg-red-100 transition-colors"
                 >
                   Reject
                 </button>
@@ -282,12 +282,12 @@ export default function HRPendingApplicationDetailPage() {
                 setShowAmend(!showAmend);
                 setShowReject(false);
               }}
-              className="text-sm font-bold px-4 py-2 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100 transition-colors"
+              className="text-[13px] font-bold px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100 transition-colors"
             >
               Amend Amount
             </button>
             <span
-              className={`text-xs font-black px-3 py-1.5 rounded-full ${statusBadge(
+              className={`text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${statusBadge(
                 application.loan_status
               )}`}
             >
@@ -298,22 +298,22 @@ export default function HRPendingApplicationDetailPage() {
 
         {/* Amend Form */}
         {showAmend && (
-          <form onSubmit={handleAmendSubmit} className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5 flex flex-col sm:flex-row gap-4 items-end animate-in fade-in slide-in-from-top-2">
+          <form onSubmit={handleAmendSubmit} className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 flex flex-col sm:flex-row gap-4 items-end animate-in fade-in slide-in-from-top-2">
             <div className="flex-1 w-full">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">New Amount (KES)</label>
+              <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1">New Amount (KES)</label>
               <input
                 type="number" onWheel={(e) => e.currentTarget.blur()}
                 value={amendAmount}
                 onChange={(e) => setAmendAmount(e.target.value)}
                 placeholder="e.g. 50000"
                 min="1"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors"
+                className="w-full px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors"
               />
             </div>
             <button
               type="submit"
               disabled={amendLoading}
-              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-brand-blue hover:bg-slate-800 text-white font-bold text-sm transition-colors disabled:opacity-50"
+              className="w-full sm:w-auto px-4 py-1.5 rounded-lg bg-brand-blue hover:bg-slate-800 text-white font-bold text-[13px] transition-colors disabled:opacity-50"
             >
               {amendLoading ? "Saving..." : "Submit Amendment"}
             </button>
@@ -322,21 +322,21 @@ export default function HRPendingApplicationDetailPage() {
 
         {/* Reject Form */}
         {showReject && (
-          <form onSubmit={handleRejectSubmit} className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5 flex flex-col sm:flex-row gap-4 items-end animate-in fade-in slide-in-from-top-2">
+          <form onSubmit={handleRejectSubmit} className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 flex flex-col sm:flex-row gap-4 items-end animate-in fade-in slide-in-from-top-2">
             <div className="flex-1 w-full">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Reason for Rejection</label>
+              <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Reason for Rejection</label>
               <input
                 type="text"
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 placeholder="e.g. Does not meet minimum requirements"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-600/20 focus:border-red-600 transition-colors"
+                className="w-full px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-600/20 focus:border-red-600 transition-colors"
               />
             </div>
             <button
               type="submit"
               disabled={rejectLoading}
-              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm transition-colors disabled:opacity-50"
+              className="w-full sm:w-auto px-4 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold text-[13px] transition-colors disabled:opacity-50"
             >
               {rejectLoading ? "Rejecting..." : "Submit Rejection"}
             </button>
@@ -345,18 +345,14 @@ export default function HRPendingApplicationDetailPage() {
       </div>
 
       {/* Top Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Date Submitted</p>
-          <p className="text-sm font-semibold text-slate-900">{formatDate(application.date_submitted)}</p>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
+          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-0.5">Date Submitted</p>
+          <p className="text-sm font-semibold text-slate-900">{formatDate(application.created_at)}</p>
         </div>
-        <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Amount</p>
+        <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
+          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-0.5">Amount</p>
           <p className="text-sm font-semibold text-slate-900">Ksh {amtApplied.toLocaleString()}</p>
-        </div>
-        <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Last Updated</p>
-          <p className="text-sm font-semibold text-slate-900">{formatDate(application.date_submitted)}</p>
         </div>
       </div>
 
@@ -379,19 +375,19 @@ export default function HRPendingApplicationDetailPage() {
       </Section>
 
       {/* Notice box */}
-      <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4 text-yellow-700 text-sm font-medium">
+      <div className="bg-yellow-50 border border-yellow-100 rounded-lg px-3 py-2 text-yellow-700 text-[13px] font-medium">
         Your application is under review. You will be notified once a decision is made (within 24 hours).
       </div>
 
       {/* Messages from Admin */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
         <div className="flex items-center gap-2 mb-4">
           <Mail className="h-4 w-4 text-blue-700" />
-          <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide">
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
             MESSAGES FROM ADMIN
           </h2>
         </div>
-        <p className="text-sm text-slate-500">
+        <p className="text-[13px] text-slate-500">
           No messages yet. Admin communications regarding your application will appear here.
         </p>
       </div>

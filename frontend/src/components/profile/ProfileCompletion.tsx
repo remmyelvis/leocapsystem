@@ -68,23 +68,23 @@ export function ProfileProgressBar({
   const isComplete = overallPercent === 100;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4 [.admin-ui_&]:rounded-lg [.admin-ui_&]:p-4 [.admin-ui_&]:space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-base font-black text-gray-900">Profile Completion</h2>
+          <h2 className="text-base font-black text-gray-900 [.admin-ui_&]:text-[13px] [.admin-ui_&]:font-bold">Profile Completion</h2>
           <p className={`text-xs mt-0.5 font-medium ${isComplete ? "text-emerald-600" : "text-gray-400"}`}>
             {isComplete
               ? "Profile complete ✅ You can apply for loans"
               : "Complete your profile to apply for loans"}
           </p>
         </div>
-        <span className={`text-2xl font-black ${textColor(overallPercent)}`}>
+        <span className={`text-2xl font-black [.admin-ui_&]:text-lg [.admin-ui_&]:font-bold ${textColor(overallPercent)}`}>
           {overallPercent}%
         </span>
       </div>
 
       {/* Overall bar */}
-      <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+      <div className="w-full h-3 [.admin-ui_&]:h-2 bg-gray-100 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-500 ${barColor(overallPercent)}`}
           style={{ width: `${overallPercent}%` }}
@@ -412,10 +412,10 @@ export function ProfileIncompleteBanner({
   });
 
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 flex items-start gap-3">
+    <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 flex items-start gap-3 [.admin-ui_&]:rounded-lg [.admin-ui_&]:px-4 [.admin-ui_&]:py-3">
       <UserCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-amber-800">
+        <p className="text-sm font-semibold text-amber-800 [.admin-ui_&]:text-[13px]">
           Complete your profile before applying for a loan
         </p>
 
@@ -437,10 +437,10 @@ export function ProfileIncompleteBanner({
           {/* Personal details */}
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-amber-700 flex items-center gap-1">
+              <span className="text-xs font-semibold text-amber-700 flex items-center gap-1 whitespace-nowrap">
                 <User className="h-3 w-3" /> Personal
               </span>
-              <span className="text-xs font-bold text-amber-700">
+              <span className="text-xs font-bold text-amber-700 whitespace-nowrap">
                 {completion.personalDetailsPercent}%
               </span>
             </div>
@@ -459,10 +459,10 @@ export function ProfileIncompleteBanner({
           {/* Documents */}
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-amber-700 flex items-center gap-1">
+              <span className="text-xs font-semibold text-amber-700 flex items-center gap-1 whitespace-nowrap">
                 <FileText className="h-3 w-3" /> Documents
               </span>
-              <span className="text-xs font-bold text-amber-700">
+              <span className="text-xs font-bold text-amber-700 whitespace-nowrap">
                 {completion.documentsPercent}%
               </span>
             </div>
@@ -516,16 +516,16 @@ export function ProfileApplyGate({
   const completion = useProfileCompletion();
 
   return (
-    <div className="p-6 w-full max-w-lg mx-auto mt-10 space-y-6">
-      <div className="bg-white rounded-2xl border border-amber-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-5 border-b border-amber-100 flex items-center gap-2">
+    <div className="p-6 w-full max-w-lg mx-auto mt-10 space-y-6 [.admin-ui_&]:p-4 [.admin-ui_&]:mt-4 [.admin-ui_&]:space-y-5">
+      <div className="bg-white rounded-2xl border border-amber-200 shadow-sm overflow-hidden [.admin-ui_&]:rounded-lg">
+        <div className="px-6 py-5 border-b border-amber-100 flex items-center gap-2 [.admin-ui_&]:px-4 [.admin-ui_&]:py-3">
           <UserCircle className="h-5 w-5 text-amber-500" />
-          <h2 className="text-base font-black text-gray-900">
+          <h2 className="text-base font-black text-gray-900 [.admin-ui_&]:text-[13px] [.admin-ui_&]:font-bold">
             Complete Your Profile First
           </h2>
         </div>
-        <div className="p-6 space-y-5">
-          <p className="text-sm text-gray-600">
+        <div className="p-6 space-y-5 [.admin-ui_&]:p-4 [.admin-ui_&]:space-y-4">
+          <p className="text-sm text-gray-600 [.admin-ui_&]:text-[13px]">
             You need to complete your profile before you can apply for a loan.
             Please fill in your personal details and upload all required
             documents.
@@ -565,7 +565,7 @@ export function ProfileApplyGate({
           </div>
 
           <Link to={profileHref}>
-            <Button className="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold rounded-xl">
+            <Button className="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold rounded-xl [.admin-ui_&]:rounded-lg">
               Go to My Profile
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>

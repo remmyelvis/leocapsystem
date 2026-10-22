@@ -161,9 +161,9 @@ type FormData = z.infer<typeof salaryAdvanceSchema>;
 // ---------------------------------------------------------------------------
 
 const inputClass =
-  "w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 transition-colors placeholder:text-gray-300";
-const labelClass = "block text-sm font-semibold text-gray-700 mb-2";
-const errorClass = "text-red-500 text-xs mt-1.5 flex items-center gap-1";
+  "w-full px-3 py-1.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 transition-colors placeholder:text-gray-300";
+const labelClass = "block text-[13px] font-semibold text-slate-700 mb-1";
+const errorClass = "text-red-500 text-xs mt-1 flex items-center gap-1";
 
 // ---------------------------------------------------------------------------
 // Component
@@ -348,12 +348,12 @@ export default function HRApplyPage() {
   // ── Success screen ──
   if (submitted) {
     return (
-      <div className="p-6 w-full max-w-2xl mx-auto space-y-6">
-        <div className="bg-white rounded-3xl ring-1 ring-slate-200 shadow-sm p-8 flex flex-col items-center text-center gap-4">
-          <div className="w-16 h-16 bg-emerald-50 rounded-xl flex items-center justify-center">
+      <div className="p-4 sm:p-6 w-full max-w-2xl mx-auto space-y-5">
+        <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6 flex flex-col items-center text-center gap-4">
+          <div className="w-16 h-16 bg-emerald-50 rounded-lg flex items-center justify-center">
             <CheckCircle2 className="h-8 w-8 text-emerald-500" />
           </div>
-          <h2 className="text-xl font-black text-slate-900">Application Submitted!</h2>
+          <h2 className="text-lg font-bold text-slate-900">Application Submitted!</h2>
           <p className="text-slate-500 text-sm">
             Your {companyLabel} salary advance application has been received. The Finance Manager will review it.
           </p>
@@ -383,7 +383,7 @@ export default function HRApplyPage() {
 
         <Button
           onClick={() => navigate("/hr/my-loans")}
-          className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold h-12 rounded-xl"
+          className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold h-9 rounded-lg"
         >
           View My Applications
         </Button>
@@ -392,31 +392,31 @@ export default function HRApplyPage() {
   }
 
   return (
-    <div className="p-6 w-full space-y-6 min-h-full">
+    <div className="p-4 sm:p-6 w-full max-w-3xl mx-auto space-y-5 min-h-full">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-4">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-gray-700 transition-colors mb-4"
+          className="flex items-center gap-1.5 text-[13px] text-slate-500 hover:text-slate-800 transition-colors mb-3"
         >
           <ChevronLeft className="h-4 w-4" />
           Back
         </button>
         <div className="flex items-center gap-3 mb-1">
-          <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
             {companyLabel}
           </span>
         </div>
-        <h1 className="text-2xl font-black text-slate-900">
+        <h1 className="text-lg font-bold text-slate-900">
           {companyLabel} Salary Advance Application
         </h1>
-        <p className="text-slate-500 text-sm mt-1">
+        <p className="text-slate-500 text-[13px] mt-0.5">
           All fields are required. Ensure your details match your payslip.
         </p>
       </div>
 
       {/* Info banner */}
-      <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl px-4 py-3 text-sm">
+      <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 text-amber-700 rounded-lg px-3 py-2 text-[13px]">
         <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
         <p>
           After submission, the <strong>Finance Manager</strong> has the right to adjust the loan amount before final processing.
@@ -424,11 +424,11 @@ export default function HRApplyPage() {
       </div>
 
       {/* Form card */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6 sm:p-8">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 sm:p-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
 
           {/* Pre-filled info banner */}
-          <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 flex items-start gap-2 text-xs text-blue-700">
+          <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 flex items-start gap-2 text-xs text-blue-700">
             <Info className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
             <span>
               Personal details are pre-filled from your profile and cannot be edited here. To update them, visit your <strong>Profile</strong> page.
@@ -464,7 +464,7 @@ export default function HRApplyPage() {
           </div>
 
           {/* ID + KRA PIN */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>ID No.</label>
               <input
@@ -507,7 +507,7 @@ export default function HRApplyPage() {
                   {(["Agent", "Management", "Other"] as const).map((opt) => (
                     <label
                       key={opt}
-                      className={`flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors select-none ${
+                      className={`flex items-center gap-2 cursor-pointer px-3 py-1.5 rounded-lg border text-[13px] font-medium transition-colors select-none ${
                         field.value === opt
                           ? "bg-emerald-700 border-emerald-700 text-white"
                           : "border-slate-200 text-slate-600 hover:border-emerald-300"
@@ -611,16 +611,16 @@ export default function HRApplyPage() {
 
             {salaryCalc && (
               <div className="mt-3 space-y-2">
-                <div className="px-4 py-3 bg-blue-50 rounded-xl border border-blue-100">
+                <div className="px-3 py-2 bg-blue-50 rounded-lg border border-blue-100">
                   <p className="text-sm text-brand-blue font-semibold">
                     Average Basic Pay:{" "}
-                    <span className="font-black">{formatKES(salaryCalc.averageSalary)}</span>
+                    <span className="font-bold">{formatKES(salaryCalc.averageSalary)}</span>
                   </p>
                 </div>
-                <div className="px-4 py-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                <div className="px-3 py-2 bg-emerald-50 rounded-lg border border-emerald-100">
                   <p className="text-sm text-emerald-800 font-semibold">
                     Maximum You Can Apply For:{" "}
-                    <span className="font-black">{formatKES(salaryCalc.loanAmount)}</span>
+                    <span className="font-bold">{formatKES(salaryCalc.loanAmount)}</span>
                   </p>
                 </div>
               </div>
@@ -701,7 +701,7 @@ export default function HRApplyPage() {
                   </>
                 }
               />
-              <div className="flex items-start gap-2 px-4 py-3 bg-amber-50 rounded-xl border border-amber-100">
+              <div className="flex items-start gap-2 px-3 py-2 bg-amber-50 rounded-lg border border-amber-100">
                 <Info className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-amber-800">
                   The interest rate for salary advances is fixed at{" "}
@@ -712,38 +712,38 @@ export default function HRApplyPage() {
           )}
 
           {/* ── Terms & Conditions ── */}
-          <div className="space-y-4 pt-4">
+          <div className="space-y-3 pt-3">
             <div>
-              <h3 className="text-base font-black text-slate-900 mb-2">
+              <h3 className="text-[13px] font-bold text-slate-900 mb-1">
                 Terms &amp; Conditions
               </h3>
-              <p className="text-slate-400 text-sm mb-4">
+              <p className="text-slate-500 text-[13px] mb-3">
                 Please read and accept the terms before submitting your application.
               </p>
             </div>
 
             {/* Terms text box */}
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 max-h-64 overflow-y-auto">
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 max-h-56 overflow-y-auto">
               <pre className="text-xs text-slate-600 whitespace-pre-wrap leading-relaxed font-sans">
                 {getTermsText(companyLabel)}
               </pre>
             </div>
 
             {/* Accept checkbox */}
-            <div className="space-y-4">
+            <div className="space-y-2">
               <div>
                 <Controller
                   name="termsAccepted"
                   control={control}
                   render={({ field }) => (
-                    <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl border border-slate-200 hover:bg-emerald-50 transition-colors select-none">
+                    <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg border border-slate-200 hover:bg-emerald-50 transition-colors select-none">
                       <input
                         type="checkbox"
                         checked={field.value === true}
                         onChange={(e) => field.onChange(e.target.checked)}
-                        className="w-5 h-5 mt-0.5 rounded border-gray-300 text-emerald-900 cursor-pointer flex-shrink-0"
+                        className="w-4 h-4 mt-0.5 rounded border-gray-300 text-emerald-900 cursor-pointer flex-shrink-0"
                       />
-                      <span className="text-sm font-medium text-gray-700">
+                      <span className="text-[13px] font-medium text-slate-700">
                         I have read and accepted the Loan Agreement and Terms & Conditions.
                       </span>
                     </label>
@@ -762,14 +762,14 @@ export default function HRApplyPage() {
                   name="privacyAccepted"
                   control={control}
                   render={({ field }) => (
-                    <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl border border-slate-200 hover:bg-emerald-50 transition-colors select-none">
+                    <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg border border-slate-200 hover:bg-emerald-50 transition-colors select-none">
                       <input
                         type="checkbox"
                         checked={field.value === true}
                         onChange={(e) => field.onChange(e.target.checked)}
-                        className="w-5 h-5 mt-0.5 rounded border-gray-300 text-emerald-900 cursor-pointer flex-shrink-0"
+                        className="w-4 h-4 mt-0.5 rounded border-gray-300 text-emerald-900 cursor-pointer flex-shrink-0"
                       />
-                      <span className="text-sm font-medium text-gray-700">
+                      <span className="text-[13px] font-medium text-slate-700">
                         I have read and understood the <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">Privacy Policy</a> and consent to the processing of my personal data in accordance with the Data Protection Act, 2019.
                       </span>
                     </label>
@@ -790,7 +790,7 @@ export default function HRApplyPage() {
             <Button
               type="submit"
               disabled={isLoading || !termsAccepted || !privacyAccepted}
-              className={`w-full font-bold h-12 rounded-xl text-sm transition-all ${
+              className={`w-full font-bold h-9 rounded-lg text-sm transition-all ${
                 isLoading || !termsAccepted || !privacyAccepted
                   ? "bg-gray-300 text-slate-500 cursor-not-allowed opacity-50"
                   : "bg-emerald-700 hover:bg-emerald-800 text-white"

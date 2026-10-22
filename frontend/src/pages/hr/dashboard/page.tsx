@@ -33,14 +33,14 @@ function StatCard({
   gradient: string;
 }) {
   return (
-    <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5 flex items-center gap-4">
+    <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 flex items-center gap-3">
       <div
-        className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center flex-shrink-0`}
+        className={`w-9 h-9 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center flex-shrink-0`}
       >
-        <Icon className="h-6 w-6 text-white" />
+        <Icon className="h-4 w-4 text-white" />
       </div>
       <div>
-        <p className="text-2xl font-black text-slate-900">{value}</p>
+        <p className="text-lg font-bold text-slate-900">{value}</p>
         <p className="text-xs text-slate-400 font-medium mt-0.5">{label}</p>
       </div>
     </div>
@@ -154,20 +154,20 @@ export default function HRDashboardPage() {
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 space-y-5 w-full max-w-[1600px] mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-black text-slate-900">
+          <h1 className="text-lg font-bold text-slate-900">
             HR Dashboard
           </h1>
-          <p className="text-slate-400 text-sm mt-1 flex items-center gap-1.5">
+          <p className="text-slate-500 text-[13px] mt-0.5 flex items-center gap-1.5">
             <Building2 className="h-3.5 w-3.5" />
             {companyLabel} · {today}
           </p>
         </div>
         <Link to="/hr/apply"
-          className="inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-600 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors"
+          className="inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-600 text-white text-[13px] font-bold px-3 py-1.5 rounded-lg transition-colors"
         >
           Apply for Loan
           <ArrowRight className="h-4 w-4" />
@@ -175,7 +175,7 @@ export default function HRDashboardPage() {
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
           label="Total Applications"
           value={companyApps.length}
@@ -206,11 +206,11 @@ export default function HRDashboardPage() {
       <ProfileIncompleteBanner profileHref="/hr/profile" />
 
       {/* Two-column lower section */}
-      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 gap-5">
         {/* My Applications */}
-        <div className="lg:col-span-2 bg-white rounded-xl ring-1 ring-slate-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-            <h2 className="text-sm font-black text-slate-900">
+        <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm overflow-hidden">
+          <div className="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between">
+            <h2 className="text-sm font-bold text-slate-900">
               {companyLabel} Applications
             </h2>
             <Link to="/hr/applications"
@@ -220,7 +220,7 @@ export default function HRDashboardPage() {
             </Link>
           </div>
           {recentApps.length === 0 ? (
-            <div className="p-8 text-center text-slate-400 text-sm">
+            <div className="p-6 text-center text-slate-400 text-sm">
               No applications yet.
             </div>
           ) : (
@@ -229,9 +229,9 @@ export default function HRDashboardPage() {
                 <Link
                   key={app.id}
                   to={`/hr/applications/pending/${app.id}`}
-                  className="flex items-center gap-4 px-6 py-3.5 hover:bg-slate-50 transition-colors"
+                  className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-800 text-xs font-black flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-800 text-xs font-bold flex-shrink-0">
                     {app.customerName.charAt(0)}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -245,7 +245,7 @@ export default function HRDashboardPage() {
                       {KES.format(app.amountApplied)}
                     </p>
                     <span
-                      className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusBadge(
+                      className={`text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${statusBadge(
                         app.status
                       )}`}
                     >
