@@ -123,11 +123,11 @@ export default function ReportsPage() {
   return (
     <div className="min-h-full pb-8 w-full max-w-[1600px] mx-auto">
       {/* Header */}
-      <header className="flex flex-col gap-4 px-4 pt-4 sm:px-6 sm:pt-6 lg:flex-row lg:items-end lg:justify-between">
+      <header className="flex flex-col gap-2 px-4 pt-4 sm:px-6 sm:pt-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-[#081430]">Reports &amp; Analytics</h1>
-          <div className="mt-1 max-w-2xl text-sm text-slate-600" aria-live="polite">
-            {loading && rows.length === 0 && !error ? <Skeleton className="mt-2 h-4 w-72" /> : error && rows.length === 0 ? (
+          <div className="mt-0.5 max-w-2xl text-[13px] text-slate-600" aria-live="polite">
+            {loading && rows.length === 0 && !error ? <Skeleton className="mt-1.5 h-3.5 w-64" /> : error && rows.length === 0 ? (
               <span className="text-rose-700">The loan list did not load. Try again below.</span>
             ) : (
               <>
@@ -140,20 +140,20 @@ export default function ReportsPage() {
         <div className="flex items-center gap-2">
           <Link
             to="/admin/reports/builder"
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F2C59]/30"
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-800 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F2C59]/30"
           >
-            <LayoutList className="h-4 w-4 text-slate-500" /> Custom report
+            <LayoutList className="h-3.5 w-3.5 text-slate-500" /> Custom report
           </Link>
           <ExportMenu exporting={exporting} onExport={handleExport} />
         </div>
       </header>
 
       {/* Filters stay in view while the list scrolls */}
-      <div className="z-20 mt-5 bg-slate-50/95 px-4 pb-3 pt-1 backdrop-blur sm:px-6 md:sticky md:top-0">
+      <div className="z-20 mt-3 bg-slate-50/95 px-4 pb-2 pt-1 backdrop-blur sm:px-6 md:sticky md:top-0">
         <FilterBar filters={filters} companies={companies} onChange={changeFilters} onClear={clearFilters} />
       </div>
 
-      <div className="space-y-4 px-4 pt-3 sm:px-6">
+      <div className="space-y-3 px-4 pt-2 sm:px-6">
         <BookPanel
           loading={firstLoad}
           count={pagination.total_records}
@@ -167,10 +167,10 @@ export default function ReportsPage() {
           onRefreshAging={loadAging}
         />
 
-        <section aria-label="Loans" className="overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgba(15,44,89,0.06)] ring-1 ring-slate-200">
-          <div className="flex items-baseline justify-between gap-4 px-5 py-4">
-            <h2 className="text-base font-bold text-slate-900">Loans</h2>
-            <p className="text-xs text-slate-500">Select a borrower to open their application.</p>
+        <section aria-label="Loans" className="overflow-hidden rounded-lg bg-white shadow-[0_1px_2px_rgba(15,44,89,0.06)] ring-1 ring-slate-200">
+          <div className="flex items-baseline justify-between gap-4 px-4 py-2.5">
+            <h2 className="text-[13px] font-bold text-slate-900">Loans</h2>
+            <p className="text-[11px] text-slate-500">Select a borrower to open their application.</p>
           </div>
           {firstLoad ? <TableSkeleton /> : error && rows.length === 0 ? (
             <ErrorState message={error} onRetry={loadLoans} />
