@@ -10,12 +10,12 @@ import { Button } from "@/components/ui/button";
 import {
   AuditLog, AuditLogPagination, AuditLogListResponse, AuditLogFilters, EMPTY_FILTERS,
   DEFAULT_ACTIONS, HTTP_METHODS, ACTOR_ROLES, PAGE_SIZES, METHOD_STYLES,
-  formatAction, formatDateTime, actionStyle, buildQuery,
+  formatAction, formatRole, formatDateTime, actionStyle, buildQuery,
 } from "./auditLogTypes";
 
 const inputCls =
   "w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-[13px] bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors";
-const labelCls = "block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1";
+const labelCls = "block text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1";
 
 export default function SystemLogsTab() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
@@ -91,7 +91,7 @@ export default function SystemLogsTab() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-slate-400" />
-            <h2 className="text-sm font-black text-slate-900">Filters</h2>
+            <h2 className="text-sm font-bold text-slate-900">Filters</h2>
             {activeFilterCount > 0 && (
               <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
                 {activeFilterCount} active
@@ -102,7 +102,7 @@ export default function SystemLogsTab() {
             variant="outline"
             size="sm"
             onClick={() => setShowDelete(true)}
-            className="rounded-lg border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+            className="rounded-lg border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 text-[13px]"
           >
             <Trash2 className="h-4 w-4 mr-1.5" /> Purge by Date
           </Button>
@@ -149,7 +149,7 @@ export default function SystemLogsTab() {
             <select className={inputCls} value={draft.actor_role}
               onChange={(e) => setDraft({ ...draft, actor_role: e.target.value })}>
               <option value="">All roles</option>
-              {ACTOR_ROLES.map((r) => <option key={r} value={r}>{r.replace(/_/g, " ")}</option>)}
+              {ACTOR_ROLES.map((r) => <option key={r} value={r}>{formatRole(r)}</option>)}
             </select>
           </div>
         </div>
@@ -180,7 +180,7 @@ export default function SystemLogsTab() {
         <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-slate-400" />
-            <h2 className="text-sm font-black text-slate-900 whitespace-nowrap">System Audit Logs</h2>
+            <h2 className="text-sm font-bold text-slate-900 whitespace-nowrap">System Audit Logs</h2>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-slate-400 whitespace-nowrap">
@@ -233,7 +233,7 @@ export default function SystemLogsTab() {
                           <p className="font-semibold text-slate-800 truncate max-w-[180px] 2xl:max-w-[260px]" title={log.actor_email || log.actor_id || ""}>
                             {log.actor_email || log.actor_id || "Unknown"}
                           </p>
-                          <p className="text-xs text-slate-400 capitalize">{log.actor_role?.replace(/_/g, " ") || "—"}</p>
+                          <p className="text-xs text-slate-400 capitalize">{formatRole(log.actor_role)}</p>
                         </td>
                         <td className="px-4 py-2.5 whitespace-nowrap">
                           <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full ${actionStyle(log.action)}`}>
@@ -268,7 +268,7 @@ export default function SystemLogsTab() {
                     <div className="flex items-center justify-between gap-3 pt-1">
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-slate-700 truncate">{log.actor_email || log.actor_id || "Unknown"}</p>
-                        <p className="text-xs text-slate-400 capitalize">{log.actor_role?.replace(/_/g, " ") || "—"}</p>
+                        <p className="text-xs text-slate-400 capitalize">{formatRole(log.actor_role)}</p>
                       </div>
                       <div className="flex items-center gap-3 shrink-0">
                         <span className={`text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap ${actionStyle(log.action)}`}>{formatAction(log.action)}</span>
@@ -337,7 +337,7 @@ function Endpoint({ log }: { log: AuditLog }) {
   if (log.endpoint && (log.description || "").includes(log.endpoint.replace(/^\/api\//, ""))) return null; // the description already shows the path
   return (
     <div className="flex items-center gap-2 mt-1 min-w-0">
-      {method && <span className={`shrink-0 text-[10px] font-black px-1.5 py-0.5 rounded ${METHOD_STYLES[method] || "bg-slate-100 text-slate-600"}`}>{method}</span>}
+      {method && <span className={`shrink-0 text-[11px] font-bold px-1.5 py-0.5 rounded ${METHOD_STYLES[method] || "bg-slate-100 text-slate-600"}`}>{method}</span>}
       {log.endpoint && <span className="font-mono text-[11px] text-slate-400 truncate" title={log.endpoint}>{log.endpoint}</span>}
     </div>
   );
@@ -393,7 +393,7 @@ function DeleteByDateModal({ onClose, onDeleted }: { onClose: () => void; onDele
               <AlertTriangle className="h-5 w-5 text-red-600" />
             </div>
             <div>
-              <h3 className="text-lg font-black text-slate-900">Purge Audit Logs</h3>
+              <h3 className="text-sm font-bold text-slate-900">Purge Audit Logs</h3>
               <p className="text-xs text-slate-500">This permanently deletes logs in the selected range.</p>
             </div>
           </div>

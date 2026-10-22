@@ -78,7 +78,7 @@ function Section({
 }) {
   return (
     <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
-      <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide mb-4">
+      <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-4">
         {title}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-3">
@@ -749,7 +749,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
     if (activeDeclineForm !== position) return null;
     return (
       <div className="bg-red-50 border border-red-100 rounded-lg p-4 mt-4 w-full">
-        <h3 className="text-sm font-black text-red-900 mb-3">Reason for Rejection</h3>
+        <h3 className="text-sm font-bold text-red-900 mb-3">Reason for Rejection</h3>
         <div className="flex flex-col sm:flex-row gap-3 items-end">
           <div className="flex-1 w-full">
             <label className="block text-xs font-bold text-red-700 uppercase tracking-wide mb-1.5">Reason</label>
@@ -1002,7 +1002,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
 
       {showPartialPayment && (
         <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mt-4">
-          <h3 className="text-sm font-black text-blue-900 mb-3">Mark as Partially Paid</h3>
+          <h3 className="text-sm font-bold text-blue-900 mb-3">Mark as Partially Paid</h3>
           <div className="flex flex-col sm:flex-row gap-3 items-end">
             <div className="flex-1 w-full">
               <label className="block text-xs font-bold text-blue-700 uppercase tracking-wide mb-1.5">Amount Paid (KES)</label>
@@ -1062,7 +1062,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
 
       {showChargeInterest && (
         <div className="bg-purple-50 border border-purple-100 rounded-lg p-4 mt-4">
-          <h3 className="text-sm font-black text-purple-900 mb-3">Charge Interest</h3>
+          <h3 className="text-sm font-bold text-purple-900 mb-3">Charge Interest</h3>
           <div className="flex flex-col sm:flex-row gap-3 items-end">
             <div className="flex-1 w-full">
               <label className="block text-xs font-bold text-purple-700 uppercase tracking-wide mb-1.5">Interest Rate (%)</label>
@@ -1122,7 +1122,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
               <div className="p-1.5 bg-indigo-500/20 rounded-lg">
                 <AlertTriangle className="h-4 w-4 text-indigo-400" />
               </div>
-              <h2 className="text-sm font-black tracking-wide">AI DECISION ENGINE</h2>
+              <h2 className="text-sm font-bold tracking-wide">AI DECISION ENGINE</h2>
             </div>
             
             {loadingRisk ? (
@@ -1135,7 +1135,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
                     <p className="text-slate-400 text-[11px] font-bold uppercase tracking-wide mb-0.5">CRB Score</p>
-                    <p className="text-2xl font-black text-emerald-400">{riskProfile?.score} <span className="text-sm text-slate-500">/ 1000</span></p>
+                    <p className="text-2xl font-bold text-emerald-400">{riskProfile?.score} <span className="text-sm text-slate-500">/ 1000</span></p>
                   </div>
                   <div>
                     <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Requested Amount</p>
@@ -1279,7 +1279,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
             <div className="flex items-center gap-3">
               <Percent className="h-5 w-5 text-indigo-600" />
               <div>
-                <h2 className="font-black text-indigo-900">
+                <h2 className="font-bold text-indigo-900">
                   Set Loan Terms for This Application
                 </h2>
                 <p className="text-sm text-indigo-700 mt-0.5">
@@ -1379,7 +1379,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
             {/* Preview Breakdown */}
             {loanPreview && (
               <div className="bg-white rounded-lg border border-indigo-200 p-4">
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-wide mb-4">
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-4">
                   Loan Breakdown Preview
                 </h3>
                 <div className="space-y-2">
@@ -1411,7 +1411,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                     <span className="text-sm font-semibold text-emerald-700">
                       Applicant Will Receive
                     </span>
-                    <span className="text-lg font-black text-emerald-700">
+                    <span className="text-base font-bold text-emerald-700">
                       {formatKES(loanPreview.disbursementAmount)}
                     </span>
                   </div>
@@ -1427,7 +1427,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                     <span className="text-sm font-semibold text-gray-700">
                       Total Repayment
                     </span>
-                    <span className="text-lg font-black text-slate-900">
+                    <span className="text-base font-bold text-slate-900">
                       {formatKES(loanPreview.repaymentAmount)}
                     </span>
                   </div>
@@ -1475,7 +1475,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
       {/* ── Direct Approve/Decline for Non-Personal Loans ── */}
       {canEditLoanTerms && isPending && app.loanType.toLowerCase() !== "personal" && (
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
-          <h3 className="text-sm font-black text-slate-900 uppercase tracking-wide mb-4">
+          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-4">
             Application Actions
           </h3>
 
@@ -1628,7 +1628,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
 
       {/* ── Admin Notes ── */}
       <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
-        <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide mb-4">
+        <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-4">
           Admin Notes
         </h2>
         <textarea
@@ -1647,7 +1647,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
         <div className="bg-white rounded-lg border-2 border-purple-200 shadow-sm p-4">
           <div className="flex items-center gap-2 mb-1">
             <Banknote className="h-4 w-4 text-purple-600" />
-            <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide">
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
               Mark as Disbursed
             </h2>
           </div>
@@ -1681,7 +1681,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
       {/* ── Send Email to Applicant ── */}
       <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide">
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
             Contact Applicant
           </h2>
           {!showEmailComposer && (
@@ -1834,7 +1834,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
       <div className="bg-white rounded-lg border border-red-100 shadow-sm p-4 mt-8">
         <div className="flex items-center gap-2 mb-2">
           <AlertTriangle className="h-5 w-5 text-red-500" />
-          <h2 className="text-sm font-black text-red-600 uppercase tracking-wide">
+          <h2 className="text-sm font-bold text-red-600 uppercase tracking-wide">
             Danger Zone
           </h2>
         </div>
@@ -1868,7 +1868,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
             <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4 mx-auto">
               <AlertTriangle className="h-6 w-6 text-red-600" />
             </div>
-            <h3 className="text-lg font-black text-center text-slate-900 mb-2">Are you absolutely sure?</h3>
+            <h3 className="text-sm font-bold text-center text-slate-900 mb-2">Are you absolutely sure?</h3>
             <p className="text-sm text-slate-500 text-center mb-6">
               This action will permanently delete the application. All associated data will be removed.
             </p>

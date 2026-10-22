@@ -265,14 +265,14 @@ export default function ManageStaffPage() {
               <button
                 type="button"
                 onClick={closeForm}
-                className="flex-1 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors border border-transparent hover:border-slate-200"
+                className="flex-1 py-1.5 text-[13px] font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors border border-transparent hover:border-slate-200"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`flex-[2] py-2 text-white text-sm font-bold rounded-lg transition-all shadow-sm flex items-center justify-center gap-2 ${
+                className={`flex-[2] py-1.5 text-white text-[13px] font-bold rounded-lg transition-all shadow-sm flex items-center justify-center gap-2 ${
                   formRole === "hr"
                     ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20"
                     : "bg-violet-600 hover:bg-violet-700 shadow-violet-600/20"
@@ -294,7 +294,7 @@ export default function ManageStaffPage() {
           return (
             <div key={comp.code} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
               <div className="px-4 sm:px-6 py-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between gap-3">
-                <h3 className="font-black text-slate-800 uppercase tracking-wider text-sm">{comp.name}</h3>
+                <h3 className="font-bold text-slate-800 uppercase tracking-wider text-sm">{comp.name}</h3>
                 <span className="text-xs text-slate-500 font-mono bg-slate-200/50 px-2 py-1 rounded-md">{comp.code}</span>
               </div>
               <div className="p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">

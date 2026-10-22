@@ -239,7 +239,7 @@ export default function ManageApplicantsPage() {
 
       {/* Bulk Upload Section */}
       <div className="bg-white p-4 rounded-lg ring-1 ring-slate-200 shadow-sm">
-        <h2 className="text-base font-bold text-slate-900 mb-3 flex items-center">
+        <h2 className="text-[13px] font-bold text-slate-900 mb-3 flex items-center">
           <Upload className="h-5 w-5 mr-2 text-blue-600" /> Bulk Employee Upload
         </h2>
         <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">

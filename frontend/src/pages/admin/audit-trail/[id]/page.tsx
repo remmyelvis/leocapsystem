@@ -8,6 +8,7 @@ import { apiCall } from "@/lib/apiClient";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { formatRole } from "../auditLogTypes";
 
 interface AuditTrailDetail {
   id: string;
@@ -35,7 +36,7 @@ function DetailCard({ title, icon: Icon, children }: { title: string; icon: any;
     <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
       <div className="flex items-center gap-2 mb-5 pb-3 border-b border-slate-100">
         <Icon className="h-5 w-5 text-slate-400" />
-        <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide">{title}</h2>
+        <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide">{title}</h2>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-4">
         {children}
@@ -51,7 +52,7 @@ function Field({ label, value, isCurrency = false }: { label: string; value?: st
 
   return (
     <div>
-      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1">
         {label}
       </p>
       <p className="text-sm text-slate-900 font-medium break-words">{displayValue}</p>
@@ -146,7 +147,7 @@ export default function AuditTrailDetailPage() {
             <h1 className="text-lg font-bold text-slate-900">
               Audit Trail Record
             </h1>
-            <span className="text-xs font-bold px-3 py-1 rounded-full bg-blue-100 text-brand-blue">
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-brand-blue">
               {actionName}
             </span>
           </div>
@@ -160,15 +161,15 @@ export default function AuditTrailDetailPage() {
         {/* User Details */}
         <DetailCard title="Action Initiated By" icon={User}>
           <Field label="User Email" value={data.changed_by_email} />
-          <Field label="Role" value={data.changed_by_role.toUpperCase()} />
-          {data.changed_by_company && <Field label="Company" value={data.changed_by_company} />}
+          <Field label="Role" value={formatRole(data.changed_by_role)} />
+          {data.changed_by_company && <Field label="Company" value={data.changed_by_company.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())} />}
           <Field label="Date & Time" value={date} />
         </DetailCard>
 
         {/* Application Details */}
         <DetailCard title="Application Context" icon={FileText}>
           <div className="col-span-full">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1">
               Application ID
             </p>
             <div className="flex items-center gap-2">
@@ -178,7 +179,7 @@ export default function AuditTrailDetailPage() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="h-8 text-xs rounded-lg"
+                className="h-8 text-[13px] rounded-lg"
                 onClick={() => navigate(`/admin/applications/${data.application_id}`)}
               >
                 View Application
@@ -195,12 +196,12 @@ export default function AuditTrailDetailPage() {
       <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
         <div className="flex items-center gap-2 mb-5 pb-3 border-b border-slate-100">
           <Activity className="h-5 w-5 text-slate-400" />
-          <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide">Changes Recorded</h2>
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide">Changes Recorded</h2>
         </div>
         
         {data.notes && (
           <div className="mb-6 bg-slate-50 rounded-lg p-4 border border-slate-100">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Audit Notes</p>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">Audit Notes</p>
             <p className="text-sm text-slate-800">{data.notes}</p>
           </div>
         )}
@@ -209,9 +210,9 @@ export default function AuditTrailDetailPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-slate-50 rounded-t-xl">
-                <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase rounded-tl-xl w-1/3">Property</th>
-                <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase w-1/3">Previous Value</th>
-                <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase rounded-tr-xl w-1/3">New Value</th>
+                <th className="text-left px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wide rounded-tl-xl w-1/3">Property</th>
+                <th className="text-left px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wide w-1/3">Previous Value</th>
+                <th className="text-left px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wide rounded-tr-xl w-1/3">New Value</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">

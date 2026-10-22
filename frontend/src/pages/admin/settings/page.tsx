@@ -8,7 +8,7 @@ import ProfilePage from "../profile/page";
 function GeneralSettings() {
   return (
     <div className="bg-white rounded-lg ring-1 ring-slate-900/5 shadow-sm p-4">
-      <h2 className="text-base font-bold text-slate-900 mb-4">System Settings</h2>
+      <h2 className="text-[13px] font-bold text-slate-900 mb-3">System Settings</h2>
       <div className="space-y-3 max-w-md">
         <div>
           <label className="block text-[13px] font-medium text-slate-700 mb-1">Company Name</label>

@@ -209,7 +209,7 @@ export default function FinancialAnalysisPage() {
       </div>
 
       <div className="bg-white p-4 rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
-        <h2 className="text-base font-bold mb-3">1. Upload Statement & Loan Request</h2>
+        <h2 className="text-[13px] font-bold mb-3">1. Upload Statement & Loan Request</h2>
           <div className="mb-3">
             <label className="block text-[13px] font-medium text-slate-700 mb-1">Loan Ask Amount (KES) - Optional, used to guide affordability analysis</label>
             <input 
@@ -232,7 +232,7 @@ export default function FinancialAnalysisPage() {
           </Button>
         </div>
         
-        <h2 className="text-base font-bold mb-3 pt-4 border-t border-slate-100">2. Run Analysis</h2>
+        <h2 className="text-[13px] font-bold mb-3 pt-4 border-t border-slate-100">2. Run Analysis</h2>
         <div className="flex flex-wrap gap-x-4 gap-y-2 items-center">
           <Button onClick={handleAnalyze} disabled={isAnalyzing || !uploadId} className="w-full sm:w-64 bg-emerald-600 hover:bg-emerald-700">
             {isAnalyzing ? "Processing AI Analysis..." : "Run AI Analysis"}
@@ -245,7 +245,7 @@ export default function FinancialAnalysisPage() {
       {/* Statement History */}
       {history.length > 0 && (
         <div className="bg-white p-4 rounded-lg border border-slate-100 shadow-sm mb-6">
-          <h3 className="font-bold text-slate-800 mb-4">Uploaded Statements</h3>
+          <h3 className="text-[13px] font-bold text-slate-800 mb-3">Uploaded Statements</h3>
           <div className="space-y-3">
             {history.map((stmt: any) => (
               <div key={stmt.id} className="flex flex-wrap items-center justify-between gap-2 p-3 border border-slate-100 rounded-lg">
@@ -267,7 +267,7 @@ export default function FinancialAnalysisPage() {
         <>
         {analysis.gemini_narrative && (
           <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-100 shadow-sm mb-6">
-            <h3 className="font-bold text-indigo-900 mb-2 flex items-center gap-2">
+            <h3 className="text-[13px] font-bold text-indigo-900 mb-2 flex items-center gap-2">
               AI Executive Summary
             </h3>
             <p className="text-slate-800 text-sm whitespace-pre-wrap leading-relaxed">
@@ -278,7 +278,7 @@ export default function FinancialAnalysisPage() {
 
         <div className="bg-white p-4 rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-            <h2 className="text-lg font-bold">Analysis Results</h2>
+            <h2 className="text-[13px] font-bold">Analysis Results</h2>
             <div className="flex gap-2">
               {analysis.credit_analysis.mpesa && (
                 <Button variant={activeTab === 'mpesa' ? 'default' : 'outline'} size="sm" onClick={() => setActiveTab('mpesa')}>
@@ -302,14 +302,14 @@ export default function FinancialAnalysisPage() {
                 <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                   <div className="flex flex-col md:flex-row gap-4 mb-5">
                     <div className="flex-1 bg-slate-50 p-4 rounded-lg border border-slate-100 flex flex-col items-center justify-center text-center">
-                      <p className="text-slate-500 font-medium mb-1">Credit Score</p>
-                      <h3 className={`text-4xl font-black ${currentData.score > 250 ? 'text-emerald-600' : currentData.score > 150 ? 'text-amber-500' : 'text-red-500'}`}>
+                      <p className="text-slate-500 text-[13px] font-medium mb-1">Credit Score</p>
+                      <h3 className={`text-3xl font-bold ${currentData.score > 250 ? 'text-emerald-600' : currentData.score > 150 ? 'text-amber-500' : 'text-red-500'}`}>
                         {currentData.score}
                       </h3>
                       <p className="text-slate-400 text-sm mt-2">Max 400</p>
                     </div>
                     <div className="flex-[2] bg-blue-50 p-4 rounded-lg border border-blue-100">
-                      <p className="text-blue-900 font-medium mb-3">Score Factors</p>
+                      <p className="text-blue-900 text-[13px] font-medium mb-2">Score Factors</p>
                       <ul className="space-y-2">
                         {currentData.details?.map((d: any, i: number) => (
                           <li key={i} className="flex justify-between text-sm">
@@ -323,7 +323,7 @@ export default function FinancialAnalysisPage() {
 
                   {currentData.advanced_metrics && (
                     <div className="mb-5 p-4 bg-slate-50 rounded-lg border border-slate-100">
-                      <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                      <h3 className="text-[13px] font-bold text-slate-800 mb-3 flex items-center gap-2">
                         <AlertTriangle className="h-4 w-4 text-amber-500" />
                         Risk Indicators & Affordability
                       </h3>
@@ -379,7 +379,7 @@ export default function FinancialAnalysisPage() {
                         )}
                         
                         <div className="bg-white p-4 rounded-lg border border-slate-200">
-                          <h4 className="font-bold text-slate-800 mb-2">Extremes</h4>
+                          <h4 className="text-[13px] font-bold text-slate-800 mb-2">Extremes</h4>
                           <ul className="text-sm space-y-1 text-slate-600">
                             <li>Highest Balance: {currentData.advanced_metrics.highest_balance?.toLocaleString()}</li>
                             <li>Lowest Balance: {currentData.advanced_metrics.lowest_balance?.toLocaleString()}</li>
@@ -423,8 +423,8 @@ export default function FinancialAnalysisPage() {
         
         {/* Chat with Statement */}
         <div className="bg-white p-4 rounded-lg border border-slate-100 shadow-sm mt-5">
-          <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-            ?? Chat with this Statement
+          <h3 className="text-[13px] font-bold text-slate-800 mb-3 flex items-center gap-2">
+            Chat with this Statement
           </h3>
           <div className="bg-slate-50 border border-slate-200 rounded-lg h-64 overflow-y-auto p-4 mb-4 space-y-4">
             {chatHistory.length === 0 ? (
@@ -465,7 +465,7 @@ export default function FinancialAnalysisPage() {
       {/* Recent Transactions Table */}
       {analysis && analysis.recent_transactions && (
         <div className="bg-white p-4 rounded-lg border border-slate-100 shadow-sm mt-6">
-          <h3 className="font-bold text-slate-800 mb-4">Sample Transactions</h3>
+          <h3 className="text-[13px] font-bold text-slate-800 mb-3">Sample Transactions</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="bg-slate-50 text-slate-500">

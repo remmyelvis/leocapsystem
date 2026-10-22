@@ -124,6 +124,7 @@ html {
     font-size: 13px;
     line-height: 1.25rem;
   }
+  html.admin-ui main select { font-weight: 500; }
 }
 
 /* Prevent Flex/Grid text overflow blowouts */

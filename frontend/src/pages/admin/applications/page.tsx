@@ -46,7 +46,7 @@ const repaymentStyle = (status?: string | null) => {
 };
 
 const Pill = ({ className, children }: { className: string; children: React.ReactNode }) => (
-  <span className={`inline-flex shrink-0 text-xs font-bold px-2.5 py-1 rounded-full whitespace-nowrap capitalize ${className}`}>{children}</span>
+  <span className={`inline-flex shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap capitalize ${className}`}>{children}</span>
 );
 
 const ViewButton = ({ id }: { id: string }) => (

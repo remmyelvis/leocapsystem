@@ -5,6 +5,7 @@ import { Search, Eye, Loader2, ArrowUpDown, History, ExternalLink } from "lucide
 import { apiCall } from "@/lib/apiClient";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { formatRole } from "./auditLogTypes";
 
 interface AuditTrail {
   id: string;
@@ -82,7 +83,7 @@ function ViewLink({ id }: { id: string }) {
   );
 }
 
-const roleLabel = (role?: string | null) => (role === "hr" ? "HR" : role ? sentence(role) : "—");
+const roleLabel = formatRole;
 
 const PERIODS = [
   { value: "all", label: "All Time" },
@@ -167,7 +168,7 @@ export default function ApplicationChangesTab() {
         <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <History className="h-4 w-4 text-slate-400" />
-            <h2 className="text-sm font-black text-slate-900">Loan Changes</h2>
+            <h2 className="text-sm font-bold text-slate-900">Loan Changes</h2>
           </div>
           <span className="text-xs text-slate-400">
             {pagination ? `${pagination.total_items.toLocaleString()} change${pagination.total_items !== 1 ? "s" : ""}` : ""}

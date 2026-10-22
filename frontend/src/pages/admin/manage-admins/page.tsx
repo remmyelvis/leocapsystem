@@ -175,7 +175,7 @@ export default function ManageAdminsPage({ embedded = false }: { embedded?: bool
         {/* ── Current Admins Table ── */}
         <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm overflow-hidden">
           <div className="px-4 sm:px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-            <h2 className="text-base font-black text-slate-900">
+            <h2 className="text-[13px] font-bold text-slate-900">
               Current Admins
             </h2>
             <span className="text-xs text-slate-400">{admins.length} admin{admins.length !== 1 ? "s" : ""}</span>
@@ -198,7 +198,7 @@ export default function ManageAdminsPage({ embedded = false }: { embedded?: bool
                     key={admin.id}
                     className="px-4 sm:px-6 py-3.5 flex items-center gap-3 sm:gap-4"
                   >
-                    <div className="w-9 h-9 rounded-full bg-[#1E3A8A] flex items-center justify-center text-white text-sm font-black select-none flex-shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-[#1E3A8A] flex items-center justify-center text-white text-sm font-bold select-none flex-shrink-0">
                       {admin.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -255,7 +255,7 @@ export default function ManageAdminsPage({ embedded = false }: { embedded?: bool
               <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
                 <UserPlus className="h-4 w-4 text-[#1E3A8A]" />
               </div>
-              <h2 className="text-base font-black text-slate-900">Add Admin</h2>
+              <h2 className="text-[13px] font-bold text-slate-900">Add Admin</h2>
             </div>
 
             <form
@@ -385,7 +385,7 @@ export default function ManageAdminsPage({ embedded = false }: { embedded?: bool
         ) : (
           <div className="bg-slate-50 rounded-lg border border-slate-200 p-4 flex flex-col items-center justify-center text-center min-h-[300px]">
             <Shield className="h-12 w-12 text-gray-300 mb-4" />
-            <h3 className="text-lg font-bold text-slate-600">Restricted Access</h3>
+            <h3 className="text-[13px] font-bold text-slate-600">Restricted Access</h3>
             <p className="text-sm text-slate-400 mt-2 max-w-xs">
               Only the super admin can add new administrator accounts to the system.
             </p>

@@ -59,6 +59,12 @@ export const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"];
 export const ACTOR_ROLES = ["admin", "super_admin", "hr", "finance", "applicant"];
 export const PAGE_SIZES = [10, 25, 50, 100];
 
+// One wording for a role everywhere in the audit trail: "Admin", "Super Admin", "HR", "Finance", "Applicant".
+export function formatRole(role?: string | null) {
+  if (!role) return "—";
+  return role.replace(/_/g, " ").split(" ").map((w) => (w.toLowerCase() === "hr" ? "HR" : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())).join(" ");
+}
+
 export function formatAction(action?: string | null) {
   if (!action) return "—";
   // Handles both "update" and enum-style "AuditAction.UPDATE"

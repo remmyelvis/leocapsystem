@@ -136,17 +136,20 @@ function SidebarContent({
     <>
       {/* Logo + collapse toggle */}
       <div
-        className={`flex items-center border-b border-slate-800 flex-shrink-0 h-16 ${
-          collapsed ? "px-3 justify-center" : "px-5"
+        className={`flex items-center bg-white border-b border-slate-200 flex-shrink-0 h-16 ${
+          collapsed ? "px-2 justify-center gap-1" : "pl-5 pr-3 justify-between"
         }`}
       >
-        {!collapsed && (
-          <BrandLogo size="sm" />
+        {/* The full wordmark when the menu is open, just the "A" when it is collapsed */}
+        {collapsed ? (
+          <BrandLogo src="/logo-mark.png" height="1.5rem" width="1.5rem" />
+        ) : (
+          <BrandLogo src="/logo-wordmark.png" height="2rem" />
         )}
         {showToggle && onToggle && (
           <button
             onClick={onToggle}
-            className="p-1.5 rounded-lg hover:bg-blue-800 transition-colors text-blue-300 flex-shrink-0"
+            className="p-1 rounded-lg hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-700 flex-shrink-0"
             aria-label="Toggle sidebar"
           >
             {collapsed ? (

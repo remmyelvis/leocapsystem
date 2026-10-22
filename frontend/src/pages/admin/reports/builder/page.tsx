@@ -89,7 +89,7 @@ export default function CustomReportBuilder() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         {/* Filters */}
         <div className="md:col-span-1 bg-white rounded-lg shadow-sm border border-slate-100 p-4 space-y-3">
-          <h3 className="font-semibold text-slate-800 flex items-center border-b pb-2">
+          <h3 className="text-[13px] font-semibold text-slate-800 flex items-center border-b pb-2">
             <Filter className="w-4 h-4 mr-2 text-blue-600" /> Filters
           </h3>
           
@@ -132,7 +132,7 @@ export default function CustomReportBuilder() {
 
         {/* Columns Selection */}
         <div className="md:col-span-2 bg-white rounded-lg shadow-sm border border-slate-100 p-4 space-y-3">
-          <h3 className="font-semibold text-slate-800 flex items-center border-b pb-2">
+          <h3 className="text-[13px] font-semibold text-slate-800 flex items-center border-b pb-2">
             <LayoutList className="w-4 h-4 mr-2 text-blue-600" /> Data Columns
           </h3>
           <p className="text-xs text-slate-500 mb-2">Select the fields to include in your export:</p>

@@ -5,9 +5,11 @@ interface BrandLogoProps {
   className?: string;
   width?: number | string;
   height?: number | string;
+  /** Another image to show (for example the tight wordmark), instead of the padded square logo. */
+  src?: string;
 }
 
-export default function BrandLogo({ size = "md", className = "", width, height }: BrandLogoProps) {
+export default function BrandLogo({ size = "md", className = "", width, height, src = "/logo.png" }: BrandLogoProps) {
   const location = useLocation();
 
   let defaultHeightClass = "h-16";
@@ -29,7 +31,7 @@ export default function BrandLogo({ size = "md", className = "", width, height }
   return (
     <Link to={targetPath} className="inline-block transition-opacity hover:opacity-90 active:opacity-80">
       <img
-        src="/logo.png"
+        src={src}
         alt="Leocap Invest"
         className={`${width || height ? "" : defaultHeightClass} object-contain ${className}`.trim()}
         style={customStyle}

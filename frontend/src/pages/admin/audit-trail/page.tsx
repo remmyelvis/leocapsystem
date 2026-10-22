@@ -28,7 +28,7 @@ export default function AuditTrailPage({ embedded = false }: { embedded?: boolea
           <button
             key={key}
             onClick={() => setSearchParams(key === "system" ? {} : { tab: key })}
-            className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-3 py-1.5 rounded-md text-[13px] font-bold whitespace-nowrap transition-colors ${
+            className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-3 py-1.5 rounded-md text-[13px] font-semibold whitespace-nowrap transition-colors ${
               tab === key ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"
             }`}
           >

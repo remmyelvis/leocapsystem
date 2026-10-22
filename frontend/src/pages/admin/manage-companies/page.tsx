@@ -312,7 +312,7 @@ export default function CompaniesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
             <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="text-base font-bold text-slate-900">Add New Company</h2>
+              <h2 className="text-[13px] font-bold text-slate-900">Add New Company</h2>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="text-slate-400 hover:text-slate-600 transition-colors"
@@ -396,7 +396,7 @@ export default function CompaniesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden max-h-[90vh] flex flex-col">
             <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="text-base font-bold text-slate-900">Edit Company: {editingCompany.name}</h2>
+              <h2 className="text-[13px] font-bold text-slate-900">Edit Company: {editingCompany.name}</h2>
               <button
                 onClick={() => setIsEditModalOpen(false)}
                 className="text-slate-400 hover:text-slate-600 transition-colors"
@@ -409,7 +409,7 @@ export default function CompaniesPage() {
               
               {/* Left Column: Company Details Form */}
               <div className="flex-1">
-                <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide mb-4">Company Details</h3>
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide mb-4">Company Details</h3>
                 <form id="edit-company-form" onSubmit={handleUpdateCompany} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Company Name *</label>
@@ -496,7 +496,7 @@ export default function CompaniesPage() {
 
               {/* Right Column: Staff Management */}
               <div className="flex-1 border-t md:border-t-0 md:border-l border-slate-100 pt-6 md:pt-0 md:pl-8 flex flex-col">
-                <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide mb-4">Linked HR & Finance Contacts</h3>
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide mb-4">Linked HR & Finance Contacts</h3>
                 <p className="text-xs text-slate-500 mb-4">To add a new contact for {editingCompany.name}, go to <a href="/admin/manage-staff" className="text-brand-blue underline">Manage HR / Finance</a>.</p>
                 
                 <div className="space-y-3 flex-1 overflow-y-auto">
@@ -547,7 +547,7 @@ export default function CompaniesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-              <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+              <h3 className="text-[13px] font-semibold text-slate-800 flex items-center gap-2">
                 <Mail className="h-5 w-5 text-emerald-600" />
                 Onboard Company
               </h3>

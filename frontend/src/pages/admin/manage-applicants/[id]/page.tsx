@@ -479,7 +479,7 @@ export default function ApplicantDetailsPage() {
     return (
       <div className="p-4 w-full max-w-[800px] mx-auto text-center space-y-4">
         <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto" />
-        <h2 className="text-xl font-bold text-slate-900">Applicant Not Found</h2>
+        <h2 className="text-sm font-bold text-slate-900">Applicant Not Found</h2>
         <p className="text-slate-500">{error || "The requested applicant could not be found."}</p>
         <Button onClick={() => navigate(-1)} className="rounded-lg">Go Back</Button>
       </div>
@@ -522,7 +522,7 @@ export default function ApplicantDetailsPage() {
           <div className={`p-4 border-b bg-${riskProfile.color}-50 border-${riskProfile.color}-100 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3`}>
             <div>
               <div className="flex items-center gap-x-4 gap-y-2 flex-wrap">
-                <h2 className={`text-base font-bold text-${riskProfile.color}-900`}>Credit Risk Profile</h2>
+                <h2 className={`text-[13px] font-bold text-${riskProfile.color}-900`}>Credit Risk Profile</h2>
                 <Button 
                   onClick={async () => {
                     toast.info("Generating CRB Report...");
@@ -544,7 +544,7 @@ export default function ApplicantDetailsPage() {
               <p className={`text-xs text-${riskProfile.color}-700 mt-1`}>Automated algorithmic assessment</p>
             </div>
             <div className="sm:text-right">
-              <div className={`text-2xl font-black text-${riskProfile.color}-600`}>{riskProfile.score} / {riskProfile.max_score}</div>
+              <div className={`text-2xl font-bold text-${riskProfile.color}-600`}>{riskProfile.score} / {riskProfile.max_score}</div>
               <div className={`text-sm font-bold text-${riskProfile.color}-800`}>{riskProfile.tier} ({riskProfile.risk_level})</div>
             </div>
           </div>
@@ -583,7 +583,7 @@ export default function ApplicantDetailsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Personal Information */}
         <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 space-y-4">
-          <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2 mb-4">
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2 mb-4">
             <User className="h-4 w-4 text-brand-blue" />
             Personal Information
           </h2>
@@ -612,7 +612,7 @@ export default function ApplicantDetailsPage() {
 
         {/* Additional Details */}
         <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 space-y-4">
-          <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2 mb-4">
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2 mb-4">
             <Building2 className="h-4 w-4 text-brand-blue" />
             Additional Details
           </h2>
@@ -660,7 +660,7 @@ export default function ApplicantDetailsPage() {
 
       {/* Applications / Loans List */}
       <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 space-y-4">
-        <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2 mb-4">
+        <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2 mb-4">
           <FileText className="h-4 w-4 text-brand-blue" />
           Loan Applications
         </h2>
@@ -705,7 +705,7 @@ export default function ApplicantDetailsPage() {
 
       {/* Statement Actions */}
       <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 space-y-4">
-        <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2 mb-4">
+        <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2 mb-4">
           <FileText className="h-4 w-4 text-brand-blue" />
           Applicant Statement
         </h2>
@@ -801,7 +801,7 @@ export default function ApplicantDetailsPage() {
 
       {/* Upload Documents */}
       <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
-        <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2 mb-6">
+        <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2 mb-6">
           <Upload className="h-4 w-4 text-brand-blue" />
           Upload Documents
         </h2>
@@ -838,7 +838,7 @@ export default function ApplicantDetailsPage() {
 
       {/* Uploaded Documents */}
       <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
-        <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2 mb-6">
+        <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2 mb-6">
           <FileText className="h-4 w-4 text-brand-blue" />
           Uploaded Documents
         </h2>
@@ -911,9 +911,9 @@ export default function ApplicantDetailsPage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 bg-slate-50 rounded-lg border border-slate-100 border-dashed">
+          <div className="text-center py-4 bg-slate-50 rounded-lg border border-slate-100 border-dashed">
             <FileText className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-            <p className="text-slate-500 font-medium">No documents uploaded</p>
+            <p className="text-slate-500 text-[13px] font-medium">No documents uploaded</p>
           </div>
         )}
       </div>

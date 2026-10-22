@@ -218,7 +218,7 @@ export default function AdminProfilePage({ embedded = false }: { embedded?: bool
 
       {/* Avatar + name */}
       <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-3 sm:p-4 flex items-center gap-4">
-        <div className="w-10 h-10 rounded-lg bg-blue-900 flex items-center justify-center text-white text-base font-black select-none flex-shrink-0">
+        <div className="w-10 h-10 rounded-lg bg-blue-900 flex items-center justify-center text-white text-base font-bold select-none flex-shrink-0">
           {adminData?.name?.charAt(0).toUpperCase() ?? "A"}
         </div>
         <div className="flex-1">
