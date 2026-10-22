@@ -7,7 +7,6 @@ import {
   Check,
   CheckCircle,
   ChevronRight,
-  Clock,
   CreditCard,
   ExternalLink,
   Mail,
@@ -101,9 +100,9 @@ function HeroCard() {
 
 function HeroSection() {
   const stats = [
-    { icon: Users, label: "Clients Served", value: "500+" },
-    { icon: TrendingUp, label: "Disbursed", value: "KES 50M+" },
-    { icon: Clock, label: "Approval Time", value: "24 Hrs" },
+    { label: "Clients Served", value: "500+" },
+    { label: "Disbursed", value: "KES 50M+" },
+    { label: "Approval Time", value: "24 Hrs" },
   ];
 
   return (
@@ -147,7 +146,7 @@ function HeroSection() {
             professionals with fast, fair, and flexible financial solutions.
           </p>
 
-          <div className="mb-12 flex flex-wrap gap-4">
+          <div className="mb-11 flex flex-wrap gap-4">
             <Link to={APPLY_TO}>
               <Button
                 size="lg"
@@ -167,19 +166,14 @@ function HeroSection() {
             </Button>
           </div>
 
-          {/* Stats: one joined strip, three across even on a phone */}
-          <dl className="grid grid-cols-3 divide-x divide-white/15 rounded-2xl bg-[#081430]/60 shadow-lg shadow-black/20 ring-1 ring-white/20 backdrop-blur-md">
-            {stats.map(({ icon: Icon, label, value }) => (
-              <div key={label} className="flex flex-col items-start gap-2.5 px-3.5 py-4 sm:flex-row sm:items-center sm:gap-3.5 sm:px-5">
-                <div className="hidden h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-red-600 sm:flex">
-                  <Icon className="h-[18px] w-[18px] text-white" />
-                </div>
-                <div>
-                  <dd className="order-first whitespace-nowrap text-[18px] font-extrabold leading-none text-white sm:text-[22px]">
-                    <CountUp value={value} />
-                  </dd>
-                  <dt className="mt-1 text-[12px] leading-tight text-blue-100 sm:mt-1.5 sm:text-[13px]">{label}</dt>
-                </div>
+          {/* Stats: just the numbers, under one hairline, so they support the headline instead of competing with it */}
+          <dl className="grid grid-cols-3 gap-x-4 border-t border-white/15 pt-6 sm:gap-x-10">
+            {stats.map(({ label, value }) => (
+              <div key={label}>
+                <dd className="order-first whitespace-nowrap text-[20px] font-extrabold leading-none tracking-tight text-white sm:text-[28px]">
+                  <CountUp value={value} />
+                </dd>
+                <dt className="mt-2 text-[12px] leading-tight text-blue-100 sm:text-[13px]">{label}</dt>
               </div>
             ))}
           </dl>
