@@ -1,16 +1,13 @@
 import type { CSSProperties, ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ArrowLeft, Mail, Phone, Shield, User } from "lucide-react";
+import { ArrowLeft, CircleHelp, Mail, Phone, Shield, User } from "lucide-react";
 import BrandLogo from "@/components/global/BrandLogo";
+import { GRAIN, MarkMotif } from "@/components/global/brandArt";
 import StepsCard, { type PanelStep } from "./StepsCard";
 import { statusDisplay } from "@/lib/loanStatus";
 
 export type AuthVariant = "applicant" | "admin";
 export type AuthPage = AuthVariant | "forgot" | "reset" | "register";
-
-// Light speckle on the dark navy: a flat saturated field reads as a template, a faint grain reads as a surface.
-const GRAIN =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .14 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
 
 const PANEL: CSSProperties = {
   backgroundColor: "#081430",
@@ -121,22 +118,11 @@ function PanelCard({ page }: { page: AuthPage }) {
   }
 }
 
-// The shape of the Leocap mark, redrawn large and faint so the panel feels like the brand without a logo on navy.
-function MarkMotif({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 256 256" className={className} aria-hidden>
-      <polygon points="12,228 104,26 170,26 76,228" fill="#ff6a3d" fillOpacity="0.13" />
-      <polygon points="104,26 170,26 128,98" fill="#e8310a" fillOpacity="0.18" />
-      <polygon points="170,26 237,228 178,228 128,98" fill="#b3180a" fillOpacity="0.20" />
-    </svg>
-  );
-}
-
 function Eyebrow({ children }: { children: ReactNode }) {
   return (
     <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-[#081430]/50 px-3.5 py-1.5 backdrop-blur-sm">
       <span className="h-2 w-2 rounded-full bg-red-400 motion-safe:animate-pulse" />
-      <span className="text-[12px] font-semibold tracking-wide text-white/90">{children}</span>
+      <span className="text-[12px] font-semibold tracking-wide text-white">{children}</span>
     </div>
   );
 }
@@ -148,7 +134,7 @@ function PortalSwitch({ variant }: { variant: AuthVariant }) {
       to={{ pathname: to, search }}
       aria-current={on ? "page" : undefined}
       className={`flex min-h-[40px] flex-1 items-center justify-center gap-2 rounded-lg px-3 text-[13px] font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40 ${
-        on ? "bg-white text-brand-blue shadow-sm ring-1 ring-slate-900/5" : "text-slate-500 hover:text-slate-800"
+        on ? "bg-white text-brand-blue shadow-sm ring-1 ring-slate-900/5" : "text-slate-600 hover:text-slate-900"
       }`}
     >
       <Icon className="h-4 w-4" />
@@ -184,7 +170,7 @@ export default function AuthLayout({ variant, children, top = false }: { variant
         <div className="mx-auto flex w-full max-w-[400px] flex-1 flex-col px-6 pb-8 pt-7 xl:px-0 xl:py-10">
           <div className="flex items-center justify-between">
             <BrandLogo src="/logo-wordmark.png" height="2.25rem" />
-            <Link to="/" className="inline-flex min-h-[40px] items-center gap-1.5 text-[13px] font-medium text-slate-500 transition-colors hover:text-slate-900">
+            <Link to="/" className="inline-flex min-h-[40px] items-center gap-1.5 text-[13px] font-medium text-slate-600 transition-colors hover:text-slate-900">
               <ArrowLeft className="h-3.5 w-3.5" /> Back to site
             </Link>
           </div>
@@ -194,8 +180,10 @@ export default function AuthLayout({ variant, children, top = false }: { variant
             {children}
           </div>
 
-          <p className="text-center text-[12px] text-slate-400">
-            <Link to="/privacy-policy" className="hover:text-slate-600 hover:underline">Privacy policy</Link>
+          <p className="text-center text-[12px] text-slate-600">
+            <Link to="/privacy-policy" className="hover:text-slate-900 hover:underline">Privacy policy</Link>
+            <span className="mx-2">·</span>
+            <Link to="/faq" className="hover:text-slate-900 hover:underline">FAQs</Link>
             <span className="mx-2">·</span>
             <span>© {new Date().getFullYear()} Leocap Invest</span>
           </p>
@@ -211,15 +199,18 @@ export default function AuthLayout({ variant, children, top = false }: { variant
               {copy.lead}
               <span className="bg-gradient-to-r from-red-300 via-red-200 to-amber-200 bg-clip-text text-transparent">{copy.accent}</span>
             </p>
-            <p className="mt-4 max-w-[420px] text-[15px] leading-relaxed text-white/70 [@media(max-height:780px)]:hidden">{copy.text}</p>
+            <p className="mt-4 max-w-[420px] text-[15px] leading-relaxed text-white/80 [@media(max-height:780px)]:hidden">{copy.text}</p>
           </div>
 
           <div className="relative">
             <PanelCard page={variant} />
           </div>
 
-          <div className="relative flex flex-wrap items-center gap-x-6 gap-y-1.5 text-[13px] text-white/60">
+          <div className="relative flex flex-wrap items-center gap-x-6 gap-y-1.5 text-[13px] text-white/75">
             <span>{variant === "register" ? "Questions before you sign up?" : "Need help signing in?"}</span>
+            <Link to="/faq" className="inline-flex items-center gap-1.5 font-semibold text-white hover:underline">
+              <CircleHelp className="h-3.5 w-3.5" /> Read the FAQs
+            </Link>
             <a href="mailto:info@leocapinvest.co.ke" className="inline-flex items-center gap-1.5 text-white/80 hover:text-white">
               <Mail className="h-3.5 w-3.5" /> info@leocapinvest.co.ke
             </a>

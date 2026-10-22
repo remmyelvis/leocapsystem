@@ -82,7 +82,7 @@ export default function ForgotPasswordPage() {
               </AuthSubmit>
             </form>
 
-            <p className="mt-6 rounded-xl bg-slate-50 px-4 py-3 text-[13px] leading-relaxed text-slate-500 ring-1 ring-slate-200/70">
+            <p className="mt-6 rounded-xl bg-slate-50 px-4 py-3 text-[13px] leading-relaxed text-slate-600 ring-1 ring-slate-200/70">
               If the email is registered, the link arrives within a few minutes. It works once and expires in 1 hour. Check your spam folder if you do not see it.
             </p>
           </div>
@@ -100,7 +100,7 @@ export default function ForgotPasswordPage() {
               </>
             }
           />
-          <p className="mt-5 rounded-xl bg-slate-50 px-4 py-3 text-[13px] leading-relaxed text-slate-500 ring-1 ring-slate-200/70">
+          <p className="mt-5 rounded-xl bg-slate-50 px-4 py-3 text-[13px] leading-relaxed text-slate-600 ring-1 ring-slate-200/70">
             The link works once and expires in 1 hour. Nothing there? Check your spam folder.
           </p>
           <div className="mt-6 space-y-3">
@@ -117,7 +117,7 @@ export default function ForgotPasswordPage() {
       )}
 
       {!submitted && (
-        <p className="mt-6 text-center text-[14px] text-slate-500">
+        <p className="mt-6 text-center text-[14px] text-slate-600">
           Remember it?{" "}
           <Link to="/login/applicant" className="font-semibold text-brand-blue hover:underline">
             Sign in

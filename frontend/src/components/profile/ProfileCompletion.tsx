@@ -570,6 +570,9 @@ export function ProfileApplyGate({
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
+          <Link to="/faq#documents" className="block text-center text-xs font-semibold text-blue-700 hover:underline">
+            Which documents do I need?
+          </Link>
         </div>
       </div>
     </div>

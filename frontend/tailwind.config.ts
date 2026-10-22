@@ -74,9 +74,14 @@ const config: Config = {
           from: { opacity: "0", transform: "translateY(10px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
+        "float-slow": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-8px)" },
+        },
       },
       animation: {
         "auth-rise": "auth-rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both",
+        "float-slow": "float-slow 7s ease-in-out infinite",
       },
     },
   },

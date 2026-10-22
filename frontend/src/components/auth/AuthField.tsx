@@ -5,7 +5,7 @@ import { AlertCircle, ArrowLeft, ArrowRight, Check, ChevronDown, Eye, EyeOff, Lo
 // The parts every auth page is made of, so sign-in, reset and sign-up look and behave the same.
 
 const inputBase =
-  "w-full min-h-[48px] rounded-xl border bg-white pl-11 text-[15px] text-slate-900 placeholder:text-slate-400 transition-[border-color,box-shadow] focus:outline-none focus:ring-4 disabled:bg-slate-50 disabled:text-slate-400";
+  "w-full min-h-[48px] rounded-xl border bg-white pl-11 text-[15px] text-slate-900 placeholder:text-slate-500 transition-[border-color,box-shadow] focus:outline-none focus:ring-4 disabled:bg-slate-50 disabled:text-slate-400";
 const inputOk = "border-slate-200 hover:border-slate-300 focus:border-brand-blue focus:ring-brand-blue/10";
 const inputBad = "border-red-300 focus:border-red-400 focus:ring-red-100";
 
@@ -119,7 +119,7 @@ export const PasswordField = forwardRef<HTMLInputElement, PasswordProps>(functio
           aria-label={show ? "Hide password" : "Show password"}
           aria-pressed={show}
           onClick={() => setShow((p) => !p)}
-          className="absolute right-1.5 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40"
+          className="absolute right-1.5 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40"
         >
           {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
@@ -174,7 +174,7 @@ export function AuthSubmit({ loading, loadingLabel, children, disabled }: { load
     <button
       type="submit"
       disabled={loading || disabled}
-      className="group flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-brand-blue text-[15px] font-semibold text-white shadow-[0_10px_24px_-10px_rgba(15,44,89,0.65)] transition-all hover:bg-[#0b2246] hover:shadow-[0_12px_28px_-10px_rgba(15,44,89,0.75)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-blue/25 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:shadow-none"
+      className="group flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-brand-blue text-[15px] font-semibold text-white shadow-[0_10px_24px_-10px_rgba(15,44,89,0.65)] transition-all hover:bg-[#0b2246] hover:shadow-[0_12px_28px_-10px_rgba(15,44,89,0.75)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-blue/25 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-600 disabled:shadow-none"
     >
       {loading ? (
         <>
@@ -212,7 +212,7 @@ export function AuthHeading({ title, sub }: { title: string; sub: ReactNode }) {
   return (
     <>
       <h1 className="text-[28px] font-bold leading-tight tracking-[-0.015em] text-slate-900">{title}</h1>
-      <p className="mt-1.5 text-[14px] leading-relaxed text-slate-500">{sub}</p>
+      <p className="mt-1.5 text-[14px] leading-relaxed text-slate-600">{sub}</p>
     </>
   );
 }
@@ -231,7 +231,7 @@ export function AuthLinkButton({ to, children }: { to: string; children: ReactNo
 
 export function BackLink({ to, children }: { to: string; children: ReactNode }) {
   return (
-    <Link to={to} className="mb-6 inline-flex min-h-[32px] items-center gap-1.5 text-[13px] font-medium text-slate-500 transition-colors hover:text-slate-900">
+    <Link to={to} className="mb-6 inline-flex min-h-[32px] items-center gap-1.5 text-[13px] font-medium text-slate-600 transition-colors hover:text-slate-900">
       <ArrowLeft className="h-3.5 w-3.5" /> {children}
     </Link>
   );

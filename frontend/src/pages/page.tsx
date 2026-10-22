@@ -1,116 +1,103 @@
-
-
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight,
   Briefcase,
+  Check,
   CheckCircle,
   ChevronRight,
   Clock,
   CreditCard,
+  ExternalLink,
   Mail,
   MapPin,
-  Menu,
   Phone,
   Shield,
-  Star,
   TrendingUp,
   Users,
-  X,
 } from "lucide-react";
-import BrandLogo from "@/components/global/BrandLogo";
+import { MarkMotif, navy } from "@/components/global/brandArt";
+import { CountUp, Reveal } from "@/components/landing/motion";
+import SiteHeader from "@/components/landing/SiteHeader";
+import SiteFooter from "@/components/landing/SiteFooter";
+import SectionHeader from "@/components/landing/SectionHeader";
+import TestimonialsSection from "@/components/landing/TestimonialsSection";
+import { ADDRESS, APPLY_TO, EMAIL, MAPS_URL, PHONES } from "@/components/landing/site";
 
-// ─── Brand Logo ───────────────────────────────────────────────────────────────
-
-// Removed old Logo function in favor of BrandLogo
-
-// ─── Navbar ───────────────────────────────────────────────────────────────────
-
-function Navbar() {
-  const [open, setOpen] = useState(false);
-  const navLinks = ["Home", "About", "Products", "Contact"];
-
-  return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-        <BrandLogo />
-
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <a
-              key={link}
-              href={`#${link.toLowerCase()}`}
-              className="text-sm font-medium text-slate-600 hover:text-brand-blue transition-colors"
-            >
-              {link}
-            </a>
-          ))}
-        </nav>
-
-        <div className="hidden md:flex items-center gap-3">
-          <Link to="/login">
-            <Button
-              variant="outline"
-              className="border-brand-blue text-brand-blue hover:bg-blue-50 font-semibold"
-            >
-              Sign In
-            </Button>
-          </Link>
-          <Link to="/login">
-            <Button className="bg-red-600 hover:bg-red-700 text-white font-bold shadow-md shadow-red-900/20">
-              Apply Now
-            </Button>
-          </Link>
-        </div>
-
-        {/* Mobile hamburger */}
-        <button
-          className="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
-          onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
-        >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
-      </div>
-
-      {/* Mobile menu */}
-      {open && (
-        <div className="md:hidden border-t border-slate-100 bg-white px-4 pb-5 pt-3 flex flex-col gap-1">
-          {navLinks.map((link) => (
-            <a
-              key={link}
-              href={`#${link.toLowerCase()}`}
-              onClick={() => setOpen(false)}
-              className="text-sm font-medium text-gray-700 hover:text-brand-blue py-2.5 border-b border-slate-100 transition-colors"
-            >
-              {link}
-            </a>
-          ))}
-          <div className="flex flex-col gap-3 pt-4">
-            <Link to="/login">
-              <Button
-                variant="outline"
-                className="w-full border-brand-blue text-brand-blue"
-              >
-                Sign In
-              </Button>
-            </Link>
-            <Link to="/login">
-              <Button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold">
-                Apply Now
-              </Button>
-            </Link>
-          </div>
-        </div>
-      )}
-    </header>
-  );
-}
+// ─── Shared pieces ────────────────────────────────────────────────────────────
 
 // ─── Hero ─────────────────────────────────────────────────────────────────────
+
+const PHOTO = "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1920&q=80";
+
+// A glass card on the right of the hero: the real three steps and the Salary Advance points, with the step you are "on" moving along.
+function HeroCard() {
+  const steps = [
+    { label: "Register", icon: Users },
+    { label: "Apply", icon: CreditCard },
+    { label: "Get Funded", icon: TrendingUp },
+  ];
+  const features = ["Up to 50% of net salary", "Same-day disbursement", "Zero collateral required"];
+  const [active, setActive] = useState(1);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = window.setInterval(() => setActive((a) => (a + 1) % steps.length), 2400);
+    return () => window.clearInterval(id);
+  }, [steps.length]);
+
+  return (
+    <div aria-hidden className="relative mx-auto w-full max-w-md motion-safe:animate-float-slow">
+      <div className="absolute inset-0 translate-x-3 translate-y-3 rounded-3xl bg-white/5 ring-1 ring-white/10" />
+      <div className="relative rounded-3xl bg-[#081430]/60 p-6 shadow-2xl shadow-black/40 ring-1 ring-white/20 backdrop-blur-xl">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-600">
+            <Briefcase className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <p className="text-[17px] font-extrabold leading-tight text-white">Salary Advance</p>
+            <p className="mt-0.5 text-[12px] font-bold uppercase tracking-wider text-blue-100">For Employed Professionals</p>
+          </div>
+        </div>
+
+        <ol className="mt-7 flex items-start">
+          {steps.map((step, i) => {
+            const done = i < active;
+            const current = i === active;
+            return (
+              <li key={step.label} className="relative flex flex-1 flex-col items-center">
+                {i > 0 && (
+                  <span className="absolute right-1/2 top-5 h-0.5 w-full -translate-y-1/2 bg-white/20" aria-hidden>
+                    <span className={`block h-full bg-white transition-[width] duration-700 ${i <= active ? "w-full" : "w-0"}`} />
+                  </span>
+                )}
+                <span
+                  className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full transition-all duration-500 ${
+                    current ? "bg-red-600 text-white shadow-lg shadow-red-900/50" : done ? "bg-white text-[#0F2C59]" : "border border-white/30 bg-[#0b1f45] text-white/80"
+                  }`}
+                >
+                  {done ? <Check className="h-4 w-4" strokeWidth={3} /> : <step.icon className="h-4 w-4" />}
+                  {current && <span className="absolute inset-0 rounded-full bg-red-500/50 motion-safe:animate-ping" />}
+                </span>
+                <span className={`mt-2 text-[12px] font-bold ${current || done ? "text-white" : "text-white/75"}`}>{step.label}</span>
+              </li>
+            );
+          })}
+        </ol>
+
+        <ul className="mt-7 space-y-2.5 border-t border-white/15 pt-5">
+          {features.map((f) => (
+            <li key={f} className="flex items-center gap-2.5 text-[14px] text-white/90">
+              <CheckCircle className="h-4 w-4 flex-shrink-0 text-red-300" />
+              {f}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
 
 function HeroSection() {
   const stats = [
@@ -120,108 +107,93 @@ function HeroSection() {
   ];
 
   return (
-    <section
-      id="home"
-      className="relative min-h-screen flex items-center pt-16"
-      style={{
-        backgroundImage:
-          "url('https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1920&q=80')",
-        backgroundSize: "cover",
-        backgroundPosition: "center top",
-      }}
-    >
-      {/* Navy scrim. Tailwind only generates opacity steps on its scale (/90, /95), so the old /97 and /92 stops were silently dropped and the photo showed through unshaded. */}
+    <section id="home" className="relative isolate flex min-h-[100svh] items-center overflow-hidden bg-[#081430] pt-16">
+      {/* The photo is greyscale, so the navy scrim makes it a navy duotone instead of an unrelated colour cast. */}
+      <div className="absolute inset-0 -z-10 bg-cover grayscale" style={{ backgroundImage: `url('${PHOTO}')`, backgroundPosition: "center top" }} />
       {/* Small screens: text spans the full width, so keep the scrim even top to bottom */}
-      <div className="absolute inset-0 lg:hidden bg-gradient-to-b from-[#081430]/90 via-[#0b1f45]/90 to-[#081430]/95" />
+      <div
+        className="absolute inset-0 -z-10 lg:hidden"
+        style={navy("linear-gradient(to bottom, rgba(8,20,48,0.92), rgba(11,31,69,0.92) 55%, rgba(8,20,48,0.96))")}
+      />
       {/* Large screens: solid navy behind the text column, easing off so the photo reads on the right */}
-      <div className="absolute inset-0 hidden lg:block bg-[linear-gradient(100deg,rgba(8,20,48,0.96)_0%,rgba(11,31,69,0.92)_42%,rgba(15,44,89,0.50)_64%,rgba(15,44,89,0.22)_100%)]" />
-      {/* Grounds the stat cards at the bottom */}
-      <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-[#081430]/70 to-transparent" />
+      <div
+        className="absolute inset-0 -z-10 hidden lg:block"
+        style={navy(
+          "radial-gradient(40% 50% at 80% 40%, rgba(59,130,246,0.22), transparent 70%), linear-gradient(100deg, rgba(8,20,48,0.96) 0%, rgba(11,31,69,0.92) 42%, rgba(15,44,89,0.62) 64%, rgba(15,44,89,0.48) 100%)",
+          2
+        )}
+      />
+      <MarkMotif className="pointer-events-none absolute -bottom-32 -right-24 -z-10 hidden w-[620px] lg:block" strength={1.3} />
+      {/* Grounds the stats at the bottom */}
+      <div className="absolute inset-x-0 bottom-0 -z-10 h-2/5 bg-gradient-to-t from-[#081430]/70 to-transparent" />
 
-      {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-24">
+      <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-14 px-4 py-24 sm:px-6 lg:px-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] [@media(max-height:780px)]:py-16">
         <div className="max-w-2xl">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-[#081430]/50 border border-white/25 backdrop-blur-sm rounded-full px-4 py-1.5 mb-8">
-            <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse motion-reduce:animate-none" />
-            <span className="text-blue-50 text-[12px] font-semibold tracking-[0.14em] uppercase">
-              Trusted Fintech · Nairobi, Kenya
-            </span>
+          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/25 bg-[#081430]/50 px-4 py-1.5 backdrop-blur-sm motion-safe:animate-auth-rise">
+            <span className="h-2 w-2 rounded-full bg-red-400 motion-safe:animate-pulse" />
+            <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-blue-50">Trusted Fintech · Nairobi, Kenya</span>
           </div>
 
           {/* globals.css forces every h1 to 1.5rem under 640px; keep the hero headline display-sized on phones */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl max-sm:!text-[clamp(28px,8.6vw,36px)] max-sm:!leading-[1.12] font-black text-white tracking-tight leading-[1.1] mb-6 drop-shadow-[0_2px_24px_rgba(8,20,48,0.45)]">
+          <h1 className="mb-6 text-4xl font-extrabold leading-[1.1] tracking-tight text-white drop-shadow-[0_2px_24px_rgba(8,20,48,0.45)] sm:text-5xl lg:text-6xl max-sm:!text-[clamp(28px,8.6vw,36px)] max-sm:!leading-[1.12]">
             Fast, Flexible Loans
             <br />
-            <span className="bg-gradient-to-r from-red-300 via-red-200 to-amber-200 bg-clip-text text-transparent">
-              for Kenyan Professionals
-            </span>
+            <span className="bg-gradient-to-r from-red-300 via-red-200 to-amber-200 bg-clip-text text-transparent">for Kenyan Professionals</span>
           </h1>
 
-          <p className="text-[17px] sm:text-xl text-blue-50 mb-10 leading-relaxed max-w-xl text-pretty">
-            Salary advances, personal loans, and more — approved within{" "}
-            <span className="text-white font-semibold">24 hours</span>. Empowering
-            Kenyan professionals with fast, fair, and flexible financial solutions.
+          <p className="mb-10 max-w-xl text-pretty text-[17px] leading-relaxed text-blue-50 sm:text-xl">
+            Salary advances, personal loans, and more — approved within <span className="font-semibold text-white">24 hours</span>. Empowering Kenyan
+            professionals with fast, fair, and flexible financial solutions.
           </p>
 
-          <div className="flex flex-wrap gap-4 mb-20">
-            <Link to="/login">
+          <div className="mb-12 flex flex-wrap gap-4">
+            <Link to={APPLY_TO}>
               <Button
                 size="lg"
-                className="bg-red-600 hover:bg-red-700 text-white font-bold text-[15px] sm:text-base px-8 h-14 shadow-xl shadow-red-950/40 transition-transform hover:scale-105 motion-reduce:transform-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#081430]"
+                className="group h-14 bg-red-600 px-8 text-[15px] font-bold text-white shadow-xl shadow-red-950/40 transition-transform hover:scale-105 hover:bg-red-700 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#081430] motion-reduce:transform-none sm:text-base"
               >
                 Apply for a Loan
-                <ArrowRight className="ml-2 h-5 w-5" />
+                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </Link>
             <Button
               size="lg"
               variant="outline"
-              className="bg-white/10 border-white/70 text-white font-semibold hover:bg-white hover:text-blue-950 hover:border-white text-[15px] sm:text-base px-8 h-14 backdrop-blur-sm focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#081430]"
-              onClick={() =>
-                document
-                  .getElementById("products")
-                  ?.scrollIntoView({ behavior: "smooth" })
-              }
+              className="h-14 border-white/70 bg-white/10 px-8 text-[15px] font-semibold text-white backdrop-blur-sm hover:border-white hover:bg-white hover:text-blue-950 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#081430] sm:text-base"
+              onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })}
             >
               Learn More
             </Button>
           </div>
+
+          {/* Stats: one joined strip, three across even on a phone */}
+          <dl className="grid grid-cols-3 divide-x divide-white/15 rounded-2xl bg-[#081430]/60 shadow-lg shadow-black/20 ring-1 ring-white/20 backdrop-blur-md">
+            {stats.map(({ icon: Icon, label, value }) => (
+              <div key={label} className="flex flex-col items-start gap-2.5 px-3.5 py-4 sm:flex-row sm:items-center sm:gap-3.5 sm:px-5">
+                <div className="hidden h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-red-600 sm:flex">
+                  <Icon className="h-[18px] w-[18px] text-white" />
+                </div>
+                <div>
+                  <dd className="order-first whitespace-nowrap text-[18px] font-extrabold leading-none text-white sm:text-[22px]">
+                    <CountUp value={value} />
+                  </dd>
+                  <dt className="mt-1 text-[12px] leading-tight text-blue-100 sm:mt-1.5 sm:text-[13px]">{label}</dt>
+                </div>
+              </div>
+            ))}
+          </dl>
         </div>
 
-        {/* Floating stats */}
-        <div className="flex flex-wrap gap-4">
-          {stats.map(({ icon: Icon, label, value }) => (
-            <div
-              key={label}
-              className="flex items-center gap-4 bg-[#081430]/60 backdrop-blur-md border border-white/20 rounded-xl px-6 py-4 shadow-lg shadow-black/20 hover:bg-[#081430]/75 transition-colors"
-            >
-              <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Icon className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <p className="text-white font-black text-2xl leading-none">
-                  {value}
-                </p>
-                <p className="text-blue-100 text-[13px] mt-1">{label}</p>
-              </div>
-            </div>
-          ))}
+        <div className="hidden xl:block">
+          <HeroCard />
         </div>
       </div>
 
-      {/* Bottom wave */}
+      {/* Bottom wave, filled with exactly the colour of the next section */}
       <div className="absolute bottom-0 left-0 right-0">
-        <svg
-          viewBox="0 0 1440 80"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-full"
-        >
-          <path
-            d="M0 80L1440 80L1440 40C1200 80 960 0 720 40C480 80 240 0 0 40L0 80Z"
-            fill="#f9fafb"
-          />
+        <svg viewBox="0 0 1440 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="block w-full" aria-hidden>
+          <path d="M0 80L1440 80L1440 40C1200 80 960 0 720 40C480 80 240 0 0 40L0 80Z" fill="#f8fafc" />
         </svg>
       </div>
     </section>
@@ -238,11 +210,7 @@ function ProductsSection() {
       tag: "For Employed Professionals",
       description:
         "Access up to 50% of your net salary before payday. Quick disbursement directly to M-Pesa or your bank account, with repayment deducted from your next paycheck.",
-      features: [
-        "Up to 50% of net salary",
-        "Same-day disbursement",
-        "Zero collateral required",
-      ],
+      features: ["Up to 50% of net salary", "Same-day disbursement", "Zero collateral required"],
       featured: false,
       comingSoon: false,
     },
@@ -252,11 +220,7 @@ function ProductsSection() {
       tag: "Open to Employed Kenyans",
       description:
         "Whether you're employed or self-employed, our personal loan gives you access to larger amounts for business, education, or personal growth projects.",
-      features: [
-        "Up to KES 500,000",
-        "1 month tenure",
-        "Competitive interest rates",
-      ],
+      features: ["Up to KES 500,000", "1 month tenure", "Competitive interest rates"],
       featured: true,
       comingSoon: false,
     },
@@ -266,119 +230,83 @@ function ProductsSection() {
       tag: "Flexible Repayment",
       description:
         "Access larger loan amounts repaid in structured monthly instalments. Designed for business investment, home improvement, or long-term financial goals.",
-      features: [
-        "Structured monthly repayments",
-        "Extended repayment periods",
-        "Fixed, predictable schedule",
-      ],
+      features: ["Structured monthly repayments", "Extended repayment periods", "Fixed, predictable schedule"],
       featured: false,
       comingSoon: true,
     },
   ];
 
   return (
-    <section id="products" className="py-24 bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <span className="text-red-600 text-xs font-bold uppercase tracking-widest">
-            Our Products
-          </span>
-          <h2 className="mt-3 text-3xl sm:text-4xl font-black text-slate-900">
-            Loan Solutions Built for You
-          </h2>
-          <p className="mt-4 text-slate-500 max-w-xl mx-auto text-sm leading-relaxed">
-            Straightforward products, transparent terms, and fast disbursement —
-            designed around the Kenyan professional.
-          </p>
-        </div>
+    <section id="products" className="scroll-mt-16 bg-slate-50 py-20 sm:py-24">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <SectionHeader eyebrow="Our Products" title="Loan Solutions Built for You">
+          Straightforward products, transparent terms, and fast disbursement — designed around the Kenyan professional.
+        </SectionHeader>
 
-        <div className="grid md:grid-cols-3 gap-8 items-start">
-          {products.map((product) => (
-            <div
-              key={product.title}
-              className={`relative rounded-3xl p-8 flex flex-col transition-all duration-300 hover:-translate-y-1 ${product.featured
-                ? "bg-gradient-to-br from-blue-900 to-blue-700 text-white shadow-2xl shadow-blue-900/30 md:-mt-4"
-                : "bg-white border border-slate-100 shadow-md hover:shadow-xl"
-                }`}
-            >
-              {product.featured && (
-                <span className="absolute top-6 right-6 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                  Most Popular
-                </span>
-              )}
-              {product.comingSoon && (
-                <span className="absolute top-6 right-6 bg-slate-200 text-slate-600 text-xs font-bold px-3 py-1 rounded-full">
-                  Coming Soon
-                </span>
-              )}
-
+        <div className="grid items-stretch gap-6 md:grid-cols-3 lg:gap-8">
+          {products.map((product, i) => (
+            <Reveal key={product.title} delay={i * 110} className="flex">
               <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 ${product.featured ? "bg-white/20" : "bg-blue-50"
-                  }`}
+                className={`relative flex w-full flex-col overflow-hidden rounded-3xl p-7 transition-all duration-300 sm:p-8 ${
+                  product.featured
+                    ? "text-white shadow-2xl shadow-blue-950/30 ring-1 ring-white/10 hover:-translate-y-1 md:-my-4 md:py-12"
+                    : product.comingSoon
+                      ? "border border-dashed border-slate-300 bg-white/60"
+                      : "border border-slate-200 bg-white shadow-sm hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/10"
+                }`}
+                style={product.featured ? navy("linear-gradient(160deg, #0F2C59 0%, #0b2246 55%, #081430 100%)") : undefined}
               >
-                <product.icon
-                  className={`h-6 w-6 ${product.featured ? "text-white" : "text-brand-blue"}`}
-                />
-              </div>
+                {product.featured && <MarkMotif className="pointer-events-none absolute -bottom-10 -right-10 w-56" strength={1.6} />}
+                {product.featured && (
+                  <span className="absolute right-6 top-6 rounded-full bg-red-600 px-3 py-1 text-xs font-bold text-white">Most Popular</span>
+                )}
+                {product.comingSoon && (
+                  <span className="absolute right-6 top-6 rounded-full bg-slate-200 px-3 py-1 text-xs font-bold text-slate-700">Coming Soon</span>
+                )}
 
-              <span
-                className={`text-xs font-bold uppercase tracking-wider mb-2 ${product.featured ? "text-blue-200" : "text-red-600"
+                <div
+                  className={`relative mb-6 flex h-12 w-12 items-center justify-center rounded-xl ${
+                    product.featured ? "bg-white/15 ring-1 ring-white/20" : product.comingSoon ? "bg-slate-100" : "bg-blue-50"
                   }`}
-              >
-                {product.tag}
-              </span>
-              <h3
-                className={`text-xl font-black mb-3 ${product.featured ? "text-white" : "text-slate-900"
-                  }`}
-              >
-                {product.title}
-              </h3>
-              <p
-                className={`text-sm leading-relaxed mb-6 flex-1 ${product.featured ? "text-blue-100" : "text-slate-500"
-                  }`}
-              >
-                {product.description}
-              </p>
-
-              <ul className="space-y-2.5 mb-8">
-                {product.features.map((feature) => (
-                  <li key={feature} className="flex items-center gap-2.5">
-                    <CheckCircle
-                      className={`h-4 w-4 flex-shrink-0 ${product.featured ? "text-red-400" : "text-brand-blue"
-                        }`}
-                    />
-                    <span
-                      className={`text-sm ${product.featured ? "text-blue-100" : "text-gray-700"
-                        }`}
-                    >
-                      {feature}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              {product.comingSoon ? (
-                <Button
-                  disabled
-                  className="w-full font-bold cursor-not-allowed opacity-60 border-gray-300 text-slate-400"
-                  variant="outline"
                 >
-                  Coming Soon
-                </Button>
-              ) : (
-                <Link to="/login">
+                  <product.icon className={`h-6 w-6 ${product.featured ? "text-white" : product.comingSoon ? "text-slate-500" : "text-brand-blue"}`} />
+                </div>
+
+                <span className={`relative mb-2 text-xs font-bold uppercase tracking-wider ${product.featured ? "text-blue-100" : "text-red-700"}`}>
+                  {product.tag}
+                </span>
+                <h3 className={`relative mb-3 text-xl font-extrabold tracking-tight ${product.featured ? "text-white" : "text-slate-900"}`}>{product.title}</h3>
+                <p className={`relative mb-6 flex-1 text-[15px] leading-relaxed ${product.featured ? "text-white/85" : "text-slate-600"}`}>{product.description}</p>
+
+                <ul className="relative mb-8 space-y-3">
+                  {product.features.map((feature) => (
+                    <li key={feature} className="flex items-center gap-2.5">
+                      <CheckCircle className={`h-4 w-4 flex-shrink-0 ${product.featured ? "text-red-300" : product.comingSoon ? "text-slate-400" : "text-brand-blue"}`} />
+                      <span className={`text-[14px] ${product.featured ? "text-white/90" : "text-slate-700"}`}>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {product.comingSoon ? (
                   <Button
-                    className={`w-full font-bold ${product.featured
-                      ? "bg-red-600 hover:bg-red-700 text-white"
-                      : "border-brand-blue text-brand-blue hover:bg-blue-50"
-                      }`}
-                    variant={product.featured ? "default" : "outline"}
+                    disabled
+                    className="relative h-11 w-full cursor-not-allowed border-slate-200 bg-slate-100 text-[14px] font-bold text-slate-600 opacity-100 disabled:opacity-100"
+                    variant="outline"
                   >
-                    Apply Now <ChevronRight className="ml-1 h-4 w-4" />
+                    Coming Soon
                   </Button>
-                </Link>
-              )}
-            </div>
+                ) : (
+                  <Link to={APPLY_TO} className="relative">
+                    <Button
+                      className={`group h-11 w-full text-[14px] font-bold ${product.featured ? "bg-red-600 text-white hover:bg-red-700" : "border-brand-blue text-brand-blue hover:bg-blue-50"}`}
+                      variant={product.featured ? "default" : "outline"}
+                    >
+                      Apply Now <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -394,167 +322,85 @@ function HowItWorks() {
       step: "01",
       icon: Users,
       title: "Register",
-      description:
-        "Create your account with your national ID and employer details. The whole process takes under 3 minutes on your phone.",
-      color: "bg-blue-900",
+      description: "Create your account with your national ID and employer details. The whole process takes under 3 minutes on your phone.",
+      color: "bg-brand-blue",
     },
     {
       step: "02",
       icon: CreditCard,
       title: "Apply",
-      description:
-        "Choose your loan product, enter the amount you need, and submit your digital application — no paperwork, no branch visits.",
+      description: "Choose your loan product, enter the amount you need, and submit your digital application — no paperwork, no branch visits.",
       color: "bg-red-600",
     },
     {
       step: "03",
       icon: TrendingUp,
       title: "Get Funded",
-      description:
-        "Receive funds directly to your M-Pesa or bank account within 24 hours of approval. It really is that simple.",
-      color: "bg-blue-900",
+      description: "Receive funds directly to your M-Pesa or bank account within 24 hours of approval. It really is that simple.",
+      color: "bg-brand-blue",
     },
   ];
 
   return (
-    <section id="about" className="py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <span className="text-red-600 text-xs font-bold uppercase tracking-widest">
-            Simple Process
-          </span>
-          <h2 className="mt-3 text-3xl sm:text-4xl font-black text-slate-900">
-            How It Works
-          </h2>
-          <p className="mt-4 text-slate-500 max-w-md mx-auto text-sm">
-            From application to cash in hand — we&apos;ve made it as easy as
-            possible.
-          </p>
-        </div>
+    <section id="about" className="scroll-mt-16 bg-white py-20 sm:py-24">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <SectionHeader eyebrow="Simple Process" title="How It Works">
+          From application to cash in hand — we&apos;ve made it as easy as possible.
+        </SectionHeader>
 
-        <div className="relative grid md:grid-cols-3 gap-12">
-          <div className="hidden md:block absolute top-10 left-[calc(16.67%+1.5rem)] right-[calc(16.67%+1.5rem)] h-0.5 bg-gradient-to-r from-blue-200 via-red-200 to-blue-200" />
-
-          {steps.map((step) => (
-            <div
-              key={step.step}
-              className="flex flex-col items-center text-center"
+        <ol className="relative grid gap-10 md:grid-cols-3 md:gap-12">
+          {/* The rail the three steps sit on (wide screens), with a chevron between each pair */}
+          <span className="absolute left-[16.67%] right-[16.67%] top-10 hidden border-t-2 border-dashed border-slate-300 md:block" aria-hidden />
+          {[1, 2].map((n) => (
+            <span
+              key={n}
+              className="absolute top-10 hidden h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-slate-400 ring-1 ring-slate-200 md:flex"
+              style={{ left: `${(n * 100) / 3}%` }}
+              aria-hidden
             >
-              <div className="relative mb-6">
-                <div
-                  className={`w-20 h-20 rounded-full flex items-center justify-center shadow-lg ${step.color}`}
-                >
-                  <step.icon className="h-9 w-9 text-white" />
-                </div>
-                <span className="absolute -top-1 -right-1 w-7 h-7 bg-white border-2 border-slate-100 rounded-full flex items-center justify-center text-xs font-black text-slate-400 shadow-sm">
-                  {step.step}
-                </span>
-              </div>
-              <h3 className="text-xl font-black text-slate-900 mb-3">
-                {step.title}
-              </h3>
-              <p className="text-slate-500 text-sm leading-relaxed max-w-xs">
-                {step.description}
-              </p>
-            </div>
+              <ChevronRight className="h-4 w-4" />
+            </span>
           ))}
-        </div>
 
-        <div className="mt-20 rounded-3xl bg-gradient-to-r from-blue-900 to-blue-700 p-10 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div>
-            <h3 className="text-2xl font-black text-white">
-              Ready to get started?
-            </h3>
-            <p className="text-blue-200 mt-1 text-sm">
-              Join 500+ professionals who trust Leocap Invest.
-            </p>
-          </div>
-          <Link to="/login">
-            <Button
-              size="lg"
-              className="bg-red-600 hover:bg-red-700 text-white font-bold px-8 h-12 flex-shrink-0"
-            >
-              Apply in Minutes <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── Testimonials ─────────────────────────────────────────────────────────────
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-
-function Testimonials() {
-  const testimonials = [
-    {
-      name: "Wanjiku Muthoni",
-      role: "Accountant, Ideon Limited",
-      quote:
-        "I needed school fees urgently and Leocap approved my salary advance in just 4 hours. The whole process was on my phone — no paperwork, no stress whatsoever.",
-      initials: "WM",
-    },
-    {
-      name: "Brian Ochieng",
-      role: "Sales Executive, Nakama Group",
-      quote:
-        "Finally a lender that understands salaried employees. The rates are fair, the team is responsive, and the app is dead simple to use. I've recommended it to my whole department.",
-      initials: "BO",
-    },
-    {
-      name: "Aisha Abdi",
-      role: "Consultant, Nairobi",
-      quote:
-        "Got a personal loan of KES 200,000 for my business expansion. The process took two days and the repayment plan is very manageable. Excellent service.",
-      initials: "AA",
-    },
-  ];
-
-  return (
-    <section className="py-24 bg-gradient-to-br from-blue-950 to-blue-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <span className="text-red-400 text-xs font-bold uppercase tracking-widest">
-            Testimonials
-          </span>
-          <h2 className="mt-3 text-3xl sm:text-4xl font-black text-white">
-            Loved by Kenyan Professionals
-          </h2>
-          <p className="mt-4 text-blue-200 text-sm max-w-md mx-auto">
-            Don&apos;t take our word for it — here&apos;s what our clients say.
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          {testimonials.map((t) => (
-            <div
-              key={t.name}
-              className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-3xl p-8 flex flex-col hover:bg-white/15 transition-colors"
-            >
-              <div className="flex gap-1 mb-5">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className="h-4 w-4 fill-yellow-400 text-yellow-400"
-                  />
-                ))}
-              </div>
-              <p className="text-blue-100 text-sm leading-relaxed flex-1 mb-6 italic">
-                &ldquo;{t.quote}&rdquo;
-              </p>
-              <div className="flex items-center gap-3 pt-5 border-t border-white/10">
-                <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white text-sm font-black flex-shrink-0">
-                  {t.initials}
+          {steps.map((step, i) => (
+            <li key={step.step} className="relative">
+              <Reveal delay={i * 140} className="relative flex gap-5 md:flex-col md:items-center md:text-center">
+                {/* Phones: a dashed rail joins each step to the next */}
+                {i < steps.length - 1 && <span className="absolute bottom-[-2.5rem] left-[1.75rem] top-14 border-l-2 border-dashed border-slate-300 md:hidden" aria-hidden />}
+                <div className="relative flex-shrink-0 md:mb-2">
+                  <div className={`flex h-14 w-14 items-center justify-center rounded-full shadow-lg ring-8 ring-white md:h-20 md:w-20 ${step.color}`}>
+                    <step.icon className="h-6 w-6 text-white md:h-9 md:w-9" />
+                  </div>
+                  <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-slate-100 bg-white text-xs font-extrabold text-slate-600 shadow-sm md:h-7 md:w-7">
+                    {step.step}
+                  </span>
                 </div>
                 <div>
-                  <p className="text-white font-bold text-sm">{t.name}</p>
-                  <p className="text-blue-300 text-xs">{t.role}</p>
+                  <h3 className="mb-2 text-xl font-extrabold tracking-tight text-slate-900 md:mb-3">{step.title}</h3>
+                  <p className="max-w-xs text-[15px] leading-relaxed text-slate-600">{step.description}</p>
                 </div>
-              </div>
-            </div>
+              </Reveal>
+            </li>
           ))}
-        </div>
+        </ol>
+
+        <Reveal className="mt-16 sm:mt-20">
+          <div
+            className="relative flex flex-col items-center justify-between gap-6 overflow-hidden rounded-3xl p-8 ring-1 ring-white/10 sm:flex-row sm:p-10"
+            style={navy("linear-gradient(110deg, #0F2C59 0%, #0b2246 60%, #081430 100%)")}
+          >
+            <MarkMotif className="pointer-events-none absolute -bottom-16 right-24 w-64 sm:right-40" strength={1.5} />
+            <div className="relative text-center sm:text-left">
+              <h3 className="text-2xl font-extrabold tracking-tight text-white">Ready to get started?</h3>
+              <p className="mt-1 text-[15px] text-white/80">Join 500+ professionals who trust Leocap Invest.</p>
+            </div>
+            <Link to={APPLY_TO} className="relative">
+              <Button size="lg" className="group h-12 flex-shrink-0 bg-red-600 px-8 text-[15px] font-bold text-white shadow-lg shadow-red-950/40 hover:bg-red-700">
+                Apply in Minutes <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+              </Button>
+            </Link>
+          </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -562,50 +408,72 @@ function Testimonials() {
 
 // ─── Contact ──────────────────────────────────────────────────────────────────
 
+const fieldClass =
+  "w-full min-h-[48px] rounded-xl border border-slate-200 bg-white px-4 py-3 text-[15px] text-slate-900 placeholder:text-slate-500 transition-[border-color,box-shadow] hover:border-slate-300 focus:border-brand-blue focus:outline-none focus:ring-4 focus:ring-brand-blue/10";
+
 function ContactSection() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
 
   const contactDetails = [
-    { icon: MapPin, label: "Address", value: "Applewood Adams, Along Ngong Road, Nairobi" },
-    { icon: Mail, label: "Email", value: "info@leocapinvest.co.ke" },
-    { icon: Phone, label: "Phone", value: "+254 722 221 502 | +254 721 834 959" },
+    {
+      icon: MapPin,
+      label: "Address",
+      content: <a href={MAPS_URL} target="_blank" rel="noopener noreferrer" className="inline-block py-1.5 hover:text-brand-blue hover:underline">{ADDRESS}</a>,
+    },
+    {
+      icon: Mail,
+      label: "Email",
+      content: <a href={`mailto:${EMAIL}`} className="inline-block py-1.5 hover:text-brand-blue hover:underline">{EMAIL}</a>,
+    },
+    {
+      icon: Phone,
+      label: "Phone",
+      content: (
+        <>
+          {PHONES.map((p, i) => (
+            <span key={p.href}>
+              {i > 0 && " | "}
+              <a href={p.href} className="inline-block py-1.5 hover:text-brand-blue hover:underline">{p.label}</a>
+            </span>
+          ))}
+        </>
+      ),
+    },
   ];
 
-  return (
-    <section id="contact" className="py-24 bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <span className="text-red-600 text-xs font-bold uppercase tracking-widest">
-            Get In Touch
-          </span>
-          <h2 className="mt-3 text-3xl sm:text-4xl font-black text-slate-900">
-            We&apos;d Love to Hear from You
-          </h2>
-          <p className="mt-4 text-slate-500 max-w-md mx-auto text-sm">
-            Have questions about our products or need assistance? Our team is
-            happy to help.
-          </p>
-        </div>
+  // There is no contact service behind this form, so Send Message hands the note to the visitor's own email app.
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    const name = form.name.trim();
+    const subject = `Message from ${name}`;
+    const body = `${form.message.trim()}\n\n${name}\n${form.email.trim()}`;
+    window.open(`mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, "_self");
+  };
 
-        <div className="grid md:grid-cols-2 gap-16 items-start">
-          <div>
-            <div className="space-y-6 mb-10">
-              {contactDetails.map(({ icon: Icon, label, value }) => (
+  return (
+    <section id="contact" className="scroll-mt-16 bg-slate-50 py-20 sm:py-24">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <SectionHeader eyebrow="Get In Touch" title="We'd Love to Hear from You">
+          Have questions about our products or need assistance? Our team is happy to help.
+        </SectionHeader>
+
+        <div className="grid items-start gap-12 md:grid-cols-2 lg:gap-16">
+          <Reveal>
+            <div className="mb-10 space-y-6">
+              {contactDetails.map(({ icon: Icon, label, content }) => (
                 <div key={label} className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-blue-900 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-brand-blue shadow-md shadow-blue-950/20">
                     <Icon className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
-                      {label}
-                    </p>
-                    <p className="text-slate-800 font-semibold">{value}</p>
+                    <p className="mb-1 text-xs font-bold uppercase tracking-wider text-slate-600">{label}</p>
+                    <p className="font-semibold text-slate-900">{content}</p>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="rounded-3xl overflow-hidden border border-slate-200 h-56 relative shadow-inner">
+            <div className="relative h-56 overflow-hidden rounded-3xl bg-slate-100 shadow-sm ring-1 ring-slate-200">
               <iframe
                 title="Location Map"
                 width="100%"
@@ -616,178 +484,114 @@ function ContactSection() {
                 referrerPolicy="no-referrer-when-downgrade"
                 src="https://maps.google.com/maps?q=Applewood+Adams,+Ngong+Road,+Nairobi&t=&z=15&ie=UTF8&iwloc=&output=embed"
               />
+              <a
+                href={MAPS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Open in Google Maps"
+                className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-xl bg-white text-slate-700 shadow-md ring-1 ring-slate-200 transition-colors hover:text-brand-blue"
+              >
+                <ExternalLink className="h-4 w-4" />
+              </a>
             </div>
-          </div>
+          </Reveal>
 
-          <form
-            onSubmit={(e) => e.preventDefault()}
-            className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 space-y-5"
-          >
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Full Name
-              </label>
-              <input
-                type="text"
-                placeholder="Jane Mwangi"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-colors placeholder:text-gray-300"
-              />
-            </div>
+          <Reveal delay={120}>
+            <form onSubmit={onSubmit} className="space-y-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+              <div>
+                <label htmlFor="contact-name" className="mb-1.5 block text-[13px] font-semibold text-slate-700">
+                  Full Name
+                </label>
+                <input
+                  id="contact-name"
+                  type="text"
+                  required
+                  autoComplete="name"
+                  placeholder="Jane Mwangi"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className={fieldClass}
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Email Address
-              </label>
-              <input
-                type="email"
-                placeholder="jane@example.com"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-colors placeholder:text-gray-300"
-              />
-            </div>
+              <div>
+                <label htmlFor="contact-email" className="mb-1.5 block text-[13px] font-semibold text-slate-700">
+                  Email Address
+                </label>
+                <input
+                  id="contact-email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  placeholder="jane@example.com"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  className={fieldClass}
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Message
-              </label>
-              <textarea
-                rows={5}
-                placeholder="Tell us how we can help..."
-                value={form.message}
-                onChange={(e) =>
-                  setForm({ ...form, message: e.target.value })
-                }
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-colors resize-none placeholder:text-gray-300"
-              />
-            </div>
+              <div>
+                <label htmlFor="contact-message" className="mb-1.5 block text-[13px] font-semibold text-slate-700">
+                  Message
+                </label>
+                <textarea
+                  id="contact-message"
+                  rows={5}
+                  required
+                  placeholder="Tell us how we can help..."
+                  value={form.message}
+                  onChange={(e) => setForm({ ...form, message: e.target.value })}
+                  className={`${fieldClass} resize-none`}
+                />
+              </div>
 
-            <Button
-              type="submit"
-              className="w-full bg-blue-900 hover:bg-slate-800 text-white font-bold py-3 h-12 rounded-xl"
-            >
-              Send Message
-            </Button>
+              <Button
+                type="submit"
+                className="group h-12 w-full rounded-xl bg-brand-blue font-bold text-white shadow-[0_10px_24px_-10px_rgba(15,44,89,0.65)] hover:bg-[#0b2246]"
+              >
+                Send Message
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </Button>
 
-            <p className="text-center text-xs text-slate-400">
-              We typically respond within 1 business day.
-            </p>
-          </form>
+              <p className="text-center text-xs text-slate-600">We typically respond within 1 business day.</p>
+            </form>
+          </Reveal>
         </div>
       </div>
     </section>
   );
 }
 
-// ─── Footer ───────────────────────────────────────────────────────────────────
-
-function Footer() {
-  return (
-    <footer className="bg-gray-950 text-slate-400 py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-14">
-          <div className="col-span-2 md:col-span-1">
-            <BrandLogo size="lg" />
-            <p className="mt-4 text-sm leading-relaxed text-slate-500 max-w-xs">
-              Empowering Kenyan professionals with fast, fair, and flexible
-              financial solutions.
-            </p>
-          </div>
-
-          <div>
-            <p className="text-white text-sm font-bold mb-4">Products</p>
-            <ul className="space-y-2.5 text-sm">
-              {[
-                "Salary Advance",
-                "Personal Loan",
-                "Installment Loan",
-              ].map((item) => (
-                <li key={item}>
-                  <a
-                    href="#products"
-                    className="hover:text-white transition-colors"
-                  >
-                    {item}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <p className="text-white text-sm font-bold mb-4">Company</p>
-            <ul className="space-y-2.5 text-sm">
-              {["About Us", "How It Works", "FAQs", "Privacy Policy"].map(
-                (item) => (
-                  <li key={item}>
-                    <a href="#" className="hover:text-white transition-colors">
-                      {item}
-                    </a>
-                  </li>
-                )
-              )}
-            </ul>
-          </div>
-
-          <div>
-            <p className="text-white text-sm font-bold mb-4">Contact</p>
-            <ul className="space-y-2.5 text-sm">
-              <li>Applewood Adams, Along Ngong Road, Nairobi</li>
-              <li>
-                <a
-                  href="mailto:info@leocapinvest.co.ke"
-                  className="hover:text-white transition-colors"
-                >
-                  info@leocapinvest.co.ke
-                </a>
-              </li>
-              <li>
-                <a
-                  href="tel:+254722221502"
-                  className="hover:text-white transition-colors"
-                >
-                  +254 722 221 502
-                </a>
-              </li>
-              <li>
-                <a
-                  href="tel:+254721834959"
-                  className="hover:text-white transition-colors"
-                >
-                  +254 721 834 959
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="border-t border-gray-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-          <p>
-            &copy; {new Date().getFullYear()} Leocap Invest. All rights
-            reserved.
-          </p>
-          <p className="text-slate-600">
-            Financial advisory and lending solutions for Kenyan professionals · Nairobi, Kenya
-          </p>
-        </div>
-      </div>
-    </footer>
-  );
-}
-
 // ─── Page export ──────────────────────────────────────────────────────────────
 
 export default function Home() {
+  const { hash } = useLocation();
+
+  // Arriving from another page with a #section (the FAQ's header and footer links): scroll to it.
+  useEffect(() => {
+    if (!hash) return;
+    const id = requestAnimationFrame(() => document.getElementById(hash.slice(1))?.scrollIntoView());
+    return () => cancelAnimationFrame(id);
+  }, [hash]);
+
+  // Smooth anchor scrolling belongs to this page only; the rest of the app keeps instant jumps.
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    document.documentElement.style.scrollBehavior = "smooth";
+    return () => {
+      document.documentElement.style.scrollBehavior = "";
+    };
+  }, []);
+
   return (
     <main className="min-h-screen">
-      <Navbar />
+      <SiteHeader />
       <HeroSection />
       <ProductsSection />
+      <TestimonialsSection />
       <HowItWorks />
       <ContactSection />
-      <Footer />
+      <SiteFooter />
     </main>
   );
 }

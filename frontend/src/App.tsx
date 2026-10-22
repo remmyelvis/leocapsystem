@@ -53,6 +53,7 @@ import Page43 from './pages/login/applicant/page';
 import Page46 from './pages/login/page';
 import Page47 from './pages/page';
 import Page48 from './pages/privacy-policy/page';
+import FaqPage from './pages/faq/page';
 import Page49 from './pages/register/page';
 import NotFoundPage from './pages/not-found';
 
@@ -126,6 +127,7 @@ function App() {
       <Route path="/login" element={<Page46 />} />
       <Route path="/" element={<Page47 />} />
       <Route path="/privacy-policy" element={<Page48 />} />
+      <Route path="/faq" element={<FaqPage />} />
       <Route path="/register" element={<Page49 />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

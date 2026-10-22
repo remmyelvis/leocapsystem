@@ -101,14 +101,14 @@ export default function LoginForm({
         </form>
 
         {variant === "applicant" ? (
-          <p className="mt-6 text-center text-[14px] text-slate-500">
+          <p className="mt-6 text-center text-[14px] text-slate-600">
             New applicant?{" "}
             <Link to="/register" className="font-semibold text-brand-blue hover:underline">
               Create an account
             </Link>
           </p>
         ) : (
-          <p className="mt-6 rounded-xl bg-slate-50 px-4 py-3 text-center text-[12px] leading-relaxed text-slate-500 ring-1 ring-slate-200/70">
+          <p className="mt-6 rounded-xl bg-slate-50 px-4 py-3 text-center text-[12px] leading-relaxed text-slate-600 ring-1 ring-slate-200/70">
             Admin access is by invitation only. Contact your system administrator if you need access.
           </p>
         )}

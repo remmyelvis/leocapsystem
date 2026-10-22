@@ -173,7 +173,7 @@ export default function RegisterPage() {
           </AuthSubmit>
         </form>
 
-        <p className="mt-6 text-center text-[14px] text-slate-500">
+        <p className="mt-6 text-center text-[14px] text-slate-600">
           Already have an account?{" "}
           <Link to="/login/applicant" className="font-semibold text-brand-blue hover:underline">
             Sign in
