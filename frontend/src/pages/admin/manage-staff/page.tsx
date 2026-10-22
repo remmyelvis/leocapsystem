@@ -147,21 +147,21 @@ export default function ManageStaffPage() {
     <div className="p-4 sm:p-6 w-full max-w-[1600px] mx-auto space-y-5">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900">Manage HR & Finance</h1>
-          <p className="text-slate-400 text-sm mt-1">
+          <h1 className="text-xl font-bold text-slate-900">Manage HR & Finance</h1>
+          <p className="text-slate-400 text-[13px] mt-0.5">
             Register and manage HR and Finance staff accounts dynamically for all active companies.
           </p>
         </div>
         <div className="flex gap-3 w-full sm:w-auto">
           <button
             onClick={() => openForm("hr")}
-            className="flex-1 sm:flex-none px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm"
+            className="flex-1 sm:flex-none px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm"
           >
             <UserPlus className="h-4 w-4" /> Add HR Staff
           </button>
           <button
             onClick={() => openForm("finance")}
-            className="flex-1 sm:flex-none px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm"
+            className="flex-1 sm:flex-none px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm"
           >
             <UserPlus className="h-4 w-4" /> Add Finance Staff
           </button>
@@ -170,7 +170,7 @@ export default function ManageStaffPage() {
 
       {formRole && (
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+          <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <h2 className="text-sm font-bold text-slate-700 flex items-center gap-2">
               <UserPlus className="h-4 w-4 text-brand-blue" />
               Register {formRole === "hr" ? "HR" : "Finance"} Staff
@@ -182,7 +182,7 @@ export default function ManageStaffPage() {
 
           <form onSubmit={handleRegister} className="p-4 sm:p-6">
             {formError && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600 flex items-start gap-3">
+              <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-lg text-sm text-red-600 flex items-start gap-3">
                 <span className="block mt-0.5"><X className="h-4 w-4" /></span>
                 <p>{formError}</p>
               </div>
@@ -190,11 +190,11 @@ export default function ManageStaffPage() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Assign Company</label>
+                <label className="block text-[13px] font-semibold text-slate-700 mb-1">Assign Company</label>
                 <select
                   value={applicantType}
                   onChange={(e) => setApplicantType(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 bg-slate-50"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 bg-slate-50"
                   required
                 >
                   {companies.map(c => (
@@ -204,50 +204,50 @@ export default function ManageStaffPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Full Name</label>
+                <label className="block text-[13px] font-semibold text-slate-700 mb-1">Full Name</label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 bg-slate-50"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 bg-slate-50"
                   placeholder="Jane Mwangi"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
+                <label className="block text-[13px] font-semibold text-slate-700 mb-1">Email Address</label>
                 <input
                   type="email"
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 bg-slate-50"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 bg-slate-50"
                   placeholder="jane@example.com"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Phone Number</label>
+                <label className="block text-[13px] font-semibold text-slate-700 mb-1">Phone Number</label>
                 <input
                   type="tel"
                   required
                   value={formData.phone_number}
                   onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 bg-slate-50"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 bg-slate-50"
                   placeholder="0712345678"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Password</label>
+                <label className="block text-[13px] font-semibold text-slate-700 mb-1">Password</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     required
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 bg-slate-50 pr-12"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 bg-slate-50 pr-12"
                     placeholder="Min. 6 characters"
                   />
                   <button
@@ -265,14 +265,14 @@ export default function ManageStaffPage() {
               <button
                 type="button"
                 onClick={closeForm}
-                className="flex-1 py-3 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors border border-transparent hover:border-slate-200"
+                className="flex-1 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors border border-transparent hover:border-slate-200"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`flex-[2] py-3 text-white text-sm font-bold rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 ${
+                className={`flex-[2] py-2 text-white text-sm font-bold rounded-lg transition-all shadow-sm flex items-center justify-center gap-2 ${
                   formRole === "hr"
                     ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20"
                     : "bg-violet-600 hover:bg-violet-700 shadow-violet-600/20"
@@ -297,19 +297,19 @@ export default function ManageStaffPage() {
                 <h3 className="font-black text-slate-800 uppercase tracking-wider text-sm">{comp.name}</h3>
                 <span className="text-xs text-slate-500 font-mono bg-slate-200/50 px-2 py-1 rounded-md">{comp.code}</span>
               </div>
-              <div className="p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+              <div className="p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
                 {/* HR */}
                 <div>
-                  <h4 className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-4 border-b border-emerald-100 pb-2 flex justify-between">
+                  <h4 className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2 border-b border-emerald-100 pb-1.5 flex justify-between">
                      <span>HR Department</span>
                      <span>{compStaff.filter(s => s.role === "hr").length} Staff</span>
                   </h4>
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {compStaff.filter(s => s.role === "hr").length === 0 ? (
                        <p className="text-sm text-slate-400 italic">No HR staff registered</p>
                     ) : (
                       compStaff.filter(s => s.role === "hr").map(m => (
-                        <div key={m.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-emerald-200 hover:shadow-sm transition-all group">
+                        <div key={m.id} className="flex items-center justify-between px-3 py-1.5 rounded-lg border border-slate-100 hover:border-emerald-200 hover:shadow-sm transition-all group">
                           <div>
                             <p className="text-sm font-bold text-slate-800 break-words">{formatName(m.name)}</p>
                             <p className="text-xs text-slate-500 break-all">{m.email}</p>
@@ -324,16 +324,16 @@ export default function ManageStaffPage() {
                 </div>
                 {/* Finance */}
                 <div>
-                  <h4 className="text-xs font-bold text-violet-600 uppercase tracking-widest mb-4 border-b border-violet-100 pb-2 flex justify-between">
+                  <h4 className="text-xs font-bold text-violet-600 uppercase tracking-widest mb-2 border-b border-violet-100 pb-1.5 flex justify-between">
                      <span>Finance Department</span>
                      <span>{compStaff.filter(s => s.role === "finance").length} Staff</span>
                   </h4>
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {compStaff.filter(s => s.role === "finance").length === 0 ? (
                        <p className="text-sm text-slate-400 italic">No Finance staff registered</p>
                     ) : (
                       compStaff.filter(s => s.role === "finance").map(m => (
-                        <div key={m.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-violet-200 hover:shadow-sm transition-all group">
+                        <div key={m.id} className="flex items-center justify-between px-3 py-1.5 rounded-lg border border-slate-100 hover:border-violet-200 hover:shadow-sm transition-all group">
                           <div>
                             <p className="text-sm font-bold text-slate-800 break-words">{formatName(m.name)}</p>
                             <p className="text-xs text-slate-500 break-all">{m.email}</p>

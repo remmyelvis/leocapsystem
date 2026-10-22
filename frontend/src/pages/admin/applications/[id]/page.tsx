@@ -61,7 +61,7 @@ function Field({ label, value }: { label: string; value?: string | number | bool
         : String(value);
   return (
     <div>
-      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-0.5">
         {label}
       </p>
       <p className={`text-sm text-slate-800 font-medium break-words ${/^[a-z][a-z _-]*$/.test(display) ? "capitalize" : ""}`}>{display}</p>
@@ -77,11 +77,11 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-4 sm:p-5">
+    <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 sm:p-5">
       <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide mb-4">
         {title}
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-3">
         {children}
       </div>
     </div>
@@ -666,10 +666,10 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
 
   if (isLoading) {
     return (
-      <div className="p-6 w-full space-y-6">
-        <Skeleton className="h-10 w-64 rounded-xl" />
-        <Skeleton className="h-48 rounded-xl" />
-        <Skeleton className="h-48 rounded-xl" />
+      <div className="p-4 w-full space-y-4">
+        <Skeleton className="h-10 w-64 rounded-lg" />
+        <Skeleton className="h-48 rounded-lg" />
+        <Skeleton className="h-48 rounded-lg" />
       </div>
     );
   }
@@ -683,13 +683,13 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
           <Button
             onClick={() => navigate(-1)}
             variant="outline"
-            className="rounded-xl"
+            className="rounded-lg"
           >
             Go Back
           </Button>
           <Button
             onClick={() => refetch()}
-            className="rounded-xl"
+            className="rounded-lg"
           >
             <RefreshCw className="mr-2 h-4 w-4" />
             Retry
@@ -748,7 +748,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
   const renderDeclineForm = (position: "top" | "bottom") => {
     if (activeDeclineForm !== position) return null;
     return (
-      <div className="bg-red-50 border border-red-100 rounded-xl p-5 mt-4 w-full">
+      <div className="bg-red-50 border border-red-100 rounded-lg p-5 mt-4 w-full">
         <h3 className="text-sm font-black text-red-900 mb-3">Reason for Rejection</h3>
         <div className="flex flex-col sm:flex-row gap-3 items-end">
           <div className="flex-1 w-full">
@@ -758,7 +758,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
               value={declineReason}
               onChange={(e) => setDeclineReason(e.target.value)}
               placeholder="e.g. Incomplete documents"
-              className="w-full px-4 py-2.5 rounded-xl border border-red-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-600/20 focus:border-red-600 transition-colors"
+              className="w-full px-4 py-2.5 rounded-lg border border-red-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-600/20 focus:border-red-600 transition-colors"
             />
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
@@ -769,7 +769,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                 setDeclineReason("");
               }}
               disabled={updating}
-              className="flex-1 sm:flex-none rounded-xl text-red-600 border-red-200 hover:bg-red-100"
+              className="flex-1 sm:flex-none rounded-lg text-red-600 border-red-200 hover:bg-red-100"
             >
               Cancel
             </Button>
@@ -780,7 +780,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                 setDeclineReason("");
               }}
               disabled={updating || !declineReason.trim()}
-              className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold"
+              className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold"
             >
               Submit Rejection
             </Button>
@@ -797,13 +797,13 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
         <button
           onClick={() => navigate(-1)}
           aria-label="Back"
-          className="mt-0.5 p-2 rounded-xl hover:bg-slate-100 transition-colors text-slate-400 hover:text-gray-700"
+          className="mt-0.5 p-2 rounded-lg hover:bg-slate-100 transition-colors text-slate-400 hover:text-gray-700"
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="flex-1 min-w-[220px]">
           <div className="flex items-center gap-x-3 gap-y-1.5 flex-wrap">
-            <h1 className="text-2xl font-black text-slate-900 break-words">
+            <h1 className="text-xl font-bold text-slate-900 break-words">
               {formatName(app.customerName)}
             </h1>
             <span
@@ -831,7 +831,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
               onClick={handleDownloadDossier}
               disabled={downloadingDossier}
               variant="outline"
-              className="border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-brand-blue rounded-xl font-bold"
+              className="border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-brand-blue rounded-lg font-bold"
             >
               <Download className="mr-1.5 h-4 w-4" />
               {downloadingDossier ? "Exporting..." : "Export Debt Dossier"}
@@ -842,7 +842,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
               <Button
                 onClick={() => handleStatus("Approved")}
                 disabled={updating}
-                className="bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold"
+                className="bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold"
               >
                 <CheckCircle2 className="mr-1.5 h-4 w-4" />
                 Approve
@@ -850,7 +850,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
               <Button
                 onClick={() => setActiveDeclineForm(activeDeclineForm === "top" ? null : "top")}
                 disabled={updating}
-                className="bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold"
+                className="bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold"
               >
                 <XCircle className="mr-1.5 h-4 w-4" />
                 Decline
@@ -863,7 +863,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
               <Button
                 onClick={() => handleStatus("Approved")}
                 disabled={updating}
-                className="bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold"
+                className="bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold"
               >
                 <CheckCircle2 className="mr-1.5 h-4 w-4" />
                 Approve
@@ -871,7 +871,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
               <Button
                 onClick={() => setActiveDeclineForm(activeDeclineForm === "top" ? null : "top")}
                 disabled={updating}
-                className="bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold"
+                className="bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold"
               >
                 <XCircle className="mr-1.5 h-4 w-4" />
                 Decline
@@ -884,7 +884,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
               <Button
                 onClick={() => handleStatus("Approved")}
                 disabled={updating}
-                className="bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold"
+                className="bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold"
               >
                 <CheckCircle2 className="mr-1.5 h-4 w-4" />
                 Approve
@@ -892,7 +892,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
               <Button
                 onClick={() => setActiveDeclineForm(activeDeclineForm === "top" ? null : "top")}
                 disabled={updating}
-                className="bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold"
+                className="bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold"
               >
                 <XCircle className="mr-1.5 h-4 w-4" />
                 Decline
@@ -905,7 +905,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
               <Button
                 onClick={() => handleStatus("Approved")}
                 disabled={updating}
-                className="bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold"
+                className="bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold"
               >
                 <CheckCircle2 className="mr-1.5 h-4 w-4" />
                 Approve
@@ -913,7 +913,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
               <Button
                 onClick={() => setActiveDeclineForm(activeDeclineForm === "top" ? null : "top")}
                 disabled={updating}
-                className="bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold"
+                className="bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold"
               >
                 <XCircle className="mr-1.5 h-4 w-4" />
                 Decline
@@ -928,7 +928,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                 <Button
                   onClick={() => handleRepaymentAction("default")}
                   disabled={updating}
-                  className="bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold"
+                  className="bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-bold"
                 >
                   <AlertTriangle className="mr-1.5 h-4 w-4" />
                   Mark as Default
@@ -943,7 +943,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                       setShowChargeInterest(false);
                     }}
                     disabled={updating}
-                    className="bg-brand-blue hover:bg-slate-800 text-white rounded-xl font-bold"
+                    className="bg-brand-blue hover:bg-slate-800 text-white rounded-lg font-bold"
                   >
                     <CheckCircle2 className="mr-1.5 h-4 w-4" />
                     Mark as Partially Paid
@@ -956,7 +956,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                         setShowPartialPayment(false);
                       }}
                       disabled={updating}
-                      className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold"
+                      className="bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold"
                     >
                       <Percent className="mr-1.5 h-4 w-4" />
                       Charge Interest
@@ -965,7 +965,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                   <Button
                     onClick={() => handleRepaymentAction("paid")}
                     disabled={updating}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold"
                   >
                     <CheckCircle2 className="mr-1.5 h-4 w-4" />
                     Mark as Paid
@@ -980,7 +980,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
             <Button
               onClick={() => handleRepaymentAction("escalate")}
               disabled={updating}
-              className="bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold"
+              className="bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold"
             >
               <AlertTriangle className="mr-1.5 h-4 w-4" />
               Escalate
@@ -990,7 +990,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
             onClick={() => refetch()}
             disabled={isLoading}
             variant="outline"
-            className="rounded-xl"
+            className="rounded-lg"
           >
             <RefreshCw className={`mr-1.5 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
             Refresh
@@ -1001,7 +1001,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
       </div>
 
       {showPartialPayment && (
-        <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 mt-4">
+        <div className="bg-blue-50 border border-blue-100 rounded-lg p-5 mt-4">
           <h3 className="text-sm font-black text-blue-900 mb-3">Mark as Partially Paid</h3>
           <div className="flex flex-col sm:flex-row gap-3 items-end">
             <div className="flex-1 w-full">
@@ -1012,7 +1012,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                 value={partialPaymentAmount}
                 onChange={(e) => setPartialPaymentAmount(e.target.value)}
                 placeholder="e.g. 5000"
-                className="w-full px-4 py-2.5 rounded-xl border border-blue-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors"
+                className="w-full px-4 py-2.5 rounded-lg border border-blue-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors"
               />
             </div>
             <div className="flex-1 w-full">
@@ -1021,7 +1021,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                 type="datetime-local"
                 value={partialPaymentDate}
                 onChange={(e) => setPartialPaymentDate(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-blue-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors"
+                className="w-full px-4 py-2.5 rounded-lg border border-blue-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors"
               />
             </div>
               <div className="flex-1 w-full">
@@ -1031,7 +1031,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                   value={externalReference}
                   onChange={(e) => setExternalReference(e.target.value)}
                   placeholder="e.g. M-PESA Code"
-                  className="w-full px-4 py-2.5 rounded-xl border border-blue-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors"
+                  className="w-full px-4 py-2.5 rounded-lg border border-blue-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors"
                 />
               </div>
             <div className="flex gap-2 w-full sm:w-auto">
@@ -1044,14 +1044,14 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                     setExternalReference("");
                 }}
                 disabled={updating}
-                className="flex-1 sm:flex-none rounded-xl"
+                className="flex-1 sm:flex-none rounded-lg"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handlePartialPayment}
                 disabled={updating || !partialPaymentAmount || !partialPaymentDate}
-                className="flex-1 sm:flex-none bg-brand-blue hover:bg-slate-800 text-white rounded-xl font-bold"
+                className="flex-1 sm:flex-none bg-brand-blue hover:bg-slate-800 text-white rounded-lg font-bold"
               >
                 Submit Payment
               </Button>
@@ -1061,7 +1061,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
       )}
 
       {showChargeInterest && (
-        <div className="bg-purple-50 border border-purple-100 rounded-xl p-5 mt-4">
+        <div className="bg-purple-50 border border-purple-100 rounded-lg p-5 mt-4">
           <h3 className="text-sm font-black text-purple-900 mb-3">Charge Interest</h3>
           <div className="flex flex-col sm:flex-row gap-3 items-end">
             <div className="flex-1 w-full">
@@ -1072,7 +1072,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                 value={chargeInterestAmount}
                 onChange={(e) => setChargeInterestAmount(e.target.value)}
                 placeholder="e.g. 500"
-                className="w-full px-4 py-2.5 rounded-xl border border-purple-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-colors"
+                className="w-full px-4 py-2.5 rounded-lg border border-purple-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-colors"
               />
             </div>
             <div className="flex-1 w-full">
@@ -1081,7 +1081,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                 type="datetime-local"
                 value={chargeInterestDate}
                 onChange={(e) => setChargeInterestDate(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-purple-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-colors"
+                className="w-full px-4 py-2.5 rounded-lg border border-purple-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-colors"
               />
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
@@ -1093,14 +1093,14 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                   setChargeInterestDate("");
                 }}
                 disabled={updating}
-                className="flex-1 sm:flex-none rounded-xl"
+                className="flex-1 sm:flex-none rounded-lg"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleChargeInterest}
                 disabled={updating || !chargeInterestAmount || !chargeInterestDate}
-                className="flex-1 sm:flex-none bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold"
+                className="flex-1 sm:flex-none bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold"
               >
                 Charge Interest
               </Button>
@@ -1112,17 +1112,17 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
       {/* ── Applicant Info ── */}
       {/* AI Decision Engine Card */}
       {(riskProfile || loadingRisk) && app.amountApplied && (
-        <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl ring-1 ring-slate-800 shadow-xl p-6 text-white overflow-hidden relative">
+        <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-lg ring-1 ring-slate-800 shadow-xl p-4 text-white overflow-hidden relative">
           <div className="absolute -right-10 -top-10 opacity-10">
             <svg width="200" height="200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
           </div>
           
           <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="p-2 bg-indigo-500/20 rounded-lg">
-                <AlertTriangle className="h-5 w-5 text-indigo-400" />
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-1.5 bg-indigo-500/20 rounded-lg">
+                <AlertTriangle className="h-4 w-4 text-indigo-400" />
               </div>
-              <h2 className="text-lg font-black tracking-wide">AI DECISION ENGINE</h2>
+              <h2 className="text-sm font-black tracking-wide">AI DECISION ENGINE</h2>
             </div>
             
             {loadingRisk ? (
@@ -1131,22 +1131,22 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                 <div className="h-10 bg-slate-700 rounded w-1/2"></div>
               </div>
             ) : (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
-                    <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">CRB Score</p>
-                    <p className="text-3xl font-black text-emerald-400">{riskProfile?.score} <span className="text-sm text-slate-500">/ 1000</span></p>
+                    <p className="text-slate-400 text-[11px] font-bold uppercase tracking-wide mb-0.5">CRB Score</p>
+                    <p className="text-2xl font-black text-emerald-400">{riskProfile?.score} <span className="text-sm text-slate-500">/ 1000</span></p>
                   </div>
                   <div>
                     <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Requested Amount</p>
-                    <p className="text-2xl font-bold text-white">{KES.format(app.amountApplied)}</p>
+                    <p className="text-xl font-bold text-white">{KES.format(app.amountApplied)}</p>
                   </div>
                   <div>
                     <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Calculated Capacity</p>
                     {(() => {
                       const rec = getLoanRecommendation(riskProfile?.score, app.amountApplied);
                       if (!rec) return null;
-                      return <p className="text-2xl font-bold text-indigo-400">{KES.format(rec.recommendedAmount)}</p>;
+                      return <p className="text-xl font-bold text-indigo-400">{KES.format(rec.recommendedAmount)}</p>;
                     })()}
                   </div>
                 </div>
@@ -1155,7 +1155,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                   const rec = getLoanRecommendation(riskProfile?.score, app.amountApplied);
                   if (!rec) return null;
                   return (
-                    <div className={`p-4 rounded-xl border ${rec.style} flex flex-col sm:flex-row sm:items-center justify-between gap-4`}>
+                    <div className={`px-3 py-2.5 rounded-lg border ${rec.style} flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm`}>
                       <div>
                         <p className="text-xs font-bold uppercase tracking-wider mb-1 opacity-70">Engine Recommendation</p>
                         <p className="font-semibold">{rec.recommendation}</p>
@@ -1167,7 +1167,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                             setLoanAmount(rec.recommendedAmount.toString());
                             toast.success(`Loan amount overridden to ${KES.format(rec.recommendedAmount)}`);
                           }}
-                          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl whitespace-nowrap"
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg whitespace-nowrap"
                         >
                           Apply Haircut
                         </Button>
@@ -1236,10 +1236,10 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
         <Section title="Documents">
           {app.documents.map((doc) => (
             <div key={doc.id} className="col-span-1 sm:col-span-2 lg:col-span-3 flex flex-col gap-2">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-0.5">
                 {doc.document_type.replace(/_/g, " ")}
               </p>
-              <div className="flex items-center justify-between bg-slate-50 border border-slate-100 rounded-xl p-4 transition-colors hover:bg-slate-100/80">
+              <div className="flex items-center justify-between bg-slate-50 border border-slate-100 rounded-lg p-4 transition-colors hover:bg-slate-100/80">
                 <div className="flex items-center gap-4 overflow-hidden">
                   <div className="bg-white p-2 rounded-lg ring-1 ring-slate-200 shadow-sm flex-shrink-0">
                     <FileText className="h-5 w-5 text-blue-600" />
@@ -1257,7 +1257,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                 <Button
                   size="sm"
                   variant="outline"
-                  className="rounded-xl bg-white flex-shrink-0 ml-4 shadow-sm border-slate-200 text-gray-700 hover:text-blue-700 hover:border-blue-200 hover:bg-blue-50"
+                  className="rounded-lg bg-white flex-shrink-0 ml-4 shadow-sm border-slate-200 text-gray-700 hover:text-blue-700 hover:border-blue-200 hover:bg-blue-50"
                   onClick={async () => {
                     const { error } = await downloadFile(`/api/application/documents/download/${doc.id}`, doc.file_name);
                     if (error) toast.error(error);
@@ -1274,8 +1274,8 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
 
       {/* ── Set Loan Terms (Personal loan types - Pending or Rate Declined status) ── */}
       {canEditLoanTerms && (isPending || isRateDeclined) && app.loanType.toLowerCase() === "personal" && (
-        <div className="bg-indigo-50 border-2 border-indigo-200 rounded-xl overflow-hidden">
-          <div className="bg-indigo-100 px-6 py-4 border-b border-indigo-200">
+        <div className="bg-indigo-50 border-2 border-indigo-200 rounded-lg overflow-hidden">
+          <div className="bg-indigo-100 px-4 py-3 border-b border-indigo-200">
             <div className="flex items-center gap-3">
               <Percent className="h-5 w-5 text-indigo-600" />
               <div>
@@ -1289,7 +1289,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
             </div>
           </div>
 
-          <div className="p-6 space-y-5">
+          <div className="p-4 space-y-5">
             {/* Editable Loan Fields Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               {/* Loan Amount */}
@@ -1303,7 +1303,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                   step="100"
                   value={loanAmount}
                   onChange={(e) => setLoanAmount(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-indigo-300 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 rounded-lg border border-indigo-300 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="100000"
                 />
               </div>
@@ -1320,7 +1320,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                   step="0.1"
                   value={interestRate}
                   onChange={(e) => setInterestRate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-indigo-300 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 rounded-lg border border-indigo-300 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="10"
                 />
               </div>
@@ -1337,7 +1337,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                   step="0.1"
                   value={processingFees}
                   onChange={(e) => setProcessingFees(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-indigo-300 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 rounded-lg border border-indigo-300 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="3"
                 />
               </div>
@@ -1354,7 +1354,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                   step="0.1"
                   value={accessFees}
                   onChange={(e) => setAccessFees(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-indigo-300 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 rounded-lg border border-indigo-300 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="0"
                 />
               </div>
@@ -1370,7 +1370,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                   step="1"
                   value={legalFees}
                   onChange={(e) => setLegalFees(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-indigo-300 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 rounded-lg border border-indigo-300 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="0"
                 />
               </div>
@@ -1378,7 +1378,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
 
             {/* Preview Breakdown */}
             {loanPreview && (
-              <div className="bg-white rounded-xl border border-indigo-200 p-5">
+              <div className="bg-white rounded-lg border border-indigo-200 p-5">
                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-wide mb-4">
                   Loan Breakdown Preview
                 </h3>
@@ -1440,7 +1440,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
               <Button
                 onClick={handleSetLoanTerms}
                 disabled={settingRate || !interestRate || !loanAmount}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold flex-1"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold flex-1"
               >
                 {settingRate ? (
                   <>
@@ -1458,7 +1458,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                 onClick={() => handleStatus("Declined")}
                 disabled={updating}
                 variant="outline"
-                className="border-red-300 text-red-600 hover:bg-red-50 rounded-xl font-bold"
+                className="border-red-300 text-red-600 hover:bg-red-50 rounded-lg font-bold"
               >
                 <XCircle className="mr-1.5 h-4 w-4" />
                 Decline
@@ -1474,13 +1474,13 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
 
       {/* ── Direct Approve/Decline for Non-Personal Loans ── */}
       {canEditLoanTerms && isPending && app.loanType.toLowerCase() !== "personal" && (
-        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
           <h3 className="text-sm font-black text-slate-900 uppercase tracking-wide mb-4">
             Application Actions
           </h3>
 
           {normalizedStatus === "pending_processing" && isSalaryAdvance && (
-            <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+            <div className="mb-4 bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
               <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-amber-800">
                 <strong>Warning:</strong> This is a Salary Advance application and the status is currently pending review by HR.
@@ -1492,7 +1492,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
             <Button
               onClick={() => handleStatus("Approved")}
               disabled={updating}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold flex-1 py-6"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold flex-1 py-6"
             >
               <CheckCircle2 className="mr-2 h-5 w-5" />
               Approve Application
@@ -1501,7 +1501,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
               onClick={() => setActiveDeclineForm(activeDeclineForm === "bottom" ? null : "bottom")}
               disabled={updating}
               variant="outline"
-              className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-xl font-bold flex-1 py-6"
+              className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg font-bold flex-1 py-6"
             >
               <XCircle className="mr-2 h-5 w-5" />
               Decline Application
@@ -1514,7 +1514,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
 
       {/* ── Amended Status Notice ── */}
       {isAmended && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl px-6 py-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
           <div className="flex items-center gap-3">
             <AlertTriangle className="h-5 w-5 text-blue-600" />
             <div>
@@ -1531,7 +1531,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
 
       {/* ── Rate Set Status Notice ── */}
       {canEditLoanTerms && isRateSet && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl px-6 py-4">
+        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
           <div className="flex items-center gap-3">
             <AlertTriangle className="h-5 w-5 text-amber-600" />
             <div>
@@ -1548,7 +1548,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
 
       {/* ── Rate Confirmed Status Notice ── */}
       {canEditLoanTerms && isRateConfirmed && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-6 py-4">
+        <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3">
           <div className="flex items-center gap-3">
             <CheckCircle2 className="h-5 w-5 text-emerald-600" />
             <div>
@@ -1565,7 +1565,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
 
       {/* ── Rate Declined Status Notice ── */}
       {canEditLoanTerms && isRateDeclined && (
-        <div className="bg-red-50 border border-red-200 rounded-xl px-6 py-4">
+        <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
           <div className="flex items-center gap-3">
             <XCircle className="h-5 w-5 text-red-500" />
             <div>
@@ -1582,7 +1582,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
 
       {/* ── Confirmed Status Notice ── */}
       {canEditLoanTerms && isConfirmed && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-6 py-4">
+        <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3">
           <div className="flex items-center gap-3">
             <CheckCircle2 className="h-5 w-5 text-emerald-600" />
             <div>
@@ -1627,7 +1627,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
       </Section>
 
       {/* ── Admin Notes ── */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
         <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide mb-4">
           Admin Notes
         </h2>
@@ -1635,7 +1635,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Add private notes about this application…"
-          className="w-full h-24 px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue resize-none"
+          className="w-full h-24 px-4 py-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue resize-none"
         />
         <p className="text-xs text-slate-400 mt-2">
           Notes are for internal use only and not visible to the applicant.
@@ -1644,7 +1644,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
 
       {/* ── Disbursement Confirmation (shown only when Approved) ── */}
       {isApproved && (
-        <div className="bg-white rounded-xl border-2 border-purple-200 shadow-sm p-6">
+        <div className="bg-white rounded-lg border-2 border-purple-200 shadow-sm p-4">
           <div className="flex items-center gap-2 mb-1">
             <Banknote className="h-4 w-4 text-purple-600" />
             <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide">
@@ -1658,13 +1658,13 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
             value={disbursementNote}
             onChange={(e) => setDisbursementNote(e.target.value)}
             placeholder="e.g. M-Pesa code: QKL3X9Z2A1 / Bank ref: TXN-20260601-00123…"
-            className="w-full h-24 px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 resize-none"
+            className="w-full h-24 px-4 py-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 resize-none"
           />
           <div className="mt-4">
             <Button
               onClick={handleDisburse}
               disabled={updating || !disbursementNote.trim()}
-              className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold disabled:opacity-40 disabled:cursor-not-allowed"
+              className="bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Banknote className="mr-1.5 h-4 w-4" />
               {updating ? "Processing…" : "Mark Disbursed"}
@@ -1679,7 +1679,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
       )}
 
       {/* ── Send Email to Applicant ── */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide">
             Contact Applicant
@@ -1687,7 +1687,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
           {!showEmailComposer && (
             <Button
               onClick={handleOpenComposer}
-              className="bg-brand-blue hover:bg-slate-800 text-white rounded-xl font-bold"
+              className="bg-brand-blue hover:bg-slate-800 text-white rounded-lg font-bold"
             >
               <Mail className="mr-2 h-4 w-4" />
               Compose Email
@@ -1702,7 +1702,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
                 To
               </label>
-              <div className="px-4 py-2 bg-slate-50 rounded-xl text-sm text-gray-700">
+              <div className="px-4 py-2 bg-slate-50 rounded-lg text-sm text-gray-700">
                 {app.email || app.customerName}
               </div>
             </div>
@@ -1717,7 +1717,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                 value={emailSubject}
                 onChange={(e) => setEmailSubject(e.target.value)}
                 placeholder="Enter email subject..."
-                className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
+                className="w-full px-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
               />
             </div>
 
@@ -1730,7 +1730,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                 value={emailMessage}
                 onChange={(e) => setEmailMessage(e.target.value)}
                 placeholder="Type your message to the applicant..."
-                className="w-full h-32 px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 resize-none"
+                className="w-full h-32 px-4 py-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 resize-none"
               />
             </div>
 
@@ -1793,7 +1793,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
               <Button
                 onClick={handleSendEmail}
                 disabled={sendingEmail || !emailMessage.trim()}
-                className="bg-brand-blue hover:bg-slate-800 text-white rounded-xl font-bold"
+                className="bg-brand-blue hover:bg-slate-800 text-white rounded-lg font-bold"
               >
                 {sendingEmail ? (
                   <>
@@ -1815,7 +1815,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                   setEmailAttachments([]);
                 }}
                 variant="outline"
-                className="rounded-xl"
+                className="rounded-lg"
               >
                 Cancel
               </Button>
@@ -1831,7 +1831,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
       </div>
 
       {/* ── Delete Application ── */}
-      <div className="bg-white rounded-xl border border-red-100 shadow-sm p-6 mt-8">
+      <div className="bg-white rounded-lg border border-red-100 shadow-sm p-4 mt-8">
         <div className="flex items-center gap-2 mb-2">
           <AlertTriangle className="h-5 w-5 text-red-500" />
           <h2 className="text-sm font-black text-red-600 uppercase tracking-wide">
@@ -1848,12 +1848,12 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
             value={deleteConfirmationText}
             onChange={(e) => setDeleteConfirmationText(e.target.value)}
             placeholder={`delete ${app?.id}`}
-            className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-600/20 focus:border-red-600"
+            className="w-full px-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-600/20 focus:border-red-600"
           />
           <Button
             onClick={() => setShowDeleteModal(true)}
             disabled={deleteConfirmationText !== `delete ${app?.id}` || isDeleting}
-            className="w-full bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold disabled:opacity-50"
+            className="w-full bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold disabled:opacity-50"
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete Application
@@ -1864,7 +1864,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-xl animate-in fade-in zoom-in duration-200">
+          <div className="bg-white rounded-3xl p-4 w-full max-w-sm shadow-xl animate-in fade-in zoom-in duration-200">
             <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4 mx-auto">
               <AlertTriangle className="h-6 w-6 text-red-600" />
             </div>
@@ -1875,14 +1875,14 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                className="flex-1 rounded-xl"
+                className="flex-1 rounded-lg"
                 onClick={() => setShowDeleteModal(false)}
                 disabled={isDeleting}
               >
                 Cancel
               </Button>
               <Button
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold"
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold"
                 onClick={handleDeleteApplication}
                 disabled={isDeleting}
               >

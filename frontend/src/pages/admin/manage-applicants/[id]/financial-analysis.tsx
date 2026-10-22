@@ -174,11 +174,11 @@ export default function FinancialAnalysisPage() {
     <div className="p-4 sm:p-6 w-full max-w-[1200px] mx-auto space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3 sm:gap-4">
-          <button onClick={() => navigate(-1)} aria-label="Back" className="p-2 rounded-xl hover:bg-slate-100 text-slate-400">
+          <button onClick={() => navigate(-1)} aria-label="Back" className="p-2 rounded-lg hover:bg-slate-100 text-slate-400">
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-black text-slate-900">Financial Flow & CRB Analysis</h1>
+            <h1 className="text-xl font-bold text-slate-900">Financial Flow & CRB Analysis</h1>
             <p className="text-sm text-slate-500">M-Pesa & Bank Statement Engine</p>
           </div>
         </div>
@@ -208,31 +208,31 @@ export default function FinancialAnalysisPage() {
         )}
       </div>
 
-      <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
-        <h2 className="text-lg font-bold mb-4">1. Upload Statement & Loan Request</h2>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-slate-700 mb-1">Loan Ask Amount (KES) - Optional, used to guide affordability analysis</label>
+      <div className="bg-white p-4 rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
+        <h2 className="text-base font-bold mb-3">1. Upload Statement & Loan Request</h2>
+          <div className="mb-3">
+            <label className="block text-[13px] font-medium text-slate-700 mb-1">Loan Ask Amount (KES) - Optional, used to guide affordability analysis</label>
             <input 
               type="number" 
               placeholder="e.g. 50000" 
               value={loanAsk} 
               onChange={(e) => setLoanAsk(e.target.value)} 
-              className="border p-2 rounded w-full sm:w-64 text-slate-700 bg-white" 
+              className="border px-2.5 py-1.5 text-[13px] rounded-lg w-full sm:w-64 text-slate-700 bg-white" 
             />
           </div>
         <div className="flex flex-wrap gap-4 items-center mb-6">
-          <select value={source} onChange={(e) => setSource(e.target.value)} className="border p-2 rounded w-full sm:w-48 bg-slate-50 text-slate-700">
+          <select value={source} onChange={(e) => setSource(e.target.value)} className="border px-2.5 py-1.5 text-[13px] rounded-lg w-full sm:w-48 bg-slate-50 text-slate-700">
             <option value="mpesa">M-Pesa Statement</option>
             <option value="bank">Bank Statement</option>
           </select>
-          <input type="file" accept=".pdf" onChange={(e) => { setFile(e.target.files?.[0] || null); setUploadId(null); }} className="border p-2 rounded w-full sm:w-64" />
-          <input type="text" placeholder="PDF Password (if locked)" value={password} onChange={(e) => setPassword(e.target.value)} className="border p-2 rounded w-full sm:w-64" />
+          <input type="file" accept=".pdf" onChange={(e) => { setFile(e.target.files?.[0] || null); setUploadId(null); }} className="border px-2.5 py-1.5 text-[13px] rounded-lg w-full sm:w-64" />
+          <input type="text" placeholder="PDF Password (if locked)" value={password} onChange={(e) => setPassword(e.target.value)} className="border px-2.5 py-1.5 text-[13px] rounded-lg w-full sm:w-64" />
           <Button onClick={handleUpload} disabled={isUploading || !file || uploadId !== null} className="bg-slate-800 hover:bg-slate-900 w-full sm:w-auto">
             {isUploading ? "Uploading..." : uploadId ? "Uploaded ✓" : "Upload Document"}
           </Button>
         </div>
         
-        <h2 className="text-lg font-bold mb-4 pt-6 border-t border-slate-100">2. Run Analysis</h2>
+        <h2 className="text-base font-bold mb-3 pt-4 border-t border-slate-100">2. Run Analysis</h2>
         <div className="flex flex-wrap gap-x-4 gap-y-2 items-center">
           <Button onClick={handleAnalyze} disabled={isAnalyzing || !uploadId} className="w-full sm:w-64 bg-emerald-600 hover:bg-emerald-700">
             {isAnalyzing ? "Processing AI Analysis..." : "Run AI Analysis"}
@@ -244,7 +244,7 @@ export default function FinancialAnalysisPage() {
       
       {/* Statement History */}
       {history.length > 0 && (
-        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm mb-6">
+        <div className="bg-white p-4 rounded-lg border border-slate-100 shadow-sm mb-6">
           <h3 className="font-bold text-slate-800 mb-4">Uploaded Statements</h3>
           <div className="space-y-3">
             {history.map((stmt: any) => (
@@ -266,7 +266,7 @@ export default function FinancialAnalysisPage() {
       {analysis && analysis.credit_analysis && (
         <>
         {analysis.gemini_narrative && (
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl border border-indigo-100 shadow-sm mb-6">
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-100 shadow-sm mb-6">
             <h3 className="font-bold text-indigo-900 mb-2 flex items-center gap-2">
               AI Executive Summary
             </h3>
@@ -276,7 +276,7 @@ export default function FinancialAnalysisPage() {
           </div>
         )}
 
-        <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
+        <div className="bg-white p-4 rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] border border-slate-200/60">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
             <h2 className="text-lg font-bold">Analysis Results</h2>
             <div className="flex gap-2">
@@ -293,22 +293,22 @@ export default function FinancialAnalysisPage() {
             </div>
           </div>
           
-          <div className="space-y-8">
+          <div className="space-y-5">
             {(() => {
               const currentData = analysis.credit_analysis[activeTab];
               if (!currentData) return <p className="text-slate-500 italic">No data available for this source.</p>;
               
               return (
                 <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                  <div className="flex flex-col md:flex-row gap-6 mb-8">
-                    <div className="flex-1 bg-slate-50 p-6 rounded-xl border border-slate-100 flex flex-col items-center justify-center text-center">
+                  <div className="flex flex-col md:flex-row gap-4 mb-5">
+                    <div className="flex-1 bg-slate-50 p-4 rounded-lg border border-slate-100 flex flex-col items-center justify-center text-center">
                       <p className="text-slate-500 font-medium mb-1">Credit Score</p>
-                      <h3 className={`text-5xl font-black ${currentData.score > 250 ? 'text-emerald-600' : currentData.score > 150 ? 'text-amber-500' : 'text-red-500'}`}>
+                      <h3 className={`text-4xl font-black ${currentData.score > 250 ? 'text-emerald-600' : currentData.score > 150 ? 'text-amber-500' : 'text-red-500'}`}>
                         {currentData.score}
                       </h3>
                       <p className="text-slate-400 text-sm mt-2">Max 400</p>
                     </div>
-                    <div className="flex-[2] bg-blue-50 p-6 rounded-xl border border-blue-100">
+                    <div className="flex-[2] bg-blue-50 p-4 rounded-lg border border-blue-100">
                       <p className="text-blue-900 font-medium mb-3">Score Factors</p>
                       <ul className="space-y-2">
                         {currentData.details?.map((d: any, i: number) => (
@@ -322,7 +322,7 @@ export default function FinancialAnalysisPage() {
                   </div>
 
                   {currentData.advanced_metrics && (
-                    <div className="mb-8 p-6 bg-slate-50 rounded-xl border border-slate-100">
+                    <div className="mb-5 p-4 bg-slate-50 rounded-lg border border-slate-100">
                       <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
                         <AlertTriangle className="h-4 w-4 text-amber-500" />
                         Risk Indicators & Affordability
@@ -330,7 +330,7 @@ export default function FinancialAnalysisPage() {
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {currentData.advanced_metrics.loan_ask_analysis && (
-                          <div className="bg-white p-4 rounded-xl border border-blue-100">
+                          <div className="bg-white p-4 rounded-lg border border-blue-100">
                             <h4 className="font-bold text-blue-900 mb-2">Loan Affordability Analysis</h4>
                             <ul className="text-sm space-y-1 text-blue-800">
                               <li><strong>Loan Ask:</strong> KES {currentData.advanced_metrics.loan_ask_analysis.amount_requested.toLocaleString()}</li>
@@ -344,7 +344,7 @@ export default function FinancialAnalysisPage() {
                         )}
                       
                         {currentData.advanced_metrics.heavy_credit_dependency_flags?.length > 0 && (
-                          <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                          <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
                             <h4 className="font-bold text-amber-800 mb-2">Heavy Credit Dependency</h4>
                             <p className="text-sm text-amber-900 mb-2">Distress flags (arrears, penalties, etc): {currentData.advanced_metrics.heavy_credit_dependency_flags.length}</p>
                             <ul className="text-xs space-y-1">
@@ -356,7 +356,7 @@ export default function FinancialAnalysisPage() {
                         )}
                         
                         {currentData.advanced_metrics.gambling_instances?.length > 0 && (
-                          <div className="bg-red-50 p-4 rounded-xl border border-red-200">
+                          <div className="bg-red-50 p-4 rounded-lg border border-red-200">
                             <h4 className="font-bold text-red-800 mb-2">Gambling Detected</h4>
                             <p className="text-sm text-red-900 mb-2">Found {currentData.advanced_metrics.gambling_instances.length} instances.</p>
                             <ul className="text-xs space-y-1">
@@ -368,7 +368,7 @@ export default function FinancialAnalysisPage() {
                         )}
                         
                         {currentData.advanced_metrics.lipa_mdogo_mdogo_instances?.length > 0 && (
-                          <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
+                          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                             <h4 className="font-bold text-blue-800 mb-2">Asset Financing (Lipa Mdogo Mdogo)</h4>
                             <ul className="text-xs space-y-1">
                               {currentData.advanced_metrics.lipa_mdogo_mdogo_instances.slice(0,3).map((l: any, i: number) => (
@@ -378,7 +378,7 @@ export default function FinancialAnalysisPage() {
                           </div>
                         )}
                         
-                        <div className="bg-white p-4 rounded-xl border border-slate-200">
+                        <div className="bg-white p-4 rounded-lg border border-slate-200">
                           <h4 className="font-bold text-slate-800 mb-2">Extremes</h4>
                           <ul className="text-sm space-y-1 text-slate-600">
                             <li>Highest Balance: {currentData.advanced_metrics.highest_balance?.toLocaleString()}</li>
@@ -391,7 +391,7 @@ export default function FinancialAnalysisPage() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <h4 className="font-bold text-slate-800 mb-3 text-sm uppercase tracking-wider">Top Entities Paid</h4>
                       <div className="space-y-2">
@@ -422,7 +422,7 @@ export default function FinancialAnalysisPage() {
         </div>
         
         {/* Chat with Statement */}
-        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm mt-8">
+        <div className="bg-white p-4 rounded-lg border border-slate-100 shadow-sm mt-5">
           <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
             ?? Chat with this Statement
           </h3>
@@ -464,7 +464,7 @@ export default function FinancialAnalysisPage() {
       
       {/* Recent Transactions Table */}
       {analysis && analysis.recent_transactions && (
-        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm mt-6">
+        <div className="bg-white p-4 rounded-lg border border-slate-100 shadow-sm mt-6">
           <h3 className="font-bold text-slate-800 mb-4">Sample Transactions</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">

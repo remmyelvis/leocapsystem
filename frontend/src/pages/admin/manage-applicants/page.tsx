@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { formatName } from "@/lib/formatName";
 import { formatDate } from "@/lib/formatDate";
 
-const thCls = "px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap";
+const thCls = "px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap";
 
 function TypeBadge({ type }: { type?: string | null }) {
   return (
@@ -221,16 +221,16 @@ export default function ManageApplicantsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2.5">
+          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2.5">
             <Users className="h-6 w-6 text-brand-blue shrink-0" />
             Manage Applicants
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-[13px] text-slate-500 mt-0.5">
             View, search, and manage registered applicants.
           </p>
         </div>
         <div className="flex items-center gap-3 self-start md:self-auto">
-          <Button onClick={fetchApplicants} disabled={isLoading} variant="outline" className="rounded-xl">
+          <Button onClick={fetchApplicants} disabled={isLoading} variant="outline" className="rounded-lg">
             <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
             Refresh
           </Button>
@@ -238,7 +238,7 @@ export default function ManageApplicantsPage() {
       </div>
 
       {/* Bulk Upload Section */}
-      <div className="bg-white p-4 sm:p-5 rounded-xl ring-1 ring-slate-200 shadow-sm">
+      <div className="bg-white p-4 sm:p-5 rounded-lg ring-1 ring-slate-200 shadow-sm">
         <h2 className="text-base font-bold text-slate-900 mb-3 flex items-center">
           <Upload className="h-5 w-5 mr-2 text-blue-600" /> Bulk Employee Upload
         </h2>
@@ -247,7 +247,7 @@ export default function ManageApplicantsPage() {
             type="file"
             accept=".csv, .xlsx"
             onChange={(e) => setBulkFile(e.target.files?.[0] || null)}
-            className="flex-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+            className="flex-1 block w-full text-sm text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
           />
           <div className="flex gap-2 w-full md:w-auto">
             <Button onClick={handleBulkUpload} disabled={uploading || !bulkFile} className="bg-brand-blue hover:bg-slate-800 flex-1 md:flex-none">
@@ -260,7 +260,7 @@ export default function ManageApplicantsPage() {
           </div>
         </div>
         {uploadResults && (
-          <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-100 text-sm">
+          <div className="mt-4 p-4 rounded-lg bg-slate-50 border border-slate-100 text-sm">
             <p className="font-bold text-emerald-600">Successfully created: {uploadResults.created}</p>
             <p className="text-amber-600 font-medium">Skipped (duplicates): {uploadResults.skipped_duplicates}</p>
             {uploadResults.errors && uploadResults.errors.length > 0 && (
@@ -278,7 +278,7 @@ export default function ManageApplicantsPage() {
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white p-3 sm:p-4 rounded-xl ring-1 ring-slate-200 shadow-sm flex flex-col md:flex-row gap-3 md:gap-4 md:items-center justify-between">
+      <div className="bg-white p-3 sm:p-4 rounded-lg ring-1 ring-slate-200 shadow-sm flex flex-col md:flex-row gap-3 md:gap-4 md:items-center justify-between">
         <div className="relative w-full md:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
           <input
@@ -286,7 +286,7 @@ export default function ManageApplicantsPage() {
             placeholder="Search by name, email, or ID number..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-shadow"
+            className="w-full pl-10 pr-4 py-1.5 rounded-lg border border-slate-200 text-[13px] focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-shadow"
           />
         </div>
         <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto">
@@ -294,7 +294,7 @@ export default function ManageApplicantsPage() {
             aria-label="Sort applicants"
             value={`${sortField}:${sortDir}`}
             onChange={(e) => { const [f, d] = e.target.value.split(":"); setSortField(f as keyof ManageApplicant); setSortDir(d as "asc" | "desc"); }}
-            className="xl:hidden px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white"
+            className="xl:hidden px-2.5 py-1.5 rounded-lg border border-slate-200 text-[13px] bg-white"
           >
             <option value="created_at:desc">Newest first</option>
             <option value="created_at:asc">Oldest first</option>
@@ -308,7 +308,7 @@ export default function ManageApplicantsPage() {
       </div>
 
       {/* Table (wide screens) / cards (narrower ones: six columns do not fit) */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm overflow-hidden">
         {isLoading ? (
           <div className="px-6 py-12 flex items-center justify-center"><RefreshCw className="h-6 w-6 animate-spin text-brand-blue" /></div>
         ) : sortedApplicants.length === 0 ? (
@@ -330,12 +330,12 @@ export default function ManageApplicantsPage() {
                 <tbody className="divide-y divide-slate-50">
                   {paginated.map((app) => (
                     <tr key={app.id} className="hover:bg-blue-50/30 transition-colors">
-                      <td className="px-4 py-3 font-semibold text-slate-900 whitespace-nowrap">{formatName(app.name) || "—"}</td>
-                      <td className="px-4 py-3 text-slate-600 max-w-[260px]"><span className="block truncate" title={app.email}>{app.email}</span></td>
-                      <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{app.id_number || "—"}</td>
-                      <td className="px-4 py-3"><TypeBadge type={app.applicant_type} /></td>
-                      <td className="px-4 py-3 text-slate-500 text-xs whitespace-nowrap">{formatDate(app.created_at)}</td>
-                      <td className="px-4 py-3"><div className="flex items-center justify-end gap-1">{actions(app)}</div></td>
+                      <td className="px-4 py-2 font-semibold text-slate-900 whitespace-nowrap">{formatName(app.name) || "—"}</td>
+                      <td className="px-4 py-2 text-slate-600 max-w-[260px]"><span className="block truncate" title={app.email}>{app.email}</span></td>
+                      <td className="px-4 py-2 text-slate-600 whitespace-nowrap">{app.id_number || "—"}</td>
+                      <td className="px-4 py-2"><TypeBadge type={app.applicant_type} /></td>
+                      <td className="px-4 py-2 text-slate-500 text-xs whitespace-nowrap">{formatDate(app.created_at)}</td>
+                      <td className="px-4 py-2"><div className="flex items-center justify-end gap-1">{actions(app)}</div></td>
                     </tr>
                   ))}
                 </tbody>
@@ -344,7 +344,7 @@ export default function ManageApplicantsPage() {
 
             <ul className="xl:hidden divide-y divide-slate-100">
               {paginated.map((app) => (
-                <li key={app.id} className="p-4 space-y-2.5">
+                <li key={app.id} className="px-4 py-3 space-y-1.5">
                   <div className="flex items-start justify-between gap-3">
                     <p className="font-semibold text-slate-900 break-words">{formatName(app.name) || "—"}</p>
                     <TypeBadge type={app.applicant_type} />

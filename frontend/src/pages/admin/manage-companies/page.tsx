@@ -231,14 +231,14 @@ export default function CompaniesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900">Manage Companies</h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <h1 className="text-xl font-bold text-slate-900">Manage Companies</h1>
+          <p className="text-slate-500 text-[13px] mt-0.5">
             Add and configure partner companies.
           </p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 bg-brand-blue hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors self-start sm:self-auto"
+          className="inline-flex items-center justify-center gap-2 bg-brand-blue hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors self-start sm:self-auto"
         >
           <Plus className="h-4 w-4" />
           Add Company
@@ -246,9 +246,9 @@ export default function CompaniesPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm overflow-hidden">
         {loading ? (
-          <div className="p-6 space-y-4">
+          <div className="p-4 space-y-4">
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
@@ -263,25 +263,25 @@ export default function CompaniesPage() {
           <>
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm text-left">
-                <thead className="bg-slate-50 text-xs font-bold text-slate-500 uppercase tracking-wide border-b border-slate-200">
+                <thead className="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wide border-b border-slate-200">
                   <tr>
-                    <th className="px-4 lg:px-6 py-3">Company Name</th>
-                    <th className="px-4 py-3">Code</th>
-                    <th className="px-4 py-3">HR Contact</th>
-                    <th className="px-4 py-3 whitespace-nowrap">Interest</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 lg:px-6 py-3 text-right">Actions</th>
+                    <th className="px-4 lg:px-6 py-2">Company Name</th>
+                    <th className="px-4 py-2">Code</th>
+                    <th className="px-4 py-2">HR Contact</th>
+                    <th className="px-4 py-2 whitespace-nowrap">Interest</th>
+                    <th className="px-4 py-2">Status</th>
+                    <th className="px-4 lg:px-6 py-2 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {companies.map((comp) => (
                     <tr key={comp.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-4 lg:px-6 py-3.5 font-semibold text-slate-900">{comp.name}</td>
-                      <td className="px-4 py-3.5"><CodeBadge code={comp.code} /></td>
-                      <td className="px-4 py-3.5 text-slate-500 max-w-[260px]"><span className="block truncate" title={comp.hr_email || ""}>{comp.hr_email || "N/A"}</span></td>
-                      <td className="px-4 py-3.5 text-slate-500 whitespace-nowrap">{comp.interest_rate}%</td>
-                      <td className="px-4 py-3.5"><StatusBadge active={comp.status === "active"} /></td>
-                      <td className="px-4 lg:px-6 py-3.5"><div className="flex items-center justify-end gap-1 text-slate-400">{actions(comp)}</div></td>
+                      <td className="px-4 lg:px-6 py-2.5 font-semibold text-slate-900">{comp.name}</td>
+                      <td className="px-4 py-2.5"><CodeBadge code={comp.code} /></td>
+                      <td className="px-4 py-2.5 text-slate-500 max-w-[260px]"><span className="block truncate" title={comp.hr_email || ""}>{comp.hr_email || "N/A"}</span></td>
+                      <td className="px-4 py-2.5 text-slate-500 whitespace-nowrap">{comp.interest_rate}%</td>
+                      <td className="px-4 py-2.5"><StatusBadge active={comp.status === "active"} /></td>
+                      <td className="px-4 lg:px-6 py-2.5"><div className="flex items-center justify-end gap-1 text-slate-400">{actions(comp)}</div></td>
                     </tr>
                   ))}
                 </tbody>
@@ -290,7 +290,7 @@ export default function CompaniesPage() {
 
             <ul className="md:hidden divide-y divide-slate-100">
               {companies.map((comp) => (
-                <li key={comp.id} className="p-4 space-y-2">
+                <li key={comp.id} className="px-4 py-3 space-y-1.5">
                   <div className="flex items-start justify-between gap-3">
                     <p className="font-semibold text-slate-900">{comp.name}</p>
                     <StatusBadge active={comp.status === "active"} />
@@ -311,7 +311,7 @@ export default function CompaniesPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
               <h2 className="text-lg font-bold text-slate-900">Add New Company</h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -321,7 +321,7 @@ export default function CompaniesPage() {
               </button>
             </div>
             
-            <form onSubmit={handleAddCompany} className="p-6 space-y-4">
+            <form onSubmit={handleAddCompany} className="p-4 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Company Name *</label>
                 <input
@@ -329,7 +329,7 @@ export default function CompaniesPage() {
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
                   placeholder="e.g. Acme Corp"
                 />
               </div>
@@ -340,7 +340,7 @@ export default function CompaniesPage() {
                   type="email"
                   value={formData.hr_email}
                   onChange={(e) => setFormData({ ...formData, hr_email: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
                   placeholder="hr@company.com"
                 />
               </div>
@@ -354,7 +354,7 @@ export default function CompaniesPage() {
                     required
                     value={formData.interest_rate}
                     onChange={(e) => setFormData({ ...formData, interest_rate: parseFloat(e.target.value) })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
                   />
                 </div>
                 <div>
@@ -365,7 +365,7 @@ export default function CompaniesPage() {
                     required
                     value={formData.processing_fee_rate}
                     onChange={(e) => setFormData({ ...formData, processing_fee_rate: parseFloat(e.target.value) })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
                   />
                 </div>
               </div>
@@ -381,7 +381,7 @@ export default function CompaniesPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-brand-blue hover:bg-slate-800 text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
+                  className="px-4 py-2 bg-brand-blue hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
                 >
                   {isSubmitting ? "Saving..." : "Add Company"}
                 </button>
@@ -395,7 +395,7 @@ export default function CompaniesPage() {
       {isEditModalOpen && editingCompany && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden max-h-[90vh] flex flex-col">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
               <h2 className="text-lg font-bold text-slate-900">Edit Company: {editingCompany.name}</h2>
               <button
                 onClick={() => setIsEditModalOpen(false)}
@@ -405,7 +405,7 @@ export default function CompaniesPage() {
               </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-6 flex flex-col md:flex-row gap-8">
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col md:flex-row gap-5">
               
               {/* Left Column: Company Details Form */}
               <div className="flex-1">
@@ -418,7 +418,7 @@ export default function CompaniesPage() {
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
                     />
                   </div>
                   
@@ -428,7 +428,7 @@ export default function CompaniesPage() {
                       type="email"
                       value={formData.hr_email}
                       onChange={(e) => setFormData({ ...formData, hr_email: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
                     />
                   </div>
 
@@ -441,7 +441,7 @@ export default function CompaniesPage() {
                         required
                         value={formData.interest_rate}
                         onChange={(e) => setFormData({ ...formData, interest_rate: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
                       />
                     </div>
                     <div>
@@ -452,7 +452,7 @@ export default function CompaniesPage() {
                         required
                         value={formData.processing_fee_rate}
                         onChange={(e) => setFormData({ ...formData, processing_fee_rate: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
                       />
                     </div>
                   </div>
@@ -466,7 +466,7 @@ export default function CompaniesPage() {
                         required
                         value={formData.access_fee_rate}
                         onChange={(e) => setFormData({ ...formData, access_fee_rate: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
                       />
                     </div>
                     <div>
@@ -477,7 +477,7 @@ export default function CompaniesPage() {
                         required
                         value={formData.legal_fee}
                         onChange={(e) => setFormData({ ...formData, legal_fee: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
                       />
                     </div>
                   </div>
@@ -488,7 +488,7 @@ export default function CompaniesPage() {
                       rows={3}
                       value={formData.notes}
                       onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue text-sm"
                     />
                   </div>
                 </form>
@@ -501,12 +501,12 @@ export default function CompaniesPage() {
                 
                 <div className="space-y-3 flex-1 overflow-y-auto">
                   {staffList.filter((s: any) => s.applicant_type === editingCompany.code).length === 0 ? (
-                    <div className="bg-slate-50 p-4 rounded-xl text-center text-slate-400 text-sm italic">
+                    <div className="bg-slate-50 p-4 rounded-lg text-center text-slate-400 text-sm italic">
                       No HR or Finance staff linked yet.
                     </div>
                   ) : (
                     staffList.filter((s: any) => s.applicant_type === editingCompany.code).map((staff: any) => (
-                      <div key={staff.id} className="bg-slate-50 ring-1 ring-slate-900/5 p-3 rounded-xl flex items-center justify-between">
+                      <div key={staff.id} className="bg-slate-50 ring-1 ring-slate-900/5 p-3 rounded-lg flex items-center justify-between">
                         <div>
                           <p className="text-sm font-bold text-slate-800">{staff.name}</p>
                           <p className="text-xs text-slate-500">{staff.email} • {staff.phone_number}</p>
@@ -522,7 +522,7 @@ export default function CompaniesPage() {
 
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+            <div className="px-4 py-3 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setIsEditModalOpen(false)}
@@ -533,7 +533,7 @@ export default function CompaniesPage() {
               <button
                 type="submit"
                 form="edit-company-form"
-                className="px-4 py-2 bg-brand-blue hover:bg-slate-800 text-white text-sm font-medium rounded-xl transition-colors"
+                className="px-4 py-2 bg-brand-blue hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors"
               >
                 Save Changes
               </button>
@@ -546,7 +546,7 @@ export default function CompaniesPage() {
       {isOnboardModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+            <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <h3 className="font-semibold text-slate-800 flex items-center gap-2">
                 <Mail className="h-5 w-5 text-emerald-600" />
                 Onboard Company
@@ -559,7 +559,7 @@ export default function CompaniesPage() {
               </button>
             </div>
             
-            <form onSubmit={handleOnboardSubmit} className="p-6 overflow-y-auto">
+            <form onSubmit={handleOnboardSubmit} className="p-4 overflow-y-auto">
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">To Email</label>
@@ -568,7 +568,7 @@ export default function CompaniesPage() {
                     required
                     value={onboardingForm.to_email}
                     onChange={(e) => setOnboardingForm({...onboardingForm, to_email: e.target.value})}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none transition-all text-sm"
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none transition-all text-sm"
                   />
                 </div>
                 
@@ -579,7 +579,7 @@ export default function CompaniesPage() {
                     required
                     value={onboardingForm.subject}
                     onChange={(e) => setOnboardingForm({...onboardingForm, subject: e.target.value})}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none transition-all text-sm"
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none transition-all text-sm"
                   />
                 </div>
 
@@ -590,11 +590,11 @@ export default function CompaniesPage() {
                     rows={4}
                     value={onboardingForm.message}
                     onChange={(e) => setOnboardingForm({...onboardingForm, message: e.target.value})}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none transition-all text-sm resize-none"
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none transition-all text-sm resize-none"
                   />
                 </div>
 
-                <div className="bg-emerald-50 text-emerald-800 text-xs p-3 rounded-xl border border-emerald-100">
+                <div className="bg-emerald-50 text-emerald-800 text-xs p-3 rounded-lg border border-emerald-100">
                   <p className="font-semibold flex items-center gap-1 mb-1">
                     <CheckCircle2 className="h-4 w-4" /> Promotional Poster Included
                   </p>
@@ -606,14 +606,14 @@ export default function CompaniesPage() {
                 <button
                   type="button"
                   onClick={() => setIsOnboardModalOpen(false)}
-                  className="px-5 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-xl transition-colors"
+                  className="px-5 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isOnboarding}
-                  className="px-5 py-2 text-sm font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-colors disabled:opacity-50"
+                  className="px-5 py-2 text-sm font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors disabled:opacity-50"
                 >
                   {isOnboarding ? "Sending..." : "Send Onboarding Email"}
                 </button>

@@ -123,7 +123,7 @@ export function ExportMenu({
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#0F2C59] px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#143a73] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F2C59]/40 focus-visible:ring-offset-2"
+        className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#0F2C59] px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#143a73] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F2C59]/40 focus-visible:ring-offset-2"
       >
         {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
         {exporting ? "Preparing file" : "Export"}
@@ -204,11 +204,11 @@ export function BookPanel({
   return (
     <section aria-label="State of the loan book" className="grid rounded-2xl bg-white shadow-[0_1px_2px_rgba(15,44,89,0.06)] ring-1 ring-slate-200 lg:grid-cols-[1.1fr_1fr]">
       {/* Money flow */}
-      <div className="p-6 lg:p-8">
+      <div className="p-4 lg:p-5">
         <div className="mb-6 flex items-end justify-between gap-4">
           <div className="flex items-baseline gap-2">
-            {loading ? <Skeleton className="h-10 w-20" /> : (
-              <span className="text-4xl font-extrabold tabular-nums tracking-tight text-[#081430]">{count.toLocaleString("en-KE")}</span>
+            {loading ? <Skeleton className="h-9 w-20" /> : (
+              <span className="text-3xl font-extrabold tabular-nums tracking-tight text-[#081430]">{count.toLocaleString("en-KE")}</span>
             )}
             <span className="text-sm font-semibold text-slate-500">{count === 1 ? "loan" : "loans"}</span>
           </div>
@@ -232,12 +232,12 @@ export function BookPanel({
       </div>
 
       {/* Open loans and aging */}
-      <div className="border-t border-slate-200 p-6 lg:border-l lg:border-t-0 lg:p-8">
+      <div className="border-t border-slate-200 p-4 lg:border-l lg:border-t-0 lg:p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm font-semibold text-slate-600">Still owed on open loans</p>
             {agingLoading && !aging ? <Skeleton className="mt-1.5 h-9 w-44" /> : (
-              <p className="mt-1 break-normal text-3xl font-extrabold tabular-nums tracking-tight text-[#081430]">{kes(openAmount)}</p>
+              <p className="mt-1 break-normal text-2xl font-extrabold tabular-nums tracking-tight text-[#081430]">{kes(openAmount)}</p>
             )}
           </div>
           <button
@@ -308,7 +308,7 @@ function SelectField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className={cn(
-          "h-10 w-full appearance-none rounded-lg border bg-white pl-3 pr-9 text-sm font-medium text-slate-700 transition-colors hover:border-slate-300",
+          "h-9 w-full appearance-none rounded-lg border bg-white pl-3 pr-9 text-sm font-medium text-slate-700 transition-colors hover:border-slate-300",
           active ? "border-[#0F2C59]/50 bg-[#0F2C59]/5 text-[#0F2C59]" : "border-slate-200",
           focusRing,
         )}
@@ -367,7 +367,7 @@ export function FilterBar({
     chips.push({ key: "dates", label: `${from} to ${to}`, clear: { startDate: "", endDate: "" } });
   }
 
-  const dateInput = "h-10 min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition-colors hover:border-slate-300 " + focusRing;
+  const dateInput = "h-9 min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition-colors hover:border-slate-300 " + focusRing;
 
   return (
     <div className="space-y-3 rounded-2xl bg-white p-3 shadow-[0_1px_2px_rgba(15,44,89,0.06)] ring-1 ring-slate-200">
@@ -380,7 +380,7 @@ export function FilterBar({
             placeholder="Name, email, phone, payroll"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            className={cn("h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-9 text-sm text-slate-800 placeholder:text-slate-400 transition-colors hover:border-slate-300 [&::-webkit-search-cancel-button]:hidden", focusRing)}
+            className={cn("h-9 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-9 text-sm text-slate-800 placeholder:text-slate-400 transition-colors hover:border-slate-300 [&::-webkit-search-cancel-button]:hidden", focusRing)}
           />
           {text && (
             <button
@@ -648,7 +648,7 @@ export function EmptyState({ filtered, onClear }: { filtered: boolean; onClear: 
         {filtered ? "Widen the dates or remove a filter to see more." : "Loans will appear here once applications come in."}
       </p>
       {filtered && (
-        <button onClick={onClear} className="mt-5 inline-flex h-10 items-center rounded-lg bg-[#0F2C59] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#143a73]">
+        <button onClick={onClear} className="mt-5 inline-flex h-9 items-center rounded-lg bg-[#0F2C59] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#143a73]">
           Clear all filters
         </button>
       )}
@@ -662,7 +662,7 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry: () 
       <span className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-50"><AlertTriangle className="h-6 w-6 text-rose-600" /></span>
       <h3 className="mt-4 text-base font-bold text-slate-900">The loan list did not load</h3>
       <p className="mt-1 max-w-sm text-sm text-slate-500">{message}</p>
-      <button onClick={onRetry} className="mt-5 inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50">
+      <button onClick={onRetry} className="mt-5 inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50">
         <RefreshCw className="h-4 w-4" /> Try again
       </button>
     </div>

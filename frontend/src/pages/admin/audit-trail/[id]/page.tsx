@@ -32,7 +32,7 @@ const KES = new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES",
 
 function DetailCard({ title, icon: Icon, children }: { title: string; icon: any; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6">
+    <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
       <div className="flex items-center gap-2 mb-5 pb-3 border-b border-slate-100">
         <Icon className="h-5 w-5 text-slate-400" />
         <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide">{title}</h2>
@@ -93,10 +93,10 @@ export default function AuditTrailDetailPage() {
 
   if (loading) {
     return (
-      <div className="p-6 w-full space-y-6">
-        <Skeleton className="h-10 w-64 rounded-xl" />
-        <Skeleton className="h-48 rounded-xl" />
-        <Skeleton className="h-48 rounded-xl" />
+      <div className="p-4 w-full space-y-4">
+        <Skeleton className="h-10 w-64 rounded-lg" />
+        <Skeleton className="h-48 rounded-lg" />
+        <Skeleton className="h-48 rounded-lg" />
       </div>
     );
   }
@@ -107,10 +107,10 @@ export default function AuditTrailDetailPage() {
         <AlertTriangle className="h-12 w-12 text-amber-400 mx-auto mb-4" />
         <p className="text-slate-500">{error || "Audit trail not found."}</p>
         <div className="flex items-center justify-center gap-3 mt-4">
-          <Button onClick={() => navigate(-1)} variant="outline" className="rounded-xl">
+          <Button onClick={() => navigate(-1)} variant="outline" className="rounded-lg">
             Go Back
           </Button>
-          <Button onClick={fetchAuditTrail} className="rounded-xl bg-brand-blue hover:bg-slate-800">
+          <Button onClick={fetchAuditTrail} className="rounded-lg bg-brand-blue hover:bg-slate-800">
             <RefreshCw className="mr-2 h-4 w-4" />
             Retry
           </Button>
@@ -137,26 +137,26 @@ export default function AuditTrailDetailPage() {
       <div className="flex items-start gap-4">
         <button
           onClick={() => navigate(-1)}
-          className="mt-1 p-2 rounded-xl hover:bg-slate-100 transition-colors text-slate-400 hover:text-gray-700"
+          className="mt-1 p-2 rounded-lg hover:bg-slate-100 transition-colors text-slate-400 hover:text-gray-700"
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="flex-1">
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl font-black text-slate-900">
+            <h1 className="text-xl font-bold text-slate-900">
               Audit Trail Record
             </h1>
             <span className="text-xs font-bold px-3 py-1 rounded-full bg-blue-100 text-brand-blue">
               {actionName}
             </span>
           </div>
-          <p className="text-slate-400 text-sm mt-1 font-mono">
+          <p className="text-slate-400 text-[13px] mt-0.5 font-mono">
             ID: {data.id}
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* User Details */}
         <DetailCard title="Action Initiated By" icon={User}>
           <Field label="User Email" value={data.changed_by_email} />
@@ -192,14 +192,14 @@ export default function AuditTrailDetailPage() {
       </div>
 
       {/* Changes Made */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
         <div className="flex items-center gap-2 mb-5 pb-3 border-b border-slate-100">
           <Activity className="h-5 w-5 text-slate-400" />
           <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide">Changes Recorded</h2>
         </div>
         
         {data.notes && (
-          <div className="mb-6 bg-slate-50 rounded-xl p-4 border border-slate-100">
+          <div className="mb-6 bg-slate-50 rounded-lg p-4 border border-slate-100">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Audit Notes</p>
             <p className="text-sm text-slate-800">{data.notes}</p>
           </div>

@@ -125,7 +125,7 @@ export default function ReportsPage() {
       {/* Header */}
       <header className="flex flex-col gap-4 px-4 pt-4 sm:px-6 sm:pt-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-[#081430]">Reports &amp; Analytics</h1>
+          <h1 className="text-xl font-bold tracking-tight text-[#081430]">Reports &amp; Analytics</h1>
           <div className="mt-1 max-w-2xl text-sm text-slate-600" aria-live="polite">
             {loading && rows.length === 0 && !error ? <Skeleton className="mt-2 h-4 w-72" /> : error && rows.length === 0 ? (
               <span className="text-rose-700">The loan list did not load. Try again below.</span>
@@ -153,7 +153,7 @@ export default function ReportsPage() {
         <FilterBar filters={filters} companies={companies} onChange={changeFilters} onClear={clearFilters} />
       </div>
 
-      <div className="space-y-6 px-4 pt-3 sm:px-6">
+      <div className="space-y-4 px-4 pt-3 sm:px-6">
         <BookPanel
           loading={firstLoad}
           count={pagination.total_records}

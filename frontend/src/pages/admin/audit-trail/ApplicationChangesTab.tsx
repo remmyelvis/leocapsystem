@@ -56,7 +56,7 @@ function summarize(item: AuditTrail) {
 const formatDate = (value: string) =>
   new Date(value).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
-const thCls = "text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap";
+const thCls = "text-left px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap";
 
 function Borrower({ item }: { item: AuditTrail }) {
   return (
@@ -92,7 +92,7 @@ const PERIODS = [
 ];
 
 const selectCls =
-  "px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors bg-white w-full sm:w-auto sm:min-w-[150px] min-w-0";
+  "px-3 py-1.5 rounded-lg border border-slate-200 text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors bg-white w-full sm:w-auto sm:min-w-[150px] min-w-0";
 
 export default function ApplicationChangesTab() {
   const [data, setData] = useState<AuditTrail[]>([]);
@@ -135,7 +135,7 @@ export default function ApplicationChangesTab() {
   const filtered = Boolean(query || field || period !== "all");
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-4">
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
@@ -144,7 +144,7 @@ export default function ApplicationChangesTab() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search borrower, company, who, notes, loan ID…"
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors"
+            className="w-full pl-10 pr-4 py-1.5 rounded-lg border border-slate-200 text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors"
           />
         </div>
         <div className="grid grid-cols-2 gap-3 sm:contents">
@@ -163,8 +163,8 @@ export default function ApplicationChangesTab() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <History className="h-4 w-4 text-slate-400" />
             <h2 className="text-sm font-black text-slate-900">Loan Changes</h2>
@@ -190,7 +190,7 @@ export default function ApplicationChangesTab() {
                 <thead>
                   <tr className="border-b border-slate-100">
                     <th
-                      className="text-left pl-6 pr-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap cursor-pointer hover:bg-slate-50 transition-colors"
+                      className="text-left pl-6 pr-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap cursor-pointer hover:bg-slate-50 transition-colors"
                       onClick={() => { setOrder(order === "desc" ? "asc" : "desc"); setPage(1); }}
                       title={order === "desc" ? "Newest first (click for oldest first)" : "Oldest first (click for newest first)"}
                     >
@@ -199,7 +199,7 @@ export default function ApplicationChangesTab() {
                     <th className={thCls}>Changed by</th>
                     <th className={thCls}>Borrower</th>
                     <th className={thCls}>What changed</th>
-                    <th className="px-4 py-3" />
+                    <th className="px-4 py-2" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
@@ -207,20 +207,20 @@ export default function ApplicationChangesTab() {
                     const [day, time] = formatDate(item.changed_at).split(", ");
                     return (
                       <tr key={item.id} className="hover:bg-slate-50/60 transition-colors align-top">
-                        <td className="pl-6 pr-4 py-3.5 whitespace-nowrap">
+                        <td className="pl-6 pr-4 py-2.5 whitespace-nowrap">
                           <p className="text-xs font-semibold text-slate-700">{day}</p>
                           {time && <p className="text-xs text-slate-400">{time}</p>}
                         </td>
-                        <td className="px-4 py-3.5">
+                        <td className="px-4 py-2.5">
                           <p className="font-semibold text-slate-800 truncate max-w-[180px] 2xl:max-w-[260px]" title={item.changed_by_email}>{item.changed_by_email}</p>
                           <p className="text-xs text-slate-400 capitalize">{roleLabel(item.changed_by_role)}{item.changed_by_company ? ` • ${item.changed_by_company}` : ""}</p>
                         </td>
-                        <td className="px-4 py-3.5"><Borrower item={item} /></td>
-                        <td className="px-4 py-3.5 w-full max-w-0 min-w-[240px]">
+                        <td className="px-4 py-2.5"><Borrower item={item} /></td>
+                        <td className="px-4 py-2.5 w-full max-w-0 min-w-[240px]">
                           <p className="font-medium text-slate-800 break-words">{summarize(item)}</p>
                           {item.notes && item.old_status !== item.new_status && <p className="text-xs text-slate-400 mt-0.5 line-clamp-2 break-words" title={item.notes}>{item.notes}</p>}
                         </td>
-                        <td className="pl-4 pr-6 py-3.5 text-right whitespace-nowrap"><ViewLink id={item.id} /></td>
+                        <td className="pl-4 pr-6 py-2.5 text-right whitespace-nowrap"><ViewLink id={item.id} /></td>
                       </tr>
                     );
                   })}
@@ -230,7 +230,7 @@ export default function ApplicationChangesTab() {
 
             <ul className="xl:hidden divide-y divide-slate-100">
               {data.map((item) => (
-                <li key={item.id} className="px-4 sm:px-6 py-4 space-y-2">
+                <li key={item.id} className="px-4 sm:px-4 py-3 space-y-2">
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-xs text-slate-500">{formatDate(item.changed_at)}</span>
                     <ViewLink id={item.id} />
@@ -255,12 +255,12 @@ export default function ApplicationChangesTab() {
 
       {/* Pagination controls */}
       {pagination && (pagination.has_next || pagination.has_prev) && (
-        <div className="flex justify-between items-center bg-white p-4 rounded-xl ring-1 ring-slate-200 shadow-sm">
+        <div className="flex justify-between items-center bg-white p-4 rounded-lg ring-1 ring-slate-200 shadow-sm">
           <Button
             variant="outline"
             disabled={!pagination.has_prev}
             onClick={() => setPage(page - 1)}
-            className="rounded-xl border-slate-200"
+            className="rounded-lg border-slate-200"
           >
             Previous
           </Button>
@@ -271,7 +271,7 @@ export default function ApplicationChangesTab() {
             variant="outline"
             disabled={!pagination.has_next}
             onClick={() => setPage(page + 1)}
-            className="rounded-xl border-slate-200"
+            className="rounded-lg border-slate-200"
           >
             Next
           </Button>

@@ -14,7 +14,7 @@ import {
 } from "./auditLogTypes";
 
 const inputCls =
-  "w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors";
+  "w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-[13px] bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors";
 const labelCls = "block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1";
 
 export default function SystemLogsTab() {
@@ -85,9 +85,9 @@ export default function SystemLogsTab() {
   const to = pagination ? Math.min(pagination.page * pagination.page_size, pagination.total_records) : 0;
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-4">
       {/* Filters */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-5 space-y-4">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-slate-400" />
@@ -102,7 +102,7 @@ export default function SystemLogsTab() {
             variant="outline"
             size="sm"
             onClick={() => setShowDelete(true)}
-            className="rounded-xl border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+            className="rounded-lg border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
           >
             <Trash2 className="h-4 w-4 mr-1.5" /> Purge by Date
           </Button>
@@ -165,10 +165,10 @@ export default function SystemLogsTab() {
             />
           </div>
           <div className="flex gap-2 [&>button]:flex-1 sm:[&>button]:flex-none">
-            <Button variant="outline" onClick={resetFilters} className="rounded-xl border-slate-200">
+            <Button variant="outline" onClick={resetFilters} className="rounded-lg border-slate-200">
               <RotateCcw className="h-4 w-4 mr-1.5" /> Reset
             </Button>
-            <Button onClick={applyFilters} className="rounded-xl bg-brand-blue hover:bg-slate-800">
+            <Button onClick={applyFilters} className="rounded-lg bg-brand-blue hover:bg-slate-800">
               <Filter className="h-4 w-4 mr-1.5" /> Apply Filters
             </Button>
           </div>
@@ -176,8 +176,8 @@ export default function SystemLogsTab() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-slate-400" />
             <h2 className="text-sm font-black text-slate-900 whitespace-nowrap">System Audit Logs</h2>
@@ -216,7 +216,7 @@ export default function SystemLogsTab() {
                     <th className={thCls}>Action</th>
                     <th className={thCls}>What happened</th>
                     <th className={thCls}>Status</th>
-                    <th className="px-4 py-3" />
+                    <th className="px-4 py-2" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
@@ -225,28 +225,28 @@ export default function SystemLogsTab() {
                     const [day, time] = formatDateTime(log.created_at).split(", ");
                     return (
                       <tr key={log.id} className="hover:bg-slate-50/60 transition-colors align-top">
-                        <td className="pl-6 pr-4 py-3.5 whitespace-nowrap">
+                        <td className="pl-6 pr-4 py-2.5 whitespace-nowrap">
                           <p className="text-xs font-semibold text-slate-700">{day}</p>
                           {time && <p className="text-xs text-slate-400">{time}</p>}
                         </td>
-                        <td className="px-4 py-3.5">
+                        <td className="px-4 py-2.5">
                           <p className="font-semibold text-slate-800 truncate max-w-[180px] 2xl:max-w-[260px]" title={log.actor_email || log.actor_id || ""}>
                             {log.actor_email || log.actor_id || "Unknown"}
                           </p>
                           <p className="text-xs text-slate-400 capitalize">{log.actor_role?.replace(/_/g, " ") || "—"}</p>
                         </td>
-                        <td className="px-4 py-3.5 whitespace-nowrap">
+                        <td className="px-4 py-2.5 whitespace-nowrap">
                           <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full ${actionStyle(log.action)}`}>
                             {formatAction(log.action)}
                           </span>
                           {log.entity_type && <p className="text-[11px] text-slate-400 mt-1">{log.entity_type}</p>}
                         </td>
-                        <td className="px-4 py-3.5 w-full max-w-0 min-w-[260px] text-slate-700">
+                        <td className="px-4 py-2.5 w-full max-w-0 min-w-[260px] text-slate-700">
                           <p className="line-clamp-3 break-words" title={log.description || ""}>{log.description || "—"}</p>
                           <Endpoint log={log} />
                         </td>
-                        <td className="px-4 py-3.5 whitespace-nowrap"><StatusBadge failed={failed} status={log.status} /></td>
-                        <td className="pl-4 pr-6 py-3.5 text-right whitespace-nowrap"><ViewLink id={log.id} /></td>
+                        <td className="px-4 py-2.5 whitespace-nowrap"><StatusBadge failed={failed} status={log.status} /></td>
+                        <td className="pl-4 pr-6 py-2.5 text-right whitespace-nowrap"><ViewLink id={log.id} /></td>
                       </tr>
                     );
                   })}
@@ -258,7 +258,7 @@ export default function SystemLogsTab() {
               {visibleLogs.map((log) => {
                 const failed = (log.status || "").toLowerCase() !== "success";
                 return (
-                  <li key={log.id} className="px-4 sm:px-6 py-4 space-y-2">
+                  <li key={log.id} className="px-4 sm:px-4 py-3 space-y-2">
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-xs text-slate-500">{formatDateTime(log.created_at)}</span>
                       <StatusBadge failed={failed} status={log.status} />
@@ -285,7 +285,7 @@ export default function SystemLogsTab() {
 
       {/* Pagination */}
       {pagination && pagination.total_records > 0 && (
-        <div className="flex flex-col sm:flex-row gap-3 justify-between items-center bg-white p-4 rounded-xl ring-1 ring-slate-200 shadow-sm">
+        <div className="flex flex-col sm:flex-row gap-3 justify-between items-center bg-white p-4 rounded-lg ring-1 ring-slate-200 shadow-sm">
           <div className="flex items-center gap-3 text-sm text-slate-600">
             <span>
               Showing <b>{from.toLocaleString()}</b>–<b>{to.toLocaleString()}</b> of <b>{pagination.total_records.toLocaleString()}</b>
@@ -328,12 +328,13 @@ export default function SystemLogsTab() {
   );
 }
 
-const thCls = "text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap";
+const thCls = "text-left px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap";
 
 // "POST /api/applications/bulk/paid": the technical detail, kept small under the description so it never takes a column.
 function Endpoint({ log }: { log: AuditLog }) {
   const method = (log.http_method || "").toUpperCase();
   if (!method && !log.endpoint) return null;
+  if (log.endpoint && (log.description || "").includes(log.endpoint.replace(/^\/api\//, ""))) return null; // the description already shows the path
   return (
     <div className="flex items-center gap-2 mt-1 min-w-0">
       {method && <span className={`shrink-0 text-[10px] font-black px-1.5 py-0.5 rounded ${METHOD_STYLES[method] || "bg-slate-100 text-slate-600"}`}>{method}</span>}
@@ -385,7 +386,7 @@ function DeleteByDateModal({ onClose, onDeleted }: { onClose: () => void; onDele
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-5" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-4 space-y-5" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-red-50 flex items-center justify-center">
@@ -421,8 +422,8 @@ function DeleteByDateModal({ onClose, onDeleted }: { onClose: () => void; onDele
         </div>
 
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose} className="rounded-xl border-slate-200">Cancel</Button>
-          <Button onClick={handleDelete} disabled={!valid || submitting} className="rounded-xl bg-red-600 hover:bg-red-700 text-white">
+          <Button variant="outline" onClick={onClose} className="rounded-lg border-slate-200">Cancel</Button>
+          <Button onClick={handleDelete} disabled={!valid || submitting} className="rounded-lg bg-red-600 hover:bg-red-700 text-white">
             {submitting ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Trash2 className="h-4 w-4 mr-1.5" />}
             Delete Logs
           </Button>

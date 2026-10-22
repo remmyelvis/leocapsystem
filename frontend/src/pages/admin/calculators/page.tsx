@@ -11,12 +11,12 @@ export default function CalculatorsPage() {
     <div className="p-4 sm:p-6 w-full space-y-5 max-w-[1600px] mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
             <Calculator className="h-6 w-6 text-blue-600" /> Loan Simulators & Calculators
           </h1>
-          <p className="text-slate-500 text-sm mt-1">Unified toolkit for all loan calculations and simulations</p>
+          <p className="text-slate-500 text-[13px] mt-0.5">Unified toolkit for all loan calculations and simulations</p>
         </div>
-        <div className="flex bg-slate-100 p-1 rounded-xl w-full sm:w-fit max-w-full gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex bg-slate-100 p-1 rounded-lg w-full sm:w-fit max-w-full gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {[
             { id: "1", label: "Personal Loan" },
             { id: "2", label: "Salary Advance" },
@@ -39,7 +39,7 @@ export default function CalculatorsPage() {
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-xl shadow-sm ring-1 ring-slate-200">
+      <div className="bg-white p-4 rounded-lg shadow-sm ring-1 ring-slate-200">
         {activeModule === "1" && <PersonalLoanModule />}
         {activeModule === "2" && <SalaryAdvanceModule />}
         {activeModule === "3" && <GrossLoanModule />}
@@ -64,21 +64,21 @@ function PersonalLoanModule() {
   const repayment = (Number(amount) || 0) * (1 + (Number(rate) || 0) / 100);
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-lg font-bold text-slate-800">1 Month Loan Calculator (Personal)</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="space-y-4">
+      <h2 className="text-base font-bold text-slate-800">1 Month Loan Calculator (Personal)</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase">Loan Amount</label>
-            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={amount === "" ? "" : amount} onChange={e => setAmount(Number(e.target.value))} className="w-full mt-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
+            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={amount === "" ? "" : amount} onChange={e => setAmount(Number(e.target.value))} className="w-full mt-1 border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm bg-slate-50 font-medium" />
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase">Rate (%)</label>
-            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={rate === "" ? "" : rate} onChange={e => setRate(Number(e.target.value))} className="w-full mt-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
+            <input type="number" onWheel={(e) => e.currentTarget.blur()} value={rate === "" ? "" : rate} onChange={e => setRate(Number(e.target.value))} className="w-full mt-1 border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm bg-slate-50 font-medium" />
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase">Legal Fees (1000 or 500)</label>
-            <select value={legalFee} onChange={e => setLegalFee(Number(e.target.value))} className="w-full mt-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium">
+            <select value={legalFee} onChange={e => setLegalFee(Number(e.target.value))} className="w-full mt-1 border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm bg-slate-50 font-medium">
               <option value="1000">1,000</option>
               <option value="500">500</option>
             </select>
@@ -88,7 +88,7 @@ function PersonalLoanModule() {
             <span className="text-sm font-semibold text-gray-700">Include Admin & Access Fees (2%)</span>
           </label>
         </div>
-        <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 space-y-3">
+        <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 space-y-3">
           <div className="flex justify-between text-sm"><span className="text-slate-600">Processing Fees (3%)</span><span className="font-bold">{KES.format(processing)}</span></div>
           {includeAdmin && <div className="flex justify-between text-sm"><span className="text-slate-600">Admin Fees (2%)</span><span className="font-bold">{KES.format(admin)}</span></div>}
           <div className="flex justify-between text-sm"><span className="text-slate-600">Legal Fees</span><span className="font-bold">{KES.format(legalFee)}</span></div>
@@ -116,9 +116,9 @@ function SalaryAdvanceModule() {
   const interest = repayment - loanAmount;
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-lg font-bold text-slate-800">Salary Advance Simulator</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="space-y-4">
+      <h2 className="text-base font-bold text-slate-800">Salary Advance Simulator</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div className="space-y-4">
           {[1, 2, 3].map(i => (
             <div key={i}>
@@ -126,11 +126,11 @@ function SalaryAdvanceModule() {
               <input type="number" onWheel={(e) => e.currentTarget.blur()} value={i===1 ? m1 : i===2 ? m2 : m3} onChange={e => {
                 const v = Number(e.target.value);
                 if (i===1) setM1(v); else if (i===2) setM2(v); else setM3(v);
-              }} className="w-full mt-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
+              }} className="w-full mt-1 border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm bg-slate-50 font-medium" />
             </div>
           ))}
         </div>
-        <div className="bg-purple-50 p-6 rounded-xl border border-purple-100 space-y-3">
+        <div className="bg-purple-50 p-4 rounded-lg border border-purple-100 space-y-3">
           <div className="flex justify-between text-sm"><span className="text-slate-600">Max Loan Amount</span><span className="font-bold">{KES.format(loanAmount)}</span></div>
           <div className="flex justify-between text-sm"><span className="text-slate-600">Processing Fees (3%)</span><span className="font-bold">{KES.format(processing)}</span></div>
           <div className="flex justify-between text-sm"><span className="text-slate-600">Access Fees (2%)</span><span className="font-bold">{KES.format(access)}</span></div>
@@ -152,23 +152,23 @@ function GrossLoanModule() {
   const gross = type === "personal" ? ((Number(net) || 0) + 1000) / 0.97 : ((Number(net) || 0) + 500) / 0.95;
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-lg font-bold text-slate-800">Gross Loan Calculator</h2>
+    <div className="space-y-4">
+      <h2 className="text-base font-bold text-slate-800">Gross Loan Calculator</h2>
       <p className="text-sm text-slate-500">Calculate the required gross loan amount to receive a specific net disbursement.</p>
       <div className="flex flex-col md:flex-row gap-4 max-w-2xl">
         <div className="flex-1">
           <label className="block text-xs font-bold text-slate-500 uppercase">Desired Net Amount</label>
-          <input type="number" onWheel={(e) => e.currentTarget.blur()} value={net === "" ? "" : net} onChange={e => setNet(Number(e.target.value))} className="w-full mt-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
+          <input type="number" onWheel={(e) => e.currentTarget.blur()} value={net === "" ? "" : net} onChange={e => setNet(Number(e.target.value))} className="w-full mt-1 border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm bg-slate-50 font-medium" />
         </div>
         <div className="flex-1">
           <label className="block text-xs font-bold text-slate-500 uppercase">Loan Type</label>
-          <select value={type} onChange={e => setType(e.target.value)} className="w-full mt-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium">
+          <select value={type} onChange={e => setType(e.target.value)} className="w-full mt-1 border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm bg-slate-50 font-medium">
             <option value="personal">Personal Loan</option>
             <option value="salary">Salary Advance</option>
           </select>
         </div>
       </div>
-      <div className="bg-emerald-50 p-6 rounded-xl border border-emerald-100 max-w-2xl text-center">
+      <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-100 max-w-2xl text-center">
         <p className="text-sm text-emerald-800 font-bold mb-2">Required Gross Loan Amount</p>
         <p className="text-4xl font-black text-emerald-600">{KES.format(gross)}</p>
       </div>
@@ -207,13 +207,13 @@ function LoanEngineModule() {
   };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-lg font-bold text-slate-800">Advanced Loan Engine & Amortization</h2>
+    <div className="space-y-4">
+      <h2 className="text-base font-bold text-slate-800">Advanced Loan Engine & Amortization</h2>
       <div className="flex flex-col md:flex-row gap-4">
-        <input type="number" onWheel={(e) => e.currentTarget.blur()} value={amount === "" ? "" : amount} onChange={e => setAmount(Number(e.target.value))} placeholder="Amount" className="flex-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
-        <input type="number" onWheel={(e) => e.currentTarget.blur()} value={rate === "" ? "" : rate} onChange={e => setRate(Number(e.target.value))} placeholder="Rate %" className="flex-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
-        <input type="number" onWheel={(e) => e.currentTarget.blur()} value={duration} onChange={e => setDuration(Number(e.target.value))} placeholder="Months" className="flex-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium" />
-        <select value={method} onChange={e => setMethod(e.target.value)} className="flex-1 border-slate-200 rounded-lg p-2 bg-slate-50 font-medium">
+        <input type="number" onWheel={(e) => e.currentTarget.blur()} value={amount === "" ? "" : amount} onChange={e => setAmount(Number(e.target.value))} placeholder="Amount" className="flex-1 border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm bg-slate-50 font-medium" />
+        <input type="number" onWheel={(e) => e.currentTarget.blur()} value={rate === "" ? "" : rate} onChange={e => setRate(Number(e.target.value))} placeholder="Rate %" className="flex-1 border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm bg-slate-50 font-medium" />
+        <input type="number" onWheel={(e) => e.currentTarget.blur()} value={duration} onChange={e => setDuration(Number(e.target.value))} placeholder="Months" className="flex-1 border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm bg-slate-50 font-medium" />
+        <select value={method} onChange={e => setMethod(e.target.value)} className="flex-1 border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm bg-slate-50 font-medium">
           <option value="flat">Flat Rate</option>
           <option value="reducing_balance">Reducing Balance</option>
         </select>
@@ -223,9 +223,9 @@ function LoanEngineModule() {
       {result && (
         <div className="mt-6">
           <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="bg-slate-50 p-4 rounded-xl border text-center"><p className="text-xs font-bold text-slate-500 uppercase">Total Repayment</p><p className="text-xl font-black text-slate-900">{KES.format(result.breakdown.total_repayment)}</p></div>
-            <div className="bg-slate-50 p-4 rounded-xl border text-center"><p className="text-xs font-bold text-slate-500 uppercase">Total Interest</p><p className="text-xl font-black text-slate-900">{KES.format(result.breakdown.total_interest)}</p></div>
-            <div className="bg-slate-50 p-4 rounded-xl border text-center"><p className="text-xs font-bold text-slate-500 uppercase">Monthly Installment</p><p className="text-xl font-black text-slate-900">{KES.format(result.breakdown.monthly_installment)}</p></div>
+            <div className="bg-slate-50 p-4 rounded-lg border text-center"><p className="text-xs font-bold text-slate-500 uppercase">Total Repayment</p><p className="text-xl font-black text-slate-900">{KES.format(result.breakdown.total_repayment)}</p></div>
+            <div className="bg-slate-50 p-4 rounded-lg border text-center"><p className="text-xs font-bold text-slate-500 uppercase">Total Interest</p><p className="text-xl font-black text-slate-900">{KES.format(result.breakdown.total_interest)}</p></div>
+            <div className="bg-slate-50 p-4 rounded-lg border text-center"><p className="text-xs font-bold text-slate-500 uppercase">Monthly Installment</p><p className="text-xl font-black text-slate-900">{KES.format(result.breakdown.monthly_installment)}</p></div>
           </div>
           
           <div className="flex gap-2 justify-end mb-4">
@@ -265,10 +265,10 @@ function CompareLoansModule() {
   };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-lg font-bold text-slate-800">Side-by-Side Comparison</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="space-y-4 bg-blue-50 p-6 rounded-xl border border-blue-100">
+    <div className="space-y-4">
+      <h2 className="text-base font-bold text-slate-800">Side-by-Side Comparison</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="space-y-4 bg-blue-50 p-4 rounded-lg border border-blue-100">
           <h3 className="font-bold text-brand-blue text-lg">Scenario A</h3>
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Loan Amount</label>
@@ -283,7 +283,7 @@ function CompareLoansModule() {
             <input type="number" onWheel={(e) => e.currentTarget.blur()} value={a.duration === "" ? "" : a.duration} onChange={e => setA({...a, duration: e.target.value ? Number(e.target.value) : ""})} className="w-full border-blue-200 rounded-lg p-2 bg-white" />
           </div>
         </div>
-        <div className="space-y-4 bg-purple-50 p-6 rounded-xl border border-purple-100">
+        <div className="space-y-4 bg-purple-50 p-4 rounded-lg border border-purple-100">
           <h3 className="font-bold text-purple-800 text-lg">Scenario B</h3>
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Loan Amount</label>
@@ -302,7 +302,7 @@ function CompareLoansModule() {
       <div className="flex justify-center"><Button onClick={compare} className="bg-gray-900 px-8 py-6 text-lg"><ArrowRight className="mr-2"/> Run Comparison</Button></div>
       {resA && resB && (
         <div className="w-full overflow-x-auto">
-<table className="w-full text-sm mt-6 border rounded-xl overflow-hidden">
+<table className="w-full text-sm mt-6 border rounded-lg overflow-hidden">
           <thead className="bg-slate-100"><tr className="text-left"><th className="p-4">Metric</th><th className="p-4">Scenario A</th><th className="p-4">Scenario B</th><th className="p-4">Difference (B - A)</th></tr></thead>
           <tbody className="divide-y bg-white">
             <tr><td className="p-4 font-bold">Total Repayment</td><td className="p-4">{KES.format(resA.total_repayment)}</td><td className="p-4">{KES.format(resB.total_repayment)}</td><td className={`p-4 font-bold ${resB.total_repayment > resA.total_repayment ? 'text-red-600' : 'text-emerald-600'}`}>{KES.format(resB.total_repayment - resA.total_repayment)}</td></tr>

@@ -51,7 +51,7 @@ const Pill = ({ className, children }: { className: string; children: React.Reac
 
 const ViewButton = ({ id }: { id: string }) => (
   <Link to={`/admin/applications/${id}`} aria-label="View details" title="View Details">
-    <Button size="sm" variant="outline" className="h-8 px-2.5 rounded-lg border-slate-200 gap-1.5">
+    <Button size="sm" variant="outline" className="h-7 px-2 rounded-lg border-slate-200 gap-1.5">
       <Eye className="h-3.5 w-3.5" /> <span className="xl:hidden text-xs font-semibold">View</span>
     </Button>
   </Link>
@@ -221,8 +221,8 @@ return (
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900">{pageTitle}</h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <h1 className="text-xl font-bold text-slate-900">{pageTitle}</h1>
+          <p className="text-slate-500 text-[13px] mt-0.5">
             {filtered.length} application{filtered.length !== 1 ? "s" : ""}
           </p>
         </div>
@@ -231,7 +231,7 @@ return (
             <button
               onClick={handleMarkSelectedPaid}
               disabled={marking}
-              className="inline-flex items-center gap-1.5 bg-brand-blue hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 bg-brand-blue hover:bg-slate-800 text-white text-[13px] font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
             >
               <CheckCircle2 className="h-4 w-4" />
               Mark Selected Paid ({selectedAppIds.length})
@@ -243,7 +243,7 @@ return (
                 value={payMonth}
                 onChange={(e) => setPayMonth(e.target.value)}
                 title="Repayment month the Mark Paid buttons clear"
-                className="px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white"
+                className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-[13px] bg-white"
               >
                 {MONTH_NAMES.map((m) => (
                   <option key={m} value={m}>{m}</option>
@@ -252,7 +252,7 @@ return (
               <button
                 onClick={() => handleMarkCompanyPaid("nakama", "Nakama")}
                 disabled={marking}
-                className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
               >
                 <CheckCircle2 className="h-4 w-4" />
                 Mark Nakama Paid
@@ -260,7 +260,7 @@ return (
               <button
                 onClick={() => handleMarkCompanyPaid("ideon", "Ideon")}
                 disabled={marking}
-                className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
               >
                 <CheckCircle2 className="h-4 w-4" />
                 Mark Ideon Paid
@@ -270,7 +270,7 @@ return (
           <button
             onClick={() => refetch()}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 bg-brand-blue hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 bg-brand-blue hover:bg-slate-800 text-white text-[13px] font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
             Refresh
@@ -280,7 +280,7 @@ return (
 
       {/* Error Alert */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 flex items-center gap-2">
+        <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700 flex items-center gap-2">
           <AlertTriangle className="h-4 w-4" />
           {error}
           <button onClick={() => refetch()} className="ml-auto text-red-800 font-semibold hover:underline">
@@ -290,7 +290,7 @@ return (
       )}
 
       {/* ── Filter bar ── */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-3 sm:p-4 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-3 sm:p-4 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center">
         <Filter className="hidden sm:block h-4 w-4 text-slate-400 flex-shrink-0" />
 
         {/* Search */}
@@ -301,7 +301,7 @@ return (
             placeholder="Search by name, email or ID…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue"
+            className="w-full pl-9 pr-3 py-1.5 text-[13px] border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue"
           />
         </div>
 
@@ -309,7 +309,7 @@ return (
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="w-full sm:w-auto text-sm border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white"
+          className="w-full sm:w-auto text-[13px] border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white"
         >
           <option value="all">All Statuses</option>
           <option value="pending_processing">Pending Processing</option>
@@ -326,7 +326,7 @@ return (
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
           disabled={urlType !== "all"}
-          className="w-full sm:w-auto text-sm border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"
+          className="w-full sm:w-auto text-[13px] border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"
         >
           <option value="all">All Types</option>
           <option value="salary_advance">Salary Advance</option>
@@ -337,7 +337,7 @@ return (
         <select
           value={companyFilter}
           onChange={(e) => setCompanyFilter(e.target.value)}
-          className="w-full sm:w-auto text-sm border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white"
+          className="w-full sm:w-auto text-[13px] border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white"
         >
           <option value="all">All Companies</option>
           {companyOptions.map((c) => (
@@ -349,7 +349,7 @@ return (
         <select
           value={dateRange}
           onChange={(e) => setDateRange(e.target.value as "all" | "7" | "30")}
-          className="w-full sm:w-auto text-sm border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white"
+          className="w-full sm:w-auto text-[13px] border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white"
         >
           {DATE_RANGES.map(({ label, value }) => (
             <option key={value} value={value}>
@@ -360,11 +360,11 @@ return (
       </div>
 
       {/* ── Table ── */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm overflow-hidden">
         {isLoading ? (
-          <div className="p-6 space-y-3">
+          <div className="p-4 space-y-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-14 rounded-xl" />
+              <Skeleton key={i} className="h-14 rounded-lg" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
@@ -378,7 +378,7 @@ return (
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50/80 text-xs uppercase tracking-wide text-slate-500">
-                    <th className="pl-5 pr-2 py-3 text-left w-8">
+                    <th className="pl-5 pr-2 py-2 text-left w-8">
                       <input
                         type="checkbox"
                         aria-label="Select all"
@@ -388,9 +388,9 @@ return (
                       />
                     </th>
                     {["Applicant", "Loan", "Amount", "Status", "Repayment", "Applied"].map((h) => (
-                      <th key={h} className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
+                      <th key={h} className="px-4 py-2 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
                     ))}
-                    <th className="pl-4 pr-5 py-3" />
+                    <th className="pl-4 pr-5 py-2" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
@@ -398,7 +398,7 @@ return (
                     const statusDisplay = getStatusDisplay(app.status);
                     return (
                       <tr key={app.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="pl-5 pr-2 py-3.5">
+                        <td className="pl-5 pr-2 py-2.5">
                           <input
                             type="checkbox"
                             aria-label="Select application"
@@ -407,22 +407,22 @@ return (
                             onChange={(e) => handleSelectOne(app.id, e.target.checked)}
                           />
                         </td>
-                        <td className="px-4 py-3.5 max-w-[240px]">
+                        <td className="px-4 py-2.5 max-w-[240px]">
                           <p className="font-semibold text-slate-800 truncate" title={formatName(app.customerName)}>{formatName(app.customerName)}</p>
                           <p className="text-xs text-slate-400 truncate" title={app.email}>{app.email}</p>
                         </td>
-                        <td className="px-4 py-3.5 whitespace-nowrap">
+                        <td className="px-4 py-2.5 whitespace-nowrap">
                           <p className="text-slate-700">{getLoanTypeDisplay(app.loanType)}</p>
                           <p className="text-xs text-slate-400 capitalize">{app.company || "—"}</p>
                         </td>
-                        <td className="px-4 py-3.5 text-slate-800 font-medium whitespace-nowrap">{app.amountApplied ? KES.format(app.amountApplied) : "—"}</td>
-                        <td className="px-4 py-3.5 whitespace-nowrap"><Pill className={statusDisplay.style}>{statusDisplay.label}</Pill></td>
-                        <td className="px-4 py-3.5 whitespace-nowrap"><Pill className={repaymentStyle(app.repaymentStatus)}>{app.repaymentStatus?.replace(/_/g, " ") || "—"}</Pill></td>
-                        <td className="px-4 py-3.5 whitespace-nowrap">
+                        <td className="px-4 py-2.5 text-slate-800 font-medium whitespace-nowrap">{app.amountApplied ? KES.format(app.amountApplied) : "—"}</td>
+                        <td className="px-4 py-2.5 whitespace-nowrap"><Pill className={statusDisplay.style}>{statusDisplay.label}</Pill></td>
+                        <td className="px-4 py-2.5 whitespace-nowrap"><Pill className={repaymentStyle(app.repaymentStatus)}>{app.repaymentStatus?.replace(/_/g, " ") || "—"}</Pill></td>
+                        <td className="px-4 py-2.5 whitespace-nowrap">
                           <p className="text-slate-600">{shortDate(app.submittedAt)}</p>
                           <p className="text-[11px] text-slate-400 font-mono">{app.id.slice(0, 8)}</p>
                         </td>
-                        <td className="pl-4 pr-5 py-3.5 text-right"><ViewButton id={app.id} /></td>
+                        <td className="pl-4 pr-5 py-2.5 text-right"><ViewButton id={app.id} /></td>
                       </tr>
                     );
                   })}
@@ -444,7 +444,7 @@ return (
                 {paginated.map((app: TransformedApplication) => {
                   const statusDisplay = getStatusDisplay(app.status);
                   return (
-                    <li key={app.id} className="flex gap-3 px-4 py-4">
+                    <li key={app.id} className="flex gap-3 px-4 py-3">
                       <input
                         type="checkbox"
                         aria-label="Select application"

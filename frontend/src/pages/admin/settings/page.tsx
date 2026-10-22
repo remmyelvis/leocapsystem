@@ -7,18 +7,18 @@ import ProfilePage from "../profile/page";
 // Dummy settings component for the actual "Settings" tab content
 function GeneralSettings() {
   return (
-    <div className="bg-white rounded-2xl ring-1 ring-slate-900/5 shadow-sm p-5 sm:p-8">
-      <h2 className="text-lg font-bold text-slate-900 mb-6">System Settings</h2>
-      <div className="space-y-4 max-w-md">
+    <div className="bg-white rounded-2xl ring-1 ring-slate-900/5 shadow-sm p-4 sm:p-5">
+      <h2 className="text-base font-bold text-slate-900 mb-4">System Settings</h2>
+      <div className="space-y-3 max-w-md">
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Company Name</label>
-          <input type="text" defaultValue="LeoCap Invest" className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-blue/20 text-sm" />
+          <input type="text" defaultValue="LeoCap Invest" className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20 text-sm" />
         </div>
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Support Email</label>
-          <input type="email" defaultValue="support@leocap.com" className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-blue/20 text-sm" />
+          <input type="email" defaultValue="support@leocap.com" className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20 text-sm" />
         </div>
-        <button className="px-4 py-2 bg-brand-blue hover:bg-slate-800 text-white text-sm font-medium rounded-xl transition-colors">
+        <button className="px-4 py-2 bg-brand-blue hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors">
           Save Changes
         </button>
       </div>
@@ -40,15 +40,15 @@ export default function UnifiedSettingsPage() {
     <div className="p-4 sm:p-6 w-full space-y-5 max-w-[1600px] mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
             <Settings className="h-6 w-6 text-brand-blue" /> Admin Control Panel
           </h1>
-          <p className="text-slate-500 text-sm mt-1">Manage system configurations, administrators, and view audit logs.</p>
+          <p className="text-slate-500 text-[13px] mt-0.5">Manage system configurations, administrators, and view audit logs.</p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex bg-slate-100 p-1 rounded-xl w-full sm:w-fit max-w-full gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex bg-slate-100 p-1 rounded-lg w-full sm:w-fit max-w-full gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {tabs.map(tab => {
           const Icon = tab.icon;
           return (

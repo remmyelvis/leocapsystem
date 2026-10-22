@@ -172,7 +172,7 @@ export default function AdminDashboardPage() {
             value={monthFilter}
             onChange={(e) => setMonthFilter(e.target.value)}
             aria-label="Period"
-            className="flex-1 sm:flex-none bg-white/10 border border-white/15 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg outline-none focus:ring-2 focus:ring-white/30 [&>option]:text-slate-900"
+            className="flex-1 sm:flex-none sm:w-auto bg-white/10 border border-white/15 text-white text-[11px] font-medium pl-2 pr-1 py-1 rounded-md outline-none focus:ring-2 focus:ring-white/30 [&>option]:text-slate-900"
           >
             <option value="all">All Time</option>
             {availableMonths.map((m) => {
@@ -182,8 +182,8 @@ export default function AdminDashboardPage() {
               return <option key={m} value={m}>{label}</option>;
             })}
           </select>
-          <button onClick={fetchData} disabled={isLoading} aria-label="Refresh" title="Refresh" className="inline-flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-50">
-            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} /> <span className="hidden sm:inline">Refresh</span>
+          <button onClick={fetchData} disabled={isLoading} aria-label="Refresh" title="Refresh" className="inline-flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/15 text-white p-1.5 rounded-md transition-colors disabled:opacity-50">
+            <RefreshCw className={`h-3 w-3 ${isLoading ? "animate-spin" : ""}`} />
           </button>
         </div>
       </div>

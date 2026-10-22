@@ -13,15 +13,15 @@ export default function AuditTrailPage() {
   const tab = searchParams.get("tab") === "applications" ? "applications" : "system";
 
   return (
-    <div className="p-4 sm:p-6 w-full space-y-6">
+    <div className="p-4 sm:p-6 w-full space-y-4">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-black text-slate-900">Audit Trails</h1>
-        <p className="text-slate-500 text-sm mt-1">View system activity and logs.</p>
+        <h1 className="text-xl font-bold text-slate-900">Audit Trails</h1>
+        <p className="text-slate-500 text-[13px] mt-0.5">View system activity and logs.</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-slate-100 rounded-xl w-full sm:w-fit">
+      <div className="flex gap-1 p-1 bg-slate-100 rounded-lg w-full sm:w-fit">
         {TABS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}

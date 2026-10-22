@@ -39,7 +39,7 @@ type AddAdminForm = z.infer<typeof addAdminSchema>;
 // ---------------------------------------------------------------------------
 
 const inputClass =
-  "w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-colors placeholder:text-gray-300";
+  "w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-colors placeholder:text-gray-300";
 
 const labelClass = "block text-sm font-semibold text-gray-700 mb-1.5";
 
@@ -128,14 +128,14 @@ export default function ManageAdminsPage() {
     <div className="p-4 sm:p-6 w-full max-w-[1600px] mx-auto space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-black text-slate-900">Manage Admins</h1>
-        <p className="text-slate-500 text-sm mt-1">
+        <h1 className="text-xl font-bold text-slate-900">Manage Admins</h1>
+        <p className="text-slate-500 text-[13px] mt-0.5">
           Add or remove administrator accounts.
         </p>
       </div>
 
       {/* Info banner */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-700 flex items-start gap-3">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm text-blue-700 flex items-start gap-3">
         <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
         <div>
           <p className="font-semibold">Admin Management</p>
@@ -147,7 +147,7 @@ export default function ManageAdminsPage() {
 
       {/* Super Admin Only Notice */}
       {!currentUserIsSuperAdmin && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-700 flex items-start gap-3">
+        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-700 flex items-start gap-3">
           <Shield className="h-4 w-4 flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-semibold">Limited Access</p>
@@ -160,7 +160,7 @@ export default function ManageAdminsPage() {
 
       {/* Error Display */}
       {storeError && (
-        <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 flex items-center gap-2">
+        <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700 flex items-center gap-2">
           <AlertCircle className="h-4 w-4" />
           {storeError}
           <button onClick={clearError} className="ml-auto text-red-800 font-semibold hover:underline">
@@ -171,8 +171,8 @@ export default function ManageAdminsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
         {/* ── Current Admins Table ── */}
-        <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm overflow-hidden">
-          <div className="px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm overflow-hidden">
+          <div className="px-4 sm:px-4 py-3 border-b border-slate-100 flex items-center justify-between">
             <h2 className="text-base font-black text-slate-900">
               Current Admins
             </h2>
@@ -180,9 +180,9 @@ export default function ManageAdminsPage() {
           </div>
 
           {isLoading ? (
-            <div className="p-6 space-y-3">
+            <div className="p-4 space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-16 rounded-xl" />
+                <Skeleton key={i} className="h-16 rounded-lg" />
               ))}
             </div>
           ) : (
@@ -225,7 +225,7 @@ export default function ManageAdminsPage() {
                       <button
                         onClick={() => handleRemove(admin.id, admin.name, admin.email)}
                         disabled={isLoading}
-                        className={`p-2 rounded-xl transition-colors ${
+                        className={`p-2 rounded-lg transition-colors ${
                           confirmRemoveId === admin.id
                             ? "bg-red-600 text-white"
                             : "text-slate-400 hover:bg-red-50 hover:text-red-600"
@@ -248,9 +248,9 @@ export default function ManageAdminsPage() {
 
         {/* ── Add Admin Form ── */}
         {currentUserIsSuperAdmin ? (
-          <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6">
+          <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
             <div className="flex items-center gap-2 mb-6">
-              <div className="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center">
+              <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
                 <UserPlus className="h-4 w-4 text-[#1E3A8A]" />
               </div>
               <h2 className="text-base font-black text-slate-900">Add Admin</h2>
@@ -364,7 +364,7 @@ export default function ManageAdminsPage() {
               <Button
                 type="submit"
                 disabled={isSubmitting || isLoading}
-                className="w-full bg-[#1E3A8A] hover:bg-blue-900 text-white font-bold h-11 rounded-xl mt-2"
+                className="w-full bg-[#1E3A8A] hover:bg-blue-900 text-white font-bold h-11 rounded-lg mt-2"
               >
                 {isSubmitting ? (
                   <>
@@ -381,7 +381,7 @@ export default function ManageAdminsPage() {
             </form>
           </div>
         ) : (
-          <div className="bg-slate-50 rounded-xl border border-slate-200 p-6 flex flex-col items-center justify-center text-center min-h-[300px]">
+          <div className="bg-slate-50 rounded-lg border border-slate-200 p-4 flex flex-col items-center justify-center text-center min-h-[300px]">
             <Shield className="h-12 w-12 text-gray-300 mb-4" />
             <h3 className="text-lg font-bold text-slate-600">Restricted Access</h3>
             <p className="text-sm text-slate-400 mt-2 max-w-xs">

@@ -103,7 +103,7 @@ function DocumentRow({
 
   return (
     <div
-      className={`flex items-start gap-4 p-4 rounded-xl border transition-colors ${
+      className={`flex items-start gap-4 p-4 rounded-lg border transition-colors ${
         isUploaded
           ? "border-emerald-200 bg-emerald-50/40"
           : selectedFile
@@ -112,7 +112,7 @@ function DocumentRow({
       }`}
     >
       <div
-        className={`mt-0.5 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+        className={`mt-0.5 w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
           isUploaded
             ? "bg-emerald-100 text-emerald-600"
             : selectedFile
@@ -151,7 +151,7 @@ function DocumentRow({
             type="button"
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
-            className="rounded-xl text-xs font-semibold border-slate-200"
+            className="rounded-lg text-xs font-semibold border-slate-200"
           >
             <Upload className="mr-1.5 h-3 w-3" />
             {selectedFile ? "Change" : "Select File"}
@@ -170,7 +170,7 @@ function DocumentRow({
 }
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex flex-col py-3 border-b border-slate-100 last:border-0">
+    <div className="flex flex-col py-2 border-b border-slate-100 last:border-0">
       <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
         {label}
       </span>
@@ -469,7 +469,7 @@ export default function ApplicantDetailsPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 w-full max-w-[800px] mx-auto flex items-center justify-center min-h-[400px]">
+      <div className="p-4 w-full max-w-[800px] mx-auto flex items-center justify-center min-h-[400px]">
         <RefreshCw className="h-8 w-8 animate-spin text-brand-blue" />
       </div>
     );
@@ -477,11 +477,11 @@ export default function ApplicantDetailsPage() {
 
   if (error || !data?.applicant) {
     return (
-      <div className="p-6 w-full max-w-[800px] mx-auto text-center space-y-4">
+      <div className="p-4 w-full max-w-[800px] mx-auto text-center space-y-4">
         <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto" />
         <h2 className="text-xl font-bold text-slate-900">Applicant Not Found</h2>
         <p className="text-slate-500">{error || "The requested applicant could not be found."}</p>
-        <Button onClick={() => navigate(-1)} className="rounded-xl">Go Back</Button>
+        <Button onClick={() => navigate(-1)} className="rounded-lg">Go Back</Button>
       </div>
     );
   }
@@ -495,21 +495,21 @@ export default function ApplicantDetailsPage() {
         <button
           onClick={() => navigate(-1)}
           aria-label="Back"
-          className="p-2 rounded-xl hover:bg-slate-100 transition-colors text-slate-400 hover:text-gray-700"
+          className="p-2 rounded-lg hover:bg-slate-100 transition-colors text-slate-400 hover:text-gray-700"
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="flex-1 min-w-[200px]">
-          <h1 className="text-2xl font-black text-slate-900 break-words">
+          <h1 className="text-xl font-bold text-slate-900 break-words">
             {formatName(applicant.name)}
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-[13px] text-slate-500 mt-0.5">
             Applicant Details
           </p>
         </div>
         <div className="sm:ml-auto flex items-center gap-2 basis-full sm:basis-auto">
           <Link to={`/admin/manage-applicants/${params.id}/financial-analysis`}>
-            <Button variant="outline" className="gap-2 rounded-xl">
+            <Button variant="outline" className="gap-2 rounded-lg">
               <Search className="w-4 h-4" /> Financial Analysis
             </Button>
           </Link>
@@ -522,7 +522,7 @@ export default function ApplicantDetailsPage() {
           <div className={`p-4 border-b bg-${riskProfile.color}-50 border-${riskProfile.color}-100 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3`}>
             <div>
               <div className="flex items-center gap-x-4 gap-y-2 flex-wrap">
-                <h2 className={`text-lg font-black text-${riskProfile.color}-900`}>Credit Risk Profile</h2>
+                <h2 className={`text-base font-bold text-${riskProfile.color}-900`}>Credit Risk Profile</h2>
                 <Button 
                   onClick={async () => {
                     toast.info("Generating CRB Report...");
@@ -552,14 +552,14 @@ export default function ApplicantDetailsPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-100 text-xs text-slate-500 uppercase tracking-wider font-semibold">
-                  <th className="py-3 px-4">Factor Evaluated</th>
-                  <th className="py-3 px-4 w-32 text-right">Score Impact</th>
+                  <th className="py-2 px-4">Factor Evaluated</th>
+                  <th className="py-2 px-4 w-32 text-right">Score Impact</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {riskProfile.factors.map((factor: any, i: number) => (
                   <tr key={i} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="py-3 px-4 text-sm font-medium text-slate-700 flex items-center gap-2">
+                    <td className="py-2 px-4 text-sm font-medium text-slate-700 flex items-center gap-2">
                       {factor.type === 'positive' ? (
                         <div className="h-2 w-2 rounded-full bg-emerald-500" />
                       ) : factor.type === 'negative' ? (
@@ -569,7 +569,7 @@ export default function ApplicantDetailsPage() {
                       )}
                       {factor.factor}
                     </td>
-                    <td className={`py-3 px-4 text-sm font-bold text-right ${factor.type === 'positive' ? 'text-emerald-600' : factor.type === 'negative' ? 'text-red-600' : 'text-slate-500'}`}>
+                    <td className={`py-2 px-4 text-sm font-bold text-right ${factor.type === 'positive' ? 'text-emerald-600' : factor.type === 'negative' ? 'text-red-600' : 'text-slate-500'}`}>
                       {factor.impact}
                     </td>
                   </tr>
@@ -580,9 +580,9 @@ export default function ApplicantDetailsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Personal Information */}
-        <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6 space-y-4">
+        <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 space-y-4">
           <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2 mb-4">
             <User className="h-4 w-4 text-brand-blue" />
             Personal Information
@@ -611,7 +611,7 @@ export default function ApplicantDetailsPage() {
         </div>
 
         {/* Additional Details */}
-        <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6 space-y-4">
+        <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 space-y-4">
           <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2 mb-4">
             <Building2 className="h-4 w-4 text-brand-blue" />
             Additional Details
@@ -645,9 +645,9 @@ export default function ApplicantDetailsPage() {
                   value={limitInput}
                   onChange={(e) => setLimitInput(e.target.value)}
                   placeholder="No limit"
-                  className="flex-1 min-w-0 px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue"
+                  className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue"
                 />
-                <Button type="button" size="sm" onClick={handleSaveLimit} disabled={savingLimit} className="rounded-xl">
+                <Button type="button" size="sm" onClick={handleSaveLimit} disabled={savingLimit} className="rounded-lg">
                   {savingLimit ? "Saving…" : "Save"}
                 </Button>
               </div>
@@ -659,7 +659,7 @@ export default function ApplicantDetailsPage() {
 
 
       {/* Applications / Loans List */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6 space-y-4">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 space-y-4">
         <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2 mb-4">
           <FileText className="h-4 w-4 text-brand-blue" />
           Loan Applications
@@ -669,7 +669,7 @@ export default function ApplicantDetailsPage() {
         ) : applicantLoans.length > 0 ? (
           <div className="space-y-3">
             {applicantLoans.map((item) => (
-              <div key={item.application.id} className="flex flex-col sm:flex-row justify-between p-4 border border-slate-100 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
+              <div key={item.application.id} className="flex flex-col sm:flex-row justify-between p-4 border border-slate-100 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors">
                 <div className="mb-3 sm:mb-0">
                   <p className="font-bold text-slate-800 text-sm">
                     {item.application.loan_type?.replace(/_/g, ' ')} <span className="text-xs text-slate-500 font-normal">#{item.application.id?.substring(0,8)}</span>
@@ -697,14 +697,14 @@ export default function ApplicantDetailsPage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-6 border border-dashed border-slate-200 rounded-xl bg-slate-50 text-slate-500 text-sm font-medium">
+          <div className="text-center py-6 border border-dashed border-slate-200 rounded-lg bg-slate-50 text-slate-500 text-sm font-medium">
             No loan applications found.
           </div>
         )}
       </div>
 
       {/* Statement Actions */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6 space-y-4">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 space-y-4">
         <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2 mb-4">
           <FileText className="h-4 w-4 text-brand-blue" />
           Applicant Statement
@@ -717,7 +717,7 @@ export default function ApplicantDetailsPage() {
               type="date" 
               value={statementStartDate}
               onChange={(e) => setStatementStartDate(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-brand-blue"
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-brand-blue"
             />
           </div>
           <div className="flex-1">
@@ -726,7 +726,7 @@ export default function ApplicantDetailsPage() {
               type="date" 
               value={statementEndDate}
               onChange={(e) => setStatementEndDate(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-brand-blue"
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-brand-blue"
             />
           </div>
           <div className="flex-1">
@@ -735,20 +735,20 @@ export default function ApplicantDetailsPage() {
               type="date" 
               value={statementRequestDate}
               onChange={(e) => setStatementRequestDate(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600"
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600"
             />
           </div>
         </div>
 
         <div className="flex gap-4">
-          <Button onClick={handleGetStatement} disabled={loadingStatement} variant="outline" className="rounded-xl flex-1">
+          <Button onClick={handleGetStatement} disabled={loadingStatement} variant="outline" className="rounded-lg flex-1">
             {loadingStatement ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="mr-2 h-4 w-4" />}
             View Statement Entries
           </Button>
           <Button 
             onClick={handleDownloadStatement} 
             disabled={!statementStartDate || !statementEndDate || downloadingStatement}
-            className="bg-blue-900 hover:bg-slate-800 text-white rounded-xl flex-1 disabled:opacity-50"
+            className="bg-blue-900 hover:bg-slate-800 text-white rounded-lg flex-1 disabled:opacity-50"
           >
             {downloadingStatement ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
             {downloadingStatement ? "Downloading..." : "Download PDF Statement"}
@@ -756,7 +756,7 @@ export default function ApplicantDetailsPage() {
         </div>
 
         {statementEntries && (
-          <div className="mt-6 border border-slate-100 rounded-xl overflow-hidden overflow-x-auto max-h-[400px] overflow-y-auto">
+          <div className="mt-6 border border-slate-100 rounded-lg overflow-hidden overflow-x-auto max-h-[400px] overflow-y-auto">
             <table className="w-full text-sm text-left text-slate-500">
               <thead className="text-xs text-gray-700 uppercase bg-slate-50">
                 <tr>
@@ -770,24 +770,24 @@ export default function ApplicantDetailsPage() {
               <tbody>
                 {!Array.isArray(statementEntries) || statementEntries.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-4 text-center text-slate-500">
+                    <td colSpan={5} className="px-4 py-3 text-center text-slate-500">
                       No statement entries found.
                     </td>
                   </tr>
                 ) : (
                   statementEntries.map((entry, idx) => (
                     <tr key={idx} className="bg-white border-b hover:bg-slate-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-2 whitespace-nowrap">
                         {entry.date ? new Date(entry.date).toLocaleDateString() : 'N/A'}
                       </td>
-                      <td className="px-6 py-4">{entry.memo || entry.description || 'N/A'}</td>
-                      <td className="px-6 py-4 text-right text-red-600">
+                      <td className="px-4 py-2">{entry.memo || entry.description || 'N/A'}</td>
+                      <td className="px-4 py-2 text-right text-red-600">
                         {entry.debit !== undefined ? new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(entry.debit)) : 'N/A'}
                       </td>
-                      <td className="px-6 py-4 text-right text-emerald-600">
+                      <td className="px-4 py-2 text-right text-emerald-600">
                         {entry.credit !== undefined ? new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(entry.credit)) : 'N/A'}
                       </td>
-                      <td className="px-6 py-4 text-right font-medium">
+                      <td className="px-4 py-2 text-right font-medium">
                         {entry.balance !== undefined ? new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(entry.balance)) : 'N/A'}
                       </td>
                     </tr>
@@ -800,7 +800,7 @@ export default function ApplicantDetailsPage() {
       </div>
 
       {/* Upload Documents */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
         <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2 mb-6">
           <Upload className="h-4 w-4 text-brand-blue" />
           Upload Documents
@@ -826,7 +826,7 @@ export default function ApplicantDetailsPage() {
               <Button
                 type="submit"
                 disabled={uploadingDocs}
-                className="bg-blue-900 hover:bg-slate-800 text-white font-bold rounded-xl"
+                className="bg-blue-900 hover:bg-slate-800 text-white font-bold rounded-lg"
               >
                 <Upload className="mr-2 h-4 w-4" />
                 {uploadingDocs ? "Uploading..." : "Upload documents"}
@@ -837,7 +837,7 @@ export default function ApplicantDetailsPage() {
       </div>
 
       {/* Uploaded Documents */}
-      <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm p-6">
+      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
         <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2 mb-6">
           <FileText className="h-4 w-4 text-brand-blue" />
           Uploaded Documents
@@ -858,9 +858,9 @@ export default function ApplicantDetailsPage() {
                     console.error(err);
                   });
                 }}
-                className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-4 hover:border-blue-300 transition-colors cursor-pointer"
+                className="p-4 rounded-lg border border-slate-200 bg-slate-50 flex items-start gap-4 hover:border-blue-300 transition-colors cursor-pointer"
               >
-                <div className="p-3 bg-blue-100 rounded-xl text-brand-blue flex-shrink-0">
+                <div className="p-3 bg-blue-100 rounded-lg text-brand-blue flex-shrink-0">
                   <FileText className="h-6 w-6" />
                 </div>
                 <div className="overflow-hidden flex-1">
@@ -911,7 +911,7 @@ export default function ApplicantDetailsPage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 bg-slate-50 rounded-xl border border-slate-100 border-dashed">
+          <div className="text-center py-8 bg-slate-50 rounded-lg border border-slate-100 border-dashed">
             <FileText className="h-8 w-8 text-gray-300 mx-auto mb-2" />
             <p className="text-slate-500 font-medium">No documents uploaded</p>
           </div>
