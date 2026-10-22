@@ -53,6 +53,20 @@ def finance_recipients(application, applicant):
             if s.applicant_status != "suspended" and _ADDRESS.match((s.email or "").strip()) and s.email.strip().lower() != own]
 
 
+def team_recipients(applicant, already):
+    """A company with no finance staff has nobody to review its HR users' loans, so Leocap's own team (the HR_EMAIL
+    mailbox from the server .env, whose people use the admin portal) is told instead. Never the applicant, and no
+    address that is already getting the HR notice."""
+    if applicant.role != "hr":
+        return []
+    skip = {(applicant.email or "").strip().lower(), *(a.lower() for a in already)}
+    found = {}
+    for address in re.split(r"[,;\s]+", os.getenv("HR_EMAIL") or ""):
+        if _ADDRESS.match(address) and address.lower() not in skip:
+            found.setdefault(address.lower(), address)
+    return list(found.values())
+
+
 def _mask(address):
     name, _, domain = address.partition("@")
     return f"{name[:2]}***@{domain}"
@@ -103,7 +117,8 @@ def notify_hr_of_application(application, applicant):
     try:
         recipients = hr_recipients(application, applicant)
         finance = finance_recipients(application, applicant)
-        if not recipients and not finance:
+        team = [] if finance else team_recipients(applicant, recipients)
+        if not recipients and not finance and not team:
             # Not an error, but worth a trace: nobody was told (for example the only HR address is the applicant's own).
             db.session.add(AuditLog(
                 action=AuditAction.CREATE,
@@ -136,6 +151,11 @@ def notify_hr_of_application(application, applicant):
             finance_body = body.replace("in the HR portal", "in the finance portal").replace(
                 f"/hr/applications/pending/{application.id}", f"/finance/hr-loans/pending/{application.id}")
             messages += [(r, subject, finance_body, application.id, "finance about an HR loan application") for r in finance]
+        if team:
+            team_body = body.replace("in the HR portal", "in the admin portal").replace(
+                f"/hr/applications/pending/{application.id}", f"/admin/applications/{application.id}").replace(
+                "has applied for", "(an HR user, and the company has no finance staff to review it) has applied for")
+            messages += [(r, subject, team_body, application.id, "Leocap about an HR loan application") for r in team]
         _deliver("HR about a new application", messages)
     except Exception:
         logging.exception("Could not notify HR about application %s", application.id)
