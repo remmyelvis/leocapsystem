@@ -357,16 +357,15 @@ def onboard_company(company_id):
         print("Error generating documents:", str(e))
 
     try:
-        send_email_smtp(recipient=to_email, subject=subject, body=message, isHrEmail=False, attachments=attachment_paths)
+        ok, error = send_email_smtp(recipient=to_email, subject=subject, body=message, isHrEmail=False, attachments=attachment_paths)
     except Exception as e:
+        ok, error = False, str(e)
+    finally:
         for t in temp_files:
             if os.path.exists(t):
                 os.remove(t)
-        return jsonify({"error": str(e)}), 500
 
-    # Cleanup temp files
-    for t in temp_files:
-        if os.path.exists(t):
-            os.remove(t)
+    if not ok:
+        return jsonify({"error": f"The email was not sent: {error}"}), 500
 
     return jsonify({"message": "Onboarding email sent successfully"}), 200
