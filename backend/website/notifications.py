@@ -42,6 +42,17 @@ def hr_recipients(application, applicant):
     return list(found.values())
 
 
+def finance_recipients(application, applicant):
+    """Finance reviews the loans of HR staff, so when an HR user applies the company's active finance staff are told
+    too (never the applicant themselves)."""
+    if applicant.role != "hr":
+        return []
+    own = (applicant.email or "").strip().lower()
+    staff = Applicant.query.filter_by(role="finance", applicant_type=application.company).all()
+    return [s.email.strip() for s in staff
+            if s.applicant_status != "suspended" and _ADDRESS.match((s.email or "").strip()) and s.email.strip().lower() != own]
+
+
 def _mask(address):
     name, _, domain = address.partition("@")
     return f"{name[:2]}***@{domain}"
@@ -63,24 +74,25 @@ def _record_email(kind, address, application_id, ok, error, subject, mask_addres
 
 
 def _deliver(kind, messages, mask_address=False):
-    """Send (address, subject, body, application_id) messages one after another in a single background thread (the mail
+    """Send (address, subject, body, application_id[, kind]) messages one after another in a single background thread (the mail
     host limits how fast it takes mail) and write an audit log row for each. Nothing here can block or fail the
     request that asked for it; a problem is only logged."""
     app = current_app._get_current_object()
 
     def _run():
-        for address, subject, body, application_id in messages:
+        for address, subject, body, application_id, *own_kind in messages:
+            what = own_kind[0] if own_kind else kind
             try:
                 ok, error = system_email_utils.send_email_smtp(address, subject, body, False)
             except Exception as exc:  # the mail layer should not raise, but a bug there must not stop the others
                 ok, error = False, f"{type(exc).__name__}: {exc}"
             if not ok:
-                logging.error("%s email to %s failed: %s", kind, address, error)
+                logging.error("%s email to %s failed: %s", what, address, error)
             try:
                 with app.app_context():
-                    _record_email(kind, address, application_id, ok, error, subject, mask_address)
+                    _record_email(what, address, application_id, ok, error, subject, mask_address)
             except Exception:
-                logging.exception("Could not write the audit log for the %s email to %s", kind, address)
+                logging.exception("Could not write the audit log for the %s email to %s", what, address)
 
     threading.Thread(target=_run, daemon=True).start()
 
@@ -90,7 +102,8 @@ def notify_hr_of_application(application, applicant):
     way: sending is in the background and any problem is only logged."""
     try:
         recipients = hr_recipients(application, applicant)
-        if not recipients:
+        finance = finance_recipients(application, applicant)
+        if not recipients and not finance:
             # Not an error, but worth a trace: nobody was told (for example the only HR address is the applicant's own).
             db.session.add(AuditLog(
                 action=AuditAction.CREATE,
@@ -118,7 +131,12 @@ def notify_hr_of_application(application, applicant):
             f"{frontend_url()}/hr/applications/pending/{application.id}\n\n"
             "Leocap Invest"
         )
-        _deliver("HR about a new application", [(r, subject, body, application.id) for r in recipients])
+        messages = [(r, subject, body, application.id) for r in recipients]
+        if finance:
+            finance_body = body.replace("in the HR portal", "in the finance portal").replace(
+                f"/hr/applications/pending/{application.id}", f"/finance/hr-loans/pending/{application.id}")
+            messages += [(r, subject, finance_body, application.id, "finance about an HR loan application") for r in finance]
+        _deliver("HR about a new application", messages)
     except Exception:
         logging.exception("Could not notify HR about application %s", application.id)
 
