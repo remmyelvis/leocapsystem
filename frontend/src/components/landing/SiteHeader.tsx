@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, LayoutDashboard, Mail, Menu, Phone, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,10 +8,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useActiveSection, useScrollProgress, useScrolled } from "./motion";
 import { APPLY_TO, EMAIL, initials, PHONES, portalFor, SIGN_IN_TO } from "./site";
 
-// Two small half-circle bites out of the stub's left and right edges, like the tear notches on a slip.
-const STUB_NOTCH =
-  "radial-gradient(circle 4.5px at 0 50%, #0000 4px, #000 4.5px), radial-gradient(circle 4.5px at 100% 50%, #0000 4px, #000 4.5px)";
-
 // The landing page sections (scroll within the page) and the FAQ (its own page), in the order they are offered.
 const NAV: { label: string; id: string; page?: string }[] = [
   { label: "Home", id: "home" },
@@ -20,6 +16,28 @@ const NAV: { label: string; id: string; page?: string }[] = [
   { label: "FAQs", id: "faq", page: "/faq" },
   { label: "Contact", id: "contact" },
 ];
+
+// A nav label. On the current link the first letter is set larger than the rest.
+// A hidden copy at the larger size sits in the same grid cell, so every link always has the width of its selected form:
+// the size change eases in place and never nudges the links beside it.
+function NavLabel({ text, on, scale }: { text: string; on: boolean; scale: string }) {
+  const lead = text.slice(0, 1);
+  const rest = text.slice(1);
+  return (
+    <span className="inline-grid items-baseline">
+      <span aria-hidden className="invisible col-start-1 row-start-1 whitespace-nowrap">
+        <span style={{ fontSize: scale }}>{lead}</span>
+        {rest}
+      </span>
+      <span className="col-start-1 row-start-1 whitespace-nowrap text-center">
+        <span className="transition-[font-size] duration-300 ease-out motion-reduce:transition-none" style={{ fontSize: on ? scale : "1em" }}>
+          {lead}
+        </span>
+        {rest}
+      </span>
+    </span>
+  );
+}
 
 /**
  * `home`     the landing page itself: the links scroll within the page and the current section is marked.
@@ -33,35 +51,11 @@ export default function SiteHeader({ home = true, current, skipTo = "#main-conte
   const spy = useActiveSection(["home", "products", "testimonials", "about", "contact"]);
   const { user } = useAuth();
   const toggleRef = useRef<HTMLButtonElement>(null);
-  const navRef = useRef<HTMLElement>(null);
-  const [glide, setGlide] = useState<{ left: number; width: number } | null>(null);
-  const [glideReady, setGlideReady] = useState(false);
 
   // The testimonials band sits between Products and About and has no link of its own: it counts as Products.
   const active = home ? (spy === "testimonials" ? "products" : spy) : (current ?? null);
 
   const close = useCallback(() => setOpen(false), []);
-
-  // The stub behind the current link glides to it instead of jumping.
-  const measure = useCallback(() => {
-    const nav = navRef.current;
-    const el = active ? nav?.querySelector<HTMLElement>(`[data-nav="${active}"]`) : null;
-    if (!nav || !el) return setGlide(null);
-    setGlide({ left: el.offsetLeft, width: el.offsetWidth });
-  }, [active]);
-  useLayoutEffect(measure, [measure]);
-  useEffect(() => {
-    const nav = navRef.current;
-    if (!nav) return;
-    const ro = new ResizeObserver(measure);
-    ro.observe(nav);
-    document.fonts?.ready.then(measure);
-    const t = window.setTimeout(() => setGlideReady(true), 80); // no sliding in from the left on first paint
-    return () => {
-      ro.disconnect();
-      window.clearTimeout(t);
-    };
-  }, [measure]);
 
   // The phone menu: page behind it does not scroll, Escape closes it and puts focus back on its button, and it closes if the screen grows.
   useEffect(() => {
@@ -88,11 +82,12 @@ export default function SiteHeader({ home = true, current, skipTo = "#main-conte
   const portal = user ? portalFor(user.role) : null;
 
   // One nav item: a section link on the landing page, a link back to that section from elsewhere, or a page of its own.
-  const link = (n: (typeof NAV)[number], className: string, onClick?: () => void, extra?: React.ReactNode) => {
-    const props = { "data-nav": n.id, "aria-current": active === n.id ? ("true" as const) : undefined, onClick, className };
-    if (n.page) return <Link key={n.id} to={n.page} {...props}>{n.label}{extra}</Link>;
-    if (home) return <a key={n.id} href={`#${n.id}`} {...props}>{n.label}{extra}</a>;
-    return <Link key={n.id} to={n.id === "home" ? "/" : `/#${n.id}`} {...props}>{n.label}{extra}</Link>;
+  const link = (n: (typeof NAV)[number], className: string, onClick?: () => void, extra?: React.ReactNode, scale = "1.36em") => {
+    const props = { "aria-current": active === n.id ? ("true" as const) : undefined, onClick, className };
+    const text = <NavLabel text={n.label} on={active === n.id} scale={scale} />;
+    if (n.page) return <Link key={n.id} to={n.page} {...props}>{text}{extra}</Link>;
+    if (home) return <a key={n.id} href={`#${n.id}`} {...props}>{text}{extra}</a>;
+    return <Link key={n.id} to={n.id === "home" ? "/" : `/#${n.id}`} {...props}>{text}{extra}</Link>;
   };
 
   const goTop = (e: React.MouseEvent) => {
@@ -120,26 +115,13 @@ export default function SiteHeader({ home = true, current, skipTo = "#main-conte
           <BrandLogo src="/logo-wordmark.png" height={scrolled ? "2rem" : "2.25rem"} className="transition-[height] duration-300 motion-reduce:transition-none" onClick={goTop} />
 
           {/* Desktop nav */}
-          <nav ref={navRef} aria-label="Main" className="relative hidden items-center gap-1 md:flex">
-            {/* The current link sits on a stub: one soft tint with a small notch bitten out of each end, like the tear on a loan slip */}
-            <span
-              aria-hidden
-              className={`pointer-events-none absolute left-0 top-1/2 h-[34px] rounded-[9px] bg-brand-blue/[0.07] motion-reduce:transition-none ${glideReady ? "transition-[transform,width,opacity] duration-[420ms] ease-[cubic-bezier(0.25,1.12,0.4,1)]" : ""}`}
-              style={{
-                width: glide?.width ?? 0,
-                transform: `translate(${glide?.left ?? 0}px, -50%)`,
-                opacity: glide ? 1 : 0,
-                WebkitMaskImage: STUB_NOTCH,
-                maskImage: STUB_NOTCH,
-                WebkitMaskComposite: "source-in",
-                maskComposite: "intersect",
-              }}
-            />
+          {/* While one link is hovered (or focused with the keyboard), the others fade back so it stands out */}
+          <nav aria-label="Main" className="group/nav hidden items-baseline gap-1 md:flex">
             {NAV.map((n) =>
               link(
                 n,
-                `relative z-10 rounded-[10px] px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40 ${
-                  active === n.id ? "text-brand-blue" : "text-slate-600 hover:bg-brand-blue/[0.04] hover:text-brand-blue"
+                `rounded-lg px-4 py-2 text-sm font-semibold transition-[color,opacity] duration-200 motion-reduce:transition-none group-focus-within/nav:opacity-50 group-hover/nav:opacity-50 hover:!opacity-100 focus-visible:!opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40 ${
+                  active === n.id ? "text-brand-blue" : "text-slate-600 hover:text-brand-blue"
                 }`
               )
             )}
@@ -209,9 +191,10 @@ export default function SiteHeader({ home = true, current, skipTo = "#main-conte
                     `flex min-h-[54px] items-center gap-4 border-b border-white/10 text-[21px] font-extrabold tracking-tight transition-colors ${active === n.id ? "text-white" : "text-white/80 hover:text-white"}`,
                     close,
                     <>
-                      <span className="order-first font-mono text-[12px] font-medium tabular-nums text-white/70">{String(i + 1).padStart(2, "0")}</span>
-                      {active === n.id && <span className="ml-auto h-2 w-2 rounded-full bg-red-400" aria-hidden />}
-                    </>
+                      <span className="order-first self-center font-mono text-[12px] font-medium tabular-nums text-white/70">{String(i + 1).padStart(2, "0")}</span>
+                      {active === n.id && <span className="ml-auto h-2 w-2 self-center rounded-full bg-red-400" aria-hidden />}
+                    </>,
+                    "1.22em"
                   )
                 )}
               </nav>
