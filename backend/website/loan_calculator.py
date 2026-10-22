@@ -2,7 +2,7 @@ import math
 import io
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
-from flask import Blueprint, request, jsonify, send_file
+from flask import Blueprint, request, jsonify, Response
 from flask_jwt_extended import jwt_required
 
 import openpyxl
@@ -37,6 +37,7 @@ class LoanCalculator:
         """
         Compute full financial breakdown for a loan application.
         """
+        method = "reducing" if method in ("reducing", "reducing_balance") else "flat"
         principal = float(principal)
         interest_rate = float(interest_rate)
         duration_months = max(1, int(duration_months))
@@ -98,6 +99,7 @@ class LoanCalculator:
         """
         Generate month-by-month amortization schedule breakdown.
         """
+        method = "reducing" if method in ("reducing", "reducing_balance") else "flat"
         if start_date is None:
             start_date = date.today()
 
@@ -231,83 +233,35 @@ class LoanCalculator:
         }
 
 
-@loan_calc_bp.route('/loans/calculate', methods=['POST', 'GET'])
-def simulate_loan():
-    """
-    Public/Protected calculation API for frontend loan calculators and previews.
-    Supports query parameters or JSON body.
-    """
-    data = request.get_json(silent=True) or {}
-    if not data and request.args:
-        data = request.args.to_dict()
-
-    try:
-        principal = float(data.get('amount') or data.get('principal') or 10000.0)
-        interest_rate = float(data.get('interest_rate') or 10.0)
-        duration_months = int(data.get('duration_months') or data.get('duration') or 1)
-        processing_fee_rate = float(data.get('processing_fee_rate') or 3.0)
-        access_fee_rate = float(data.get('access_fee_rate') or 0.0)
-        legal_fee = float(data.get('legal_fee') or 0.0)
-        rate_type = data.get('rate_type', 'monthly')
-        method = data.get('method', 'flat')
-
-        # Company override if company code provided
-        company_code = data.get('company')
-        if company_code:
-            company = Company.query.filter_by(code=company_code.lower()).first()
-            if company:
-                if 'interest_rate' not in data:
-                    interest_rate = company.interest_rate
-                if 'processing_fee_rate' not in data:
-                    processing_fee_rate = company.processing_fee_rate
-                if 'access_fee_rate' not in data:
-                    access_fee_rate = company.access_fee_rate
-                if 'legal_fee' not in data:
-                    legal_fee = company.legal_fee
-
-        breakdown = LoanCalculator.calculate_breakdown(
-            principal=principal,
-            interest_rate=interest_rate,
-            duration_months=duration_months,
-            processing_fee_rate=processing_fee_rate,
-            access_fee_rate=access_fee_rate,
-            legal_fee=legal_fee,
-            rate_type=rate_type,
-            method=method
-        )
-
-        schedule = LoanCalculator.generate_amortization_schedule(
-            principal=principal,
-            interest_rate=interest_rate,
-            duration_months=duration_months,
-            rate_type=rate_type,
-            method=method
-        )
-
-        return jsonify({
-            "success": True,
-            "breakdown": breakdown,
-            "schedule": schedule
-        }), 200
-
-    except Exception as e:
-        return jsonify({"message": "Invalid loan parameters", "error": str(e)}), 400
+def _number(data, names, default, cast=float):
+    """The first of `names` that was sent and is not blank. 0 is a real answer (a 0% rate, no legal fee), so the
+    default only fills in what is missing."""
+    for name in names:
+        value = data.get(name)
+        if value is not None and str(value).strip() != "":
+            try:
+                return cast(value)
+            except (TypeError, ValueError):
+                raise ValueError("Please enter numbers only.")
+    return default
 
 
 def _get_loan_data_from_request():
+    """Read and check the calculator inputs (JSON body or query string); returns (breakdown, schedule).
+    Raises ValueError with a message that can be shown to the user."""
     data = request.get_json(silent=True) or {}
     if not data and request.args:
         data = request.args.to_dict()
 
-    principal = float(data.get('amount') or data.get('principal') or 10000.0)
-    interest_rate = float(data.get('interest_rate') or 10.0)
-    duration_months = int(data.get('duration_months') or data.get('duration') or 1)
-    processing_fee_rate = float(data.get('processing_fee_rate') or 3.0)
-    access_fee_rate = float(data.get('access_fee_rate') or 0.0)
-    legal_fee = float(data.get('legal_fee') or 0.0)
+    principal = _number(data, ('amount', 'principal'), 10000.0)
+    interest_rate = _number(data, ('interest_rate',), 10.0)
+    duration_months = _number(data, ('duration_months', 'duration'), 1, cast=lambda v: int(float(v)))
+    processing_fee_rate = _number(data, ('processing_fee_rate',), 3.0)
+    access_fee_rate = _number(data, ('access_fee_rate',), 0.0)
+    legal_fee = _number(data, ('legal_fee',), 0.0)
     rate_type = data.get('rate_type', 'monthly')
     method = data.get('method', 'flat')
-    
+
     company_code = data.get('company')
     if company_code:
         company = Company.query.filter_by(code=company_code.lower()).first()
@@ -316,6 +270,15 @@ def _get_loan_data_from_request():
             if 'processing_fee_rate' not in data: processing_fee_rate = company.processing_fee_rate
             if 'access_fee_rate' not in data: access_fee_rate = company.access_fee_rate
             if 'legal_fee' not in data: legal_fee = company.legal_fee
+
+    if not 0 < principal < 1_000_000_000:
+        raise ValueError("Please enter a loan amount greater than 0.")
+    if not 1 <= duration_months <= 600:
+        raise ValueError("Please enter a duration of 1 to 600 months.")
+    if not 0 <= interest_rate <= 1000:
+        raise ValueError("Please enter an interest rate of 0 or more.")
+    if not (0 <= processing_fee_rate <= 100 and 0 <= access_fee_rate <= 100 and legal_fee >= 0):
+        raise ValueError("Fees cannot be negative, and fee rates cannot be above 100%.")
 
     breakdown = LoanCalculator.calculate_breakdown(
         principal=principal, interest_rate=interest_rate, duration_months=duration_months,
@@ -328,6 +291,31 @@ def _get_loan_data_from_request():
         rate_type=rate_type, method=method
     )
     return breakdown, schedule
+
+
+@loan_calc_bp.route('/loans/calculate', methods=['POST', 'GET'])
+def simulate_loan():
+    """
+    Public/Protected calculation API for frontend loan calculators and previews.
+    Supports query parameters or JSON body.
+    """
+    try:
+        breakdown, schedule = _get_loan_data_from_request()
+    except ValueError as e:
+        return jsonify({"message": str(e)}), 400
+    except Exception as e:
+        return jsonify({"message": "Invalid loan parameters", "error": str(e)}), 400
+
+    return jsonify({
+        "success": True,
+        "breakdown": breakdown,
+        "schedule": schedule
+    }), 200
+
+
+def _download(data, mimetype, filename):
+    # Return bytes, not send_file(BytesIO): the host's Passenger file wrapper calls fileno() on the buffer and crashes.
+    return Response(data, mimetype=mimetype, headers={"Content-Disposition": f'attachment; filename="{filename}"'})
 
 
 @loan_calc_bp.route('/loans/amortization/pdf', methods=['POST'])
@@ -368,7 +356,7 @@ def export_amortization_pdf():
         # HEADER
         header_data = [
             [
-                [Paragraph("LeoCap Investments", title_style), Paragraph("Westlands, Nairobi, Kenya<br/>hello@leocapinvest.co.ke | +254 700 000 000", subtitle_style)],
+                [Paragraph("LEOCAP INVEST", title_style), Paragraph("Prestige Plaza, Nairobi<br/>contact@leocapinvest.co.ke", subtitle_style)],
                 [Paragraph("AMORTIZATION SCHEDULE", doc_header_style), Paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}", ParagraphStyle('meta', fontName='Helvetica', fontSize=8, textColor=c_muted, alignment=TA_RIGHT))]
             ]
         ]
@@ -449,7 +437,9 @@ def export_amortization_pdf():
         doc.build(elements)
         buffer.seek(0)
         
-        return send_file(buffer, as_attachment=True, download_name='amortization_schedule.pdf', mimetype='application/pdf')
+        return _download(buffer.getvalue(), 'application/pdf', 'amortization_schedule.pdf')
+    except ValueError as e:
+        return jsonify({"message": str(e)}), 400
     except Exception as e:
         return jsonify({"message": "Failed to generate PDF", "error": str(e)}), 400
 
@@ -505,7 +495,9 @@ def export_amortization_excel():
         wb.save(buffer)
         buffer.seek(0)
         
-        return send_file(buffer, as_attachment=True, download_name='amortization_schedule.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        return _download(buffer.getvalue(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'amortization_schedule.xlsx')
+    except ValueError as e:
+        return jsonify({"message": str(e)}), 400
     except Exception as e:
         return jsonify({"message": "Failed to generate Excel", "error": str(e)}), 400
 
