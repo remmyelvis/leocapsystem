@@ -6,7 +6,7 @@ import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, CheckCircle2, Eye, Filter, RefreshCw, Search, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Eye, Filter, RefreshCw, Search, X, XCircle } from "lucide-react";
 import {
   useAdminApplications,
   TransformedApplication,
@@ -45,6 +45,19 @@ const repaymentStyle = (status?: string | null) => {
   return "bg-slate-100 text-gray-700";
 };
 
+// The dashboard's Overdue test: disbursed, still being repaid, and past the due date.
+const isOverdue = (a: TransformedApplication, now: number) =>
+  a.status.toLowerCase() === "disbursed" &&
+  ["unpaid", "partially_paid", "delinquent"].includes(a.repaymentStatus.toLowerCase()) &&
+  !!a.dueDate &&
+  new Date(a.dueDate).getTime() < now;
+
+// "YYYY-MM" of a timestamp, in UTC like the dashboard's period filter.
+const monthOf = (iso: string) => {
+  const d = new Date(iso);
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+};
+
 const Pill = ({ className, children }: { className: string; children: React.ReactNode }) => (
   <span className={`inline-flex shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap capitalize ${className}`}>{children}</span>
 );
@@ -62,13 +75,25 @@ const ViewButton = ({ id }: { id: string }) => (
 // ---------------------------------------------------------------------------
 
 export default function AllApplicationsPage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { applications, isLoading, error, refetch } = useAdminApplications();
 
   // Pre-fill type filter from sidebar query param
   const urlType = searchParams.get("type") ?? "all";
   const urlStatus = searchParams.get("status") ?? "all";
   const urlCompany = searchParams.get("company") ?? "all";
+  // From the dashboard's Overdue card: only overdue loans, optionally within the period picked there
+  const overdueOnly = searchParams.get("overdue") === "1";
+  const urlMonth = overdueOnly ? searchParams.get("month") : null;
+  const monthLabel = urlMonth
+    ? new Date(Number(urlMonth.slice(0, 4)), Number(urlMonth.slice(5, 7)) - 1).toLocaleString("default", { month: "long", year: "numeric" })
+    : "";
+  const showAll = () => {
+    const next = new URLSearchParams(searchParams);
+    next.delete("overdue");
+    next.delete("month");
+    setSearchParams(next);
+  };
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>(urlStatus);
@@ -122,7 +147,7 @@ export default function AllApplicationsPage() {
     // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, statusFilter, typeFilter, companyFilter, dateRange]);
+  }, [search, statusFilter, typeFilter, companyFilter, dateRange, overdueOnly, urlMonth]);
 
   // Companies come from the loans themselves (the registered list does not cover every name in use)
   const companyOptions = useMemo(() => {
@@ -149,6 +174,8 @@ export default function AllApplicationsPage() {
           return false;
         if (typeFilter !== "all" && a.loanType.toLowerCase() !== typeFilter.toLowerCase())
           return false;
+        if (overdueOnly && !isOverdue(a, now)) return false;
+        if (urlMonth && monthOf(a.submittedAt) !== urlMonth) return false;
         if (dateRange !== "all") {
           const cutoff = now - parseInt(dateRange) * 24 * 60 * 60 * 1000;
           if (new Date(a.submittedAt).getTime() < cutoff) return false;
@@ -159,7 +186,7 @@ export default function AllApplicationsPage() {
         (a, b) =>
           new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
       );
-  }, [applications, search, statusFilter, typeFilter, companyFilter, dateRange]);
+  }, [applications, search, statusFilter, typeFilter, companyFilter, dateRange, overdueOnly, urlMonth]);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -202,7 +229,9 @@ export default function AllApplicationsPage() {
   };
 
   const pageTitle =
-    urlType === "salary_advance"
+    overdueOnly
+      ? "Overdue Loans"
+      : urlType === "salary_advance"
       ? "Salary Advance Applications"
       : urlType === "personal"
         ? "Personal Loan Applications"
@@ -224,9 +253,19 @@ return (
           <h1 className="text-lg font-bold text-slate-900">{pageTitle}</h1>
           <p className="text-slate-500 text-[13px] mt-0.5">
             {filtered.length} application{filtered.length !== 1 ? "s" : ""}
+            {overdueOnly && ` · disbursed and past their due date${monthLabel ? `, submitted in ${monthLabel}` : ""}`}
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          {overdueOnly && (
+            <button
+              onClick={showAll}
+              className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-700 text-[13px] font-medium px-3 py-1.5 rounded-lg ring-1 ring-slate-200 transition-colors"
+            >
+              <X className="h-4 w-4" />
+              Show all applications
+            </button>
+          )}
           {selectedAppIds.length > 0 && (
             <button
               onClick={handleMarkSelectedPaid}
@@ -369,7 +408,7 @@ return (
           </div>
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center">
-            <p className="text-slate-400 text-sm">No applications match your filters.</p>
+            <p className="text-slate-400 text-sm">No {overdueOnly ? "overdue loans" : "applications"} match your filters.</p>
           </div>
         ) : (
           <>

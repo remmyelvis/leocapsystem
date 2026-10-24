@@ -130,7 +130,13 @@ export default function AdminDashboardPage() {
     { label: "Interest Income", value: KES0.format(kpis?.interest_income || 0), icon: TrendingUp },
     { label: "Fee Revenue", value: KES0.format(kpis?.revenue_from_fees || 0), icon: Banknote },
     { label: "Applications", value: kpis?.total_applications || 0, icon: FileText },
-    { label: "Overdue", value: kpis?.overdue_count || 0, icon: Clock },
+    {
+      label: "Overdue",
+      value: kpis?.overdue_count || 0,
+      icon: Clock,
+      // the list is narrowed to the same period as the number, so the two always agree
+      to: `/admin/applications?overdue=1${monthFilter !== "all" ? `&month=${monthFilter}` : ""}`,
+    },
     { label: "Repayment Rate", value: `${(kpis?.repayment_rate_pct || 0).toFixed(1)}%`, icon: CheckCircle },
   ];
 
@@ -199,15 +205,25 @@ export default function AdminDashboardPage() {
         {loading ? Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-[62px] rounded-lg" />)
           : (
             <>
-              {stats.map(({ label, value, icon: Icon }) => (
-                <div key={label} className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm px-3 py-2.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide truncate">{label}</p>
-                    <Icon className="h-3.5 w-3.5 text-slate-300 shrink-0" />
-                  </div>
-                  <p className="font-bold text-slate-900 mt-0.5 break-normal tabular-nums text-[clamp(1.05rem,4.6vw,1.3rem)] leading-tight">{value}</p>
-                </div>
-              ))}
+              {stats.map(({ label, value, icon: Icon, to }) => {
+                const card = "group bg-white rounded-lg ring-1 ring-slate-200 shadow-sm px-3 py-2.5";
+                const body = (
+                  <>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide truncate">{label}</p>
+                      <Icon className={`h-3.5 w-3.5 text-slate-300 shrink-0 ${to ? "group-hover:text-brand-blue" : ""}`} />
+                    </div>
+                    <p className="font-bold text-slate-900 mt-0.5 break-normal tabular-nums text-[clamp(1.05rem,4.6vw,1.3rem)] leading-tight">{value}</p>
+                  </>
+                );
+                return to ? (
+                  <Link key={label} to={to} title={`View the ${label.toLowerCase()} loans`} className={`${card} block transition-colors hover:bg-slate-50 hover:ring-brand-blue/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue`}>
+                    {body}
+                  </Link>
+                ) : (
+                  <div key={label} className={card}>{body}</div>
+                );
+              })}
               <div className="rounded-lg border border-dashed border-slate-200 px-3 py-2.5 flex flex-col justify-center">
                 <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Showing</p>
                 <p className="text-sm font-semibold text-slate-600 leading-tight mt-0.5">{periodNote}</p>
