@@ -24,15 +24,18 @@ def mask_address(address):
     return f"{name[:2]}***@{domain}"
 
 
-def record_email(purpose, recipient, ok, info, subject, entity_type=None, entity_id=None, mask=True):
+def record_email(purpose, recipient, ok, info, subject, entity_type=None, entity_id=None, mask=True, body=None):
     """Write one audit log row for an email the app tried to send: who it went to, what for, and what the mail
     server answered. A success row carries the server's own reply and message id (the id cPanel's Track Delivery lists),
     the proof that it took the message; a failure row carries the reason. Always in its own app context, so it can
-    never commit half-finished work of the request that sent the mail. A problem here is only logged."""
+    never commit half-finished work of the request that sent the mail. A problem here is only logged.
+    In the demo (DEMO_MODE) nothing is delivered, so the row keeps the whole message and the full address: that is what the
+    demo's inbox shows."""
     try:
         from website.extensions import db
         from website.models import AuditAction, AuditLog
-        shown = mask_address(recipient) if mask else recipient
+        demo = os.getenv("DEMO_MODE") == "True"
+        shown = recipient if demo else (mask_address(recipient) if mask else recipient)
         with _APP.app_context():
             db.session.add(AuditLog(
                 action=AuditAction.CREATE,
@@ -41,7 +44,8 @@ def record_email(purpose, recipient, ok, info, subject, entity_type=None, entity
                 error_message=None if ok else str(info).replace(recipient, shown)[:300],  # the server's answer may repeat the address
                 actor_id="system", actor_role="system",
                 entity_type=entity_type or "Email", entity_id=entity_id,
-                new_values={"to": shown, "subject": subject, **({"mail_server": str(info)[:200]} if ok and info else {})},
+                new_values={"to": shown, "subject": subject, **({"body": body} if demo and body else {}),
+                            **({"mail_server": str(info)[:200]} if ok and info else {})},
             ))
             db.session.commit()
     except Exception:
@@ -55,7 +59,7 @@ def send_audited(recipient, subject, body, *, purpose, entity_type=None, entity_
         ok, info = send_email_smtp(recipient, subject, body, **options)
     except Exception as exc:  # the mail layer should not raise, but a bug there must not hide the attempt
         ok, info = False, f"{type(exc).__name__}: {exc}"
-    record_email(purpose, recipient, ok, info, subject, entity_type, entity_id, mask)
+    record_email(purpose, recipient, ok, info, subject, entity_type, entity_id, mask, body)
     return ok, info
 
 
