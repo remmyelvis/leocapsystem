@@ -57,7 +57,7 @@ This document lists, in plain language, every improvement and correction made to
 9. **The admin screens are safer and easier.** The old "Suspend" button deleted people and their loans. It now only suspends.
 10. **New tools for you:** a clickable **Overdue** card, a **searchable applicant statement** with a per-line delete, and **Add Penalty**.
 11. **The public website was redesigned** (same wording), with a new FAQ page.
-12. **You can now edit parts of the public website yourself** (Section 13.1): contact details, an announcement banner, testimonials and the FAQs, with a private draft, a preview, one-click publishing and a history.
+12. **You can now edit the words of the public website yourself** (Section 13.1): contact details, an announcement banner, the home page headings, hero numbers, product cards and "How it works" steps, testimonials, the FAQs and the Privacy Policy, with a private draft, a preview, one-click publishing and a history.
 
 ---
 
@@ -311,7 +311,7 @@ All the **wording is unchanged**; the design, links and readability were improve
 | **Footer** | A plain block with dead links. | Working links, **Apply Now / Sign In** buttons, and a **back-to-top** button. | 23 Oct |
 | **FAQ page** | None. | A new **FAQs** page: search, topics, a checklist of documents for each loan type, a guide to loan statuses, and a link to any single answer. It deliberately quotes **no loan limits, rates or fees** (see Section 15). | 23 Oct |
 | **Testimonials** | Three unverified placeholder quotes existed in the program (they were never shown to visitors). | A designed testimonials section is **ready but hidden**. It shows **only real, approved quotes**, which you add yourself under **Site content** (Section 13.1). None are shown today. | 23 Oct |
-| **Editing the words** | Every word, phone number and email on the public pages was fixed in the program: a change meant asking a developer. | An admin can edit the contact details, an announcement banner, the testimonials and the FAQs on a new **Site content** screen (Section 13.1). Until you publish something, every page says exactly what it said before. | 25 Oct |
+| **Editing the words** | Every word, phone number and email on the public pages was fixed in the program: a change meant asking a developer. | An admin can edit the contact details, an announcement banner, the home page text (opening section, loan products, how it works, section headings), the testimonials, the FAQs and the Privacy Policy on a new **Site content** screen (Section 13.1). Until you publish something, every page says exactly what it said before. | 25 Oct |
 | **Readability** | Some grey text was too faint to read comfortably. | All public and sign-in text was measured and meets the standard readability test (WCAG AA). | 22-23 Oct |
 
 
@@ -324,6 +324,11 @@ An admin can change some of the words on the public pages without a developer. *
 | **Contact details** | The email, phone numbers, address and map link. They are used in the page header, the footer, the home page contact section, the sign-in and sign-up pages, and the FAQ answer "How do I reach you?". Change them once and all of those follow. |
 | **Announcement banner** | A coloured notice across the top of the home and FAQ pages (for example planned maintenance), with an optional link. Three colours: information, warning, good news. |
 | **Testimonials** | Client quotes. A quote is shown to visitors **only when you tick that the client agreed to be quoted by name**; quotes without the tick stay private and never leave the server. The section stays hidden until at least one is ticked and published. |
+| **Home page: opening section** | The badge, the two headline lines, the introduction (with bold words), the two button labels and the **three numbers** (for example 500+ clients served). The glass card beside the headline repeats the first loan product and the three step names, so it follows those. |
+| **Home page: loan products** | The Products headings and **one to three cards**: title, small heading, description, up to five points, and the **Most Popular** and **Coming Soon** switches (only one card can be Most Popular). |
+| **Home page: how it works** | The three steps (name and text) and the "Ready to get started?" band under them. |
+| **Home page: other headings** | The headings of the Contact and Testimonials sections. |
+| **Privacy policy** | Every section of the policy: add, remove, reorder and edit them. Section numbers follow the order. The text has bold, bullet and numbered lists, small headings and a boxed block (used for the Data Protection Officer's details); the editor can fill in the current email, phone numbers and address for you. Buttons are not allowed in it. |
 | **FAQs** | Edit, add, remove and reorder questions; choose the topic and which ones are "popular". Answers can have bold text, links, numbered steps, bullet points and buttons, with a toolbar and a live preview. Two ready-made pieces (the document checklist and the loan-status guide) can be added to an answer and always follow the platform's real rules. |
 
 **How it works**
@@ -336,9 +341,11 @@ An admin can change some of the words on the public pages without a developer. *
 
 **Safety.** The editor accepts plain text only, never code. Links may point to a page on this site or start with https://, mailto: or tel:; anything else is refused with a plain explanation, and so is a missing answer, a duplicate link name and so on. If two admins edit the same section, the second to save is told and must load the latest version. Unsaved edits are also kept in the browser tab, so clicking to another admin screen does not lose them, and closing the tab warns first. It is **not available in the demo**.
 
-**Not editable here yet:** the home page headings, hero numbers, product cards and "How it works" steps, and the Privacy Policy (these are the planned next step and need your go-ahead), and pictures (they cannot be uploaded from this screen).
+**Not editable here:** where buttons and links go, pictures (including the home page photo), colours and layout, the wording of the menu and footer, the contact form, and the loan terms on the application forms.
 
-**What stays exactly the same:** with nothing published, every public page was checked against the pages as they were before this change and is identical. The one difference is invisible to visitors: the plain-text copy of three FAQ answers that search engines read ("How do I apply?", "How do I track my application...", "I forgot my password") is now built from the answer itself, so its wording is slightly different.
+**What stays exactly the same:** with nothing published, every public page was checked against the pages as they were before this change. The FAQ page, the header, the footer and the home page (opening section, products, how it works, contact) are identical down to the last character. The Privacy Policy has exactly the same words, sections and lists in the same order; its spacing is now uniform instead of hand-tuned paragraph by paragraph, so the page is about 1% shorter and one line, "We do not sell personal data to third parties.", is slightly bolder. Two differences are invisible to visitors: the plain-text copy of three FAQ answers that search engines read ("How do I apply?", "How do I track my application...", "I forgot my password") is now built from the answer itself, so its wording is slightly different.
+
+**Good to know.** The hero card, the first product and the three step names are one set of words, so changing one changes the others. Numbers appear in more than one place on purpose (for example "500+" in the opening section and in the "Ready to get started?" band): change them together. Nothing checks a figure against the calculators.
 
 ---
 
@@ -375,6 +382,7 @@ These need your input. Nothing here is broken, but each affects what customers o
 | 13 | **Your first two clients' names are built into some screens.** The Admin Applications page has "Mark Nakama Paid" and "Mark Ideon Paid", the salary-advance form assumes Ideon unless told otherwise, and some labels name them. A third company works, and most screens show generic labels for it, but not all. | Decide whether to make these generic as more companies join. |
 | 14 | **Who may open and reset the demo.** Today anyone who has the link can open it and sign in with one click, and any admin sign-in can press Reset (once every 3 minutes). Search engines are told not to list it. | Fine for presenting. Tell us if you want a shared access code, or Reset limited to you. |
 | 15 | **The map on the home page.** It searches for "Applewood Adams, Ngong Road, Nairobi" (the word "Along" is missing), which shows several pins around Adams Arcade. Searching for the full address, "Applewood Adams, Along Ngong Road, Nairobi", centres the map on Applewood Adams. We left it exactly as it was. | Say if you want it changed (one line). If you edit the address under Site content, the map follows the new address. |
+| 16 | **Placeholder contact details in the Privacy Policy.** Section 2 (Data Controller) shows `privacy@leocap.com`, `+254 700 000000` and a P.O. Box that do not match your real details (info@leocapinvest.co.ke, +254 722 221 502). We left the wording exactly as it was because it is a legal text. | Now that the policy is editable you can put the right details in (the editor has Insert buttons for the current email, phones and address). Please confirm what the policy should say. |
 
 ---
 
@@ -392,6 +400,7 @@ These were looked at and **left unchanged on purpose**. They are listed so you k
 - **The server does not yet refuse to start without a proper secret key.** The live server does have one.
 - **HR and finance sign-ins can still use the general "amend" tool** on their own company's applicants' loans. The admin screens use it; the HR and finance screens do not (they use "Amend Amount"). It can change any field of such a loan, including its status. It now follows the review rule too, but we recommend restricting it to admins. Tell us if you want that.
 - **A company with no finance user** (or no HR user) has nobody to review an HR manager's (or a finance officer's) own loan, so only an admin can decide it.
+- **The Site content editor cannot add things the page was not built for**: exactly three hero numbers and three steps, one to three product cards, no buttons or pictures in the Privacy Policy.
 - **A published change reaches visitors within about a minute** (the pages keep a copy for a minute to stay fast). Someone who already has the page open sees it on their next visit.
 - **Site content cannot be edited in the demo**; the demo shows the program's built-in text.
 - **The Site content editor does not stop you quoting numbers** in an FAQ answer. The built-in answers quote no loan limits, rates or fees on purpose (see decision 1); if an editor adds figures, nothing checks them against the calculators.
@@ -407,6 +416,7 @@ Newest first. When a change is made, a new line goes at the top.
 
 | Date | What changed | Section |
 |---|---|---|
+| **25 Oct** | **Edit more of the public pages**: Site content now also covers the home page text (opening section with its three numbers, loan product cards with the Most Popular / Coming Soon switches, the three "How it works" steps and the band under them, the Contact and Testimonials headings) and the **Privacy Policy** (sections can be added, removed and reordered). With nothing published the pages are unchanged. Found: the policy's Data Controller section has placeholder contact details (decision 16). | 13.1 |
 | **25 Oct** | **Edit the public pages yourself**: a new **Site content** screen in the admin menu for the contact details, an announcement banner, testimonials (only with the client's agreement) and the FAQs, with private drafts, a preview on the real page, publishing, history with restore, and every change in the Audit Trail. Contact details are now kept in one place (the header, footer, home page, sign-in pages and FAQs all follow them). Not in the demo. | 13.1 |
 | **25 Oct** | **Approve and reject now follow the same rule as Amend Amount**: nobody decides their own application, and HR and finance never review their own role's loans (admins can still decide anything). The buttons are hidden where they would be refused. HR and finance **rejection reasons** are now saved. Finance's **HR Loans** page opens the full review page. | 9 |
 | **25 Oct** | **Demo version for showing to clients**: its own site and made-up data, a role picker, a presenter guide of ten stories, "Run today's job" and a demo inbox, sample AI answers, sample bank details and a SAMPLE mark on its PDFs, a nightly refresh. Your real clients' names no longer appear in it. A borrower's **Next due date** ignores paid loans, and a borrower's loan page no longer calls every company's salary advance "Ideon". | 10, 18 |
