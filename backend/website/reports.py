@@ -8,7 +8,7 @@ from werkzeug.utils import secure_filename
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from uuid import uuid4
 
-from website.export_service import escalation_to_pdf, dataframe_to_excel
+from website.export_service import dataframe_to_excel
 from website.system_email_utils import send_email_smtp
 from website.models import Application, Applicant, ApplicationDocument, HrEmail, Email, Company
 from website import db, Config, export_service

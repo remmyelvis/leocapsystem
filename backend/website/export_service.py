@@ -25,7 +25,6 @@ from reportlab.platypus import (
 from reportlab.lib import colors, pagesizes
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
-from flask import render_template
 from website.models import Application, Applicant, StatementEntry
 
 
@@ -489,83 +488,6 @@ def export_applicant(df, title, applicant):
     output.seek(0)
 
     return output
-
-
-def export_application(df, title, app):
-    output = BytesIO()
-
-    doc = SimpleDocTemplate(output, pagesize=landscape(A4))
-
-    styles = getSampleStyleSheet()
-
-    logo = Image("website/templates/logo.png")
-    logo.drawHeight = 100
-    logo.drawWidth = 100
-
-    elements = [
-        logo,
-        Paragraph(title, styles["Title"]),
-        Spacer(1, 12),
-    ]
-    
-    data = [
-        ["Employment Type", app.employment_type],
-        ["Employment Nature", app.employment_nature],
-        ["Company", app.company],
-        ["Employer", app.employer_name or "-"],
-        ["Payroll Number", app.payroll_number],
-        ["Designation",app.designation],
-        ["Month One Salary", app.month_one],
-        ["Month Two Salary", app.month_two],
-        ["Month Three Salary", app.month_three],
-        ["Loan Type", app.loan_type],
-        ["Loan Purpose", app.loan_purpose],
-        ["Amount Applied", app.amount_applied],
-        ["Processing Fee", app.processing_fees],
-        ["Access Fee.", app.access_fees],
-        ["Legan Fee", app.legal_fees],
-        ["Disbursement Amount",app.disbursement_amount],
-        ["Repayment Amount", app.repayment_amount],
-        ["Loan Status", app.loan_status],
-        ["Repayment Status", app.repayment_status],
-        ["Collection Fee", app.collection_fee],
-        ["Late Payment Fee", app.late_payment_fee],
-        ["Interest Rate", app.interest_rate],
-        ["Application Date", app.created_at.strftime("%d-%b-%Y")],
-        ["Due Date",app.due_date.strftime("%d-%b-%Y")]
-    ]
-
-    for label, value in data:
-        elements.append(
-            Paragraph(f"<b>{label}:</b> {value}", styles["BodyText"])
-        )
-
-    doc.build(elements)
-
-    output.seek(0)
-
-    return output
-
-
-def escalation_to_pdf(applicant, app):
-    html = render_template(
-        "demand_letter.html",
-        applicant_name=applicant.name,
-        payroll_number=app.payroll_number,
-        phone_number=applicant.phone_number,
-        email=applicant.email,
-        designation=app.designation,
-        id_number=applicant.id_number,
-        repayment_amount=app.repayment_amount,
-        original_amount=str(Decimal(app.repayment_amount) - Decimal(app.collection_fee) - Decimal(app.late_payment_fee)),
-        due_date=app.due_date.strftime("%d %B %Y"),
-        late_payment_fee=app.late_payment_fee,
-        collection_fee=app.collection_fee,
-        created_at=app.created_at.strftime("%d %B %Y"),
-        current_date=datetime.now().strftime("%d %B %Y"),
-    )
-
-    return html
 
 
 def get_readable_date(stamp):

@@ -14,8 +14,7 @@ from uuid import uuid4
 from sqlalchemy import func, or_
 from sqlalchemy.exc import SQLAlchemyError
 
-from website.export_service import export_applicant, export_application, export_statement
-from website.export_service import escalation_to_pdf
+from website.export_service import export_applicant, export_statement
 from website.system_email_utils import send_email_smtp
 from website.models import Application, Applicant, ApplicationDocument, HrEmail, Email, ApplicationAudit, User, StatementEntry, Company, ApplicantDocument
 from website import db, Config
