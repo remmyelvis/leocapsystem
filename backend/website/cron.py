@@ -9,6 +9,10 @@ from website.system_email_utils import send_audited
 
 cron_bp = Blueprint('cron', __name__, url_prefix='/api/cron')
 
+# The 10% late-payment charge is in the loan terms only for loans applied for on or after this date (UTC), so only those
+# are charged it. Older loans were accepted under terms without it and keep the 15% collection fee alone.
+LATE_CHARGE_FROM = datetime(2026, 10, 26)
+
 @cron_bp.route('/reminders', methods=['POST', 'GET'])
 def run_reminders():
     # Only the scheduled job may run this: it sends the CRON_SECRET (X-Cron-Secret header or ?key=)
@@ -36,6 +40,7 @@ def run_reminders():
             
         subject = None
         body = None
+        late_terms = bool(app.created_at and app.created_at >= LATE_CHARGE_FROM)
         
         # 1 week to due date
         if days_diff == 7:
@@ -55,7 +60,7 @@ def run_reminders():
         # 7 days over due
         elif days_diff == -7:
             subject = "OVERDUE: Loan is 7 Days Late"
-            body = f"Dear {applicant.name},<br/>Your loan (ID: {app.id}) is 7 days overdue. Please make a payment immediately to avoid a collection fee and a late-payment charge."
+            body = f"Dear {applicant.name},<br/>Your loan (ID: {app.id}) is 7 days overdue. Please make a payment immediately to avoid {'a collection fee and a late-payment charge' if late_terms else 'collection fees'}."
             
         # 8th day -> delinquent
         elif days_diff <= -8 and app.repayment_status != 'delinquent':
@@ -66,13 +71,14 @@ def run_reminders():
             from decimal import Decimal
             outstanding = Decimal(app.outstanding_balance) if app.outstanding_balance else Decimal(app.repayment_amount)
             collection_fee = round(outstanding * Decimal('0.15'), 2) # 15% charge
-            late_charge = round(outstanding * Decimal('0.10'), 2) # 10% late-payment charge
+            late_charge = round(outstanding * Decimal('0.10'), 2) if late_terms else Decimal('0') # 10% late-payment charge
             
             app.outstanding_balance = str(round(outstanding + collection_fee + late_charge, 2))
             
             subject = "NOTICE OF DELINQUENCY"
-            body = (f"Dear {applicant.name},<br/>Your loan (ID: {app.id}) has been marked as DELINQUENT. A collection fee of KES {collection_fee:,.2f} "
-                    f"and a late-payment charge of KES {late_charge:,.2f} have been applied. Your outstanding balance is now KES {Decimal(app.outstanding_balance):,.2f}.")
+            applied = f"A collection fee of KES {collection_fee:,.2f} and a late-payment charge of KES {late_charge:,.2f} have been" if late_charge else f"A collection fee of KES {collection_fee:,.2f} has been"
+            body = (f"Dear {applicant.name},<br/>Your loan (ID: {app.id}) has been marked as DELINQUENT. {applied} applied. "
+                    f"Your outstanding balance is now KES {Decimal(app.outstanding_balance):,.2f}.")
             
             # Write to ledger: one row per charge, a second apart so the statement always reads fee, then charge
             from website.models import StatementEntry
@@ -86,15 +92,16 @@ def run_reminders():
                 balance=outstanding + collection_fee,
                 date=when
             ))
-            db.session.add(StatementEntry(
-                applicant_id=app.applicant_id,
-                application_id=app.id,
-                memo="Late Payment Charge",
-                debit=late_charge,
-                credit=Decimal(0),
-                balance=Decimal(app.outstanding_balance),
-                date=when + timedelta(seconds=1)
-            ))
+            if late_charge:
+                db.session.add(StatementEntry(
+                    applicant_id=app.applicant_id,
+                    application_id=app.id,
+                    memo="Late Payment Charge",
+                    debit=late_charge,
+                    credit=Decimal(0),
+                    balance=Decimal(app.outstanding_balance),
+                    date=when + timedelta(seconds=1)
+                ))
             count_delinquent += 1
             
         if subject and body:

@@ -834,6 +834,10 @@ def generate_debt_dossier_pdf(app, applicant, statements, docs, include_demand=F
     # 4. Electronic Agreement
     elements.append(Paragraph("3. ELECTRONIC AGREEMENT & CONSENT", heading_style))
     company_name = str(applicant.applicant_type).replace('_', ' ').title() if applicant.applicant_type else "the Employer"
+    from website.cron import LATE_CHARGE_FROM
+    late_terms = bool(app.created_at and app.created_at >= LATE_CHARGE_FROM)  # older loans were accepted without this clause
+    late_clause = "c. A late-payment charge of 10% of the outstanding balance may be charged after 7 days of default;<br/>\n" if late_terms else ""
+    cheque_letter = "d" if late_terms else "c"
     tc_text = f"""<b>LOAN AGREEMENT</b><br/><br/>
 This Loan Agreement ("Agreement") is made and deemed executed in Nairobi, Kenya on the date of electronic acceptance by the Borrower.<br/><br/>
 <b>PARTIES</b><br/>
@@ -865,7 +869,7 @@ An event of default occurs when the Borrower fails to pay any instalment on its 
 Upon default:<br/>
 a. The overdue instalment may be rescheduled subject to a rescheduling fee of 10% of the instalment or KES 1,500 (whichever is higher);<br/>
 b. A debt recovery fee of 15% of the outstanding balance may be charged after 7 days of default and issuance of demand notice;<br/>
-c. Returned or unpaid cheques shall attract actual bank charges or KES 3,000 (whichever is higher) plus 15% collection fee.<br/>
+{late_clause}{cheque_letter}. Returned or unpaid cheques shall attract actual bank charges or KES 3,000 (whichever is higher) plus 15% collection fee.<br/>
 The Lender reserves the right to engage third-party debt collection agents or legal counsel for recovery.<br/><br/>
 <b>G. DATA PROTECTION AND DISCLOSURE CONSENT</b><br/>
 The Borrower expressly consents to the collection, processing, storage, and sharing of their personal and employment data strictly for purposes of:<br/>

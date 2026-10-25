@@ -64,6 +64,7 @@ Upon default:
 a. The outstanding amount shall continue to accrue interest at the contractual rate.
 b. A late payment penalty may be charged as communicated at approval.
 c. A restructuring fee of 10% of the overdue instalment or KES 1,500 (whichever is higher) may apply where repayment arrangements are revised.
+d. A late-payment charge of 10% of the outstanding balance may be charged after 7 days of default.
 The Lender may initiate recovery action, including engagement of third-party debt collectors or legal proceedings.
 
 E. CHEQUE / PAYMENT DEFAULTS

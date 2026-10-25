@@ -80,7 +80,8 @@ An event of default occurs when the Borrower fails to pay any instalment on its 
 Upon default:
 a. The overdue instalment may be rescheduled subject to a rescheduling fee of 10% of the instalment or KES 1,500 (whichever is higher);
 b. A debt recovery fee of 15% of the outstanding balance may be charged after 7 days of default and issuance of demand notice;
-c. Returned or unpaid cheques shall attract actual bank charges or KES 3,000 (whichever is higher) plus 15% collection fee.
+c. A late-payment charge of 10% of the outstanding balance may be charged after 7 days of default;
+d. Returned or unpaid cheques shall attract actual bank charges or KES 3,000 (whichever is higher) plus 15% collection fee.
 The Lender reserves the right to engage third-party debt collection agents or legal counsel for recovery.
 
 G. DATA PROTECTION AND DISCLOSURE CONSENT
