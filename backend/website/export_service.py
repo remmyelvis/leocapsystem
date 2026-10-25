@@ -581,6 +581,34 @@ def get_readable_date(stamp):
 import io
 
 
+def _demand_figures(app):
+    """The amounts on a demand letter. The loan's own fee fields are never filled by the platform (only old, imported loans
+    hold a value there, and it is already inside their repayment amount), so the fees come from the statement rows the daily
+    job and Add Penalty write, and the amount demanded is the balance actually owed: fees and penalties in, payments out.
+    "other" is what is left to make the table add up to that balance (payments received when negative)."""
+    from sqlalchemy import func
+    from website import db
+    from website.application import _balance_owed
+    from website.models import StatementEntry
+
+    def money(v):
+        return Decimal(str(v or 0))
+
+    charged = {m: money(v) for m, v in db.session.query(StatementEntry.memo, func.sum(StatementEntry.debit))
+               .filter(StatementEntry.application_id == app.id).group_by(StatementEntry.memo).all()}
+    from_statement = charged.get("Delinquency Collection Fee", Decimal(0))
+    collection = from_statement or money(app.collection_fee)
+    rescheduling = money(app.late_payment_fee)
+    late_charge = charged.get("Late Payment Charge", Decimal(0))
+    penalties = sum((v for m, v in charged.items() if (m or "").startswith("Penalty:")), Decimal(0))
+    inside_repayment = rescheduling + (Decimal(0) if from_statement else money(app.collection_fee))
+    contract = money(app.repayment_amount) - inside_repayment
+    balance = _balance_owed(app)
+    other = balance - (contract + collection + rescheduling + late_charge + penalties)
+    return {"contract": contract, "rescheduling": rescheduling, "collection": collection, "late_charge": late_charge,
+            "penalties": penalties, "other": other if abs(other) >= Decimal("0.005") else Decimal(0), "balance": balance}
+
+
 def generate_demand_letter_elements(app, applicant):
     from reportlab.platypus import Paragraph, Spacer, Table, TableStyle, PageBreak, HRFlowable
     from reportlab.lib import colors
@@ -599,7 +627,8 @@ def generate_demand_letter_elements(app, applicant):
     # Header
     elements.append(Paragraph("DEMAND LETTER", title_style))
     
-    total_due = float(app.repayment_amount) if app.repayment_amount else 0.0
+    figures = _demand_figures(app)
+    total_due = float(figures["balance"])
     elements.append(Paragraph(f"OUTSTANDING LOAN BALANCE OF KES {total_due:,.2f}", sub_title_style))
     
     # Date
@@ -619,21 +648,40 @@ def generate_demand_letter_elements(app, applicant):
     elements.append(Paragraph(f"We write to formally demand payment of <b>{total_due:,.2f}</b>, being the outstanding loan balance due and payable as at the date of this letter.", normal_style))
     elements.append(Spacer(1, 10))
     
-    # Find original instalment
-    instalment = float(app.amount_applied) if app.amount_applied else 0.0
+    # The amount due under the agreement, and the charges that have actually been levied
+    instalment = float(figures["contract"])
     due_date = app.due_date.strftime("%d %B %Y") if app.due_date else "the agreed due date"
     
-    late_fee = float(app.late_payment_fee) if app.late_payment_fee else 0.0
-    collection_fee = float(app.collection_fee) if app.collection_fee else 0.0
+    charges = []
+    if figures["rescheduling"] > 0:
+        charges.append(f"The defaulted instalment has been treated as a rescheduled instalment and subjected to a rescheduling fee of <b>{figures['rescheduling']:,.2f}</b> (being the higher of 10% of the instalment or KES 1,500)")
+    if figures["collection"] > 0:
+        charges.append(f"A debt collection fee of 15% of the outstanding loan balance, amounting to <b>{figures['collection']:,.2f}</b>, has been levied following lapse of seven (7) days after default")
+    if figures["late_charge"] > 0:
+        charges.append(f"A late-payment charge of 10% of the outstanding loan balance, amounting to <b>{figures['late_charge']:,.2f}</b>, has been levied following lapse of seven (7) days after default")
     
-    elements.append(Paragraph(f"The loan instalment of <b>{instalment:,.2f}</b>, which fell due on <b>{due_date}</b>, remains unpaid and is therefore in default. Pursuant to Clause F (Default) of the Loan Agreement, the following charges have lawfully accrued:", normal_style))
+    unpaid = f"The loan instalment of <b>{instalment:,.2f}</b>, which fell due on <b>{due_date}</b>, remains unpaid and is therefore in default."
+    if charges:
+        unpaid += " Pursuant to Clause F (Default) of the Loan Agreement, the following charges have lawfully accrued:"
+    elements.append(Paragraph(unpaid, normal_style))
     elements.append(Spacer(1, 10))
     
     bullet_style = ParagraphStyle('Bullet', parent=normal_style, leftIndent=20, bulletIndent=10)
-    elements.append(Paragraph(f"<bullet>&bull;</bullet>The defaulted instalment has been treated as a rescheduled instalment and subjected to a rescheduling fee of <b>{late_fee:,.2f}</b> (being the higher of 10% of the instalment or KES 1,500); and", bullet_style))
-    elements.append(Spacer(1, 5))
-    elements.append(Paragraph(f"<bullet>&bull;</bullet>A debt collection fee of 15% of the outstanding loan balance, amounting to <b>{collection_fee:,.2f}</b>, has been levied following lapse of seven (7) days after default.", bullet_style))
-    elements.append(Spacer(1, 10))
+    for i, text in enumerate(charges):
+        ending = "." if i == len(charges) - 1 else ("; and" if i == len(charges) - 2 else ";")
+        elements.append(Paragraph(f"<bullet>&bull;</bullet>{text}{ending}", bullet_style))
+        elements.append(Spacer(1, 5))
+    if charges:
+        elements.append(Spacer(1, 5))
+    
+    extras = []
+    if figures["penalties"] > 0:
+        extras.append(f"penalties of <b>{figures['penalties']:,.2f}</b> recorded on your statement")
+    if figures["other"] < 0:
+        extras.append(f"payments of <b>{-figures['other']:,.2f}</b> received and credited to the loan")
+    if extras:
+        elements.append(Paragraph("The amount demanded also takes into account " + " and ".join(extras) + ".", normal_style))
+        elements.append(Spacer(1, 10))
     
     elements.append(Paragraph("Despite prior reminders, no satisfactory payment has been received to date.", normal_style))
     elements.append(Spacer(1, 10))
@@ -665,13 +713,20 @@ def generate_demand_letter_elements(app, applicant):
     elements.append(Paragraph(f"<b>Borrower Name:</b> {applicant.name}<br/><b>Payroll Number:</b> {payroll}<br/><b>ID Number:</b> {applicant.id_number}<br/><b>Designation:</b> {designation}<br/><b>Loan Application Date:</b> {app_date}<br/><b>Instalment Due Date:</b> {due_date}", normal_style))
     elements.append(Spacer(1, 15))
     
-    data = [
-        ["Description", "Basis", "Amount (KES)"],
-        ["Outstanding instalment due", f"Loan Position as at {today_str}", f"{instalment:,.2f}"],
-        ["Rescheduling fee", "Higher of 10% or KES 1,500", f"{late_fee:,.2f}"],
-        ["Debt collection fee", "15% of loan balance", f"{collection_fee:,.2f}"],
-        ["Total Amount Payable", "", f"{total_due:,.2f}"]
-    ]
+    data = [["Description", "Basis", "Amount (KES)"], ["Amount due under the loan agreement", f"Loan Position as at {today_str}", f"{instalment:,.2f}"]]
+    if figures["rescheduling"] > 0:
+        data.append(["Rescheduling fee", "Higher of 10% or KES 1,500", f"{figures['rescheduling']:,.2f}"])
+    if figures["collection"] > 0:
+        data.append(["Debt collection fee", "15% of loan balance", f"{figures['collection']:,.2f}"])
+    if figures["late_charge"] > 0:
+        data.append(["Late-payment charge", "10% of loan balance", f"{figures['late_charge']:,.2f}"])
+    if figures["penalties"] > 0:
+        data.append(["Penalties", "As recorded on the statement", f"{figures['penalties']:,.2f}"])
+    if figures["other"] < 0:
+        data.append(["Payments received", "Credited to the loan", f"-{-figures['other']:,.2f}"])
+    elif figures["other"] > 0:
+        data.append(["Other charges and adjustments", "As recorded on the statement", f"{figures['other']:,.2f}"])
+    data.append(["Total Amount Payable", "", f"{total_due:,.2f}"])
     
     t = Table(data, colWidths=[200, 150, 100])
     t.setStyle(TableStyle([
