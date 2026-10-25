@@ -22,7 +22,7 @@ This document lists, in plain language, every improvement and correction made to
 |---|---|
 | **Balance owed** | What a borrower still has to pay on a loan right now (the system calls it the "outstanding balance"). |
 | **Statement** | The list of everything charged to and paid on a borrower's loans: the loan, its interest, payments, fees. Each line shows the balance after it. |
-| **Delinquent** | A loan that is overdue by more than 7 days. The platform adds a 15% collection fee once. |
+| **Delinquent** | A loan that is overdue by more than 7 days. The platform adds a 15% collection fee and a 10% late-payment charge, once. |
 | **Defaulted / Escalated** | The next steps after delinquent: the loan is marked defaulted, then a demand notice is produced (escalated). |
 | **Rollover interest** | Extra interest charged on a loan that was not repaid on time, so the borrower gets more time. |
 | **Penalty** | A one-off charge you add to a loan (for example for a late or dishonoured payment). New on 25 October. |
@@ -36,7 +36,7 @@ This document lists, in plain language, every improvement and correction made to
 | Loan is applied for | Starts at the loan amount **plus its interest** |
 | Payment recorded | Goes **down** by the payment |
 | Rollover interest charged | Goes **up** by the chosen % of what is **still owed** (not of the original total) |
-| 15% collection fee (after 8 days overdue) | Goes **up** by 15% of what is still owed, once |
+| 15% collection fee and 10% late-payment charge (after 8 days overdue) | Goes **up** by 15% **and** 10% of what is still owed (25% in all, both worked out on the same balance), once. They are two separate lines on the statement. |
 | Penalty added | Goes **up** by the penalty amount |
 | Marked as paid | Goes to **zero** |
 | A wrong payment, interest, fee or penalty is deleted from the statement | Goes back to what it would have been, and the lines after it are corrected |
@@ -49,7 +49,7 @@ This document lists, in plain language, every improvement and correction made to
 2. **Loan money is calculated consistently.** Balances, interest, payments and statements now agree with each other, and interest follows your rule: it is charged on what is still owed.
 3. **Existing records were corrected** (Section 3), with copies kept of everything that was changed.
 4. **"Mark as Paid" works.** It crashed before. Clearing a whole company's month is now previewed, recorded and emailed.
-5. **Late loans are handled.** A daily check sends reminders and applies the 15% fee, and delinquent loans can be paid, defaulted and escalated.
+5. **Late loans are handled.** A daily check sends reminders and applies the 15% fee and the 10% late-payment charge, and delinquent loans can be paid, defaulted and escalated.
 6. **Reports and downloads work.** The PDF download did nothing before.
 7. **Emails are sent and tracked.** New applications, finance notices, "fully repaid", password resets and penalties. Every email is recorded.
 8. **Serious security gaps were closed.** For example, any signed-in applicant could approve or delete anyone's loan.
@@ -130,8 +130,9 @@ These changes were made **directly to the live data**, not just to the program. 
 |---|---|---|---|
 | **"Mark as Paid"** | It crashed with an error every time, on the dashboard and on the loan page. | Works. It records "Loan paid" on the statement, sets the balance to zero, writes an audit record and emails the borrower. | 21 Oct |
 | **"Mark Nakama Paid" / "Mark Ideon Paid"** | One click marked **every** disbursed salary advance of that company as paid, whatever the month or status, with no statement entry and no record. | You choose **one repayment month**. The platform first shows **how many loans and the total**, and asks you to confirm. Only that month's unpaid loans are cleared, each with a statement entry, an audit record and an email to the borrower. | 22 Oct |
-| **Delinquent loans** | They could not take payments, could not be defaulted or escalated, and were missing from the dashboard and reports. The borrower saw no status. | You can record payments (the loan **stays** delinquent, so the 15% fee is never charged twice). Loans can be defaulted and escalated. They count in the dashboard and reports. The borrower sees "Overdue" and the amount remaining. | 21 Oct |
-| **The daily reminder check** | Anyone on the internet could trigger it (it adds fees and emails borrowers). Its emails never actually sent because of a bug. It was not scheduled. | It is protected by a secret key and runs **every day at 6:00 am**. It emails reminders **7 days before the due date, 3 days before, on the due date, and 7 days after**. From the **8th day overdue** it marks the loan delinquent and adds the 15% collection fee on what is owed. | 21 Oct |
+| **Delinquent loans** | They could not take payments, could not be defaulted or escalated, and were missing from the dashboard and reports. The borrower saw no status. | You can record payments (the loan **stays** delinquent, so the fee and the charge are never added twice). Loans can be defaulted and escalated. They count in the dashboard and reports. The borrower sees "Overdue" and the amount remaining. | 21 Oct |
+| **The daily reminder check** | Anyone on the internet could trigger it (it adds fees and emails borrowers). Its emails never actually sent because of a bug. It was not scheduled. | It is protected by a secret key and runs **every day at 6:00 am**. It emails reminders **7 days before the due date, 3 days before, on the due date, and 7 days after**. From the **8th day overdue** it marks the loan delinquent and adds the 15% collection fee and the 10% late-payment charge on what is owed. | 21 Oct |
+| **10% late-payment charge** | A loan that went delinquent (8 or more days overdue) was charged only the 15% collection fee. | The same daily check now also adds a **10% late-payment charge**. It is worked out on the **same balance** as the 15% (so a loan with KES 10,000 still owed goes up by 1,500 and 1,000, to 12,500), is written as its **own line** on the statement ("Late Payment Charge", next to "Delinquency Collection Fee"), and is included in the delinquency email, which now states both amounts and the new balance. The 7-days-overdue warning email mentions it too, and the borrower's loan page says a charge has been added. Each loan is charged **once**. Because they are separate lines, one can be corrected or deleted without the other (see 5.3). **Loans that were already delinquent before 25 Oct were not charged the 10%.** The loan's repayment amount is unchanged. | 25 Oct |
 | **Dashboard "Outstanding" and "Overdue"** | They left out part-paid loans and delinquent loans, so they under-stated what is owed. | They include unpaid, part-paid and delinquent disbursed loans. | 21 Oct |
 
 ---
@@ -326,7 +327,7 @@ These need your input. Nothing here is broken, but each affects what customers o
 | 2 | **Real testimonials.** Send quotes with the person's permission, and they can be added. | The section stays hidden until then. |
 | 3 | **Licence or registration line in the footer.** Add a registration number if the business has one. | Lenders are often expected to show it. |
 | 4 | **Nakama repayment reports show two different bank accounts.** The report HR downloads names a different account holder than the report the admin downloads. This was kept as it was. | Borrowers could be told to pay the wrong account. Please confirm which is correct. |
-| 5 | **Should interest be chargeable on a delinquent loan?** It is blocked today because the 15% fee was already added. | Your rule decides whether it is allowed. |
+| 5 | **Should interest be chargeable on a delinquent loan?** It is blocked today because the 15% fee and the 10% charge were already added. | Your rule decides whether it is allowed. |
 | 6 | **Penalties and fees in your income figures.** See Section 16, last point. | Your income and "expected back" totals leave them out. |
 | 7 | **Can HR or finance approve their own loan?** Today they can. | A separation-of-duties question. |
 | 8 | **The contact form** opens the visitor's own email program. A form that delivers straight to your inbox would need more setup. | A visitor without an email program configured sees nothing happen. |
@@ -334,6 +335,7 @@ These need your input. Nothing here is broken, but each affects what customers o
 | 10 | **Admin accounts have no "forgot password" email.** Only applicants, HR and finance do. | An admin who forgets must be reset by a developer. |
 | 11 | **Home-page photo** is borrowed from an image website rather than stored with the platform. | It could disappear or change. (Parked for later.) |
 | 12 | **Server tidy-up:** copies kept for safety (database tables starting `bak_2026`), a few leftover test files, and a recommended extra protection on the hosting account for configuration files. | Housekeeping, not urgent. |
+| 13 | **The loan terms do not mention the 10% late-payment charge.** The terms borrowers accept when applying, the PDF loan agreement and the demand letter mention only the 15% collection fee. The platform now also charges the 10%. | Charging something the signed terms do not state can be disputed. Please decide the wording (and whether to apply it to loans already delinquent) before this affects real borrowers. |
 
 ---
 
@@ -344,7 +346,7 @@ These were looked at and **left unchanged on purpose**. They are listed so you k
 - **"Mark selected as paid"** (the tick-box action on All Applications) credits the loan's **full repayment amount** and does not adjust the balance of a part-paid loan. The two single-loan and company-month routes do it correctly.
 - **A borrower's "Amount Paid"** counts only payments recorded against that loan. For some older loans, earlier payments may not be linked, so the figure can look lower than what was really paid.
 - **New application emails to HR** have been tested and the sending mailbox has been proven (a test email arrived), but a real application notice has not yet been seen arriving in live use. This is parked until you want to check it.
-- **Penalties and the 15% collection fee** increase what a borrower owes, but are **not included** in the dashboard's "Interest Income" and "Fee Revenue", nor in a report's "Expected back" figure. They do appear in "Outstanding", the statement and the overdue figures. We can add a separate "Penalties and collection fees" figure if you want one.
+- **Penalties, the 15% collection fee and the 10% late-payment charge** increase what a borrower owes, but are **not included** in the dashboard's "Interest Income" and "Fee Revenue", nor in a report's "Expected back" figure. They do appear in "Outstanding", the statement and the overdue figures. We can add a separate "Penalties and collection fees" figure if you want one.
 - **The old "Reverse transaction" feature** (not shown on any screen) is broken and unused. The new edit and delete tools replace it.
 - **Rejecting an uploaded document deletes it for good** (the file and its record) and emails the applicant to upload a new one. There is no "undo"; the prompt now says so.
 - **Bulk-uploaded applicants** can use any company code, and any HR user can bulk-create applicants.
@@ -358,7 +360,7 @@ Newest first. When a change is made, a new line goes at the top.
 
 | Date | What changed | Section |
 |---|---|---|
-| **25 Oct** | Borrower is emailed about a penalty (with an opt-out tick box). **Add Penalty** on the loan page. **Delete a wrong line** from a statement. **Applicant Statement** with filters, totals and a PDF that follows them. **Overdue card** is clickable. Fixed a scrolling fault on the applicant details page. **Edit a statement line** (amount, date, description). Uploaded-document cards fixed. New hover hints everywhere. Disbursement date in the applicant's Loan Applications list, and a form to **enter, correct or remove** it. | 5, 7, 11, 14 |
+| **25 Oct** | Borrower is emailed about a penalty (with an opt-out tick box). **Add Penalty** on the loan page. **Delete a wrong line** from a statement. **Applicant Statement** with filters, totals and a PDF that follows them. **Overdue card** is clickable. Fixed a scrolling fault on the applicant details page. **Edit a statement line** (amount, date, description). Uploaded-document cards fixed. New hover hints everywhere. Disbursement date in the applicant's Loan Applications list, and a form to **enter, correct or remove** it. **10% late-payment charge** added to the daily check, next to the 15% fee. | 4, 5, 7, 11, 14, 15 |
 | **23 Oct** | Public website redesign (same wording): menu bar, footer, home page, calmer statistics. New **FAQ** page. Testimonials section built (hidden until real quotes). | 13 |
 | **22 Oct** | New sign-in, forgot-password and sign-up pages. Safer delete buttons (the old "Suspend" really suspends). Full audit trail. Every email recorded. Calculators fixed. Month-by-month "Mark Paid" with preview. "Fully repaid" email on every route. Finance and team notices. Admin, HR, finance and applicant portals made consistent and phone-friendly. | 4, 7, 10, 11, 12, 14 |
 | **21 Oct** | "Mark as Paid" fixed. Delinquent loans handled. **Daily reminders switched on.** Forgot password works. HR told of new applications. Server sets the starting interest rate. **Loan limit** added. Pop-up messages work. Security fixes (profile, uploads, cookie, links). HR and finance work for any company. "Amend Amount" built. HR report PDF and Excel fixed. | 4, 7, 8, 9, 10 |
