@@ -74,6 +74,10 @@ def create_app():
     from website.audit_hook import register_audit_hook
     register_audit_hook(app)
 
+    if os.getenv("DEMO_MODE") == "True":  # the demo's own tools (who to sign in as, ...); the live API never routes to them
+        from website.demo import demo_bp
+        app.register_blueprint(demo_bp)
+
     # Ensure default companies exist within app context
     with app.app_context():
        try:

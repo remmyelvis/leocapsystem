@@ -1,4 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { IS_DEMO } from './components/demo/demo';
+import DemoToolbox from './components/demo/DemoToolbox';
+import DemoPage from './pages/demo/page';
+import DemoInboxPage from './pages/demo/inbox/page';
 import AdminLayout from './pages/admin/layout';
 import DashboardLayout from './pages/dashboard/layout';
 import FinanceLayout from './pages/finance/layout';
@@ -59,6 +63,7 @@ import NotFoundPage from './pages/not-found';
 
 function App() {
   return (
+    <>
     <Routes>
       {/* Admin Routes */}
       <Route path="/admin" element={<AdminLayout />}>
@@ -129,8 +134,13 @@ function App() {
       <Route path="/privacy-policy" element={<Page48 />} />
       <Route path="/faq" element={<FaqPage />} />
       <Route path="/register" element={<Page49 />} />
+      {/* Demo only: the role picker and the presenter's tools. IS_DEMO is a build-time constant, so the live build contains none of it. */}
+      {IS_DEMO && <Route path="/demo" element={<DemoPage />} />}
+      {IS_DEMO && <Route path="/demo/inbox" element={<DemoInboxPage />} />}
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
+    {IS_DEMO && <DemoToolbox />}
+    </>
   );
 }
 

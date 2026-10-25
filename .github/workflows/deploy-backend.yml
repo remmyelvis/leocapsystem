@@ -46,6 +46,7 @@ jobs:
             demo_seeder.py
             demo_wsgi.py
             demo_data/**
+            website/demo.py
             README.md
             runcommands.txt
             jsons.txt

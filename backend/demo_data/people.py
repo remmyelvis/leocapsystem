@@ -113,6 +113,41 @@ JOINED_DAYS_AGO = {
 }
 
 
+# Who a presenter can sign in as (the demo's role picker): (key in the cast above, which sign-in page, why pick them).
+PERSONAS = [
+    ("credit", "admin", "Runs the loan book: approves, sets rates, disburses, collects and reports, across all three employers."),
+    ("collections", "admin", "Chases late loans: fees, penalties, demand letters and the written-off book."),
+    ("mercy", "applicant", "HR Manager of an employer: confirms her staff's applications and follows the company's repayments."),
+    ("joseph_k", "applicant", "Finance Manager of the same employer: sees what is owed and what to remit from payroll."),
+    ("nancy", "applicant", "HR at a second employer: sees only her own company's staff and loans, never Savannah's."),
+    ("wanjiku", "applicant", "An employee with a spotless record. Her salary advance falls due in 7 days."),
+    ("grace", "applicant", "A borrower who is late: collection fee, late-payment charge, part payments and a penalty."),
+    ("tom", "applicant", "Runs his own business, no employer. A KES 100,000 loan is waiting for the lender's decision."),
+]
+
+
+def account(key):
+    """One person in the cast: name, job title, email, company code (None if they have no employer) and role."""
+    domains = {c["code"]: c["domain"] for c in COMPANIES}
+
+    def who(name, title, domain, company, role):
+        return dict(name=name, title=title, email=f"{slug(name)}@{domain}", company=company, role=role)
+
+    for s in LENDER_STAFF:
+        if s["key"] == key:
+            return who(s["name"], s["title"], DOMAIN, None, "admin")
+    for s in EMPLOYER_STAFF:
+        if s["key"] == key:
+            return who(s["name"], s["job"], domains[s["company"]], s["company"], s["role"])
+    for k, name, company, job, *_ in EMPLOYEES:
+        if k == key:
+            return who(name, job, domains[company], company, "borrower")
+    for k, name, trade, *_ in INDEPENDENTS:
+        if k == key:
+            return who(name, trade, PERSONAL_DOMAIN, None, "borrower")
+    raise KeyError(key)
+
+
 def slug(name):
     """first.last, letters only: "Wanjiru Ndung'u" -> "wanjiru.ndungu"."""
     parts = ["".join(c for c in p.lower() if c.isalpha()) for p in name.split()]

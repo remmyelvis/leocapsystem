@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import AuthLayout from "@/components/auth/AuthLayout";
 import LoginForm, { type LoginFormData } from "@/components/auth/LoginForm";
+import { useDemoSignIn } from "@/components/demo/demo";
 import { applicantApi } from "@/lib/applicantApi";
 import { setToken, clearToken, clearAdminUser } from "@/lib/apiClient";
 import { useAuthStore } from "@/store/authStore";
@@ -71,6 +72,8 @@ export default function ApplicantLoginPage() {
       setIsLoading(false);
     }
   };
+
+  useDemoSignIn(onSubmit);
 
   return (
     <AuthLayout variant="applicant">
