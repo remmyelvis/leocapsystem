@@ -1,5 +1,5 @@
 import { useRef, type MouseEvent } from "react";
-import { Bold, Heading3, Link2, List, ListOrdered, MousePointerClick, SquareMousePointer } from "lucide-react";
+import { Bold, Heading3, Link2, List, ListOrdered, MousePointerClick, SquareMousePointer, TextQuote } from "lucide-react";
 import { Tip } from "@/components/ui/tooltip";
 import { RichText } from "@/lib/siteContent/format";
 import type { ContactView } from "@/lib/siteContent/types";
@@ -14,7 +14,7 @@ interface Edit {
   to: number;
 }
 
-const LIST_MARKS = /^(\d+\.|-|###)\s+/;
+const LIST_MARKS = /^((\d+\.|-|###)\s+|>\s?)/;
 
 function wrapSelection(value: string, a: number, b: number, mark: string, placeholder: string): Edit {
   // Already wrapped: take the marks off again.
@@ -33,13 +33,13 @@ function makeLink(value: string, a: number, b: number): Edit {
 }
 
 /** Bullets, numbers or a heading on every line touched by the selection; pressing it again takes them off. */
-function markLines(value: string, a: number, b: number, kind: "ul" | "ol" | "h"): Edit {
+function markLines(value: string, a: number, b: number, kind: "ul" | "ol" | "h" | "q"): Edit {
   if (b > a && value[b - 1] === "\n") b -= 1;
   const start = value.lastIndexOf("\n", a - 1) + 1;
   let end = value.indexOf("\n", b);
   if (end < 0) end = value.length;
   const lines = value.slice(start, end).split("\n");
-  const has = (l: string) => (kind === "ul" ? /^-\s+/ : kind === "ol" ? /^\d+\.\s+/ : /^###\s+/).test(l);
+  const has = (l: string) => (kind === "ul" ? /^-\s+/ : kind === "ol" ? /^\d+\.\s+/ : kind === "q" ? /^>/ : /^###\s+/).test(l);
   const real = lines.filter((l) => l.trim());
   const remove = real.length > 0 && real.every(has);
   let n = 0;
@@ -47,7 +47,7 @@ function markLines(value: string, a: number, b: number, kind: "ul" | "ol" | "h")
     if (!l.trim() && lines.length > 1) return l;
     const bare = l.replace(LIST_MARKS, "");
     if (remove) return bare;
-    return (kind === "ul" ? "- " : kind === "ol" ? `${++n}. ` : "### ") + bare;
+    return (kind === "ul" ? "- " : kind === "ol" ? `${++n}. ` : kind === "q" ? "> " : "### ") + bare;
   });
   const text = out.join("\n");
   return { value: value.slice(0, start) + text + value.slice(end), from: start, to: start + text.length };
@@ -81,6 +81,7 @@ export default function RichTextField({
   max,
   hint,
   rows = 7,
+  variant = "answer",
 }: {
   id: string;
   label: string;
@@ -90,7 +91,10 @@ export default function RichTextField({
   max: number;
   hint?: string;
   rows?: number;
+  /** "policy" is for the Privacy Policy: no buttons or ready-made blocks, and the preview looks like the policy page. */
+  variant?: "answer" | "policy";
 }) {
+  const policy = variant === "policy";
   const box = useRef<HTMLTextAreaElement>(null);
 
   const apply = (make: (value: string, a: number, b: number) => Edit) => {
@@ -110,16 +114,25 @@ export default function RichTextField({
     { label: "Heading", icon: Heading3, run: () => apply((v, a, b) => markLines(v, a, b, "h")) },
     { label: "Bullet list", icon: List, run: () => apply((v, a, b) => markLines(v, a, b, "ul")) },
     { label: "Numbered steps", icon: ListOrdered, run: () => apply((v, a, b) => markLines(v, a, b, "ol")) },
-    { label: "Button (solid)", icon: MousePointerClick, run: () => apply((v, a, b) => insertBlock(v, a, b, "[button: Label](/register)", "Label")) },
-    { label: "Button (outline)", icon: SquareMousePointer, run: () => apply((v, a, b) => insertBlock(v, a, b, "[outline: Label](/login/applicant)", "Label")) },
+    { label: "Boxed lines", icon: TextQuote, run: () => apply((v, a, b) => markLines(v, a, b, "q")) },
+    ...(policy
+      ? []
+      : [
+          { label: "Button (solid)", icon: MousePointerClick, run: () => apply((v, a, b) => insertBlock(v, a, b, "[button: Label](/register)", "Label")) },
+          { label: "Button (outline)", icon: SquareMousePointer, run: () => apply((v, a, b) => insertBlock(v, a, b, "[outline: Label](/login/applicant)", "Label")) },
+        ]),
   ];
 
   const placeholders: { text: string; token: string; own?: boolean }[] = [
     { text: "Email", token: "{{email}}" },
     { text: "Phone numbers", token: "{{phones}}" },
     { text: "Address", token: "{{address}}" },
-    { text: "Documents checklist", token: "{{documents-checklist}}", own: true },
-    { text: "Status guide", token: "{{status-guide}}", own: true },
+    ...(policy
+      ? []
+      : [
+          { text: "Documents checklist", token: "{{documents-checklist}}", own: true },
+          { text: "Status guide", token: "{{status-guide}}", own: true },
+        ]),
   ];
 
   // The preview shows what a click would do without leaving the editor.
@@ -184,10 +197,21 @@ export default function RichTextField({
                 Start lines with <code>1. </code> for numbered steps, <code>- </code> for bullets, <code>### </code> for a small heading.
               </li>
               <li>
-                <code>[button: Label](/register)</code> is a solid button, <code>[outline: Label](/login/applicant)</code> an outlined one. Put them on their own line.
+                Start lines with <code>&gt; </code> to put them in a box (several lines make one box; a line with only <code>&gt;</code> leaves a small gap).
               </li>
+              {!policy && (
+                <li>
+                  <code>[button: Label](/register)</code> is a solid button, <code>[outline: Label](/login/applicant)</code> an outlined one. Put them on their own line.
+                </li>
+              )}
               <li>
-                <code>{"{{email}}"}</code>, <code>{"{{phones}}"}</code> and <code>{"{{address}}"}</code> fill in the current contact details. <code>{"{{documents-checklist}}"}</code> and <code>{"{{status-guide}}"}</code> add the ready-made blocks and must be on a line of their own.
+                <code>{"{{email}}"}</code>, <code>{"{{phones}}"}</code> and <code>{"{{address}}"}</code> fill in the current contact details.
+                {!policy && (
+                  <>
+                    {" "}
+                    <code>{"{{documents-checklist}}"}</code> and <code>{"{{status-guide}}"}</code> add the ready-made blocks and must be on a line of their own.
+                  </>
+                )}
               </li>
             </ul>
           </details>
@@ -195,8 +219,11 @@ export default function RichTextField({
 
         <div>
           <p className="mb-1.5 text-[12px] font-medium text-slate-600">How it looks</p>
-          <div onClickCapture={keepHere} className="space-y-3.5 rounded-lg border border-slate-200 bg-white px-4 py-3 text-[15px] leading-relaxed text-slate-700">
-            {value.trim() ? <RichText source={value} contact={contact} /> : <p className="text-[13px] italic text-slate-400">Nothing to show yet.</p>}
+          <div
+            onClickCapture={keepHere}
+            className={`rounded-lg border border-slate-200 bg-white px-4 py-3 leading-relaxed ${policy ? "space-y-2 text-[14px] text-slate-600" : "space-y-3.5 text-[15px] text-slate-700"}`}
+          >
+            {value.trim() ? <RichText source={value} contact={contact} variant={variant} /> : <p className="text-[13px] italic text-slate-400">Nothing to show yet.</p>}
           </div>
         </div>
       </div>

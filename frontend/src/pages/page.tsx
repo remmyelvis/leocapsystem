@@ -23,7 +23,9 @@ import SiteFooter from "@/components/landing/SiteFooter";
 import SectionHeader from "@/components/landing/SectionHeader";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import { APPLY_TO } from "@/components/landing/site";
-import { useContact } from "@/lib/siteContent/useSiteContent";
+import { InlineText } from "@/lib/siteContent/format";
+import type { ProductCard } from "@/lib/siteContent/types";
+import { useContact, useSiteContent } from "@/lib/siteContent/useSiteContent";
 
 // ─── Shared pieces ────────────────────────────────────────────────────────────
 
@@ -31,14 +33,14 @@ import { useContact } from "@/lib/siteContent/useSiteContent";
 
 const PHOTO = "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1920&q=80";
 
-// A glass card on the right of the hero: the real three steps and the Salary Advance points, with the step you are "on" moving along.
-function HeroCard() {
-  const steps = [
-    { label: "Register", icon: Users },
-    { label: "Apply", icon: CreditCard },
-    { label: "Get Funded", icon: TrendingUp },
-  ];
-  const features = ["Up to 50% of net salary", "Same-day disbursement", "Zero collateral required"];
+// The icons of the three steps, in order (the hero card and the How It Works section share them).
+const STEP_ICONS = [Users, CreditCard, TrendingUp];
+
+// A glass card on the right of the hero: the first loan product's points and the three step names, with the step you are "on" moving along.
+// It has no text of its own: it follows the first product and the How It Works steps, so one edit changes every place the same words appear.
+function HeroCard({ product, stepNames }: { product: ProductCard; stepNames: string[] }) {
+  const steps = stepNames.map((label, i) => ({ label, icon: STEP_ICONS[i] }));
+  const features = product.features;
   const [active, setActive] = useState(1);
 
   useEffect(() => {
@@ -56,8 +58,8 @@ function HeroCard() {
             <Briefcase className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="text-[17px] font-extrabold leading-tight text-white">Salary Advance</p>
-            <p className="mt-0.5 text-[12px] font-bold uppercase tracking-wider text-blue-100">For Employed Professionals</p>
+            <p className="text-[17px] font-extrabold leading-tight text-white">{product.title}</p>
+            <p className="mt-0.5 text-[12px] font-bold uppercase tracking-wider text-blue-100">{product.tag}</p>
           </div>
         </div>
 
@@ -66,7 +68,7 @@ function HeroCard() {
             const done = i < active;
             const current = i === active;
             return (
-              <li key={step.label} className="relative flex flex-1 flex-col items-center">
+              <li key={i} className="relative flex flex-1 flex-col items-center">
                 {i > 0 && (
                   <span className="absolute right-1/2 top-5 h-0.5 w-full -translate-y-1/2 bg-white/20" aria-hidden>
                     <span className={`block h-full bg-white transition-[width] duration-700 ${i <= active ? "w-full" : "w-0"}`} />
@@ -87,8 +89,8 @@ function HeroCard() {
         </ol>
 
         <ul className="mt-7 space-y-2.5 border-t border-white/15 pt-5">
-          {features.map((f) => (
-            <li key={f} className="flex items-center gap-2.5 text-[14px] text-white/90">
+          {features.map((f, i) => (
+            <li key={i} className="flex items-center gap-2.5 text-[14px] text-white/90">
               <CheckCircle className="h-4 w-4 flex-shrink-0 text-red-300" />
               {f}
             </li>
@@ -100,11 +102,8 @@ function HeroCard() {
 }
 
 function HeroSection() {
-  const stats = [
-    { label: "Clients Served", value: "500+" },
-    { label: "Disbursed", value: "KES 50M+" },
-    { label: "Approval Time", value: "24 Hrs" },
-  ];
+  const { home_hero: hero, home_products: products, home_how: how } = useSiteContent();
+  const contact = useContact();
 
   return (
     <section id="home" className="relative isolate flex min-h-[100svh] items-center overflow-hidden bg-[#081430] pt-16">
@@ -132,19 +131,18 @@ function HeroSection() {
           {/* Badge */}
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/25 bg-[#081430]/50 px-4 py-1.5 backdrop-blur-sm motion-safe:animate-auth-rise">
             <span className="h-2 w-2 rounded-full bg-red-400 motion-safe:animate-pulse" />
-            <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-blue-50">Trusted Fintech · Nairobi, Kenya</span>
+            <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-blue-50">{hero.badge}</span>
           </div>
 
           {/* globals.css forces every h1 to 1.5rem under 640px; keep the hero headline display-sized on phones */}
           <h1 className="mb-6 text-4xl font-extrabold leading-[1.1] tracking-tight text-white drop-shadow-[0_2px_24px_rgba(8,20,48,0.45)] sm:text-5xl lg:text-6xl max-sm:!text-[clamp(28px,8.6vw,36px)] max-sm:!leading-[1.12]">
-            Fast, Flexible Loans
+            {hero.headline_1}
             <br />
-            <span className="bg-gradient-to-r from-red-300 via-red-200 to-amber-200 bg-clip-text text-transparent">for Kenyan Professionals</span>
+            <span className="bg-gradient-to-r from-red-300 via-red-200 to-amber-200 bg-clip-text text-transparent">{hero.headline_2}</span>
           </h1>
 
           <p className="mb-10 max-w-xl text-pretty text-[17px] leading-relaxed text-blue-50 sm:text-xl">
-            Salary advances, personal loans, and more — approved within <span className="font-semibold text-white">24 hours</span>. Empowering Kenyan
-            professionals with fast, fair, and flexible financial solutions.
+            <InlineText source={hero.intro} contact={contact} bold={(text, key) => <span key={key} className="font-semibold text-white">{text}</span>} />
           </p>
 
           <div className="mb-11 flex flex-wrap gap-4">
@@ -153,7 +151,7 @@ function HeroSection() {
                 size="lg"
                 className="group h-14 bg-red-600 px-8 text-[15px] font-bold text-white shadow-xl shadow-red-950/40 transition-transform hover:scale-105 hover:bg-red-700 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#081430] motion-reduce:transform-none sm:text-base"
               >
-                Apply for a Loan
+                {hero.primary_label}
                 <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </Link>
@@ -163,16 +161,16 @@ function HeroSection() {
               className="h-14 border-white/70 bg-white/10 px-8 text-[15px] font-semibold text-white backdrop-blur-sm hover:border-white hover:bg-white hover:text-blue-950 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#081430] sm:text-base"
               onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })}
             >
-              Learn More
+              {hero.secondary_label}
             </Button>
           </div>
 
           {/* Stats: just the numbers, under one hairline, so they support the headline instead of competing with it */}
           <dl className="grid grid-cols-3 gap-x-4 border-t border-white/15 pt-6 sm:gap-x-10">
-            {stats.map(({ label, value }) => (
-              <div key={label}>
+            {hero.stats.map(({ label, value }, i) => (
+              <div key={i}>
                 <dd className="order-first whitespace-nowrap text-[20px] font-extrabold leading-none tracking-tight text-white sm:text-[28px]">
-                  <CountUp value={value} />
+                  <CountUp key={value} value={value} />
                 </dd>
                 <dt className="mt-2 text-[12px] leading-tight text-blue-100 sm:text-[13px]">{label}</dt>
               </div>
@@ -181,7 +179,7 @@ function HeroSection() {
         </div>
 
         <div className="hidden xl:block">
-          <HeroCard />
+          <HeroCard product={products.items[0]} stepNames={how.steps.map((x) => x.title)} />
         </div>
       </div>
 
@@ -197,50 +195,24 @@ function HeroSection() {
 
 // ─── Products ─────────────────────────────────────────────────────────────────
 
+const PRODUCT_ICONS = [Briefcase, CreditCard, Shield];
+// One to three cards: the grid has as many columns as there are cards.
+const PRODUCT_COLUMNS = ["md:grid-cols-1 md:mx-auto md:max-w-md", "md:grid-cols-2 md:mx-auto md:max-w-4xl", "md:grid-cols-3"];
+
 function ProductsSection() {
-  const products = [
-    {
-      icon: Briefcase,
-      title: "Salary Advance",
-      tag: "For Employed Professionals",
-      description:
-        "Access up to 50% of your net salary before payday. Quick disbursement directly to M-Pesa or your bank account, with repayment deducted from your next paycheck.",
-      features: ["Up to 50% of net salary", "Same-day disbursement", "Zero collateral required"],
-      featured: false,
-      comingSoon: false,
-    },
-    {
-      icon: CreditCard,
-      title: "Personal Loan",
-      tag: "Open to Employed Kenyans",
-      description:
-        "Whether you're employed or self-employed, our personal loan gives you access to larger amounts for business, education, or personal growth projects.",
-      features: ["Up to KES 500,000", "1 month tenure", "Competitive interest rates"],
-      featured: true,
-      comingSoon: false,
-    },
-    {
-      icon: Shield,
-      title: "Installment Loan",
-      tag: "Flexible Repayment",
-      description:
-        "Access larger loan amounts repaid in structured monthly instalments. Designed for business investment, home improvement, or long-term financial goals.",
-      features: ["Structured monthly repayments", "Extended repayment periods", "Fixed, predictable schedule"],
-      featured: false,
-      comingSoon: true,
-    },
-  ];
+  const { home_products: block } = useSiteContent();
+  const products = block.items.map((p, i) => ({ icon: PRODUCT_ICONS[i], title: p.title, tag: p.tag, description: p.description, features: p.features, featured: p.featured, comingSoon: p.coming_soon }));
 
   return (
     <section id="products" className="scroll-mt-16 bg-slate-50 py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeader eyebrow="Our Products" title="Loan Solutions Built for You">
-          Straightforward products, transparent terms, and fast disbursement — designed around the Kenyan professional.
+        <SectionHeader eyebrow={block.eyebrow} title={block.title}>
+          {block.lead}
         </SectionHeader>
 
-        <div className="grid items-stretch gap-6 md:grid-cols-3 lg:gap-8">
+        <div className={`grid items-stretch gap-6 ${PRODUCT_COLUMNS[products.length - 1]} lg:gap-8`}>
           {products.map((product, i) => (
-            <Reveal key={product.title} delay={i * 110} className="flex">
+            <Reveal key={i} delay={i * 110} className="flex">
               <div
                 className={`relative flex w-full flex-col overflow-hidden rounded-3xl p-7 transition-all duration-300 sm:p-8 ${
                   product.featured
@@ -274,8 +246,8 @@ function ProductsSection() {
                 <p className={`relative mb-6 flex-1 text-[15px] leading-relaxed ${product.featured ? "text-white/85" : "text-slate-600"}`}>{product.description}</p>
 
                 <ul className="relative mb-8 space-y-3">
-                  {product.features.map((feature) => (
-                    <li key={feature} className="flex items-center gap-2.5">
+                  {product.features.map((feature, j) => (
+                    <li key={j} className="flex items-center gap-2.5">
                       <CheckCircle className={`h-4 w-4 flex-shrink-0 ${product.featured ? "text-red-300" : product.comingSoon ? "text-slate-400" : "text-brand-blue"}`} />
                       <span className={`text-[14px] ${product.featured ? "text-white/90" : "text-slate-700"}`}>{feature}</span>
                     </li>
@@ -312,35 +284,15 @@ function ProductsSection() {
 // ─── How It Works ─────────────────────────────────────────────────────────────
 
 function HowItWorks() {
-  const steps = [
-    {
-      step: "01",
-      icon: Users,
-      title: "Register",
-      description: "Create your account with your national ID and employer details. The whole process takes under 3 minutes on your phone.",
-      color: "bg-brand-blue",
-    },
-    {
-      step: "02",
-      icon: CreditCard,
-      title: "Apply",
-      description: "Choose your loan product, enter the amount you need, and submit your digital application — no paperwork, no branch visits.",
-      color: "bg-red-600",
-    },
-    {
-      step: "03",
-      icon: TrendingUp,
-      title: "Get Funded",
-      description: "Receive funds directly to your M-Pesa or bank account within 24 hours of approval. It really is that simple.",
-      color: "bg-brand-blue",
-    },
-  ];
+  const { home_how: how } = useSiteContent();
+  // The number, icon and colour of each step come from its position; the words come from the editable text.
+  const steps = how.steps.map((x, i) => ({ step: String(i + 1).padStart(2, "0"), icon: STEP_ICONS[i], title: x.title, description: x.description, color: i === 1 ? "bg-red-600" : "bg-brand-blue" }));
 
   return (
     <section id="about" className="scroll-mt-16 bg-white py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeader eyebrow="Simple Process" title="How It Works">
-          From application to cash in hand — we&apos;ve made it as easy as possible.
+        <SectionHeader eyebrow={how.eyebrow} title={how.title}>
+          {how.lead}
         </SectionHeader>
 
         <ol className="relative grid gap-10 md:grid-cols-3 md:gap-12">
@@ -358,7 +310,7 @@ function HowItWorks() {
           ))}
 
           {steps.map((step, i) => (
-            <li key={step.step} className="relative">
+            <li key={i} className="relative">
               <Reveal delay={i * 140} className="relative flex gap-5 md:flex-col md:items-center md:text-center">
                 {/* Phones: a dashed rail joins each step to the next */}
                 {i < steps.length - 1 && <span className="absolute bottom-[-2.5rem] left-[1.75rem] top-14 border-l-2 border-dashed border-slate-300 md:hidden" aria-hidden />}
@@ -386,12 +338,12 @@ function HowItWorks() {
           >
             <MarkMotif className="pointer-events-none absolute -bottom-16 right-24 w-64 sm:right-40" strength={1.5} />
             <div className="relative text-center sm:text-left">
-              <h3 className="text-2xl font-extrabold tracking-tight text-white">Ready to get started?</h3>
-              <p className="mt-1 text-[15px] text-white/80">Join 500+ professionals who trust Leocap Invest.</p>
+              <h3 className="text-2xl font-extrabold tracking-tight text-white">{how.cta.title}</h3>
+              <p className="mt-1 text-[15px] text-white/80">{how.cta.text}</p>
             </div>
             <Link to={APPLY_TO} className="relative">
               <Button size="lg" className="group h-12 flex-shrink-0 bg-red-600 px-8 text-[15px] font-bold text-white shadow-lg shadow-red-950/40 hover:bg-red-700">
-                Apply in Minutes <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+                {how.cta.button} <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </Link>
           </div>
@@ -408,6 +360,7 @@ const fieldClass =
 
 function ContactSection() {
   const contact = useContact();
+  const { home_headings: headings } = useSiteContent();
   const [form, setForm] = useState({ name: "", email: "", message: "" });
 
   const contactDetails = [
@@ -449,8 +402,8 @@ function ContactSection() {
   return (
     <section id="contact" className="scroll-mt-16 bg-slate-50 py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeader eyebrow="Get In Touch" title="We'd Love to Hear from You">
-          Have questions about our products or need assistance? Our team is happy to help.
+        <SectionHeader eyebrow={headings.contact_eyebrow} title={headings.contact_title}>
+          {headings.contact_lead}
         </SectionHeader>
 
         <div className="grid items-start gap-12 md:grid-cols-2 lg:gap-16">

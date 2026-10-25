@@ -149,4 +149,271 @@ If the email does not arrive, check your spam folder.
       },
     ],
   },
+  home_hero: {
+    badge: "Trusted Fintech · Nairobi, Kenya",
+    headline_1: "Fast, Flexible Loans",
+    headline_2: "for Kenyan Professionals",
+    intro: "Salary advances, personal loans, and more — approved within **24 hours**. Empowering Kenyan professionals with fast, fair, and flexible financial solutions.",
+    primary_label: "Apply for a Loan",
+    secondary_label: "Learn More",
+    stats: [
+      { value: "500+", label: "Clients Served" },
+      { value: "KES 50M+", label: "Disbursed" },
+      { value: "24 Hrs", label: "Approval Time" },
+    ],
+  },
+  home_products: {
+    eyebrow: "Our Products",
+    title: "Loan Solutions Built for You",
+    lead: "Straightforward products, transparent terms, and fast disbursement — designed around the Kenyan professional.",
+    items: [
+      {
+        title: "Salary Advance",
+        tag: "For Employed Professionals",
+        description:
+          "Access up to 50% of your net salary before payday. Quick disbursement directly to M-Pesa or your bank account, with repayment deducted from your next paycheck.",
+        features: ["Up to 50% of net salary", "Same-day disbursement", "Zero collateral required"],
+        featured: false,
+        coming_soon: false,
+      },
+      {
+        title: "Personal Loan",
+        tag: "Open to Employed Kenyans",
+        description:
+          "Whether you're employed or self-employed, our personal loan gives you access to larger amounts for business, education, or personal growth projects.",
+        features: ["Up to KES 500,000", "1 month tenure", "Competitive interest rates"],
+        featured: true,
+        coming_soon: false,
+      },
+      {
+        title: "Installment Loan",
+        tag: "Flexible Repayment",
+        description:
+          "Access larger loan amounts repaid in structured monthly instalments. Designed for business investment, home improvement, or long-term financial goals.",
+        features: ["Structured monthly repayments", "Extended repayment periods", "Fixed, predictable schedule"],
+        featured: false,
+        coming_soon: true,
+      },
+    ],
+  },
+  home_how: {
+    eyebrow: "Simple Process",
+    title: "How It Works",
+    lead: "From application to cash in hand — we've made it as easy as possible.",
+    steps: [
+      { title: "Register", description: "Create your account with your national ID and employer details. The whole process takes under 3 minutes on your phone." },
+      { title: "Apply", description: "Choose your loan product, enter the amount you need, and submit your digital application — no paperwork, no branch visits." },
+      { title: "Get Funded", description: "Receive funds directly to your M-Pesa or bank account within 24 hours of approval. It really is that simple." },
+    ],
+    cta: { title: "Ready to get started?", text: "Join 500+ professionals who trust Leocap Invest.", button: "Apply in Minutes" },
+  },
+  home_headings: {
+    contact_eyebrow: "Get In Touch",
+    contact_title: "We'd Love to Hear from You",
+    contact_lead: "Have questions about our products or need assistance? Our team is happy to help.",
+    testimonials_eyebrow: "Testimonials",
+    testimonials_title: "Loved by Kenyan Professionals",
+    testimonials_lead: "Don't take our word for it — here's what our clients say.",
+  },
+  privacy: {
+    items: [
+      {
+        title: "Introduction",
+        body: `Leocap Invest ("Leocap", "we", "our", or "us") is committed to protecting the privacy and confidentiality of personal information entrusted to us by applicants, borrowers, guarantors, referees, and other individuals whose information we process in the course of providing financial services.
+
+This Privacy Policy explains how we collect, use, store, share, and protect personal data in accordance with the provisions of the Kenya Data Protection Act, 2019 and all applicable regulations.
+
+By accessing our website, mobile platform, or loan application system and submitting personal information, you acknowledge that you have read and understood this Privacy Policy and consent to the processing of your personal data as described herein.`,
+      },
+      {
+        title: "Data Controller",
+        body: `Leocap Invest is the Data Controller for purposes of personal data processed under this Privacy Policy.
+
+For any privacy-related inquiries, requests, or complaints, you may contact:
+
+> **Data Protection Officer**
+> Leocap Invest
+>
+> **Email:** privacy@leocap.com
+> **Telephone:** +254 700 000000
+> **Postal Address:** P.O. Box 184-00100, Nairobi, Kenya`,
+      },
+      {
+        title: "Information We Collect",
+        body: `We may collect and process the following categories of personal information:
+
+### A. Personal Identification Information
+- Full names
+- National ID or Passport Number
+- KRA PIN
+- Date of Birth
+- Gender
+- Passport photograph or profile image
+
+### B. Contact Information
+- Mobile telephone number
+- Email address
+- Residential address
+- Postal address
+
+### C. Employment Information
+- Employer details
+- Employment number
+- Job designation
+- Salary information
+- Bank account information
+
+### D. Financial Information
+- Loan application information
+- Loan repayment history
+- Banking information
+- Mobile money transaction details
+- Creditworthiness information
+
+### E. Technical Information
+When using our website or online portal, we may collect:
+- IP address
+- Browser information
+- Device information
+- Login records
+- Date and time of access
+- System-generated audit logs
+
+### F. Supporting Documents
+- National ID copies
+- Payslips
+- Bank statements
+- Employment letters
+- Any documents submitted during loan processing`,
+      },
+      {
+        title: "Purpose of Processing",
+        body: `We process personal data for legitimate business and legal purposes, including:
+
+**Loan Assessment**
+- Identity verification
+- Fraud prevention
+- Credit risk assessment
+- Eligibility determination
+
+**Loan Administration**
+- Loan processing
+- Loan disbursement
+- Repayment management
+- Customer communication
+
+**Debt Recovery**
+- Collection of overdue amounts
+- Recovery proceedings
+- Enforcement of contractual obligations
+
+**Legal and Regulatory Compliance**
+- Compliance with applicable laws
+- Tax compliance
+- Anti-money laundering requirements
+- Regulatory reporting
+
+**Business Operations**
+- Internal reporting
+- Service improvement
+- System security
+- Risk management`,
+      },
+      {
+        title: "Legal Basis for Processing",
+        body: `We process personal data based on one or more of the following lawful grounds:
+
+1. Consent of the data subject;
+2. Performance of a contract;
+3. Compliance with legal obligations;
+4. Protection of legitimate interests pursued by Leocap Invest;
+5. Establishment, exercise, or defence of legal claims.`,
+      },
+      {
+        title: "Disclosure of Personal Information",
+        body: `We may share personal information where reasonably necessary with:
+
+**Service Providers:** Technology providers, Cloud hosting providers, Payment processors
+
+**Professional Advisors:** Advocates, Auditors, Accountants, Compliance consultants
+
+**Debt Recovery Partners:** Licensed debt collection agencies, Auctioneers, Recovery agents
+
+**Regulatory Authorities:** Courts of law, Law enforcement agencies, Government agencies, Regulatory bodies
+
+**Credit Information Providers:** Credit Reference Bureaus (where applicable and lawful)
+
+**We do not sell personal data to third parties.**`,
+      },
+      {
+        title: "Data Security",
+        body: `We implement appropriate technical and organizational measures to protect personal information against:
+- Unauthorized access
+- Accidental loss
+- Alteration
+- Disclosure
+- Destruction
+
+Security measures include:
+- Password-protected systems
+- Access controls
+- Encryption where appropriate
+- Audit trails
+- Secure backups
+
+While we strive to protect information, no system can guarantee absolute security.`,
+      },
+      {
+        title: "Data Retention",
+        body: `We retain personal information only for as long as necessary to:
+- Fulfil contractual obligations;
+- Meet legal and regulatory requirements;
+- Resolve disputes;
+- Enforce agreements.
+
+Where information is no longer required, it will be securely deleted, anonymized, or archived in accordance with applicable law.`,
+      },
+      {
+        title: "Rights of Data Subjects",
+        body: `Under the Kenya Data Protection Act, 2019, individuals may have the right to:
+- Access personal data held by us;
+- Request correction of inaccurate information;
+- Request deletion of personal information where legally permissible;
+- Object to certain processing activities;
+- Withdraw consent where processing is based on consent;
+- Lodge a complaint with the Office of the Data Protection Commissioner.
+
+Requests may be submitted through the contact details provided in this Privacy Policy.`,
+      },
+      {
+        title: "Cross-Border Data Transfers",
+        body: "Where personal information is stored or processed outside Kenya, Leocap Invest shall ensure that appropriate safeguards are in place and that such transfers comply with applicable data protection laws.",
+      },
+      {
+        title: "Debt Recovery Communications",
+        body: `In the event of loan default, the Borrower acknowledges and consents that Leocap Invest may contact:
+- The Borrower directly;
+- Referees provided by the Borrower;
+- Employers (where applicable);
+- Advocates;
+- Debt collection agencies;
+
+strictly for purposes of tracing, recovery, enforcement, and administration of outstanding loan obligations.
+
+Such communications shall be conducted in accordance with applicable law and the Data Protection Act, 2019.`,
+      },
+      {
+        title: "Changes to this Policy",
+        body: "Leocap Invest reserves the right to amend this Privacy Policy from time to time. Any updated version shall be published on the relevant platform and shall take effect upon publication.",
+      },
+      {
+        title: "Consent",
+        body: `By ticking the acceptance box and submitting a loan application through the Leocap Invest platform, the Applicant:
+- Confirms that all information provided is accurate and complete;
+- Consents to the collection, processing, storage, and sharing of personal data as described in this Privacy Policy;
+- Authorizes Leocap Invest to verify information provided during the loan application process;
+- Acknowledges that electronic acceptance constitutes valid consent under the Kenya Data Protection Act, 2019 and the Kenya Information and Communications Act.`,
+      },
+    ],
+  },
 };

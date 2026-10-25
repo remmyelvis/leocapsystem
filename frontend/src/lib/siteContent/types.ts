@@ -40,11 +40,71 @@ export interface FaqItem {
   popular: boolean;
 }
 
+export interface HeroBlock {
+  badge: string;
+  headline_1: string;
+  /** The second headline line, shown in the red-to-amber colour. */
+  headline_2: string;
+  /** One line of text; **bold** is the only mark allowed. */
+  intro: string;
+  primary_label: string;
+  secondary_label: string;
+  /** Exactly three. */
+  stats: { value: string; label: string }[];
+}
+
+export interface ProductCard {
+  title: string;
+  tag: string;
+  description: string;
+  features: string[];
+  /** The "Most Popular" card (at most one). */
+  featured: boolean;
+  coming_soon: boolean;
+}
+
+export interface ProductsBlock {
+  eyebrow: string;
+  title: string;
+  lead: string;
+  /** One to three cards. */
+  items: ProductCard[];
+}
+
+export interface HowBlock {
+  eyebrow: string;
+  title: string;
+  lead: string;
+  /** Exactly three. */
+  steps: { title: string; description: string }[];
+  cta: { title: string; text: string; button: string };
+}
+
+export interface HeadingsBlock {
+  contact_eyebrow: string;
+  contact_title: string;
+  contact_lead: string;
+  testimonials_eyebrow: string;
+  testimonials_title: string;
+  testimonials_lead: string;
+}
+
+export interface PolicySection {
+  title: string;
+  /** The section's text in the site's small text format. The section number comes from its position. */
+  body: string;
+}
+
 export interface SiteBlocks {
   contact: ContactBlock;
   banner: BannerBlock;
   testimonials: { items: TestimonialItem[] };
   faq: { items: FaqItem[] };
+  home_hero: HeroBlock;
+  home_products: ProductsBlock;
+  home_how: HowBlock;
+  home_headings: HeadingsBlock;
+  privacy: { items: PolicySection[] };
 }
 
 /** The contact details as the pages use them. */

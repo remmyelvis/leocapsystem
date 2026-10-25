@@ -62,4 +62,14 @@ export const siteContentApi = {
 };
 
 /** The public page where a block can be seen, for "Preview on the site" and "View on the site". */
-export const PAGE_FOR: Record<BlockKey, string> = { contact: "/", banner: "/", testimonials: "/", faq: "/faq" };
+export const PAGE_FOR: Record<BlockKey, string> = {
+  contact: "/",
+  banner: "/",
+  testimonials: "/",
+  faq: "/faq",
+  home_hero: "/",
+  home_products: "/",
+  home_how: "/",
+  home_headings: "/",
+  privacy: "/privacy-policy",
+};

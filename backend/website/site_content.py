@@ -97,11 +97,37 @@ class _Check:
             return []
         if not lo <= len(value) <= hi:
             self.fail(where, f"must have between {lo} and {hi} entries (it has {len(value)})")
-        return [v for v in value[:hi] if isinstance(v, dict)] if len(value) <= hi else []
+        if any(not isinstance(v, dict) for v in value):
+            self.fail(where, "has an entry that is not valid")
+            return []
+        return value if len(value) <= hi else []
 
-    def rich(self, value, where, lo=1, hi=4000):
-        """Text in the site's small format: the links must be safe and the {{tokens}} known."""
+    def strings(self, value, where, lo, hi, longest):
+        """A short list of one-line texts (the points on a product card)."""
+        if not isinstance(value, list):
+            self.fail(where, "must be a list")
+            return []
+        if not lo <= len(value) <= hi:
+            self.fail(where, f"must have between {lo} and {hi} entries (it has {len(value)})")
+        return [self.text(v, f"{where} {i}", 1, longest) for i, v in enumerate(value[:hi], 1)]
+
+    def inline(self, value, where, lo, hi):
+        """One line of text where only **bold** is allowed (no links, buttons or placeholders)."""
+        value = self.text(value, where, lo, hi)
+        if re.search(r"[\[\]{}]", value):
+            self.fail(where, "can only contain **bold** text: no links, buttons or {{placeholders}}")
+        if value.count("**") % 2:
+            self.fail(where, "has a ** that is not closed")
+        return value
+
+    def rich(self, value, where, lo=1, hi=4000, plain=False):
+        """Text in the site's small format: the links must be safe and the {{tokens}} known. `plain` (the privacy policy) has no buttons or ready-made blocks."""
         value = self.text(value, where, lo, hi, multiline=True)
+        if plain:
+            for token in BLOCK_TOKENS & set(_TOKEN.findall(value)):
+                self.fail(where, "{{" + token + "}} is not available in this text")
+            if re.search(r"\[(?:button|outline):", value):
+                self.fail(where, "buttons are not available in this text")
         for label, url in _LINK.findall(value):
             if not label.strip():
                 self.fail(where, f"a link to {url or 'nowhere'} has no text")
@@ -208,12 +234,99 @@ def _faq(data):
     return {"items": out}
 
 
-# key -> (title, what it is, check). Adding a block is adding a line here and its check above.
+def _hero(data):
+    c, d = _Check(), _object(data)
+    stats = [{"value": c.text(x.get("value"), f"Number {i} value", 1, 20), "label": c.text(x.get("label"), f"Number {i} label", 1, 40)}
+             for i, x in enumerate(c.items(d.get("stats"), "Numbers", 3, 3), 1)]
+    out = {
+        "badge": c.text(d.get("badge"), "Badge", 1, 60),
+        "headline_1": c.text(d.get("headline_1"), "Headline, first line", 1, 60),
+        "headline_2": c.text(d.get("headline_2"), "Headline, coloured line", 1, 60),
+        "intro": c.inline(d.get("intro"), "Intro", 1, 300),
+        "primary_label": c.text(d.get("primary_label"), "Main button", 1, 30),
+        "secondary_label": c.text(d.get("secondary_label"), "Second button", 1, 30),
+        "stats": stats,
+    }
+    c.done()
+    return out
+
+
+def _section_head(c, d, where, eyebrow_key="eyebrow", title_key="title", lead_key="lead"):
+    return {eyebrow_key: c.text(d.get(eyebrow_key), f"{where} small heading", 1, 40),
+            title_key: c.text(d.get(title_key), f"{where} heading", 1, 80),
+            lead_key: c.text(d.get(lead_key), f"{where} intro", 1, 200)}
+
+
+def _products(data):
+    c, d = _Check(), _object(data)
+    out = _section_head(c, d, "Products")
+    cards, popular = [], 0
+    for i, p in enumerate(c.items(d.get("items"), "Products", 1, 3), 1):
+        where = f"Product {i}"
+        featured, soon = c.flag(p.get("featured", False), f"{where} Most Popular"), c.flag(p.get("coming_soon", False), f"{where} Coming Soon")
+        popular += featured
+        if featured and soon:
+            c.fail(where, "cannot be both Most Popular and Coming Soon")
+        cards.append({
+            "title": c.text(p.get("title"), f"{where} title", 1, 40),
+            "tag": c.text(p.get("tag"), f"{where} small heading", 1, 50),
+            "description": c.text(p.get("description"), f"{where} description", 1, 300),
+            "features": c.strings(p.get("features"), f"{where} point", 1, 5, 60),
+            "featured": featured,
+            "coming_soon": soon,
+        })
+    if popular > 1:
+        c.fail("Products", "only one product can be marked Most Popular")
+    out["items"] = cards
+    c.done()
+    return out
+
+
+def _how(data):
+    c, d = _Check(), _object(data)
+    out = _section_head(c, d, "How it works")
+    out["steps"] = [{"title": c.text(x.get("title"), f"Step {i} title", 1, 30), "description": c.text(x.get("description"), f"Step {i} text", 1, 240)}
+                    for i, x in enumerate(c.items(d.get("steps"), "Steps", 3, 3), 1)]
+    cta = d.get("cta")
+    cta = cta if isinstance(cta, dict) else {}
+    if not isinstance(d.get("cta"), dict):
+        c.fail("Call to action", "is missing")
+    out["cta"] = {"title": c.text(cta.get("title"), "Call to action heading", 1, 80), "text": c.text(cta.get("text"), "Call to action text", 1, 160),
+                  "button": c.text(cta.get("button"), "Call to action button", 1, 30)}
+    c.done()
+    return out
+
+
+def _headings(data):
+    c, d = _Check(), _object(data)
+    out = {}
+    for prefix, name in (("contact", "Contact section"), ("testimonials", "Testimonials section")):
+        out.update(_section_head(c, d, name, f"{prefix}_eyebrow", f"{prefix}_title", f"{prefix}_lead"))
+    c.done()
+    return out
+
+
+def _privacy(data):
+    c, d = _Check(), _object(data)
+    out = []
+    for i, s in enumerate(c.items(d.get("items"), "Sections", 1, 30), 1):
+        where = f"Section {i}"
+        out.append({"title": c.text(s.get("title"), f"{where} title", 1, 120), "body": c.rich(s.get("body"), f"{where} text", 1, 8000, plain=True)})
+    c.done()
+    return {"items": out}
+
+
+# key -> (title, what it is, check), in the order the admin list shows them. Adding a block is adding a line here and its check above.
 BLOCKS = {
-    "contact": ("Contact details", "Email, phone numbers and address shown in the header, the footer, the contact section, the sign-in pages and the FAQs.", _contact),
     "banner": ("Announcement banner", "A short notice across the top of the public pages, for example planned maintenance.", _banner),
+    "contact": ("Contact details", "Email, phone numbers and address shown in the header, the footer, the contact section, the sign-in pages and the FAQs.", _contact),
+    "home_hero": ("Home page: opening section", "The headline, intro, two buttons and three numbers at the top of the home page. The card beside them follows the first loan product.", _hero),
+    "home_products": ("Home page: loan products", "The Products section: its headings and up to three product cards, with the Most Popular and Coming Soon switches.", _products),
+    "home_how": ("Home page: how it works", "The three steps, and the Ready to get started band under them.", _how),
+    "home_headings": ("Home page: other headings", "The headings of the Contact and Testimonials sections.", _headings),
     "testimonials": ("Testimonials", "Client quotes. Only quotes marked as agreed by the client are ever shown to visitors.", _testimonials),
     "faq": ("FAQs", "The questions and answers on the FAQ page.", _faq),
+    "privacy": ("Privacy policy", "The sections of the Privacy Policy page. Section numbers follow the order.", _privacy),
 }
 
 

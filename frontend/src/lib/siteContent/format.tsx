@@ -8,6 +8,7 @@ import type { ContactView } from "./types";
 //   a blank line starts a new paragraph          **bold**          [link text](/page)
 //   1. numbered steps (one per line)             - bullet points (one per line)
 //   ### A small heading                          [button: Label](/page)   [outline: Label](/page)
+//   > a line in a box (several lines make one box; an empty ">" line leaves a small gap)
 //   {{email}} {{phones}} {{address}}  fill in the contact details
 //   {{documents-checklist}}  {{status-guide}}    ready-made blocks, each alone on its line
 //
@@ -22,6 +23,7 @@ type Node =
   | { t: "p"; text: string }
   | { t: "h"; text: string }
   | { t: "ol" | "ul"; items: string[] }
+  | { t: "quote"; items: string[] }
   | { t: "actions"; items: Button[] }
   | { t: "block"; name: "documents-checklist" | "status-guide" };
 
@@ -54,6 +56,9 @@ export function parse(source: string): Node[] {
       const t = /^\d/.test(line) ? "ol" : "ul";
       if (last?.t === t) last.items.push(m[1]);
       else last = start({ t, items: [m[1]] });
+    } else if ((m = line.match(/^>\s?(.*)$/))) {
+      if (last?.t === "quote") last.items.push(m[1]);
+      else last = start({ t: "quote", items: [m[1]] });
     } else if (BUTTON_LINE.test(line)) {
       const items = Array.from(line.matchAll(BUTTON)).map((b) => ({ label: b[2], url: b[3].trim(), primary: b[1] === "button" }));
       if (last?.t === "actions") last.items.push(...items);
@@ -83,15 +88,18 @@ function TextLink({ url, children }: { url: string; children: ReactNode }) {
   );
 }
 
+type Bold = (text: string, key: number) => ReactNode;
+const strongTag: Bold = (text, key) => <strong key={key}>{text}</strong>;
+
 /** Bold, links and the contact placeholders inside one line of text. */
-function inline(text: string, contact: ContactView): ReactNode[] {
+function inline(text: string, contact: ContactView, bold: Bold = strongTag): ReactNode[] {
   const out: ReactNode[] = [];
   let from = 0;
   for (const m of Array.from(text.matchAll(INLINE))) {
     if (m.index! > from) out.push(text.slice(from, m.index));
     const key = out.length;
     if (m[1] !== undefined) {
-      out.push(<strong key={key}>{m[1]}</strong>);
+      out.push(bold(m[1], key));
     } else if (m[2] !== undefined) {
       out.push(isSafeUrl(m[3]) ? <TextLink key={key} url={m[3].trim()}>{m[2]}</TextLink> : m[2]);
     } else if (m[4] === "email") {
@@ -122,28 +130,57 @@ function inline(text: string, contact: ContactView): ReactNode[] {
   return out;
 }
 
-export function RichText({ source, contact }: { source: string; contact: ContactView }) {
+/** One line of text with **bold** (and nothing else): for headlines and short introductions that sit inside their own element. */
+export function InlineText({ source, contact, bold }: { source: string; contact: ContactView; bold?: Bold }) {
+  return <>{inline(source, contact, bold)}</>;
+}
+
+/**
+ * "answer" is the look of an FAQ answer; "policy" is plain running text for the Privacy Policy (paragraphs, disc and
+ * decimal lists, small headings, bold lead-ins and a boxed block for the contact lines).
+ */
+export function RichText({ source, contact, variant = "answer" }: { source: string; contact: ContactView; variant?: "answer" | "policy" }) {
+  const policy = variant === "policy";
+  const bold: Bold = policy ? (text, key) => <strong key={key} className="text-slate-800">{text}</strong> : strongTag;
   return (
     <>
       {parse(source).map((n, i) => {
         switch (n.t) {
           case "p":
-            return <P key={i}>{inline(n.text, contact)}</P>;
+            return <P key={i}>{inline(n.text, contact, bold)}</P>;
           case "h":
-            return (
+            return policy ? (
+              <h3 key={i} className="pt-2 font-semibold text-slate-800">
+                {inline(n.text, contact, bold)}
+              </h3>
+            ) : (
               <h4 key={i} className="pt-1 text-[15px] font-bold text-slate-900">
-                {inline(n.text, contact)}
+                {inline(n.text, contact, bold)}
               </h4>
             );
           case "ol":
-            return <Steps key={i} items={n.items.map((s) => inline(s, contact))} />;
+            return policy ? (
+              <ol key={i} className="list-decimal pl-5">
+                {n.items.map((s, j) => (
+                  <li key={j}>{inline(s, contact, bold)}</li>
+                ))}
+              </ol>
+            ) : (
+              <Steps key={i} items={n.items.map((s) => inline(s, contact, bold))} />
+            );
           case "ul":
             return (
-              <ul key={i} className="list-disc space-y-1.5 pl-5 marker:text-slate-400">
+              <ul key={i} className={policy ? "list-disc pl-5" : "list-disc space-y-1.5 pl-5 marker:text-slate-400"}>
                 {n.items.map((s, j) => (
-                  <li key={j}>{inline(s, contact)}</li>
+                  <li key={j}>{inline(s, contact, bold)}</li>
                 ))}
               </ul>
+            );
+          case "quote":
+            return (
+              <address key={i} className="not-italic rounded-xl border border-slate-100 bg-slate-50 p-4 text-gray-700">
+                {n.items.map((line, j) => (line.trim() === "" ? <div key={j} className="h-2" aria-hidden /> : <p key={j}>{inline(line, contact, bold)}</p>))}
+              </address>
             );
           case "actions": {
             const shown = n.items.filter((b) => isSafeUrl(b.url));
@@ -183,6 +220,8 @@ export function plainText(source: string, contact: ContactView): string {
         case "ol":
         case "ul":
           return n.items.map((s) => strip(s, contact)).join(" ");
+        case "quote":
+          return n.items.map((line) => strip(line, contact)).join(" ");
         case "actions":
           return "";
         case "block":

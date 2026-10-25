@@ -38,12 +38,39 @@ const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 
 const isStr = (v: unknown): v is string => typeof v === "string";
 const listOf = (v: unknown, ok: (x: Record<string, unknown>) => boolean) => Array.isArray(v) && v.every((x) => isObj(x) && ok(x));
 
+const allStrings = (v: Record<string, unknown>, keys: string[]) => keys.every((k) => isStr(v[k]));
+const count = (v: unknown, lo: number, hi: number) => Array.isArray(v) && v.length >= lo && v.length <= hi;
+
 const SHAPE: { [K in keyof SiteBlocks]: (v: unknown) => boolean } = {
   contact: (v) =>
     isObj(v) && isStr(v.email) && isStr(v.address) && isStr(v.maps_url) && listOf(v.phones, (p) => isStr(p.number)) && (v.phones as unknown[]).length > 0,
   banner: (v) =>
     isObj(v) && typeof v.enabled === "boolean" && isStr(v.text) && isStr(v.link_label) && isStr(v.link_url) && (BANNER_TONES as readonly unknown[]).includes(v.tone),
   testimonials: (v) => isObj(v) && listOf(v.items, (t) => isStr(t.name) && isStr(t.role) && isStr(t.quote)),
+  home_hero: (v) =>
+    isObj(v) && allStrings(v, ["badge", "headline_1", "headline_2", "intro", "primary_label", "secondary_label"]) && count(v.stats, 3, 3) && listOf(v.stats, (x) => isStr(x.value) && isStr(x.label)),
+  home_products: (v) =>
+    isObj(v) &&
+    allStrings(v, ["eyebrow", "title", "lead"]) &&
+    count(v.items, 1, 3) &&
+    listOf(
+      v.items,
+      (p) =>
+        allStrings(p, ["title", "tag", "description"]) &&
+        count(p.features, 1, 5) &&
+        (p.features as unknown[]).every(isStr) &&
+        typeof p.featured === "boolean" &&
+        typeof p.coming_soon === "boolean"
+    ),
+  home_how: (v) =>
+    isObj(v) &&
+    allStrings(v, ["eyebrow", "title", "lead"]) &&
+    count(v.steps, 3, 3) &&
+    listOf(v.steps, (x) => isStr(x.title) && isStr(x.description)) &&
+    isObj(v.cta) &&
+    allStrings(v.cta, ["title", "text", "button"]),
+  home_headings: (v) => isObj(v) && allStrings(v, ["contact_eyebrow", "contact_title", "contact_lead", "testimonials_eyebrow", "testimonials_title", "testimonials_lead"]),
+  privacy: (v) => isObj(v) && count(v.items, 1, 30) && listOf(v.items, (s) => isStr(s.title) && isStr(s.body)),
   faq: (v) =>
     isObj(v) &&
     listOf(v.items, (f) => isStr(f.id) && isStr(f.q) && isStr(f.a) && (TOPICS as readonly unknown[]).includes(f.topic) && typeof f.popular === "boolean") &&

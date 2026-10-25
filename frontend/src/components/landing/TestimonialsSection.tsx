@@ -169,7 +169,7 @@ function Ticket({ t, total, sample }: { t: Testimonial; total: number; sample: b
 }
 
 export default function TestimonialsSection() {
-  const { testimonials } = useSiteContent();
+  const { testimonials, home_headings: headings } = useSiteContent();
   const real = useMemo(() => fromContent(testimonials.items), [testimonials]);
   const [samples, setSamples] = useState<Testimonial[]>([]);
   useEffect(() => {
@@ -225,8 +225,8 @@ export default function TestimonialsSection() {
       <MarkMotif className="pointer-events-none absolute -bottom-16 -left-28 -z-10 w-[560px]" strength={1.1} />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeader eyebrow="Testimonials" title="Loved by Kenyan Professionals" dark>
-          Don&apos;t take our word for it — here&apos;s what our clients say.
+        <SectionHeader eyebrow={headings.testimonials_eyebrow} title={headings.testimonials_title} dark>
+          {headings.testimonials_lead}
         </SectionHeader>
 
         {import.meta.env.DEV && sample && (
