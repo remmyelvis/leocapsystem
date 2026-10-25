@@ -4,7 +4,7 @@ import { formatName } from "@/lib/formatName";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { adminApplicantsApi, ApplicantDetailsResponse, adminApplicationsApi, AdminApplicationItem } from "@/lib/adminApi";
+import { adminApplicantsApi, ApplicantDetailsResponse, adminApplicationsApi, AdminApplicationItem, ApplicationDetails } from "@/lib/adminApi";
 import { Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -22,10 +22,12 @@ import {
   Trash2,
   Download,
   Search,
+  Pencil,
 } from "lucide-react";
 import { previewFile, apiCall, downloadFile } from "@/lib/apiClient";
 import { Button } from "@/components/ui/button";
 import ApplicantStatement from "@/components/admin/ApplicantStatement";
+import DisbursementDateDialog from "@/components/admin/DisbursementDateDialog";
 import { useRef } from "react";
 import { Tip } from "@/components/ui/tooltip";
 
@@ -194,6 +196,7 @@ export default function ApplicantDetailsPage() {
 
   
   const [applicantLoans, setApplicantLoans] = useState<AdminApplicationItem[]>([]);
+  const [disbursing, setDisbursing] = useState<ApplicationDetails | null>(null); // the loan whose disbursement date is being edited
   const [loadingLoans, setLoadingLoans] = useState(false);
 
   const [selectedFiles, setSelectedFiles] = useState<Record<string, File>>({});
@@ -619,15 +622,32 @@ export default function ApplicantDetailsPage() {
                   <p className="text-xs text-slate-600 mt-1 flex flex-wrap gap-x-3 gap-y-1">
                     <span>Applied: {new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(item.application.amount_applied || 0))}</span>
                     <span>Status: <span className="font-bold text-slate-700 capitalize">{item.application.loan_status?.replace(/_/g, ' ')}</span></span>
-                    {(item.application.disbursed_at || item.application.loan_status === "disbursed") && (
-                      <span>
+                    {(item.application.disbursed_at || item.application.loan_status === "disbursed" || item.application.loan_status === "written_off") && (
+                      <span className="inline-flex items-center gap-1">
                         Disbursed:{" "}
                         {item.application.disbursed_at ? (
-                          <span className="font-bold text-slate-700">
-                            {new Date(item.application.disbursed_at).toLocaleDateString("en-KE", { day: "2-digit", month: "short", year: "numeric" })}
-                          </span>
+                          <Tip label={item.application.disbursed_at_source === "entered" ? "Entered by hand" : "Recorded when the loan was marked as disbursed"}>
+                            <span className="font-bold text-slate-700">
+                              {new Date(item.application.disbursed_at).toLocaleDateString("en-KE", { day: "2-digit", month: "short", year: "numeric" })}
+                            </span>
+                          </Tip>
                         ) : (
                           <span className="italic">date not recorded</span>
+                        )}
+                        {(item.application.loan_status === "disbursed" || item.application.loan_status === "written_off") && (
+                          <Tip label={item.application.disbursed_at ? "Edit the disbursement date" : "Enter the disbursement date"}>
+                            <button
+                              onClick={() => setDisbursing(item.application)}
+                              aria-label={`${item.application.disbursed_at ? "Edit" : "Enter"} the disbursement date of loan ${item.application.id?.substring(0, 8)}`}
+                              className={
+                                item.application.disbursed_at
+                                  ? "-my-1 inline-flex h-6 w-6 items-center justify-center rounded-md text-blue-800 transition-colors hover:bg-blue-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40"
+                                  : "-my-0.5 rounded-md px-1.5 py-0.5 font-semibold text-blue-800 underline underline-offset-2 transition-colors hover:bg-blue-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40"
+                              }
+                            >
+                              {item.application.disbursed_at ? <Pencil className="h-3.5 w-3.5" /> : "Add date"}
+                            </button>
+                          </Tip>
                         )}
                       </span>
                     )}
@@ -656,6 +676,14 @@ export default function ApplicantDetailsPage() {
           </div>
         )}
       </div>
+
+      {disbursing && (
+        <DisbursementDateDialog
+          loan={disbursing}
+          onClose={() => setDisbursing(null)}
+          onSaved={() => { setDisbursing(null); refreshLoans(); }}
+        />
+      )}
 
       <ApplicantStatement applicantId={params.id} applicantName={applicant.name} loans={applicantLoans} onChanged={refreshLoans} />
 

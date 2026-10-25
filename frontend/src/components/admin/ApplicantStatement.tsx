@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { AlertTriangle, ArrowDown, ArrowUp, Download, FileText, Lock, Pencil, RefreshCw, Search, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tip } from "@/components/ui/tooltip";
+import { ModalShell } from "@/components/ui/modal";
 import { apiCall, downloadFile } from "@/lib/apiClient";
 import type { AdminApplicationItem } from "@/lib/adminApi";
 import { getLoanTypeDisplay } from "@/hooks/useAdminData";
@@ -88,37 +88,6 @@ const chip = (on: boolean) =>
     on ? "bg-brand-blue text-white" : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50",
   );
 const field = "rounded-lg border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue";
-
-// ---------------------------------------------------------------------------
-// Dialog shell: rendered on the page itself (not inside the section) so the dimming also covers the app's header and
-// sidebar; Escape and a click outside close it, scrolling behind it is locked, and focus goes back to what opened it
-// ---------------------------------------------------------------------------
-
-function ModalShell({ titleId, onClose, children }: { titleId: string; onClose: () => void; children: React.ReactNode }) {
-  const box = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const opener = document.activeElement as HTMLElement | null;
-    box.current?.focus();
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; opener?.focus?.(); };
-  }, []);
-  return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div
-        ref={box}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-        onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}
-        className="w-full max-w-md max-h-[92vh] overflow-y-auto rounded-2xl bg-white p-5 shadow-xl outline-none"
-      >
-        {children}
-      </div>
-    </div>,
-    document.body,
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Delete confirmation: asks the server what the deletion would do first, shows it, then deletes on request
