@@ -22,7 +22,9 @@ DEMO_MODE=True DATABASE_URL=sqlite:///demo.db SECRET_KEY=dev python app.py   # s
 - **Demo data.** `python demo_seeder.py` rebuilds `instance/demo.db` with a full showcase: three fictional employers, their HR and finance staff, 46 borrowers, thirteen months of loans (about 150) with statements, change history and audit log, sample documents and M-Pesa statements, and a few stories to present (loans due in 7 and 3 days, due today, 7 and 8 days late, a delinquent borrower with fees and a penalty, a default sent for recovery, a write-off, a rollover, a strong and a risky applicant to underwrite). Everything is dated relative to today, so it never looks stale, and ids are the same on every rebuild. The real daily job charges the late loans while it builds, so the fees are the product's own. See `demo_data/` (people in `people.py`, stories in `plan.py`).
   - It only runs with `DEMO_MODE=True` and a database whose name has the word `demo` in it (for example `leocapin_demo`), and it refuses to wipe a database holding anything but `.example` addresses. It checks its own books at the end and fails loudly if they do not add up.
   - Sign in (password `demo123`): admin `wanjiru.ndungu@leocapdemo.example`; HR `mercy.achieng@savannahfreight.example`; finance `joseph.kariuki@savannahfreight.example`; a borrower `wanjiku.kamau@savannahfreight.example`; an independent borrower `tom.ochieng@inbox.example`. Every address uses a reserved `.example` domain, so nothing can reach a real person.
-  - **The demo's own endpoints** (`website/demo.py`, registered only when `DEMO_MODE=True`, and answering only on a database whose name has the word `demo`): `GET /api/demo/personas` (the people the frontend's role picker lists, with the shared password), `POST /api/demo/run-daily-job` (runs the real daily job and reports what it sent), `GET /api/demo/inbox` (the emails the platform "sent": in the demo nothing is delivered and the audit log keeps the full message), `POST /api/demo/reset` (admin only, once every 3 minutes: runs `demo_seeder.py` as its own process) and `GET /api/demo/status` (how that rebuild is going). The frontend side is built with `VITE_DEMO=true`: a floating Demo menu, the role picker at `/demo`, the inbox at `/demo/inbox`, and `/login/admin?as=<email>` or `/login/applicant?as=<email>` to sign in as someone with one click. The normal build contains none of it.
+  - **The demo's own endpoints** (`website/demo.py`, registered only when `DEMO_MODE=True`, and answering only on a database whose name has the word `demo`): `GET /api/demo/personas` (the people the frontend's role picker lists, with the shared password), `GET /api/demo/guide` (the presenter's stories with links found in the database, see `demo_data/guide.py`), `POST /api/demo/run-daily-job` (runs the real daily job and reports what it sent), `GET /api/demo/inbox` (the emails the platform "sent": in the demo nothing is delivered and the audit log keeps the full message), `POST /api/demo/reset` (admin only, once every 3 minutes: runs `demo_seeder.py` as its own process) and `GET /api/demo/status` (how that rebuild is going). The frontend side is built with `VITE_DEMO=true`: a floating Demo menu, the role picker at `/demo`, the presenter guide at `/demo/guide`, the inbox at `/demo/inbox`, and `/login/admin?as=<email>` or `/login/applicant?as=<email>` (add `&next=/some/page` to land there) to sign in as someone with one click. The normal build contains none of it.
+  - **Nothing real can leak from the demo.** Every PDF and Excel file uses sample bank details (`website/bank_details.py`, which holds the real ones too and picks by `DEMO_MODE`) and PDFs carry a SAMPLE mark; the AI summary and the statement chat answer from the statement's own numbers (`demo_data/sample_ai.py`) and say so, because there is no Gemini key; the startup seeding of the live platform's default companies is skipped, so the demo shows only its fictional ones (`demo_data/` and `website/demo.py` are not deployed to the live API).
+  - **Upkeep (cPanel cron jobs on the demo account):** `0 3 * * *` rebuilds the data (`demo_seeder.py`, output in `tmp/demo_reset.log`), so the five "live cases" for the daily job are always due on the right days; `*/10 6-21 * * *` calls `/api/demo/personas` to keep the app warm.
 - `app.py` also serves the built frontend from `../frontend/dist`.
 
 
@@ -527,9 +529,11 @@ finance
     PATCH /applications/approve/<string:application_id>
 ```
 
+Staff only. HR and finance reach only their own company's loans, and the review rule applies: nobody decides their own application, and a role does not review its own role's loans (HR decides applicants' and finance staff's loans, finance decides applicants' and HR staff's). A refused request comes back as `403` with `{"message": ...}`. Admins and super admins are not held to the rule, so a loan can always be decided.
+
 #### Permissions
 ```http
-admin
+admin, super_admin, hr, finance
 ```
 
 | Parameter | Type     | Description                       |
@@ -542,9 +546,11 @@ admin
     PATCH /applications/reject/<string:application_id>
 ```
 
+Staff only; the optional reason goes in the body as `message` (`reason` is accepted too) and is kept in the loan's history. HR and finance reach only their own company's loans, and the review rule applies: nobody decides their own application, and a role does not review its own role's loans (HR decides applicants' and finance staff's loans, finance decides applicants' and HR staff's). A refused request comes back as `403` with `{"message": ...}`. Admins and super admins are not held to the rule, so a loan can always be decided.
+
 #### Permissions
 ```http
-admin
+admin, super_admin, hr, finance
 ```
 
 | Parameter | Type     | Description                       |

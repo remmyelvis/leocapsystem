@@ -15,6 +15,7 @@ This document lists, in plain language, every improvement and correction made to
 - Dates are 2026. A date is the day the change was made.
 - Everything below has been **published to the live platform**.
 - Section 15 lists **decisions that are waiting for you**. Section 16 lists things that are **still as they were** (known limits), so nothing is hidden.
+- Section 18 describes the **demo version** for showing the platform to prospective clients, and what keeps it safe.
 
 ### Words used in this document
 
@@ -244,6 +245,9 @@ These weaknesses were found by reviewing the program, not because of a reported 
 | **HR and finance for any company** | Only Nakama and Ideon staff had a proper portal. Staff of any other company were sent to the wrong one. | Every company's HR and finance staff get their own portal, with their company's name and only their company's data. | 21 Oct |
 | **HR and finance lists** | "My Applications" and "HR Loans" were always empty, names showed as "Unknown", and one page crashed. | They show real loans and names. | 21 Oct |
 | **"Amend Amount" buttons** | They did nothing (the feature did not exist). | They work. Rules: not your own loan, not a same-role colleague's, only while the loan is awaiting review, within the borrower's loan limit. Fees follow the loan rules, the status becomes "Amended", and everything is recorded. | 21 Oct |
+| **Who may approve or reject a loan** | HR and finance could approve or reject any loan of their company, **including their own** or a colleague's of the same role. Only "Amend Amount" had a rule. | The same rule now covers approve and reject (and the general amend tool): nobody decides their own application, **HR handles applicants' and finance staff's loans, finance handles applicants' and HR staff's**. The buttons are hidden on a loan the person may not decide, with the reason shown, and the server refuses the request too. Admins can still decide any loan, so nothing gets stuck. | 25 Oct |
+| **Rejection reasons typed by HR and finance** | The reason typed on the HR and finance screens was **not saved**; the history only said "Rejected". | It is saved in the loan's history, as it already was for admins. | 25 Oct |
+| **Finance's "HR Loans" page** | Offered only "Amend Amount" yet said "Awaiting your decision: approve, reject or amend". | Its **Review** button opens the full review page, where finance can approve, reject or amend an HR staff member's loan. | 25 Oct |
 | **Fake sign-in pages** | `/login/hr` and `/login/finance` never signed anyone in. The admin page showed admin screens (no data) for the old super-admin address with any password. | Removed. There is one proper sign-in for applicants and staff, and one for admins. | 21 Oct |
 | **HR and finance profile** | Saving worked, but then an error message appeared. Staff of other companies could never reach 100% complete. | Saves cleanly. The same rules apply to every company. | 21 Oct |
 
@@ -260,6 +264,8 @@ These weaknesses were found by reviewing the program, not because of a reported 
 | **Expired sign-in** | A page showed "failed to load" and left you stuck. | You are taken to the sign-in page with a short message. | 17 Oct |
 | **Sign-in, forgot password and sign-up pages** | Plain pages, an empty logo slot, errors only after submitting. | A modern look. A switch between "Applicant & staff" and "Admin". Messages appear as you type. A show/hide password button. A caps-lock warning. A password-strength meter. Clear messages. A duplicate email says so plainly. | 22 Oct |
 | **Admin sign-in error** | "User not found, please register". | "Invalid email or password. This portal is for admin accounts only." | 22 Oct |
+| **Borrower dashboard: "Next due date"** | Showed the earliest due date of **all** the borrower's loans, paid ones included (for example a date in May for a loan that falls due in November). | Shows the earliest due date among the loans still owed. | 25 Oct |
+| **Loan type on a borrower's loan page** | Called every company's salary advance "Ideon Salary Advance". | Says "Salary Advance", and names the company only for Ideon and Nakama (as the borrower's list already did). | 25 Oct |
 
 ---
 
@@ -332,13 +338,14 @@ These need your input. Nothing here is broken, but each affects what customers o
 | 4 | **Nakama repayment reports show two different bank accounts.** The report HR downloads names a different account holder than the report the admin downloads. This was kept as it was. | Borrowers could be told to pay the wrong account. Please confirm which is correct. |
 | 5 | **Should interest be chargeable on a delinquent loan?** It is blocked today because the 15% fee and the 10% charge were already added. | Your rule decides whether it is allowed. |
 | 6 | **Penalties and fees in your income figures.** See Section 16, last point. | Your income and "expected back" totals leave them out. |
-| 7 | **Can HR or finance approve their own loan?** Today they can. | A separation-of-duties question. |
-| 8 | **The contact form** opens the visitor's own email program. A form that delivers straight to your inbox would need more setup. | A visitor without an email program configured sees nothing happen. |
-| 9 | **A hidden marker in every page.** The platform places a coded copy of the signed-in person's email, role and date in the page. The key to decode it is inside the site, so anyone who looks can read it. | Keep it (and tell us what it is for), or remove it. |
-| 10 | **Admin accounts have no "forgot password" email.** Only applicants, HR and finance do. | An admin who forgets must be reset by a developer. |
-| 11 | **Home-page photo** is borrowed from an image website rather than stored with the platform. | It could disappear or change. (Parked for later.) |
-| 12 | **Server tidy-up:** copies kept for safety (database tables starting `bak_2026`), a few leftover test files, and a recommended extra protection on the hosting account for configuration files. | Housekeeping, not urgent. |
-| 13 | **Please read the new loan-terms wording and confirm it.** It is in the application forms (Salary Advance, HR, Finance, Personal Loan) and the loan agreement in the debt dossier. Things for you to decide: (a) The terms already had a **rescheduling fee** (10% of the instalment or KES 1,500, whichever is higher). The platform does not charge it automatically; the new 10% late-payment charge is a separate item worked out on the whole balance with no KES 1,500 minimum. (b) The 15% recovery fee line says it follows a **demand notice**, but the platform adds it automatically on the 8th day overdue. (c) The **Personal Loan** terms do not mention the 15% recovery fee at all (only for returned cheques), yet the platform charges it. (d) The **company MOU** (clause 9) still describes only the 15% fee. It was left alone: the MOU is a signed contract with each employer. (e) Loans applied for **before 26 Oct 2026** are not charged the 10%. | Charging something the signed terms do not state can be disputed. These wording choices are a legal matter, so a lawyer should look at them. |
+| 7 | **The contact form** opens the visitor's own email program. A form that delivers straight to your inbox would need more setup. | A visitor without an email program configured sees nothing happen. |
+| 8 | **A hidden marker in every page.** The platform places a coded copy of the signed-in person's email, role and date in the page. The key to decode it is inside the site, so anyone who looks can read it. | Keep it (and tell us what it is for), or remove it. |
+| 9 | **Admin accounts have no "forgot password" email.** Only applicants, HR and finance do. | An admin who forgets must be reset by a developer. |
+| 10 | **Home-page photo** is borrowed from an image website rather than stored with the platform. | It could disappear or change. (Parked for later.) |
+| 11 | **Server tidy-up:** copies kept for safety (database tables starting `bak_2026`), a few leftover test files, and a recommended extra protection on the hosting account for configuration files. | Housekeeping, not urgent. |
+| 12 | **Please read the new loan-terms wording and confirm it.** It is in the application forms (Salary Advance, HR, Finance, Personal Loan) and the loan agreement in the debt dossier. Things for you to decide: (a) The terms already had a **rescheduling fee** (10% of the instalment or KES 1,500, whichever is higher). The platform does not charge it automatically; the new 10% late-payment charge is a separate item worked out on the whole balance with no KES 1,500 minimum. (b) The 15% recovery fee line says it follows a **demand notice**, but the platform adds it automatically on the 8th day overdue. (c) The **Personal Loan** terms do not mention the 15% recovery fee at all (only for returned cheques), yet the platform charges it. (d) The **company MOU** (clause 9) still describes only the 15% fee. It was left alone: the MOU is a signed contract with each employer. (e) Loans applied for **before 26 Oct 2026** are not charged the 10%. | Charging something the signed terms do not state can be disputed. These wording choices are a legal matter, so a lawyer should look at them. |
+| 13 | **Your first two clients' names are built into some screens.** The Admin Applications page has "Mark Nakama Paid" and "Mark Ideon Paid", the salary-advance form assumes Ideon unless told otherwise, and some labels name them. A third company works, and most screens show generic labels for it, but not all. | Decide whether to make these generic as more companies join. |
+| 14 | **Who may open and reset the demo.** Today anyone who has the link can open it and sign in with one click, and any admin sign-in can press Reset (once every 3 minutes). Search engines are told not to list it. | Fine for presenting. Tell us if you want a shared access code, or Reset limited to you. |
 
 ---
 
@@ -354,6 +361,11 @@ These were looked at and **left unchanged on purpose**. They are listed so you k
 - **Rejecting an uploaded document deletes it for good** (the file and its record) and emails the applicant to upload a new one. There is no "undo"; the prompt now says so.
 - **Bulk-uploaded applicants** can use any company code, and any HR user can bulk-create applicants.
 - **The server does not yet refuse to start without a proper secret key.** The live server does have one.
+- **HR and finance sign-ins can still use the general "amend" tool** on their own company's applicants' loans. The admin screens use it; the HR and finance screens do not (they use "Amend Amount"). It can change any field of such a loan, including its status. It now follows the review rule too, but we recommend restricting it to admins. Tell us if you want that.
+- **A company with no finance user** (or no HR user) has nobody to review an HR manager's (or a finance officer's) own loan, so only an admin can decide it.
+- **The demo is unavailable for about a minute while it rebuilds** (every night at 3 am, or when someone presses Reset). Everyone using the demo shares the same data, so a change one person makes is seen by the next.
+- **The demo's nightly rebuild has been set up but not yet seen running** (its first run is 3 am on 26 October). We will check its log and say so here.
+- **The demo's home page is the real public home page**, with its public numbers (see decision 1), while the demo's own data is smaller.
 
 ---
 
@@ -363,6 +375,8 @@ Newest first. When a change is made, a new line goes at the top.
 
 | Date | What changed | Section |
 |---|---|---|
+| **25 Oct** | **Approve and reject now follow the same rule as Amend Amount**: nobody decides their own application, and HR and finance never review their own role's loans (admins can still decide anything). The buttons are hidden where they would be refused. HR and finance **rejection reasons** are now saved. Finance's **HR Loans** page opens the full review page. | 9 |
+| **25 Oct** | **Demo version for showing to clients**: its own site and made-up data, a role picker, a presenter guide of ten stories, "Run today's job" and a demo inbox, sample AI answers, sample bank details and a SAMPLE mark on its PDFs, a nightly refresh. Your real clients' names no longer appear in it. A borrower's **Next due date** ignores paid loans, and a borrower's loan page no longer calls every company's salary advance "Ideon". | 10, 18 |
 | **25 Oct** | Borrower is emailed about a penalty (with an opt-out tick box). **Add Penalty** on the loan page. **Delete a wrong line** from a statement. **Applicant Statement** with filters, totals and a PDF that follows them. **Overdue card** is clickable. Fixed a scrolling fault on the applicant details page. **Edit a statement line** (amount, date, description). Uploaded-document cards fixed. New hover hints everywhere. Disbursement date in the applicant's Loan Applications list, and a form to **enter, correct or remove** it. **10% late-payment charge** added to the daily check, next to the 15% fee (loans applied for from 26 Oct 2026), and the **loan terms updated** to state it. **Demand letter** now shows the real fees and the balance owed. The credit score's reasons now show on the Financial Analysis page. | 4, 5, 6, 7, 11, 14, 15 |
 | **23 Oct** | Public website redesign (same wording): menu bar, footer, home page, calmer statistics. New **FAQ** page. Testimonials section built (hidden until real quotes). | 13 |
 | **22 Oct** | New sign-in, forgot-password and sign-up pages. Safer delete buttons (the old "Suspend" really suspends). Full audit trail. Every email recorded. Calculators fixed. Month-by-month "Mark Paid" with preview. "Fully repaid" email on every route. Finance and team notices. Admin, HR, finance and applicant portals made consistent and phone-friendly. | 4, 7, 10, 11, 12, 14 |
@@ -370,6 +384,39 @@ Newest first. When a change is made, a new line goes at the top.
 | **19 Oct** | Security round (approving or deleting others' loans, admin accounts, documents, test pages, sign-up role, public company list). Sign-up company field fixed. 9-digit ID numbers accepted. | 8, 9, 10 |
 | **17 Oct** | Reports redesigned and fixed (PDF download, filters, overdue figures). Company shown on loans corrected, with a data fix. Expired sign-in handled. | 3, 6, 9, 10 |
 | **15 Oct** | Platform put online with automatic publishing. Database upgraded. Interest and balances kept in step. Statements fixed. **Existing records corrected** from your spreadsheet. Phone text, buttons and banner fixed. | 1, 2, 3, 14 |
+
+---
+
+## 18. The demo for showing to clients
+
+A separate copy of the platform, filled with made-up people, for presenting to prospective clients. It has its own web address, its own database and its own settings. It cannot reach your live data, and the live platform cannot reach it.
+
+| What | Details |
+|---|---|
+| **Where** | **demo.leocapinvest.co.ke** is the site; demo-api.leocapinvest.co.ke is its engine. Search engines are told not to list it. |
+| **What is inside** | Three made-up employers, 52 made-up people (the lender's staff, each employer's HR and finance staff, and borrowers), about 150 loans over 13 months with their statements, history and audit trail, sample documents and M-Pesa statements. Every email address uses a reserved ".example" ending, so nothing can reach a real person. |
+| **Choosing who to be** | The page `/demo` lists eight people: two lender admins, three employer HR and finance staff, three borrowers. One click signs in as them and opens their own portal. There is no password to type. |
+| **The presenter guide** | `/demo/guide` has ten short stories in the order that tends to win a room: the loan book at a glance, approving a loan, paying it out, lending to someone with no payslip, the daily chase for money, collections, employers, finance, what the borrower sees, and reports with the audit trail. Each button signs in as the right person and opens the right page. |
+| **The Demo button** (bottom left of every page) | **Run today's job** runs the real daily job (reminders and late fees) and shows what it did. **Open inbox** shows the emails the platform would have sent; nothing is delivered. **Presenter guide** opens the stories. **Reset demo data** (admin sign-ins only, once every 3 minutes) puts everything back as it started. |
+| **Fresh every day** | The data is rebuilt at 3 am each day, so "due in 7 days", "due today" and "8 days late" are always true on the day. The demo is kept awake between 6 am and 9 pm. |
+| **Always the latest** | Every time a change is published to the platform, the demo is updated too. |
+
+### What keeps it safe
+
+| Risk | What is done |
+|---|---|
+| **Real data** | The demo has its own database. It refuses to start, and the rebuild refuses to run, unless it is switched to demo mode and the database name contains the word "demo". The rebuild also refuses to wipe a database that holds any real email address. |
+| **Emails** | None is delivered. Each message is only recorded, and shown in the demo inbox. |
+| **Your bank details** | Every PDF and Excel file made in the demo shows made-up bank details, and PDFs carry a faint diagonal **SAMPLE**. The real account numbers are not in the demo. The live platform's files are unchanged (we compared ten of them before and after). |
+| **Your clients' names** | The platform used to add "Ideon Limited" and "Nakama Tech LTD" to its database every time it started, which would have put them in the demo. That no longer happens in the demo, and a search of the whole demo database finds no real client name. |
+| **AI** | The demo has no AI key. Its AI summary and chat give clearly labelled **sample** answers worked out from the statement's own numbers, so they always agree with the figures on the page. |
+| **The live platform** | The demo's tools are not published to the live platform, and the live website does not contain them. |
+
+### Using it in a meeting
+
+1. Open demo.leocapinvest.co.ke/demo/guide and pick a story, or open `/demo` and choose a person.
+2. To switch person, use **Demo** then **Switch role**.
+3. After a session, press **Reset demo data** (as an admin), or leave it: it refreshes itself at 3 am.
 
 ---
 
