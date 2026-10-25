@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
-import { AlertTriangle, ArrowDown, ArrowUp, Download, FileText, Lock, RefreshCw, Search, Trash2, X } from "lucide-react";
+import { AlertTriangle, ArrowDown, ArrowUp, Download, FileText, Lock, Pencil, RefreshCw, Search, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { apiCall, downloadFile } from "@/lib/apiClient";
 import type { AdminApplicationItem } from "@/lib/adminApi";
@@ -29,6 +29,13 @@ interface Entry {
 interface Preview {
   entry: { id: string; memo: string; kind: Kind; debit: number; credit: number; date: string | null };
   loan?: { balance_before: number; balance_after: number; status_before: string; status_after: string; in_credit: number; later_rows: number };
+}
+
+interface AmendPreview {
+  entry: { id: string; memo: string; kind: Kind; amount: number; date: string | null };
+  new: { memo: string; amount: number; date: string | null };
+  changes: string[];
+  loan?: { balance_before: number; balance_after: number; status_before: string; status_after: string; in_credit: number; rows_rebalanced: number; repayment_before?: number; repayment_after?: number };
 }
 
 const KES = new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -82,6 +89,37 @@ const chip = (on: boolean) =>
 const field = "rounded-lg border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue";
 
 // ---------------------------------------------------------------------------
+// Dialog shell: rendered on the page itself (not inside the section) so the dimming also covers the app's header and
+// sidebar; Escape and a click outside close it, scrolling behind it is locked, and focus goes back to what opened it
+// ---------------------------------------------------------------------------
+
+function ModalShell({ titleId, onClose, children }: { titleId: string; onClose: () => void; children: React.ReactNode }) {
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const opener = document.activeElement as HTMLElement | null;
+    box.current?.focus();
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; opener?.focus?.(); };
+  }, []);
+  return createPortal(
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div
+        ref={box}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}
+        className="w-full max-w-md max-h-[92vh] overflow-y-auto rounded-2xl bg-white p-5 shadow-xl outline-none"
+      >
+        {children}
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Delete confirmation: asks the server what the deletion would do first, shows it, then deletes on request
 // ---------------------------------------------------------------------------
 
@@ -90,7 +128,6 @@ function DeleteEntryDialog({ entry, loanTag, onClose, onDeleted }: { entry: Entr
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const [deleting, setDeleting] = useState(false);
-  const box = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let alive = true;
@@ -101,13 +138,6 @@ function DeleteEntryDialog({ entry, loanTag, onClose, onDeleted }: { entry: Entr
     });
     return () => { alive = false; };
   }, [entry.id]);
-
-  useEffect(() => {
-    const opener = document.activeElement as HTMLElement | null;
-    box.current?.focus();
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; opener?.focus?.(); };
-  }, []);
 
   const close = () => { if (!deleting) onClose(); };
 
@@ -127,18 +157,8 @@ function DeleteEntryDialog({ entry, loanTag, onClose, onDeleted }: { entry: Entr
   const paid = Number(entry.credit) > 0;
   const statusChanges = loan && loan.status_before !== loan.status_after;
 
-  // Rendered on the page itself (not inside the section) so the dimming also covers the app's header and sidebar
-  return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onMouseDown={(e) => { if (e.target === e.currentTarget) close(); }}>
-      <div
-        ref={box}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="del-entry-title"
-        tabIndex={-1}
-        onKeyDown={(e) => { if (e.key === "Escape") close(); }}
-        className="w-full max-w-md max-h-[92vh] overflow-y-auto rounded-2xl bg-white p-5 shadow-xl outline-none"
-      >
+  return (
+    <ModalShell titleId="del-entry-title" onClose={close}>
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100">
             <Trash2 className="h-5 w-5 text-red-700" />
@@ -216,9 +236,152 @@ function DeleteEntryDialog({ entry, loanTag, onClose, onDeleted }: { entry: Entr
             {deleting ? "Deleting…" : "Delete entry"}
           </Button>
         </div>
+    </ModalShell>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Edit an entry: the server previews every change as it is typed (balance, status, lines re-balanced), then saves it
+// ---------------------------------------------------------------------------
+
+function AmendEntryDialog({ entry, loanTag, onClose, onSaved }: { entry: Entry; loanTag: string | null; onClose: () => void; onSaved: () => void }) {
+  const isPayment = Number(entry.credit) > 0;
+  const startAmount = String(Number(isPayment ? entry.credit : entry.debit));
+  const startDate = entry.date ? entry.date.slice(0, 16) : "";
+  const [amount, setAmount] = useState(startAmount);
+  const [date, setDate] = useState(startDate);
+  const [description, setDescription] = useState(entry.memo);
+  const [reason, setReason] = useState("");
+  const [preview, setPreview] = useState<AmendPreview | null>(null);
+  const [problem, setProblem] = useState<string | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const valid = Number(amount) > 0 && description.trim().length >= 3 && !!date;
+  const touched = Number(amount) !== Number(startAmount) || date !== startDate || description.trim() !== entry.memo;
+  const body = { amount: Number(amount), date, description: description.trim() };
+  const nowValue = (() => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); })();
+
+  // ask the server what this change would do, a moment after typing stops
+  useEffect(() => {
+    setPreview(null);
+    setProblem(null);
+    if (!touched || !valid) { setChecking(false); return; }
+    setChecking(true);
+    let alive = true;
+    const timer = setTimeout(async () => {
+      const res = await apiCall<AmendPreview>(`/api/applications/statement-entry/${entry.id}?dry_run=1`, { method: "PATCH", body });
+      if (!alive) return;
+      setChecking(false);
+      if (res.error || !res.data) setProblem(res.error ?? "Could not check this change.");
+      else setPreview(res.data);
+    }, 450);
+    return () => { alive = false; clearTimeout(timer); };
+  }, [amount, date, description]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const close = () => { if (!saving) onClose(); };
+  const save = async () => {
+    setSaving(true);
+    const res = await apiCall(`/api/applications/statement-entry/${entry.id}`, { method: "PATCH", body: { ...body, reason: reason.trim() } });
+    setSaving(false);
+    if (res.error) { toast.error(res.error); return; }
+    toast.success("Entry updated and the loan's balance corrected");
+    onSaved();
+  };
+
+  const loan = preview?.loan;
+  const statusChanges = loan && loan.status_before !== loan.status_after;
+  const label = "block text-xs font-semibold text-slate-700";
+
+  return (
+    <ModalShell titleId="amend-entry-title" onClose={close}>
+      <div className="flex items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100">
+          <Pencil className="h-5 w-5 text-blue-800" />
+        </div>
+        <div>
+          <h3 id="amend-entry-title" className="text-[15px] font-bold text-slate-900">Edit this entry</h3>
+          <p className="mt-0.5 text-[13px] text-slate-600">Correct the amount, date or description. The loan's balance and the lines after this one follow.</p>
+        </div>
       </div>
-    </div>,
-    document.body,
+
+      <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-600">
+        <span className={cn("rounded-full px-2 py-0.5 font-semibold", KIND_BADGE[entry.kind])}>{KIND_NAME[entry.kind]}</span>
+        {loanTag && <span>{loanTag}</span>}
+      </p>
+
+      <div className="mt-3 space-y-3">
+        <div>
+          <label htmlFor="amend-amount" className={label}>{isPayment ? "Amount paid (KES)" : "Amount charged (KES)"}</label>
+          <input id="amend-amount" type="number" min="0.01" step="0.01" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} onWheel={(e) => e.currentTarget.blur()} className={cn(field, "mt-1 w-full tabular-nums")} />
+        </div>
+        <div>
+          <label htmlFor="amend-date" className={label}>Date &amp; time</label>
+          <input id="amend-date" type="datetime-local" max={nowValue} value={date} onChange={(e) => setDate(e.target.value)} className={cn(field, "mt-1 w-full")} />
+        </div>
+        <div>
+          <label htmlFor="amend-description" className={label}>Description</label>
+          <input id="amend-description" type="text" maxLength={200} value={description} onChange={(e) => setDescription(e.target.value)} className={cn(field, "mt-1 w-full")} />
+          {entry.kind === "interest" && <p className="mt-1 text-xs text-slate-600">This does not change by itself: if the percentage in the description no longer applies, update it here.</p>}
+          {isPayment && /^Partially paid [\d.,]+$/.test(entry.memo) && <p className="mt-1 text-xs text-slate-600">It follows the amount unless you write something else.</p>}
+        </div>
+      </div>
+
+      <div className="mt-3 min-h-[60px] text-[13px]" aria-live="polite">
+        {!touched ? (
+          <p className="text-slate-600">Change something to see what it would do to the loan.</p>
+        ) : !valid ? (
+          <p className="text-slate-600">Enter an amount above zero, a date, and a description of at least 3 characters.</p>
+        ) : problem ? (
+          <p className="flex items-start gap-2 rounded-lg bg-red-50 p-3 text-red-800 ring-1 ring-red-200"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> {problem}</p>
+        ) : checking || !preview ? (
+          <div className="space-y-2" aria-label="Checking what this would change">
+            <div className="h-4 w-3/4 animate-pulse rounded bg-slate-100" />
+            <div className="h-4 w-1/2 animate-pulse rounded bg-slate-100" />
+          </div>
+        ) : loan ? (
+          <ul className="space-y-1.5 text-slate-700">
+            <li className="flex items-baseline justify-between gap-3">
+              <span>Balance owed on this loan</span>
+              {loan.balance_before === loan.balance_after
+                ? <span className="font-semibold tabular-nums text-slate-900">unchanged ({money(loan.balance_after)})</span>
+                : <span className="font-semibold tabular-nums text-slate-900">{money(loan.balance_before)} <span className="text-slate-500">→</span> {money(loan.balance_after)}</span>}
+            </li>
+            {loan.repayment_before !== undefined && loan.repayment_after !== undefined && loan.repayment_before !== loan.repayment_after && (
+              <li className="flex items-baseline justify-between gap-3">
+                <span>Loan repayment total</span>
+                <span className="font-semibold tabular-nums text-slate-900">{money(loan.repayment_before)} <span className="text-slate-500">→</span> {money(loan.repayment_after)}</span>
+              </li>
+            )}
+            {statusChanges && (
+              <li className="flex items-baseline justify-between gap-3">
+                <span>Loan status</span>
+                <span className="font-semibold text-slate-900">{statusText(loan.status_before)} <span className="text-slate-500">→</span> {statusText(loan.status_after)}</span>
+              </li>
+            )}
+            {preview.changes.includes("description") && preview.new.memo !== description.trim() && (
+              <li>The description will read: <span className="font-semibold text-slate-900">{preview.new.memo}</span></li>
+            )}
+            {loan.rows_rebalanced > 0 && <li>{loan.rows_rebalanced} other {loan.rows_rebalanced === 1 ? "line" : "lines"} on this loan will be re-balanced.</li>}
+            {loan.in_credit > 0 && <li className="rounded-lg bg-amber-50 p-2 text-amber-900 ring-1 ring-amber-200">The borrower would then have paid {money(loan.in_credit)} more than is owed.</li>}
+          </ul>
+        ) : (
+          <p className="text-slate-600">This entry is not attached to a loan, so no balance changes.</p>
+        )}
+      </div>
+
+      <label className="mt-3 block text-xs font-semibold text-slate-700" htmlFor="amend-reason">
+        Reason <span className="font-normal text-slate-600">(optional, saved in the loan's change history)</span>
+      </label>
+      <input id="amend-reason" value={reason} maxLength={200} onChange={(e) => setReason(e.target.value)} placeholder="e.g. The slip said 2,500" className={cn(field, "mt-1 w-full placeholder:text-slate-500")} />
+
+      <div className="mt-4 flex gap-3">
+        <Button variant="outline" className="flex-1 rounded-lg" onClick={close} disabled={saving}>Cancel</Button>
+        <Button className="flex-1 rounded-lg bg-blue-900 font-bold text-white hover:bg-slate-800" onClick={save} disabled={saving || !touched || !valid || checking || !!problem || !preview}>
+          {saving ? "Saving…" : "Save changes"}
+        </Button>
+      </div>
+    </ModalShell>
   );
 }
 
@@ -245,7 +408,8 @@ export default function ApplicantStatement({ applicantId, applicantName, loans, 
   const [newestFirst, setNewestFirst] = useState(true);
   const [statementDate, setStatementDate] = useState(ymd(new Date()));
   const [downloading, setDownloading] = useState(false);
-  const [target, setTarget] = useState<Entry | null>(null);
+  const [target, setTarget] = useState<Entry | null>(null); // the entry being deleted
+  const [amending, setAmending] = useState<Entry | null>(null); // the entry being edited
 
   const load = useCallback(async () => {
     setLoadError(null);
@@ -326,17 +490,27 @@ export default function ApplicantStatement({ applicantId, applicantName, loans, 
     e.locked ? (
       <span tabIndex={0} title={e.locked} className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40">
         <Lock className="h-3.5 w-3.5" />
-        <span className="sr-only">Cannot be deleted: {e.locked}</span>
+        <span className="sr-only">Cannot be changed or deleted: {e.locked}</span>
       </span>
     ) : (
-      <button
-        onClick={() => setTarget(e)}
-        aria-label={`Delete entry: ${e.memo}`}
-        title="Delete this entry (recorded in error)"
-        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-red-700 transition-colors hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
-      >
-        <Trash2 className="h-4 w-4" />
-      </button>
+      <span className="inline-flex items-center max-sm:flex-col">
+        <button
+          onClick={() => setAmending(e)}
+          aria-label={`Edit entry: ${e.memo}`}
+          title="Edit this entry (amount, date or description)"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-blue-800 transition-colors hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40"
+        >
+          <Pencil className="h-4 w-4" />
+        </button>
+        <button
+          onClick={() => setTarget(e)}
+          aria-label={`Delete entry: ${e.memo}`}
+          title="Delete this entry (recorded in error)"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-red-700 transition-colors hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </span>
     );
 
   return (
@@ -491,7 +665,7 @@ export default function ApplicantStatement({ applicantId, applicantName, loans, 
                       <th scope="col" className="px-4 py-2.5 text-right">Charged</th>
                       <th scope="col" className="px-4 py-2.5 text-right">Paid</th>
                       <th scope="col" className="px-4 py-2.5 text-right">Balance</th>
-                      <th scope="col" className="w-12 px-2 py-2.5"><span className="sr-only">Delete</span></th>
+                      <th scope="col" className="w-[4.75rem] px-2 py-2.5"><span className="sr-only">Edit or delete</span></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -542,6 +716,15 @@ export default function ApplicantStatement({ applicantId, applicantName, loans, 
             </div>
           )}
         </>
+      )}
+
+      {amending && (
+        <AmendEntryDialog
+          entry={amending}
+          loanTag={amending.application_id ? loanName(amending.application_id) : null}
+          onClose={() => setAmending(null)}
+          onSaved={() => { setAmending(null); setEntries(null); load(); onChanged(); }}
+        />
       )}
 
       {target && (

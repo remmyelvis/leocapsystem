@@ -1310,6 +1310,51 @@ def _balance_owed(app):
     return _balance_due(app)
 
 
+def _read_amount(raw, what="amount"):
+    """(amount, error message): a money amount above zero, to 2 decimals, within what the columns hold."""
+    try:
+        amount = Decimal(str(raw)).quantize(Decimal("0.01"))
+    except (InvalidOperation, ValueError, TypeError):
+        return None, f"Enter the {what}."
+    if not amount.is_finite() or amount <= 0:
+        return None, f"The {what} must be more than zero."
+    if amount > MAX_LOAN_AMOUNT:
+        return None, f"That {what} is too large."
+    return amount, None
+
+
+def _read_when(raw, what="date"):
+    """(date and time, error message) from what the browser sends, kept exactly as typed. A day of slack on 'now', because
+    the browser's clock can be a few hours ahead of the server's."""
+    try:
+        when = datetime.fromisoformat(str(raw)).replace(tzinfo=None)
+    except ValueError:
+        return None, "That date and time is not valid."
+    if when > datetime.now() + relativedelta(days=1):
+        return None, f"The {what} cannot be in the future."
+    return when, None
+
+
+def _ledger_plan(app, row, new_debit, new_credit, row_stays):
+    """What changing a statement row to new_debit / new_credit does to its loan (new amounts 0 and row_stays False means
+    deleting it): the balance owed before and after, and whether the loan becomes paid or open again. Delete and amend
+    both use it, so a preview and the real change can never disagree."""
+    old_debit, old_credit = Decimal(str(row.debit or 0)), Decimal(str(row.credit or 0))
+    status_before = app.repayment_status
+    paid = status_before == "paid"
+    before = Decimal(0) if paid else _balance_owed(app)
+    after = (before + (new_debit - old_debit) - (new_credit - old_credit)).quantize(Decimal("0.01"))
+    status_after = status_before
+    if after <= 0 and not paid:
+        status_after = "paid"  # nothing is owed any more; a zero balance on an open loan would read as "not tracked yet"
+    elif after > 0 and paid:
+        other_payment = StatementEntry.query.filter(
+            StatementEntry.application_id == app.id, StatementEntry.id != row.id, StatementEntry.credit > 0
+        ).first() is not None
+        status_after = "partially_paid" if (other_payment or (row_stays and new_credit > 0)) else "unpaid"
+    return before, after, status_before, status_after
+
+
 PENALTY_STATUSES = ("unpaid", "partially_paid", "delinquent", "defaulted", "escalated")
 
 
@@ -1324,14 +1369,9 @@ def add_penalty(application_id):
     The borrower is emailed about it unless the request says notify: false."""
     data = request.get_json(silent=True) or {}
 
-    try:
-        amount = Decimal(str(data.get("amount"))).quantize(Decimal("0.01"))
-    except (InvalidOperation, ValueError, TypeError):
-        return jsonify({"error": "Enter the penalty amount."}), 400
-    if not amount.is_finite() or amount <= 0:
-        return jsonify({"error": "The penalty amount must be more than zero."}), 400
-    if amount > MAX_LOAN_AMOUNT:
-        return jsonify({"error": "That penalty amount is too large."}), 400
+    amount, problem = _read_amount(data.get("amount"), "penalty amount")
+    if problem:
+        return jsonify({"error": problem}), 400
 
     description = " ".join(str(data.get("description") or "").split())
     if len(description) < 3:
@@ -1341,13 +1381,9 @@ def add_penalty(application_id):
 
     when = datetime.now()
     if data.get("date"):
-        try:
-            when = datetime.fromisoformat(str(data["date"])).replace(tzinfo=None)
-        except ValueError:
-            return jsonify({"error": "That date and time is not valid."}), 400
-        # a day of slack: the browser's clock can be a few hours ahead of the server's
-        if when > datetime.now() + relativedelta(days=1):
-            return jsonify({"error": "The penalty cannot be dated in the future."}), 400
+        when, problem = _read_when(data["date"], "penalty")
+        if problem:
+            return jsonify({"error": problem.replace("cannot be in the future", "cannot be dated in the future")}), 400
 
     app = db.session.query(Application).with_for_update().filter_by(id=application_id).first()
     if not app:
@@ -1429,6 +1465,8 @@ def delete_statement_entry(entry_id):
     interest counters, and (when the balance says so) paid / unpaid. Written to the loan's change history with the reason.
     With ?dry_run=1 nothing changes: the answer says what would happen, for the confirmation dialog."""
     dry_run = request.args.get("dry_run") in ("1", "true")
+    if dry_run:
+        g.audit_recorded = True  # a preview changes nothing, whatever it answers, so the audit hook must not log it
     row = db.session.query(StatementEntry).with_for_update().filter_by(id=entry_id).first()
     if not row:
         db.session.rollback()
@@ -1445,18 +1483,7 @@ def delete_statement_entry(entry_id):
                         "date": row.date.isoformat() if row.date else None}}
 
     if app:
-        status_before = app.repayment_status
-        paid = status_before == "paid"
-        before = Decimal(0) if paid else _balance_owed(app)
-        after = (before - (debit - credit)).quantize(Decimal("0.01"))
-        status_after = status_before
-        if after <= 0 and not paid:
-            status_after = "paid"  # nothing is owed any more; a zero balance on an open loan would read as "not tracked yet"
-        elif after > 0 and paid:
-            other_payment = StatementEntry.query.filter(
-                StatementEntry.application_id == app.id, StatementEntry.id != row.id, StatementEntry.credit > 0
-            ).first()
-            status_after = "partially_paid" if other_payment else "unpaid"
+        before, after, status_before, status_after = _ledger_plan(app, row, Decimal(0), Decimal(0), False)
         later_rows = StatementEntry.query.filter(
             StatementEntry.application_id == app.id, StatementEntry.id != row.id, StatementEntry.date > row.date
         ) if row.date is not None else None
@@ -1468,7 +1495,6 @@ def delete_statement_entry(entry_id):
         }
 
     if dry_run:
-        g.audit_recorded = True  # a preview changes nothing, so the audit hook must not log it as a deletion
         db.session.rollback()
         return jsonify({**answer, "dry_run": True}), 200
 
@@ -1509,6 +1535,167 @@ def delete_statement_entry(entry_id):
     db.session.delete(row)
     db.session.commit()
     return jsonify({**answer, "dry_run": False, "message": "Entry deleted"}), 200
+
+
+def _plain_number(value):
+    """3000.00 -> "3000", 2500.50 -> "2500.5" (the way a payment's description writes its amount)."""
+    return format(Decimal(value).normalize(), "f")
+
+
+@application.route('/applications/statement-entry/<string:entry_id>', methods=['PATCH'])
+@jwt_required()
+@role_required("admin")
+def amend_statement_entry(entry_id):
+    """Correct a statement row (a payment, rollover interest, a penalty or a fee): its amount, its date and time, its
+    description. The row keeps its kind (a payment stays a payment). The loan follows: its balance (rollover interest
+    also its repayment amount), paid / unpaid when the balance says so, and the running balance of every other row,
+    which moves by the row's effect on the rows that now come after it instead of before it. Written to the loan's
+    change history with the reason. With ?dry_run=1 nothing changes: the answer says what would happen."""
+    dry_run = request.args.get("dry_run") in ("1", "true")
+    if dry_run:
+        g.audit_recorded = True  # a preview changes nothing, whatever it answers, so the audit hook must not log it
+    data = request.get_json(silent=True) or {}
+    row = db.session.query(StatementEntry).with_for_update().filter_by(id=entry_id).first()
+    if not row:
+        db.session.rollback()
+        return jsonify({"error": "This entry no longer exists. Refresh the statement."}), 404
+    app = db.session.query(Application).with_for_update().filter_by(id=row.application_id).first() if row.application_id else None
+    blocked = ledger_delete_block(row, app)
+    if blocked:
+        db.session.rollback()
+        return jsonify({"error": blocked}), 409
+
+    def refuse(message, status=400):
+        db.session.rollback()
+        return jsonify({"error": message}), status
+
+    old_debit, old_credit = Decimal(str(row.debit or 0)), Decimal(str(row.credit or 0))
+    is_payment = old_credit > 0
+    kind = ledger_kind(row.memo, old_credit)
+    old_amount = old_credit if is_payment else old_debit
+    old_date, old_memo = row.date, row.memo
+
+    # ---- what the admin asked for (anything left out stays as it is)
+    new_amount = old_amount
+    if data.get("amount") not in (None, ""):
+        new_amount, problem = _read_amount(data["amount"])
+        if problem:
+            return refuse(problem)
+    new_date = old_date
+    if data.get("date"):
+        new_date, problem = _read_when(data["date"], "date")
+        if problem:
+            return refuse(problem)
+        if old_date is not None and new_date.replace(second=0, microsecond=0) == old_date.replace(second=0, microsecond=0):
+            new_date = old_date  # the browser sends minutes only: the same minute is not a change
+        if app and app.created_at and new_date.date() < app.created_at.date():
+            return refuse("The date cannot be before the loan was applied for.")
+    new_memo = old_memo
+    if "description" in data:
+        new_memo = " ".join(str(data.get("description") or "").split())
+        if len(new_memo) < 3:
+            return refuse("Describe the entry (at least 3 characters).")
+        if len(new_memo) > 200:
+            return refuse("Keep the description to 200 characters or fewer.")
+    if new_memo == old_memo and new_amount != old_amount and old_memo.startswith("Partially paid ") and old_memo[len("Partially paid "):].replace(".", "").replace(",", "").isdigit():
+        new_memo = f"Partially paid {_plain_number(new_amount)}"  # a payment's description carries its amount: keep them together
+    if new_memo != old_memo:
+        low = new_memo.lower()
+        if low == "new loan applied" or low.startswith("loan written off") or new_memo.startswith("Interest charged ("):
+            return refuse("That description is kept for the loan's own lines. Choose another.")
+        if ledger_kind(new_memo, old_credit) != kind:
+            return refuse("That description would turn this line into a different kind of entry. Keep its wording (for example a payment's or an interest charge's).")
+
+    new_debit, new_credit = (Decimal(0), new_amount) if is_payment else (new_amount, Decimal(0))
+    changes = [name for name, differs in (("amount", new_amount != old_amount), ("date", new_date != old_date), ("description", new_memo != old_memo)) if differs]
+    answer = {
+        "entry": {"id": row.id, "memo": old_memo, "kind": kind, "amount": float(old_amount), "date": old_date.isoformat() if old_date else None},
+        "new": {"memo": new_memo, "amount": float(new_amount), "date": new_date.isoformat() if new_date else None},
+        "changes": changes,
+    }
+    if not changes:
+        if dry_run:
+            db.session.rollback()
+            return jsonify({**answer, "unchanged": True, "dry_run": True}), 200
+        return refuse("Nothing was changed.")
+
+    e_old, e_new = old_debit - old_credit, new_debit - new_credit
+    others = StatementEntry.query.filter(StatementEntry.application_id == app.id, StatementEntry.id != row.id).all() if app else []
+
+    def shift_of(other):
+        """How much this change moves another row's running balance: it now carries the row if the row comes before it
+        (new date), and no longer carries it if it used to (old date)."""
+        if other.date is None:
+            return Decimal(0)
+        return (e_new if (new_date is not None and other.date > new_date) else Decimal(0)) - (e_old if (old_date is not None and other.date > old_date) else Decimal(0))
+
+    if app:
+        before, after, status_before, status_after = _ledger_plan(app, row, new_debit, new_credit, True)
+        if is_payment and after < 0:
+            return refuse(f"That is KES {-after:,.2f} more than the borrower owes. A payment cannot be more than the balance owed.")
+        answer["loan"] = {
+            "balance_before": float(before), "balance_after": float(max(after, Decimal(0))),
+            "status_before": status_before, "status_after": status_after,
+            "in_credit": float(-after) if after < 0 else 0.0,
+            "rows_rebalanced": sum(1 for o in others if shift_of(o) != 0),
+        }
+        if kind == "interest":
+            answer["loan"]["repayment_before"] = float(Decimal(str(app.repayment_amount)))
+            answer["loan"]["repayment_after"] = float(Decimal(str(app.repayment_amount)) + (new_debit - old_debit))
+
+    if dry_run:
+        db.session.rollback()
+        return jsonify({**answer, "dry_run": True}), 200
+
+    reason = (str(data.get("reason") or "")).strip()[:200] or "Corrected"
+    if app:
+        old_repayment = float(app.repayment_amount or 0)
+        for other in others:
+            shift = shift_of(other)
+            if shift != 0:
+                other.balance = Decimal(str(other.balance)) + shift
+        row.memo, row.debit, row.credit, row.date = new_memo, new_debit, new_credit, new_date
+        previous = [o for o in others if o.date is not None and new_date is not None and o.date <= new_date]
+        if any(o.date is not None and new_date is not None and o.date > new_date for o in others):
+            last_before = max(previous, key=lambda o: o.date) if previous else None
+            row.balance = (Decimal(str(last_before.balance)) if last_before else Decimal(0)) + e_new
+        else:
+            row.balance = after  # the latest row of the loan: its balance is what the loan owes
+        app.outstanding_balance = max(after, Decimal(0))
+        if kind == "interest":  # rollover interest is part of the repayment amount as well
+            app.repayment_amount = Decimal(str(app.repayment_amount)) + (new_debit - old_debit)
+
+        email, role, company = _actor()
+        stamp = lambda d, fmt: d.strftime(fmt) if d else "no date"
+        said = []
+        if "amount" in changes:
+            said.append(f"amount KES {old_amount:,.2f} to KES {new_amount:,.2f}")
+        if "date" in changes:
+            said.append(f'date {stamp(old_date, "%d %b %Y %H:%M")} to {stamp(new_date, "%d %b %Y %H:%M")}')
+        if "description" in changes:
+            said.append(f'description "{old_memo}" to "{new_memo}"')
+        notes = f'Amended the statement entry "{old_memo}": {"; ".join(said)}. Reason: {reason}.'
+        balance_changed = before != max(after, Decimal(0))
+        db.session.add(ApplicationAudit(
+            application_id=app.id,
+            application_old_loan_amount=float(app.amount_applied or 0),
+            application_new_loan_amount=float(app.amount_applied or 0),
+            application_old_repayment_amount=old_repayment,
+            application_new_repayment_amount=float(app.repayment_amount or 0),
+            field_name="outstanding_balance" if balance_changed else "statement_entry",
+            old_status=str(before) if balance_changed else f'{old_memo} | {stamp(old_date, "%d %b %Y")}',
+            new_status=str(max(after, Decimal(0))) if balance_changed else f'{new_memo} | {stamp(new_date, "%d %b %Y")}',
+            changed_by_email=email, changed_by_role=role, changed_by_company=company,
+            notes=notes,
+        ))
+        if status_after != status_before:
+            update_repayment_status(app, status_after, email, role, company,
+                                    notes=f'Changed because the statement entry "{old_memo}" was amended', commit=False)
+    else:
+        row.memo, row.debit, row.credit, row.date = new_memo, new_debit, new_credit, new_date
+
+    db.session.commit()
+    return jsonify({**answer, "dry_run": False, "message": "Entry amended"}), 200
 
 
 @application.route('/applications/reverse-transaction/<string:txn_id>', methods=['POST'])
