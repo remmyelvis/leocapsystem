@@ -31,7 +31,7 @@ def create_app():
         "http://localhost:3000",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-    ],
+    ] + [o.strip() for o in os.getenv("CORS_EXTRA_ORIGINS", "").split(",") if o.strip()],
     supports_credentials=True,
     methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"]
@@ -85,7 +85,8 @@ def create_app():
     # (db/04_disbursement_date.sql is the same change for running by hand)
     with app.app_context():
         from sqlalchemy import inspect, text
-        for column, ddl in (("employer_name", "VARCHAR(150)"), ("disbursement_date", "TIMESTAMP")):
+        # a brand-new database has no table yet: its tables are created with every column, so there is nothing to add
+        for column, ddl in ((("employer_name", "VARCHAR(150)"), ("disbursement_date", "TIMESTAMP")) if inspect(db.engine).has_table("applications") else ()):
             try:
                 if column not in {c["name"] for c in inspect(db.engine).get_columns("applications")}:
                     db.session.execute(text(f"ALTER TABLE applications ADD COLUMN {column} {ddl}"))

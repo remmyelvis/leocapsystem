@@ -11,7 +11,10 @@ cron_bp = Blueprint('cron', __name__, url_prefix='/api/cron')
 
 # The 10% late-payment charge is in the loan terms only for loans applied for on or after this date (UTC), so only those
 # are charged it. Older loans were accepted under terms without it and keep the 15% collection fee alone.
-LATE_CHARGE_FROM = datetime(2026, 10, 26)
+try:
+    LATE_CHARGE_FROM = datetime.strptime(os.getenv("LATE_CHARGE_FROM", "2026-10-26"), "%Y-%m-%d")  # the demo sets 2000-01-01
+except ValueError:
+    LATE_CHARGE_FROM = datetime(2026, 10, 26)
 
 @cron_bp.route('/reminders', methods=['POST', 'GET'])
 def run_reminders():

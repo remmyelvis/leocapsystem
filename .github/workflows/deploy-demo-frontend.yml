@@ -1,0 +1,61 @@
+name: Deploy demo frontend
+
+# The demo website (demo.leocapinvest.co.ke): the same app, built to talk to the demo API. It is not indexed by search engines.
+on:
+  push:
+    branches: [main]
+    paths: ["frontend/**"]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-demo-frontend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build
+        working-directory: frontend
+        env:
+          VITE_BACKEND_URL: https://demo-api.leocapinvest.co.ke
+          VITE_DEMO: "true"
+        run: npm ci && npm run build
+
+      # a brand-new folder has no routing rules: send every page address to the app, and keep search engines out
+      - name: Add routing rules and robots.txt
+        run: |
+          printf 'User-agent: *\nDisallow: /\n' > frontend/dist/robots.txt
+          cat > frontend/dist/.htaccess <<'HTACCESS'
+          <IfModule mod_headers.c>
+            Header set X-Robots-Tag "noindex, nofollow"
+          </IfModule>
+          <IfModule mod_rewrite.c>
+            RewriteEngine On
+            RewriteBase /
+            RewriteRule ^index\.html$ - [L]
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteRule . /index.html [L]
+          </IfModule>
+          HTACCESS
+
+      # demo.leocapinvest.co.ke -> /home/leocapin/demo.leocapinvest.co.ke
+      - name: Upload dist to demo.leocapinvest.co.ke
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: cs1.hpcnoc.com
+          protocol: ftps
+          port: 21
+          username: ${{ secrets.FTP_DEMO_WEB_USERNAME }}
+          password: ${{ secrets.FTP_DEMO_WEB_PASSWORD }}
+          local-dir: ./frontend/dist/
+          server-dir: /

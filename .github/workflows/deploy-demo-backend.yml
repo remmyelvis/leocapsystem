@@ -1,0 +1,54 @@
+name: Deploy demo backend
+
+# The demo API (demo-api.leocapinvest.co.ke) is a separate copy of the backend with its own database, kept in step with
+# every change so the demo always shows the latest features. It never touches the live API, its database or its folder.
+on:
+  push:
+    branches: [main]
+    paths: ["backend/**"]
+  workflow_dispatch:
+
+# never run two deploys of the same app at once (they share one FTP sync-state file)
+concurrency:
+  group: deploy-demo-backend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Passenger restarts the app when tmp/restart.txt changes
+      - name: Create restart marker
+        run: mkdir -p backend/tmp && date -u > backend/tmp/restart.txt
+
+      - name: Upload backend to the demo API folder over FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: cs1.hpcnoc.com
+          protocol: ftps
+          port: 21
+          username: ${{ secrets.FTP_DEMO_API_USERNAME }}
+          password: ${{ secrets.FTP_DEMO_API_PASSWORD }}
+          local-dir: ./backend/
+          server-dir: /
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/__pycache__/**
+            **/*.pyc
+            .htaccess
+            app.py
+            .env
+            website/.env
+            instance/**
+            app.log
+            **/*.db
+            README.md
+            runcommands.txt
+            jsons.txt
+            run_backend_local.ps1
+            website/applicant_documents/**
+            website/application_documents/**
+            website/confirmation_documents/**

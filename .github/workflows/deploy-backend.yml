@@ -44,6 +44,8 @@ jobs:
             app.log
             **/*.db
             demo_seeder.py
+            demo_wsgi.py
+            demo_data/**
             README.md
             runcommands.txt
             jsons.txt
