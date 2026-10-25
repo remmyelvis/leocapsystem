@@ -7,6 +7,7 @@ import { apiCall } from "@/lib/apiClient";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { formatName } from "@/lib/formatName";
+import { useSession } from "@/contexts/AuthContext";
 
 const mapStatus = (status: string) => {
   if (status === "pending_processing") return "Pending";
@@ -79,6 +80,8 @@ interface GetOneResponse {
     is_first_time_applicant?: string;
   };
   bio_data: {
+    id?: string;
+    role?: string;
     full_name: string;
     email: string;
     phone_number: string;
@@ -90,6 +93,7 @@ export default function HRPendingApplicationDetailPage() {
   const { id } = useParams<{ id: string }>();
   const params = { id: id! };
   const navigate = useNavigate();
+  const { data: session } = useSession();
   const [data, setData] = useState<GetOneResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -213,6 +217,15 @@ export default function HRPendingApplicationDetailPage() {
   }
 
   const { application, bio_data } = data;
+
+  // The server refuses these too (nobody reviews their own application, and a role never reviews its own role's loans);
+  // here the actions are hidden and the reason is given.
+  const reviewNote =
+    bio_data.id && bio_data.id === session?.user?.id
+      ? "You cannot review your own application."
+      : bio_data.role === "hr"
+        ? "HR staff's loans are reviewed by finance."
+        : null;
   
   // Format numbers
   const amtApplied = Number(application.amount_applied || 0);
@@ -235,7 +248,7 @@ export default function HRPendingApplicationDetailPage() {
       {/* Information Banner */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
         <p className="text-brand-blue text-[13px] font-medium">
-          Kindly review this application, amend the amount if needed and approve the application.
+          {reviewNote ?? "Kindly review this application, amend the amount if needed and approve the application."}
         </p>
       </div>
 
@@ -259,7 +272,7 @@ export default function HRPendingApplicationDetailPage() {
             </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            {["pending_processing", "amended"].includes(application.loan_status) && (
+            {!reviewNote && ["pending_processing", "amended"].includes(application.loan_status) && (
               <>
                 <button
                   onClick={handleApprove}
@@ -279,15 +292,17 @@ export default function HRPendingApplicationDetailPage() {
                 </button>
               </>
             )}
-            <button
-              onClick={() => {
-                setShowAmend(!showAmend);
-                setShowReject(false);
-              }}
-              className="text-[13px] font-bold px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100 transition-colors"
-            >
-              Amend Amount
-            </button>
+            {!reviewNote && (
+              <button
+                onClick={() => {
+                  setShowAmend(!showAmend);
+                  setShowReject(false);
+                }}
+                className="text-[13px] font-bold px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100 transition-colors"
+              >
+                Amend Amount
+              </button>
+            )}
             <span
               className={`text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${statusBadge(
                 application.loan_status
@@ -379,7 +394,9 @@ export default function HRPendingApplicationDetailPage() {
       {/* Notice box */}
       <div className="bg-yellow-50 border border-yellow-100 rounded-lg px-3 py-2 text-yellow-700 text-[13px] font-medium">
         {["pending_processing", "amended"].includes(application.loan_status)
-          ? "Awaiting your decision: approve, reject or amend the amount above."
+          ? reviewNote
+            ? "Waiting for its reviewer: you can see this application but not decide it."
+            : "Awaiting your decision: approve, reject or amend the amount above."
           : `This application is ${mapStatus(application.loan_status).toLowerCase()}.`}
       </div>
 

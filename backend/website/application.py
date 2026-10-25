@@ -1996,6 +1996,26 @@ def sync_terms_to_ledger(app):
         interest_row.memo = f"Interest charged ({float(rate) * 100}%)"
 
 
+def _review_refusal(app, own_action):
+    """(message, status) when the signed-in HR or finance user must not act on this loan, otherwise None.
+
+    The one rule behind Amend Amount, Approve and Reject: nobody decides on their own application, and a role never reviews
+    its own role's loans. HR handles applicants' and finance staff's loans, finance handles applicants' and HR staff's.
+    Admins and super admins are not held to it, so a loan can never get stuck. `own_action` completes "You cannot ..."."""
+    role = get_jwt().get("role")
+    if role not in ("hr", "finance"):
+        return None
+    owner = Applicant.query.get(app.applicant_id)
+    if owner is None:
+        return "Application not found", 404
+    if owner.id == get_jwt_identity():
+        return f"You cannot {own_action} your own application.", 403
+    if owner.role == role:
+        who = "HR staff are reviewed by finance" if role == "hr" else "finance staff are reviewed by HR"
+        return f"Loans of {who}.", 403
+    return None
+
+
 @application.route('/applications/amend/<string:application_id>', methods=['PATCH'])
 @jwt_required()
 @role_required("admin", "hr", "finance", "super_admin")  # amend can overwrite any column, so staff only
@@ -2003,6 +2023,9 @@ def amend_application(application_id):
     app = Application.query.filter_by(id=application_id).first()
     if not app:
         return jsonify({"error": "Not found"}), 404
+    refusal = _review_refusal(app, "amend")  # this route can set loan_status, so it must not be a way round the rule
+    if refusal:
+        return jsonify({"message": refusal[0]}), refusal[1]
     data = request.get_json()
     actor_email, actor_role, actor_company = _actor()
 
@@ -2065,14 +2088,10 @@ def _amend_amount(application_id):
     app = Application.query.filter_by(id=application_id).first()
     if not app or not can_access_application(app):
         return jsonify({"message": "Application not found"}), 404
+    refusal = _review_refusal(app, "change the amount of")
+    if refusal:
+        return jsonify({"message": refusal[0]}), refusal[1]
     owner = Applicant.query.get(app.applicant_id)
-    if owner is None:
-        return jsonify({"message": "Application not found"}), 404
-    if owner.id == get_jwt_identity():
-        return jsonify({"message": "You cannot change the amount of your own application."}), 403
-    if owner.role == role:
-        who = "HR staff are reviewed by finance" if role == "hr" else "finance staff are reviewed by HR"
-        return jsonify({"message": f"Loans of {who}."}), 403
     if app.loan_status not in ("pending_processing", "amended"):
         return jsonify({"message": "Only an application that is waiting for review can be amended."}), 400
 
@@ -2152,6 +2171,9 @@ def approve_application(application_id):
     app = Application.query.filter_by(id=application_id).first()
     if not app:
         return jsonify({"error": "Not found"}), 404
+    refusal = _review_refusal(app, "approve or reject")
+    if refusal:
+        return jsonify({"message": refusal[0]}), refusal[1]
     update_loan_status(app, "approved", *_actor(), commit=True)
     return jsonify({"message": "Approved", "application": app.to_dict()}), 200
 
@@ -2162,8 +2184,11 @@ def reject_application(application_id):
     app = Application.query.filter_by(id=application_id).first()
     if not app:
         return jsonify({"error": "Not found"}), 404
+    refusal = _review_refusal(app, "approve or reject")
+    if refusal:
+        return jsonify({"message": refusal[0]}), refusal[1]
     data = request.get_json(silent=True) or {}
-    msg = data.get("message", "Rejected")
+    msg = data.get("message") or data.get("reason") or "Rejected"  # the admin screen sends "message", the HR and finance screens "reason"
     update_loan_status(app, "declined", *_actor(), notes=msg, commit=True)
     return jsonify({"message": "Rejected", "application": app.to_dict()}), 200
 
