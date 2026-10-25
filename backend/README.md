@@ -565,8 +565,10 @@ admin, super_admin, hr, finance
 
 #### Permissions
 ```http
-Authenticated user
+admin, super_admin
 ```
+
+Only a loan that was never paid out can be deleted (`NEVER_PAID_OUT` in `application.py`: pending, amended, rate set / confirmed / declined, approved, declined or rejected, with no disbursement date and no payment row). Its ledger rows, documents, emails and history go with it, the borrower's profile documents are only unlinked from it, and a snapshot of the loan, its history and its ledger rows is kept in the system audit log. Any other loan answers `409` with the reason; if the database still refuses, `500` with "Nothing was changed".
 
 | Parameter | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
