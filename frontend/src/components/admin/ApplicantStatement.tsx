@@ -449,16 +449,17 @@ export default function ApplicantStatement({ applicantId, applicantName, loans, 
           </div>
 
           {/* Totals for what is shown */}
-          <dl className="grid grid-cols-3 gap-2 sm:gap-3">
+          <dl className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
             {[
               { label: "Charged", note: "in this view", value: charged, cls: "text-red-700" },
               { label: "Paid", note: "in this view", value: paidIn, cls: "text-emerald-700" },
               { label: "Balance owed", note: loan === "all" ? "now, all loans" : "now, this loan", value: owed, cls: "text-slate-900" },
             ].map((t) => (
-              <div key={t.label} className="rounded-lg bg-white px-3 py-2 ring-1 ring-slate-200">
+              // phones: one row per figure (label and note left, amount right), so seven-figure amounts always fit
+              <div key={t.label} className="rounded-lg bg-white px-3 py-2 ring-1 ring-slate-200 max-sm:grid max-sm:grid-cols-[1fr_auto] max-sm:gap-x-3">
                 <dt className="text-[10px] font-semibold uppercase tracking-wide text-slate-600">{t.label}</dt>
-                <dd className={cn("mt-0.5 break-normal text-[13px] font-bold tabular-nums sm:text-[15px]", t.cls)}>{money(t.value)}</dd>
-                <p className="text-[10px] text-slate-500">{t.note}</p>
+                <dd className={cn("mt-0.5 break-normal text-[15px] font-bold tabular-nums max-sm:col-start-2 max-sm:row-span-2 max-sm:row-start-1 max-sm:mt-0 max-sm:self-center max-sm:text-right", t.cls)}>{money(t.value)}</dd>
+                <dd className="text-[10px] text-slate-500">{t.note}</dd>
               </div>
             ))}
           </dl>

@@ -293,7 +293,7 @@ export default function AdminShell({ user, children }: AdminShellProps) {
           />
         </header>
 
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="relative flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>
   );

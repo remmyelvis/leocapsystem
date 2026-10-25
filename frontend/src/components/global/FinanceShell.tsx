@@ -248,7 +248,7 @@ export default function FinanceShell({ user, children }: FinanceShellProps) {
           />
         </header>
 
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="relative flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>
   );

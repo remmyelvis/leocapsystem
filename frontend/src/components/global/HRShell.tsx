@@ -243,7 +243,7 @@ export default function HRShell({ user, children }: HRShellProps) {
           />
         </header>
 
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="relative flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>
   );
