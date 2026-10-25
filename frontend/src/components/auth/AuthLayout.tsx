@@ -5,6 +5,7 @@ import BrandLogo from "@/components/global/BrandLogo";
 import { GRAIN, MarkMotif } from "@/components/global/brandArt";
 import StepsCard, { type PanelStep } from "./StepsCard";
 import { statusDisplay } from "@/lib/loanStatus";
+import { useContact } from "@/lib/siteContent/useSiteContent";
 
 export type AuthVariant = "applicant" | "admin";
 export type AuthPage = AuthVariant | "forgot" | "reset" | "register";
@@ -151,6 +152,7 @@ function PortalSwitch({ variant }: { variant: AuthVariant }) {
 
 export default function AuthLayout({ variant, children, top = false }: { variant: AuthPage; children: ReactNode; top?: boolean }) {
   const copy = COPY[variant];
+  const contact = useContact();
   return (
     <div className="min-h-screen bg-white xl:flex">
       {/* Phones and tablets: a short brand band the form sheet overlaps */}
@@ -211,11 +213,11 @@ export default function AuthLayout({ variant, children, top = false }: { variant
             <Link to="/faq" className="inline-flex items-center gap-1.5 font-semibold text-white hover:underline">
               <CircleHelp className="h-3.5 w-3.5" /> Read the FAQs
             </Link>
-            <a href="mailto:info@leocapinvest.co.ke" className="inline-flex items-center gap-1.5 text-white/80 hover:text-white">
-              <Mail className="h-3.5 w-3.5" /> info@leocapinvest.co.ke
+            <a href={`mailto:${contact.email}`} className="inline-flex items-center gap-1.5 text-white/80 hover:text-white">
+              <Mail className="h-3.5 w-3.5" /> {contact.email}
             </a>
-            <a href="tel:+254722221502" className="inline-flex items-center gap-1.5 text-white/80 hover:text-white">
-              <Phone className="h-3.5 w-3.5" /> +254 722 221 502
+            <a href={contact.phones[0].href} className="inline-flex items-center gap-1.5 text-white/80 hover:text-white">
+              <Phone className="h-3.5 w-3.5" /> {contact.phones[0].label}
             </a>
           </div>
         </div>

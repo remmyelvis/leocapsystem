@@ -1,13 +1,14 @@
 // Testimonials shown on the landing page.
 //
-// ONLY ADD REAL ONES. Every entry must be a genuine quote from a client who agreed to be named (and, if you
-// name a company, a company that agreed to it). An entry is shown on the live site only when `verified` is true.
-// Nothing here is shown on the live site until at least one entry exists, and the section stays hidden until then.
+// The real ones are managed by an admin (Admin > Site content > Testimonials). The server only ever sends quotes the
+// client agreed to, and the section stays hidden until there is at least one.
 //
 //   product : "Salary Advance" | "Personal Loan" | "Installment Loan"   (optional, shown in the slip's top strip)
-//   status  : a loan status such as "disbursed" (optional, shows the same badge clients see on their dashboard)
+//   status  : a loan status such as "disbursed" (optional, shows the same badge clients see on their dashboard; samples only)
 //   outcome : a short fact the client mentions, for example "Approved in 4 hours" (optional)
-//   photo   : a path or URL to a square photo (optional; initials are shown without one)
+//   photo   : a path or URL to a square photo (optional; initials are shown without one; samples only)
+
+import type { TestimonialItem } from "@/lib/siteContent/types";
 
 export interface Testimonial {
   name: string;
@@ -20,10 +21,9 @@ export interface Testimonial {
   photo?: string;
 }
 
-export const TESTIMONIALS: Testimonial[] = [];
-
-/** Verified quotes: the only thing the live site ever shows. */
-export const verifiedTestimonials = (): Testimonial[] => TESTIMONIALS.filter((t) => t.verified);
+/** The published quotes. Each one has the client's agreement (the server leaves out the rest). */
+export const fromContent = (items: TestimonialItem[]): Testimonial[] =>
+  items.filter((t) => t.consent).map((t) => ({ name: t.name, role: t.role, quote: t.quote, verified: true, product: t.product || undefined, outcome: t.outcome || undefined }));
 
 /**
  * Sample quotes for reviewing the design on a developer's machine (?sample=1..4 picks how many).

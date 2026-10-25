@@ -6,7 +6,9 @@ import BrandLogo from "@/components/global/BrandLogo";
 import { MarkMotif, navy } from "@/components/global/brandArt";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActiveSection, useScrollProgress, useScrolled } from "./motion";
-import { APPLY_TO, EMAIL, initials, PHONES, portalFor, SIGN_IN_TO } from "./site";
+import SiteBanner from "./SiteBanner";
+import { useContact } from "@/lib/siteContent/useSiteContent";
+import { APPLY_TO, initials, portalFor, SIGN_IN_TO } from "./site";
 
 // The landing page sections (scroll within the page) and the FAQ (its own page), in the order they are offered.
 const NAV: { label: string; id: string; page?: string }[] = [
@@ -50,6 +52,7 @@ export default function SiteHeader({ home = true, current, skipTo = "#main-conte
   const progress = useScrollProgress();
   const spy = useActiveSection(["home", "products", "testimonials", "about", "contact"]);
   const { user } = useAuth();
+  const contact = useContact();
   const toggleRef = useRef<HTMLButtonElement>(null);
 
   // The testimonials band sits between Products and About and has no link of its own: it counts as Products.
@@ -111,6 +114,7 @@ export default function SiteHeader({ home = true, current, skipTo = "#main-conte
           scrolled || open ? "border-slate-200/80 bg-white/95 shadow-[0_8px_24px_-12px_rgba(15,44,89,0.22)]" : "border-transparent bg-white"
         }`}
       >
+        <SiteBanner />
         <div className={`mx-auto flex max-w-7xl items-center justify-between px-4 transition-[height] duration-300 motion-reduce:transition-none sm:px-6 lg:px-8 ${scrolled ? "h-14" : "h-16"}`}>
           <BrandLogo src="/logo-wordmark.png" height={scrolled ? "2rem" : "2.25rem"} className="transition-[height] duration-300 motion-reduce:transition-none" onClick={goTop} />
 
@@ -153,8 +157,8 @@ export default function SiteHeader({ home = true, current, skipTo = "#main-conte
           {/* Phones: one tap to call, and the menu */}
           <div className="flex items-center gap-1 md:hidden">
             <a
-              href={PHONES[0].href}
-              aria-label={`Call us on ${PHONES[0].label}`}
+              href={contact.phones[0].href}
+              aria-label={`Call us on ${contact.phones[0].label}`}
               className="flex h-[44px] w-[44px] items-center justify-center rounded-lg text-brand-blue transition-colors hover:bg-slate-100"
             >
               <Phone className="h-5 w-5" />
@@ -222,13 +226,13 @@ export default function SiteHeader({ home = true, current, skipTo = "#main-conte
               </div>
 
               <div className="relative mt-5 grid gap-3">
-                <a href={PHONES[0].href} className="flex min-h-[56px] items-center gap-3 rounded-xl bg-white/10 px-3.5 ring-1 ring-white/15 transition-colors hover:bg-white/15">
+                <a href={contact.phones[0].href} className="flex min-h-[56px] items-center gap-3 rounded-xl bg-white/10 px-3.5 ring-1 ring-white/15 transition-colors hover:bg-white/15">
                   <Phone className="h-4 w-4 flex-shrink-0 text-red-300" />
-                  <span className="text-[13px] font-semibold leading-tight">Call us<span className="mt-0.5 block text-[12px] font-normal text-white/80">{PHONES[0].label}</span></span>
+                  <span className="text-[13px] font-semibold leading-tight">Call us<span className="mt-0.5 block text-[12px] font-normal text-white/80">{contact.phones[0].label}</span></span>
                 </a>
-                <a href={`mailto:${EMAIL}`} className="flex min-h-[56px] items-center gap-3 rounded-xl bg-white/10 px-3.5 ring-1 ring-white/15 transition-colors hover:bg-white/15">
+                <a href={`mailto:${contact.email}`} className="flex min-h-[56px] items-center gap-3 rounded-xl bg-white/10 px-3.5 ring-1 ring-white/15 transition-colors hover:bg-white/15">
                   <Mail className="h-4 w-4 flex-shrink-0 text-red-300" />
-                  <span className="min-w-0 text-[13px] font-semibold leading-tight">Email us<span className="mt-0.5 block break-all text-[12px] font-normal text-white/80">{EMAIL}</span></span>
+                  <span className="min-w-0 text-[13px] font-semibold leading-tight">Email us<span className="mt-0.5 block break-all text-[12px] font-normal text-white/80">{contact.email}</span></span>
                 </a>
               </div>
             </div>

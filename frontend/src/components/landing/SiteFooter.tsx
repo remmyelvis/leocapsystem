@@ -4,7 +4,8 @@ import { ArrowUp, LayoutDashboard } from "lucide-react";
 import BrandLogo from "@/components/global/BrandLogo";
 import { MarkMotif, navy } from "@/components/global/brandArt";
 import { useAuth } from "@/contexts/AuthContext";
-import { ADDRESS, APPLY_TO, EMAIL, MAPS_URL, PHONES, portalFor, SIGN_IN_TO } from "./site";
+import { useContact } from "@/lib/siteContent/useSiteContent";
+import { APPLY_TO, portalFor, SIGN_IN_TO } from "./site";
 
 const footerLink = "inline-flex min-h-[40px] items-center text-slate-300 transition-colors hover:text-white md:min-h-[30px]";
 
@@ -20,6 +21,7 @@ function Heading({ children }: { children: ReactNode }) {
 
 export default function SiteFooter({ home = true }: { home?: boolean }) {
   const { user } = useAuth();
+  const contact = useContact();
   const portal = user ? portalFor(user.role) : null;
 
   // On the landing page the section links scroll in place; elsewhere they go back to that section of the landing page.
@@ -100,16 +102,16 @@ export default function SiteFooter({ home = true }: { home?: boolean }) {
             <Heading>Contact</Heading>
             <ul className="text-[14px]">
               <li>
-                <a href={MAPS_URL} target="_blank" rel="noopener noreferrer" className={footerLink}>
-                  {ADDRESS}
+                <a href={contact.mapsUrl} target="_blank" rel="noopener noreferrer" className={footerLink}>
+                  {contact.address}
                 </a>
               </li>
               <li>
-                <a href={`mailto:${EMAIL}`} className={footerLink}>
-                  {EMAIL}
+                <a href={`mailto:${contact.email}`} className={footerLink}>
+                  {contact.email}
                 </a>
               </li>
-              {PHONES.map((p) => (
+              {contact.phones.map((p) => (
                 <li key={p.href}>
                   <a href={p.href} className={footerLink}>
                     {p.label}

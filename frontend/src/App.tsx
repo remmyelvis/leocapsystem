@@ -1,6 +1,9 @@
 import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { IS_DEMO } from './components/demo/demo';
 import DemoToolbox from './components/demo/DemoToolbox';
+import PreviewBar from './components/landing/PreviewBar';
+import SiteContentPage from './pages/admin/site-content/page';
+import SiteContentEditorPage from './pages/admin/site-content/[key]/page';
 import DemoPage from './pages/demo/page';
 import DemoInboxPage from './pages/demo/inbox/page';
 import DemoGuidePage from './pages/demo/guide/page';
@@ -90,6 +93,9 @@ function App() {
         <Route path="settings" element={<Page11 />} />
         <Route path="audit-trail" element={<Page2 />} />
         <Route path="calculators" element={<Page50 />} />
+        {/* The site content editor is not part of the demo build (IS_DEMO is a build-time constant). */}
+        {!IS_DEMO && <Route path="site-content" element={<SiteContentPage />} />}
+        {!IS_DEMO && <Route path="site-content/:key" element={<SiteContentEditorPage />} />}
       </Route>
 
       {/* Dashboard Routes */}
@@ -147,6 +153,7 @@ function App() {
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
     {IS_DEMO && <DemoToolbox />}
+    {!IS_DEMO && <PreviewBar />}
     </>
   );
 }

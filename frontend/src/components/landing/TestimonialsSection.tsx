@@ -4,7 +4,8 @@ import { MarkMotif, navy } from "@/components/global/brandArt";
 import { statusDisplay } from "@/lib/loanStatus";
 import { Reveal } from "./motion";
 import SectionHeader from "./SectionHeader";
-import { loadSamples, verifiedTestimonials, type Testimonial } from "./testimonials";
+import { useSiteContent } from "@/lib/siteContent/useSiteContent";
+import { fromContent, loadSamples, type Testimonial } from "./testimonials";
 
 // Each testimonial is a slip, like the one you get when a loan is paid out: a loan-record strip on top, the quote,
 // then a stub under a perforated tear line. The notches at the tear line are cut out of the paper with a mask, so
@@ -168,7 +169,8 @@ function Ticket({ t, total, sample }: { t: Testimonial; total: number; sample: b
 }
 
 export default function TestimonialsSection() {
-  const real = useMemo(verifiedTestimonials, []);
+  const { testimonials } = useSiteContent();
+  const real = useMemo(() => fromContent(testimonials.items), [testimonials]);
   const [samples, setSamples] = useState<Testimonial[]>([]);
   useEffect(() => {
     if (real.length === 0) loadSamples().then(setSamples);
@@ -229,7 +231,7 @@ export default function TestimonialsSection() {
 
         {import.meta.env.DEV && sample && (
           <p className="mx-auto -mt-8 mb-10 max-w-xl rounded-xl bg-amber-300/10 px-4 py-2.5 text-center text-[13px] leading-relaxed text-amber-100 ring-1 ring-amber-200/30">
-            Preview with sample quotes. This section stays hidden on the live site until real, approved quotes are added to testimonials.ts.
+            Preview with sample quotes. This section stays hidden on the live site until real, approved quotes are published under Admin, Site content.
           </p>
         )}
 

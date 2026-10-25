@@ -701,3 +701,31 @@ class AuditLog(db.Model):
             "new_values": self.new_values,
             "created_at": self.created_at.isoformat() if self.created_at else None
         }
+
+
+class SiteContent(db.Model):
+    """One editable block of the public site's text (see site_content.py). A block with no published text is shown with the
+    text built into the site, so nothing changes until an admin publishes."""
+    __tablename__ = "site_content"
+
+    key = db.Column(db.String(60), primary_key=True)
+    draft = db.Column(db.JSON, nullable=True)  # unpublished changes, if any
+    published = db.Column(db.JSON, nullable=True)  # what visitors see, if anything has been published
+    version = db.Column(db.Integer, nullable=False, default=0)  # number of the published text
+    draft_by = db.Column(db.String(120), nullable=True)
+    draft_at = db.Column(db.DateTime, nullable=True)
+    published_by = db.Column(db.String(120), nullable=True)
+    published_at = db.Column(db.DateTime, nullable=True)
+
+
+class SiteContentVersion(db.Model):
+    """Every text that went live (or the return to the built-in text), so any of them can be brought back."""
+    __tablename__ = "site_content_versions"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    key = db.Column(db.String(60), nullable=False, index=True)
+    version = db.Column(db.Integer, nullable=False)
+    action = db.Column(db.String(20), nullable=False)  # publish | reset
+    data = db.Column(db.JSON, nullable=True)  # null for a reset
+    by_email = db.Column(db.String(120), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

@@ -107,12 +107,17 @@ _DESCRIPTIONS = [
     ("POST", r"/applicant/documents|/documents/upload", "Uploaded an applicant document"),
     ("PATCH", r"/documents/.*(approve|reject)", "Reviewed an applicant document"),
     ("POST", r"/emails", "Sent an email"),
+    ("PUT", r"/site-content/([^/]+)/draft", r"Saved a draft of the site content: \1"),
+    ("POST", r"/site-content/([^/]+)/publish", r"Published the site content: \1"),
+    ("POST", r"/site-content/([^/]+)/discard", r"Discarded the unpublished changes to the site content: \1"),
+    ("POST", r"/site-content/([^/]+)/reset", r"Put the site content back to the built-in text: \1"),
+    ("POST", r"/site-content/([^/]+)/restore/", r"Brought an earlier version of the site content back as a draft: \1"),
 ]
 
 _ENTITY_TYPES = [
     ("/applications", "Application"), ("/application/", "Application"), ("/auth/applicant", "Applicant"),
     ("/applicants", "Applicant"), ("/auth/users", "User"), ("/documents", "Document"), ("/companies", "Company"),
-    ("/company", "Company"), ("/emails", "Email"), ("/cron", "System"),
+    ("/company", "Company"), ("/emails", "Email"), ("/cron", "System"), ("/site-content", "Site content"),
 ]
 
 

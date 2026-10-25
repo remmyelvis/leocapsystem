@@ -25,9 +25,11 @@ import {
   History,
   Search,
   Calculator,
+  LayoutTemplate,
 } from "lucide-react";
 import type { UserRole } from "@/types/user";
 import { Tip } from "@/components/ui/tooltip";
+import { IS_DEMO } from "@/components/demo/demo";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -99,6 +101,8 @@ const navItems = [
     typeParam: null,
     exact: true,
   },
+  // The public pages are edited on the live site only: the demo has no editor.
+  ...(IS_DEMO ? [] : [{ href: "/admin/site-content", label: "Site content", icon: LayoutTemplate, typeParam: null, exact: false }]),
   {
     href: "/admin/settings",
     label: "Admin Panel",

@@ -5,8 +5,8 @@ import SiteHeader from "@/components/landing/SiteHeader";
 import SiteFooter from "@/components/landing/SiteFooter";
 import { MarkMotif, navy } from "@/components/global/brandArt";
 import { Reveal } from "@/components/landing/motion";
-import { ADDRESS, EMAIL, MAPS_URL, PHONES } from "@/components/landing/site";
-import { FAQS, TOPICS, type Faq, type Topic } from "@/components/faq/faqData";
+import { TOPICS, useFaqs, type Faq, type Topic } from "@/components/faq/faqData";
+import { useContact } from "@/lib/siteContent/useSiteContent";
 
 type Filter = "All" | Topic;
 
@@ -77,20 +77,22 @@ function Item({ faq, open, onToggle }: { faq: Faq; open: boolean; onToggle: () =
 
 export default function FaqPage() {
   const { hash } = useLocation();
+  const faqs = useFaqs();
+  const contact = useContact();
   const [query, setQuery] = useState("");
   const [topic, setTopic] = useState<Filter>("All");
   const [open, setOpen] = useState<Set<string>>(new Set());
 
   const q = query.trim().toLowerCase();
   const results = useMemo(
-    () => FAQS.filter((f) => (topic === "All" || f.topic === topic) && (!q || `${f.q} ${f.text}`.toLowerCase().includes(q))),
-    [q, topic]
+    () => faqs.filter((f) => (topic === "All" || f.topic === topic) && (!q || `${f.q} ${f.text}`.toLowerCase().includes(q))),
+    [faqs, q, topic]
   );
   const counts = useMemo(() => {
-    const c: Record<string, number> = { All: FAQS.length };
-    TOPICS.forEach((t) => (c[t] = FAQS.filter((f) => f.topic === t).length));
+    const c: Record<string, number> = { All: faqs.length };
+    TOPICS.forEach((t) => (c[t] = faqs.filter((f) => f.topic === t).length));
     return c;
-  }, []);
+  }, [faqs]);
 
   const toggle = (id: string) =>
     setOpen((prev) => {
@@ -112,8 +114,8 @@ export default function FaqPage() {
   }, []);
   useEffect(() => {
     const id = hash.slice(1);
-    if (id && FAQS.some((f) => f.id === id)) jumpTo(id);
-  }, [hash, jumpTo]);
+    if (id && faqs.some((f) => f.id === id)) jumpTo(id);
+  }, [hash, jumpTo, faqs]);
 
   // Search engines read the questions and answers as structured data.
   useEffect(() => {
@@ -122,15 +124,15 @@ export default function FaqPage() {
     el.text = JSON.stringify({
       "@context": "https://schema.org",
       "@type": "FAQPage",
-      mainEntity: FAQS.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.text } })),
+      mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.text } })),
     });
     document.head.appendChild(el);
     return () => {
       document.head.removeChild(el);
     };
-  }, []);
+  }, [faqs]);
 
-  const popular = FAQS.filter((f) => f.popular);
+  const popular = faqs.filter((f) => f.popular);
   const allOpen = results.length > 0 && results.every((f) => isOpen(f.id));
   const grouped = TOPICS.map((t) => ({ topic: t, items: results.filter((f) => f.topic === t) })).filter((g) => g.items.length > 0);
 
@@ -247,7 +249,7 @@ export default function FaqPage() {
                 >
                   Clear search
                 </button>
-                <a href={`mailto:${EMAIL}`} className="inline-flex min-h-[44px] items-center rounded-xl bg-brand-blue px-4 text-[14px] font-semibold text-white hover:bg-[#0b2246]">
+                <a href={`mailto:${contact.email}`} className="inline-flex min-h-[44px] items-center rounded-xl bg-brand-blue px-4 text-[14px] font-semibold text-white hover:bg-[#0b2246]">
                   Email us
                 </a>
               </div>
@@ -277,29 +279,29 @@ export default function FaqPage() {
               <h2 className="text-xl font-extrabold tracking-tight text-slate-900">Still have a question?</h2>
               <p className="mt-1.5 text-[15px] text-slate-700">Our team is happy to help. We typically respond within 1 business day.</p>
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                <a href={`mailto:${EMAIL}`} className="group flex items-start gap-3 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 transition-colors hover:bg-white hover:ring-brand-blue/30">
+                <a href={`mailto:${contact.email}`} className="group flex items-start gap-3 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 transition-colors hover:bg-white hover:ring-brand-blue/30">
                   <Mail className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand-blue" />
                   <span>
                     <span className="block text-[12px] font-bold uppercase tracking-wider text-slate-600">Email</span>
-                    <span className="mt-0.5 block break-all text-[14px] font-semibold text-slate-900 group-hover:text-brand-blue">{EMAIL}</span>
+                    <span className="mt-0.5 block break-all text-[14px] font-semibold text-slate-900 group-hover:text-brand-blue">{contact.email}</span>
                   </span>
                 </a>
                 <div className="flex items-start gap-3 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
                   <Phone className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand-blue" />
                   <span>
                     <span className="block text-[12px] font-bold uppercase tracking-wider text-slate-600">Phone</span>
-                    {PHONES.map((p) => (
+                    {contact.phones.map((p) => (
                       <a key={p.href} href={p.href} className="block py-0.5 text-[14px] font-semibold text-slate-900 hover:text-brand-blue">
                         {p.label}
                       </a>
                     ))}
                   </span>
                 </div>
-                <a href={MAPS_URL} target="_blank" rel="noopener noreferrer" className="group flex items-start gap-3 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 transition-colors hover:bg-white hover:ring-brand-blue/30">
+                <a href={contact.mapsUrl} target="_blank" rel="noopener noreferrer" className="group flex items-start gap-3 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 transition-colors hover:bg-white hover:ring-brand-blue/30">
                   <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand-blue" />
                   <span>
                     <span className="block text-[12px] font-bold uppercase tracking-wider text-slate-600">Visit</span>
-                    <span className="mt-0.5 block text-[14px] font-semibold text-slate-900 group-hover:text-brand-blue">{ADDRESS}</span>
+                    <span className="mt-0.5 block text-[14px] font-semibold text-slate-900 group-hover:text-brand-blue">{contact.address}</span>
                   </span>
                 </a>
               </div>

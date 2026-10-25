@@ -71,6 +71,9 @@ def create_app():
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(audit_logs)
 
+    from website.site_content import site_content_bp
+    app.register_blueprint(site_content_bp)
+
     from website.audit_hook import register_audit_hook
     register_audit_hook(app)
 
@@ -101,6 +104,17 @@ def create_app():
                 # another worker may have added it a moment ago; only complain if it is still missing
                 if column not in {c["name"] for c in inspect(db.engine).get_columns("applications")}:
                     app.logger.exception("Could not add applications.%s", column)
+
+    # The site-content tables are new: create them once if they are missing (production has no create_all; its database user may create tables)
+    with app.app_context():
+        from website.models import SiteContent, SiteContentVersion
+        for table in (SiteContent.__table__, SiteContentVersion.__table__):
+            try:
+                table.create(db.engine, checkfirst=True)
+            except Exception:
+                # another worker may have created it a moment ago; only complain if it is still missing
+                if not inspect(db.engine).has_table(table.name):
+                    app.logger.exception("Could not create the %s table", table.name)
 
     
     from flask import request, g

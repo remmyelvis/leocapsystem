@@ -72,6 +72,10 @@ const DOC_SETS = {
   },
 } as const;
 
+/** The checklist as one plain sentence group, for search and for search engines. */
+export const DOC_SUMMARY =
+  "Everyone uploads a national ID copy and a KRA PIN certificate on their profile. Staff of a partner company also upload their employment contract. For a Personal Loan you also add a bank statement and an M-Pesa statement (6 months) and a payslip if you are employed.";
+
 function DocList({ title, items }: { title: string; items: readonly string[] }) {
   return (
     <div>
@@ -138,6 +142,9 @@ const STATUS_HELP: [string, string][] = [
   ["declined", "We could not approve this application."],
   ["disbursed", "The money has been sent. Your dashboard shows what to repay and the due date."],
 ];
+
+/** The status names as plain text, for search and for search engines. */
+export const STATUS_SUMMARY = STATUS_HELP.map(([key]) => statusDisplay(key).label).join(", ") + ".";
 
 export function StatusGuide() {
   return (

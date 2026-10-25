@@ -22,7 +22,8 @@ import SiteHeader from "@/components/landing/SiteHeader";
 import SiteFooter from "@/components/landing/SiteFooter";
 import SectionHeader from "@/components/landing/SectionHeader";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
-import { ADDRESS, APPLY_TO, EMAIL, MAPS_URL, PHONES } from "@/components/landing/site";
+import { APPLY_TO } from "@/components/landing/site";
+import { useContact } from "@/lib/siteContent/useSiteContent";
 
 // ─── Shared pieces ────────────────────────────────────────────────────────────
 
@@ -406,25 +407,26 @@ const fieldClass =
   "w-full min-h-[48px] rounded-xl border border-slate-200 bg-white px-4 py-3 text-[15px] text-slate-900 placeholder:text-slate-500 transition-[border-color,box-shadow] hover:border-slate-300 focus:border-brand-blue focus:outline-none focus:ring-4 focus:ring-brand-blue/10";
 
 function ContactSection() {
+  const contact = useContact();
   const [form, setForm] = useState({ name: "", email: "", message: "" });
 
   const contactDetails = [
     {
       icon: MapPin,
       label: "Address",
-      content: <a href={MAPS_URL} target="_blank" rel="noopener noreferrer" className="inline-block py-1.5 hover:text-brand-blue hover:underline">{ADDRESS}</a>,
+      content: <a href={contact.mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-block py-1.5 hover:text-brand-blue hover:underline">{contact.address}</a>,
     },
     {
       icon: Mail,
       label: "Email",
-      content: <a href={`mailto:${EMAIL}`} className="inline-block py-1.5 hover:text-brand-blue hover:underline">{EMAIL}</a>,
+      content: <a href={`mailto:${contact.email}`} className="inline-block py-1.5 hover:text-brand-blue hover:underline">{contact.email}</a>,
     },
     {
       icon: Phone,
       label: "Phone",
       content: (
         <>
-          {PHONES.map((p, i) => (
+          {contact.phones.map((p, i) => (
             <span key={p.href}>
               {i > 0 && " | "}
               <a href={p.href} className="inline-block py-1.5 hover:text-brand-blue hover:underline">{p.label}</a>
@@ -441,7 +443,7 @@ function ContactSection() {
     const name = form.name.trim();
     const subject = `Message from ${name}`;
     const body = `${form.message.trim()}\n\n${name}\n${form.email.trim()}`;
-    window.open(`mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, "_self");
+    window.open(`mailto:${contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, "_self");
   };
 
   return (
@@ -476,10 +478,10 @@ function ContactSection() {
                 loading="lazy"
                 allowFullScreen
                 referrerPolicy="no-referrer-when-downgrade"
-                src="https://maps.google.com/maps?q=Applewood+Adams,+Ngong+Road,+Nairobi&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                src={contact.mapEmbedUrl}
               />
               <a
-                href={MAPS_URL}
+                href={contact.mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Open in Google Maps"
