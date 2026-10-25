@@ -154,12 +154,14 @@ These changes were made **directly to the live data**, not just to the program. 
 | **The PDF** | The button stayed greyed out until two dates were entered, with no explanation. | It follows what you selected: the loan and the dates. For "All time" no dates are needed. |
 | **Checking details** | Not possible. | Sort newest or oldest first. "Clear filters" resets everything. |
 
-### 5.3 Deleting a wrong line from the statement (25 Oct)
+### 5.3 Correcting or deleting a wrong line on the statement (25 Oct)
 
 | Before | After |
 |---|---|
 | A payment, interest charge or fee entered by mistake could not be removed. | Every line has a **delete** button. Before anything changes, the platform shows **exactly what will happen** (for example: "Balance owed: KES 6,800 to KES 9,800", "Loan status: Paid to Unpaid", "2 later lines will be re-balanced"). You can add a reason. The loan's balance, its status and the running balance on every later line are corrected, and the change is written to the loan's history and the audit trail. |
-| | **Protected:** the two opening lines of a loan (the loan itself and its first interest) cannot be deleted; change the loan's terms instead. A **written-off** loan's statement is closed. |
+| A wrong amount, date or wording could only be fixed by deleting the line and entering it again. | Every line also has an **edit** (pencil) button. You can change the **amount**, the **date and time** and the **description**. While you type, the platform shows what will happen before you save: the new balance owed, whether the loan's status changes, and how many other lines are re-balanced. For rollover interest the loan's repayment total follows too. A payment's wording follows its amount ("Partially paid 3000" becomes "Partially paid 2500") unless you write something else. You can add a reason, and the change is written to the loan's history and the audit trail. |
+| | **Safeguards:** a payment cannot be raised above what the borrower owes; a line keeps its kind (a payment stays a payment); the date cannot be in the future or before the loan was applied for; and moving a date puts the line in its new place and corrects the balances of the lines it moved past. |
+| | **Protected:** the two opening lines of a loan (the loan itself and its first interest) cannot be edited or deleted; change the loan's terms instead. A **written-off** loan's statement is closed. |
 
 ### 5.4 Add Penalty (loan page) (25 Oct)
 
@@ -270,6 +272,7 @@ These weaknesses were found by reviewing the program, not because of a reported 
 | **Admin screen layouts** | Text was cut off. Tables were unusable on phones. Names appeared in mixed capitals. | Every admin screen fits every screen size. Long lists become cards on small screens. Names look consistent. | 22 Oct |
 | **Dashboard** | Some figures were cut off. | A slim, compact dashboard with whole-shilling figures that fit. | 22 Oct |
 | **Manage Applicants** | The page buttons did not really page. | Paging works. You can sort. | 22 Oct |
+| **Uploaded documents on the applicant's page** | Every document showed both **Accept** and **Reject**, even after you had accepted it, and long file names were squeezed down to a few letters. | A document you have accepted shows **Accepted** (with your note) and no buttons; only new documents show Accept and Reject. File names get the full width of the card (up to two lines), with the buttons on their own row below. The review prompts now say what Reject really does: it **deletes the document** and emails the applicant to upload a new one. | 25 Oct |
 | **Scrolling on the applicant's details page** | After the statement tool was added (25 Oct), the whole screen could scroll up into blank space, so the content seemed to cut off partway down and the top bar disappeared. On phones, large amounts in the statement totals ran outside their boxes. | The page scrolls only inside its own area, the top bar stays in place, and the totals fit on every screen size, even for amounts in the millions. The same safeguard now protects the HR, finance and applicant portals. | 25 Oct |
 | **Financial Analysis page** | Its upload, analysis, chat and PDF buttons contacted the wrong place on the live site. | They work against the right server. A "no transactions" result is shown as a message, not as a corrupt PDF download. | 22 Oct |
 
@@ -339,7 +342,8 @@ These were looked at and **left unchanged on purpose**. They are listed so you k
 - **A borrower's "Amount Paid"** counts only payments recorded against that loan. For some older loans, earlier payments may not be linked, so the figure can look lower than what was really paid.
 - **New application emails to HR** have been tested and the sending mailbox has been proven (a test email arrived), but a real application notice has not yet been seen arriving in live use. This is parked until you want to check it.
 - **Penalties and the 15% collection fee** increase what a borrower owes, but are **not included** in the dashboard's "Interest Income" and "Fee Revenue", nor in a report's "Expected back" figure. They do appear in "Outstanding", the statement and the overdue figures. We can add a separate "Penalties and collection fees" figure if you want one.
-- **The old "Reverse transaction" feature** (not shown on any screen) is broken and unused. The new delete-a-line tool replaces it.
+- **The old "Reverse transaction" feature** (not shown on any screen) is broken and unused. The new edit and delete tools replace it.
+- **Rejecting an uploaded document deletes it for good** (the file and its record) and emails the applicant to upload a new one. There is no "undo"; the prompt now says so.
 - **Bulk-uploaded applicants** can use any company code, and any HR user can bulk-create applicants.
 - **The server does not yet refuse to start without a proper secret key.** The live server does have one.
 
@@ -351,7 +355,7 @@ Newest first. When a change is made, a new line goes at the top.
 
 | Date | What changed | Section |
 |---|---|---|
-| **25 Oct** | Borrower is emailed about a penalty (with an opt-out tick box). **Add Penalty** on the loan page. **Delete a wrong line** from a statement. **Applicant Statement** with filters, totals and a PDF that follows them. **Overdue card** is clickable. Fixed a scrolling fault on the applicant details page. | 5, 7, 11 |
+| **25 Oct** | Borrower is emailed about a penalty (with an opt-out tick box). **Add Penalty** on the loan page. **Delete a wrong line** from a statement. **Applicant Statement** with filters, totals and a PDF that follows them. **Overdue card** is clickable. Fixed a scrolling fault on the applicant details page. **Edit a statement line** (amount, date, description). Uploaded-document cards fixed. | 5, 7, 11 |
 | **23 Oct** | Public website redesign (same wording): menu bar, footer, home page, calmer statistics. New **FAQ** page. Testimonials section built (hidden until real quotes). | 13 |
 | **22 Oct** | New sign-in, forgot-password and sign-up pages. Safer delete buttons (the old "Suspend" really suspends). Full audit trail. Every email recorded. Calculators fixed. Month-by-month "Mark Paid" with preview. "Fully repaid" email on every route. Finance and team notices. Admin, HR, finance and applicant portals made consistent and phone-friendly. | 4, 7, 10, 11, 12, 14 |
 | **21 Oct** | "Mark as Paid" fixed. Delinquent loans handled. **Daily reminders switched on.** Forgot password works. HR told of new applications. Server sets the starting interest rate. **Loan limit** added. Pop-up messages work. Security fixes (profile, uploads, cookie, links). HR and finance work for any company. "Amend Amount" built. HR report PDF and Excel fixed. | 4, 7, 8, 9, 10 |
