@@ -233,7 +233,7 @@ export default function FinancialAnalysisPage() {
                     <div className="flex-[2] bg-blue-50 p-4 rounded-lg border border-blue-100">
                       <p className="text-blue-900 text-[13px] font-medium mb-2">Score Factors</p>
                       <ul className="space-y-2">
-                        {currentData.details?.map((d: any, i: number) => (
+                        {(currentData.scoring_details ?? currentData.details)?.map((d: any, i: number) => (
                           <li key={i} className="flex justify-between text-sm">
                             <span className="text-slate-700">{d.factor}</span>
                             <span className={`font-bold ${String(d.impact).startsWith('+') ? 'text-emerald-600' : 'text-red-500'}`}>{d.impact}</span>

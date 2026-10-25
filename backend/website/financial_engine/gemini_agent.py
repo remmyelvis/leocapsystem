@@ -23,7 +23,7 @@ def generate_statement_narrative(applicant_id, txns, mpesa_metrics, credit_analy
         context = {
             "metrics": mpesa_metrics,
             "credit_score": credit_analysis.get("score"),
-            "risk_factors": credit_analysis.get("details", []),
+            "risk_factors": credit_analysis.get("scoring_details", []),
             "transactions": [{"date": str(t.date), "desc": t.description, "in": t.money_in, "out": t.money_out, "bal": t.balance} for t in txns[:200]] # Limit to recent 200 to save tokens/time
         }
         
