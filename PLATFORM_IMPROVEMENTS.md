@@ -1,6 +1,6 @@
 # Leocap Invest Platform: What Has Changed
 
-**For:** the owner  
+**For:** Elvis Karemi (owner)  
 **Covers:** 15 October 2026 to today  
 **Last updated:** 25 October 2026
 
