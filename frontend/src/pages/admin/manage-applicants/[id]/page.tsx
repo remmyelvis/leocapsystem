@@ -616,9 +616,21 @@ export default function ApplicantDetailsPage() {
                   <p className="font-bold text-slate-800 text-sm">
                     {item.application.loan_type?.replace(/_/g, ' ')} <span className="text-xs text-slate-500 font-normal">#{item.application.id?.substring(0,8)}</span>
                   </p>
-                  <p className="text-xs text-slate-500 mt-1 flex gap-3">
+                  <p className="text-xs text-slate-600 mt-1 flex flex-wrap gap-x-3 gap-y-1">
                     <span>Applied: {new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(item.application.amount_applied || 0))}</span>
                     <span>Status: <span className="font-bold text-slate-700 capitalize">{item.application.loan_status?.replace(/_/g, ' ')}</span></span>
+                    {(item.application.disbursed_at || item.application.loan_status === "disbursed") && (
+                      <span>
+                        Disbursed:{" "}
+                        {item.application.disbursed_at ? (
+                          <span className="font-bold text-slate-700">
+                            {new Date(item.application.disbursed_at).toLocaleDateString("en-KE", { day: "2-digit", month: "short", year: "numeric" })}
+                          </span>
+                        ) : (
+                          <span className="italic">date not recorded</span>
+                        )}
+                      </span>
+                    )}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">

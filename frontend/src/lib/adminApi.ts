@@ -76,6 +76,7 @@ export interface ApplicationDetails {
   repayment_status?: string;
   outstanding_balance?: string;
   balance_owed?: number | string; // what is owed right now (the loan page only)
+  disbursed_at?: string | null; // when the loan was disbursed; null for loans that were disbursed before this was recorded
   created_at?: string;
   documents?: ApplicationDocument[];
 }

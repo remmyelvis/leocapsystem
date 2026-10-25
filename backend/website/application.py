@@ -1818,15 +1818,31 @@ def _amount_paid_by_app(app_ids):
     return {app_id: float(total or 0) for app_id, total in rows}
 
 
+def _disbursed_at_by_app(app_ids):
+    """{application id: when it was disbursed}. A loan keeps no disbursement date of its own; its change history does:
+    the latest change INTO "disbursed" (saving a loan that is already disbursed does not count, so the date does not
+    move). Loans disbursed before the history existed have no entry."""
+    if not app_ids:
+        return {}
+    rows = db.session.query(ApplicationAudit.application_id, func.max(ApplicationAudit.changed_at)).filter(
+        ApplicationAudit.application_id.in_(app_ids),
+        ApplicationAudit.field_name == "loan_status",
+        func.lower(ApplicationAudit.new_status) == "disbursed",
+        or_(ApplicationAudit.old_status.is_(None), func.lower(ApplicationAudit.old_status) != "disbursed"),
+    ).group_by(ApplicationAudit.application_id).all()
+    return {application_id: changed_at for application_id, changed_at in rows}
+
+
 def _applications_with_bio_data(apps):
     """Loans as the list pages show them: the loan plus the applicant's details."""
     paid = _amount_paid_by_app([a.id for a in apps])
+    disbursed = _disbursed_at_by_app([a.id for a in apps])
     result = []
     for app in apps:
         applicant = Applicant.query.get(app.applicant_id)
         if applicant:
             result.append({
-                "application": {**app.to_dict(), "amount_paid": paid.get(app.id, 0.0)},
+                "application": {**app.to_dict(), "amount_paid": paid.get(app.id, 0.0), "disbursed_at": disbursed.get(app.id)},
                 "bio_data": applicant.to_dict()
             })
     return result
@@ -1885,6 +1901,7 @@ def get_one_application(application_id):
         "application": {
             **app.to_dict(),
             "amount_paid": _amount_paid_by_app([app.id]).get(app.id, 0.0),
+            "disbursed_at": _disbursed_at_by_app([app.id]).get(app.id),
             "balance_owed": float(_balance_owed(app)) if open_loan else 0.0,
         },
         "bio_data": applicant.to_dict() if applicant else {}
