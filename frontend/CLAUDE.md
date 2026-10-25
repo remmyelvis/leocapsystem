@@ -22,21 +22,23 @@ src/
 │   ├── login/ register/ forgot-password/ privacy-policy/
 │   ├── dashboard/         # applicant portal (apply, applications, profile)
 │   ├── admin/             # admin portal (applicants, staff, companies,
-│   │                      #   audit-trail, reports, calculators, settings)
+│   │                      #   audit-trail, reports, calculators, settings, site-content)
 │   ├── hr/                # HR portal (dashboard, applications, apply, profile)
 │   └── finance/           # finance portal (applications, hr-loans, my-loans)
 ├── components/            # global/ (shell, navbar), loans/, profile/, ui/
 ├── contexts/              # AuthContext
 ├── store/                 # Zustand stores (auth, loan, admin, profiles, ...)
 ├── repositories/ services/ hooks/ schemas/ types/ configs/
-└── lib/                   # API clients, loan math, company helpers
+├── lib/                   # API clients, loan math, company helpers
+└── lib/siteContent/       # the editable text of the public pages (defaults, text format, hook)
 
 ## Backend API Endpoints
 
 Base URL: same origin (`/api`, proxied by Vite in dev). Some paths below are
 from the original docs; the authoritative list is ../backend/website/*.py
 (blueprint prefixes: /api/auth/users, /api/auth/applicant, /api/application,
-/api/applicant, /api/reports, /api/dashboard, /api/audit-logs, /api/cron, /api).
+/api/applicant, /api/reports, /api/dashboard, /api/audit-logs, /api/cron,
+/api/site-content, /api).
 
 ### Auth (Admin/HR/Finance)
 

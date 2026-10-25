@@ -9,6 +9,8 @@ SQL to bring the live loan-app database in line with `backend/website/models.py`
 | `01_precheck_readonly.sql` | Read-only. Row counts and a check that every money value in `applications` is a clean number. All "bad" counts must be 0. |
 | `02_loan_app_upgrade.sql` | Creates 5 tables, adds 11 columns, converts 8 money columns from text to `numeric(12,2)`. One transaction (all or nothing), re-runnable, drops nothing. |
 | `03_verify_schema_readonly.sql` | Read-only. Compares the live schema with the models. Expect 0 rows. |
+| `04_disbursement_date.sql` | Adds `applications.disbursement_date` (the app also does this itself at startup). |
+| `05_site_content.sql` | Creates the two tables for the editable public pages (the app also does this itself at startup). Only needed if that did not happen. |
 
 ## Important: who owns the tables
 

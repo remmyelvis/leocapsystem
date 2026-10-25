@@ -1192,5 +1192,34 @@ admin, hr, finance
 
 The unpaid, disbursed loans of one company for one month as a one-page landscape PDF (`CompanyReportPDFGenerator.generate_repayment_report` in `report_service.py`) or as an Excel sheet: the same format and the same defaults for admin and HR/finance, and for every company. A long PDF list is scaled down to stay on one page. The payment instructions name the Leocap account, except the Nakama routes, which name Nakama's own account. 404 with `{"message": ...}` when nothing is due.
 
+## Site content (the editable words of the public pages)
 
+Base url
 
+```http
+/api/site-content
+```
+
+The public pages read their editable text from here and fall back to the text built into the frontend (`frontend/src/lib/siteContent/defaults.ts`) for anything not published, so a new site shows exactly what it always showed. Blocks: `contact`, `banner`, `testimonials`, `faq`. Each block has a **draft**, a **published** copy and a version history (`site_content`, `site_content_versions`; the two tables are created at startup, like the other additions, because production never runs `create_all`). The blocks are checked on every save and again on publish (`website/site_content.py`: types, lengths, at most 300 KB per request, links limited to `/path`, `https:`, `mailto:` and `tel:`, only the known `{{placeholders}}`). Answers are written in a small text format and drawn by the frontend as its own components, never as HTML.
+
+#### Endpoints
+
+```http
+    GET    /                        // public: the published blocks. Cached 60 s (ETag). Testimonials without the client's agreement are left out on the server.
+    GET    /?draft=1                // the same with the drafts, for a signed-in admin only (the "Preview on the site"); never cached
+    GET    /admin                   // every block with its status (built-in / published / draft)
+    GET    /admin/<key>             // one block with its draft and published copy
+    PUT    /<key>/draft             // { "data": {...}, "expected_draft_at": "..." }  400 lists every problem; 409 if someone saved a draft since
+    POST   /<key>/publish           // the saved draft goes live (a history row is written)
+    POST   /<key>/discard           // drop the draft
+    POST   /<key>/reset             // back to the built-in text (the history keeps the old text)
+    GET    /<key>/history           // the last 40 versions
+    POST   /<key>/restore/<version> // an earlier published version becomes the draft
+```
+
+#### Permissions
+```http
+GET /: everyone.  Everything else: admin, super_admin.
+```
+
+In `DEMO_MODE=True` all the admin endpoints answer 404 and the demo frontend build has no editor. Every write is also an Audit Trail line ("Site content" entity). Frontend: `Admin > Site content` (`frontend/src/pages/admin/site-content/`).

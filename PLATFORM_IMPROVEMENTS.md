@@ -57,6 +57,7 @@ This document lists, in plain language, every improvement and correction made to
 9. **The admin screens are safer and easier.** The old "Suspend" button deleted people and their loans. It now only suspends.
 10. **New tools for you:** a clickable **Overdue** card, a **searchable applicant statement** with a per-line delete, and **Add Penalty**.
 11. **The public website was redesigned** (same wording), with a new FAQ page.
+12. **You can now edit parts of the public website yourself** (Section 13.1): contact details, an announcement banner, testimonials and the FAQs, with a private draft, a preview, one-click publishing and a history.
 
 ---
 
@@ -309,8 +310,35 @@ All the **wording is unchanged**; the design, links and readability were improve
 | **Menu bar** | Basic. | Compact; a thin progress line; a **Dashboard** button when you are signed in; on phones, a full menu and a one-tap **call** button. | 23 Oct |
 | **Footer** | A plain block with dead links. | Working links, **Apply Now / Sign In** buttons, and a **back-to-top** button. | 23 Oct |
 | **FAQ page** | None. | A new **FAQs** page: search, topics, a checklist of documents for each loan type, a guide to loan statuses, and a link to any single answer. It deliberately quotes **no loan limits, rates or fees** (see Section 15). | 23 Oct |
-| **Testimonials** | Three unverified placeholder quotes existed in the program (they were never shown to visitors). | A designed testimonials section is **ready but hidden**. It shows **only real, approved quotes** that you supply. None are shown today. | 23 Oct |
+| **Testimonials** | Three unverified placeholder quotes existed in the program (they were never shown to visitors). | A designed testimonials section is **ready but hidden**. It shows **only real, approved quotes**, which you add yourself under **Site content** (Section 13.1). None are shown today. | 23 Oct |
+| **Editing the words** | Every word, phone number and email on the public pages was fixed in the program: a change meant asking a developer. | An admin can edit the contact details, an announcement banner, the testimonials and the FAQs on a new **Site content** screen (Section 13.1). Until you publish something, every page says exactly what it said before. | 25 Oct |
 | **Readability** | Some grey text was too faint to read comfortably. | All public and sign-in text was measured and meets the standard readability test (WCAG AA). | 22-23 Oct |
+
+
+### 13.1 Editing the public pages yourself (Admin menu, **Site content**) (25 Oct)
+
+An admin can change some of the words on the public pages without a developer. **Nothing a visitor sees changes until you press Publish.**
+
+| Section | What it controls |
+|---|---|
+| **Contact details** | The email, phone numbers, address and map link. They are used in the page header, the footer, the home page contact section, the sign-in and sign-up pages, and the FAQ answer "How do I reach you?". Change them once and all of those follow. |
+| **Announcement banner** | A coloured notice across the top of the home and FAQ pages (for example planned maintenance), with an optional link. Three colours: information, warning, good news. |
+| **Testimonials** | Client quotes. A quote is shown to visitors **only when you tick that the client agreed to be quoted by name**; quotes without the tick stay private and never leave the server. The section stays hidden until at least one is ticked and published. |
+| **FAQs** | Edit, add, remove and reorder questions; choose the topic and which ones are "popular". Answers can have bold text, links, numbered steps, bullet points and buttons, with a toolbar and a live preview. Two ready-made pieces (the document checklist and the loan-status guide) can be added to an answer and always follow the platform's real rules. |
+
+**How it works**
+
+1. Open a section and change it. **Save draft** keeps it private.
+2. **Preview on the site** opens the real page with your draft in a new tab (a dark ribbon says you are previewing; only you see it). **Exit preview** ends it.
+3. **Publish** makes it live. Visitors see it within about a minute.
+4. **History** lists every published version, who published it and when. **Restore as draft** brings an old one back (it goes live only when you publish it). **Discard changes** throws away an unpublished draft. **Reset to built-in text** returns that section to what the program shipped with.
+5. Every save, publish, discard and reset appears in the **Audit Trail** in plain words.
+
+**Safety.** The editor accepts plain text only, never code. Links may point to a page on this site or start with https://, mailto: or tel:; anything else is refused with a plain explanation, and so is a missing answer, a duplicate link name and so on. If two admins edit the same section, the second to save is told and must load the latest version. Unsaved edits are also kept in the browser tab, so clicking to another admin screen does not lose them, and closing the tab warns first. It is **not available in the demo**.
+
+**Not editable here yet:** the home page headings, hero numbers, product cards and "How it works" steps, and the Privacy Policy (these are the planned next step and need your go-ahead), and pictures (they cannot be uploaded from this screen).
+
+**What stays exactly the same:** with nothing published, every public page was checked against the pages as they were before this change and is identical. The one difference is invisible to visitors: the plain-text copy of three FAQ answers that search engines read ("How do I apply?", "How do I track my application...", "I forgot my password") is now built from the answer itself, so its wording is slightly different.
 
 ---
 
@@ -333,7 +361,7 @@ These need your input. Nothing here is broken, but each affects what customers o
 | # | The question | Why it matters |
 |---|---|---|
 | 1 | **What should the public numbers say?** The home page says a Salary Advance is "up to 50% of net salary", and a Personal Loan has "1 month tenure" and is "up to KES 500,000". The platform's own calculator gives about **30%** of average salary for a salary advance, the personal loan form offers a 1-month or a 6-month option, and no KES 500,000 limit exists in the program. | Customers could be promised more than the platform will offer them. The FAQ avoids numbers until you decide. |
-| 2 | **Real testimonials.** Send quotes with the person's permission, and they can be added. | The section stays hidden until then. |
+| 2 | **Real testimonials.** Add them yourself under Site content, Testimonials (Section 13.1), once the person has agreed to be quoted by name. | The section stays hidden until then. |
 | 3 | **Licence or registration line in the footer.** Add a registration number if the business has one. | Lenders are often expected to show it. |
 | 4 | **Nakama repayment reports show two different bank accounts.** The report HR downloads names a different account holder than the report the admin downloads. This was kept as it was. | Borrowers could be told to pay the wrong account. Please confirm which is correct. |
 | 5 | **Should interest be chargeable on a delinquent loan?** It is blocked today because the 15% fee and the 10% charge were already added. | Your rule decides whether it is allowed. |
@@ -346,6 +374,7 @@ These need your input. Nothing here is broken, but each affects what customers o
 | 12 | **Please read the new loan-terms wording and confirm it.** It is in the application forms (Salary Advance, HR, Finance, Personal Loan) and the loan agreement in the debt dossier. Things for you to decide: (a) The terms already had a **rescheduling fee** (10% of the instalment or KES 1,500, whichever is higher). The platform does not charge it automatically; the new 10% late-payment charge is a separate item worked out on the whole balance with no KES 1,500 minimum. (b) The 15% recovery fee line says it follows a **demand notice**, but the platform adds it automatically on the 8th day overdue. (c) The **Personal Loan** terms do not mention the 15% recovery fee at all (only for returned cheques), yet the platform charges it. (d) The **company MOU** (clause 9) still describes only the 15% fee. It was left alone: the MOU is a signed contract with each employer. (e) Loans applied for **before 26 Oct 2026** are not charged the 10%. | Charging something the signed terms do not state can be disputed. These wording choices are a legal matter, so a lawyer should look at them. |
 | 13 | **Your first two clients' names are built into some screens.** The Admin Applications page has "Mark Nakama Paid" and "Mark Ideon Paid", the salary-advance form assumes Ideon unless told otherwise, and some labels name them. A third company works, and most screens show generic labels for it, but not all. | Decide whether to make these generic as more companies join. |
 | 14 | **Who may open and reset the demo.** Today anyone who has the link can open it and sign in with one click, and any admin sign-in can press Reset (once every 3 minutes). Search engines are told not to list it. | Fine for presenting. Tell us if you want a shared access code, or Reset limited to you. |
+| 15 | **The map on the home page.** It searches for "Applewood Adams, Ngong Road, Nairobi" (the word "Along" is missing), which shows several pins around Adams Arcade. Searching for the full address, "Applewood Adams, Along Ngong Road, Nairobi", centres the map on Applewood Adams. We left it exactly as it was. | Say if you want it changed (one line). If you edit the address under Site content, the map follows the new address. |
 
 ---
 
@@ -363,6 +392,9 @@ These were looked at and **left unchanged on purpose**. They are listed so you k
 - **The server does not yet refuse to start without a proper secret key.** The live server does have one.
 - **HR and finance sign-ins can still use the general "amend" tool** on their own company's applicants' loans. The admin screens use it; the HR and finance screens do not (they use "Amend Amount"). It can change any field of such a loan, including its status. It now follows the review rule too, but we recommend restricting it to admins. Tell us if you want that.
 - **A company with no finance user** (or no HR user) has nobody to review an HR manager's (or a finance officer's) own loan, so only an admin can decide it.
+- **A published change reaches visitors within about a minute** (the pages keep a copy for a minute to stay fast). Someone who already has the page open sees it on their next visit.
+- **Site content cannot be edited in the demo**; the demo shows the program's built-in text.
+- **The Site content editor does not stop you quoting numbers** in an FAQ answer. The built-in answers quote no loan limits, rates or fees on purpose (see decision 1); if an editor adds figures, nothing checks them against the calculators.
 - **The demo is unavailable for about a minute while it rebuilds** (every night at 3 am, or when someone presses Reset). Everyone using the demo shares the same data, so a change one person makes is seen by the next.
 - **The demo's nightly rebuild has been set up but not yet seen running** (its first run is 3 am on 26 October). We will check its log and say so here.
 - **The demo's home page is the real public home page**, with its public numbers (see decision 1), while the demo's own data is smaller.
@@ -375,6 +407,7 @@ Newest first. When a change is made, a new line goes at the top.
 
 | Date | What changed | Section |
 |---|---|---|
+| **25 Oct** | **Edit the public pages yourself**: a new **Site content** screen in the admin menu for the contact details, an announcement banner, testimonials (only with the client's agreement) and the FAQs, with private drafts, a preview on the real page, publishing, history with restore, and every change in the Audit Trail. Contact details are now kept in one place (the header, footer, home page, sign-in pages and FAQs all follow them). Not in the demo. | 13.1 |
 | **25 Oct** | **Approve and reject now follow the same rule as Amend Amount**: nobody decides their own application, and HR and finance never review their own role's loans (admins can still decide anything). The buttons are hidden where they would be refused. HR and finance **rejection reasons** are now saved. Finance's **HR Loans** page opens the full review page. | 9 |
 | **25 Oct** | **Demo version for showing to clients**: its own site and made-up data, a role picker, a presenter guide of ten stories, "Run today's job" and a demo inbox, sample AI answers, sample bank details and a SAMPLE mark on its PDFs, a nightly refresh. Your real clients' names no longer appear in it. A borrower's **Next due date** ignores paid loans, and a borrower's loan page no longer calls every company's salary advance "Ideon". | 10, 18 |
 | **25 Oct** | Borrower is emailed about a penalty (with an opt-out tick box). **Add Penalty** on the loan page. **Delete a wrong line** from a statement. **Applicant Statement** with filters, totals and a PDF that follows them. **Overdue card** is clickable. Fixed a scrolling fault on the applicant details page. **Edit a statement line** (amount, date, description). Uploaded-document cards fixed. New hover hints everywhere. Disbursement date in the applicant's Loan Applications list, and a form to **enter, correct or remove** it. **10% late-payment charge** added to the daily check, next to the 15% fee (loans applied for from 26 Oct 2026), and the **loan terms updated** to state it. **Demand letter** now shows the real fees and the balance owed. The credit score's reasons now show on the Financial Analysis page. | 4, 5, 6, 7, 11, 14, 15 |
