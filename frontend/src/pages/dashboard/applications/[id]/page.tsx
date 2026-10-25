@@ -1003,7 +1003,7 @@ export default function ApplicationDetailPage() {
           )}
           {app.paymentStatus === "DELINQUENT" && (
             <div className="mt-4 bg-red-50 border border-red-100 rounded-lg px-3 py-2 text-[13px] text-red-700">
-              Your loan is overdue and a collection fee has been added to the balance. Please pay the outstanding
+              Your loan is overdue and a collection fee and a late-payment charge have been added to the balance. Please pay the outstanding
               balance as soon as possible or contact Leocap Invest.
             </div>
           )}

@@ -55,33 +55,46 @@ def run_reminders():
         # 7 days over due
         elif days_diff == -7:
             subject = "OVERDUE: Loan is 7 Days Late"
-            body = f"Dear {applicant.name},<br/>Your loan (ID: {app.id}) is 7 days overdue. Please make a payment immediately to avoid collection fees."
+            body = f"Dear {applicant.name},<br/>Your loan (ID: {app.id}) is 7 days overdue. Please make a payment immediately to avoid a collection fee and a late-payment charge."
             
         # 8th day -> delinquent
         elif days_diff <= -8 and app.repayment_status != 'delinquent':
             app.repayment_status = 'delinquent'
             
-            # Apply collection charges
+            # Apply collection charges: a 15% collection fee and a 10% late-payment charge, both on the balance owed
+            # before either is added (the loan's repayment amount stays the contract total)
             from decimal import Decimal
             outstanding = Decimal(app.outstanding_balance) if app.outstanding_balance else Decimal(app.repayment_amount)
-            collection_fee = outstanding * Decimal('0.15') # 15% charge
+            collection_fee = round(outstanding * Decimal('0.15'), 2) # 15% charge
+            late_charge = round(outstanding * Decimal('0.10'), 2) # 10% late-payment charge
             
-            app.outstanding_balance = str(round(outstanding + collection_fee, 2))
+            app.outstanding_balance = str(round(outstanding + collection_fee + late_charge, 2))
             
             subject = "NOTICE OF DELINQUENCY"
-            body = f"Dear {applicant.name},<br/>Your loan (ID: {app.id}) has been marked as DELINQUENT. A collection fee of {collection_fee} has been applied."
+            body = (f"Dear {applicant.name},<br/>Your loan (ID: {app.id}) has been marked as DELINQUENT. A collection fee of KES {collection_fee:,.2f} "
+                    f"and a late-payment charge of KES {late_charge:,.2f} have been applied. Your outstanding balance is now KES {Decimal(app.outstanding_balance):,.2f}.")
             
-            # Write to ledger
+            # Write to ledger: one row per charge, a second apart so the statement always reads fee, then charge
             from website.models import StatementEntry
-            stmt = StatementEntry(
+            when = datetime.utcnow()
+            db.session.add(StatementEntry(
                 applicant_id=app.applicant_id,
                 application_id=app.id,
                 memo="Delinquency Collection Fee",
                 debit=collection_fee,
                 credit=Decimal(0),
-                balance=Decimal(app.outstanding_balance)
-            )
-            db.session.add(stmt)
+                balance=outstanding + collection_fee,
+                date=when
+            ))
+            db.session.add(StatementEntry(
+                applicant_id=app.applicant_id,
+                application_id=app.id,
+                memo="Late Payment Charge",
+                debit=late_charge,
+                credit=Decimal(0),
+                balance=Decimal(app.outstanding_balance),
+                date=when + timedelta(seconds=1)
+            ))
             count_delinquent += 1
             
         if subject and body:
