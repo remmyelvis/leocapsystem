@@ -303,6 +303,8 @@ export interface ApplicantDetailsResponse {
     filetype: string;
     uploaded_at: string;
     document_passcode?: string | null;
+    status?: string; // "pending" until reviewed, then "accepted" (a rejected document is deleted)
+    admin_comment?: string | null;
   }[];
   message: string;
 }

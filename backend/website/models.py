@@ -482,7 +482,9 @@ class ApplicantDocument(db.Model):
             "filetype": self.filetype,
             
             "document_type":self.document_type,
-            "uploaded_at": self.uploaded_at.isoformat() if self.uploaded_at else None
+            "uploaded_at": self.uploaded_at.isoformat() if self.uploaded_at else None,
+            "status": self.status or "pending",
+            "admin_comment": self.admin_comment,
         }
 
 class User(db.Model):

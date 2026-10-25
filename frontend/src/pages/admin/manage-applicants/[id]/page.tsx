@@ -289,7 +289,11 @@ export default function ApplicantDetailsPage() {
 
 
   const handleVerifyDocument = async (docId: string, status: string) => {
-    const comment = prompt(`Please enter a comment for ${status} document (sent to applicant if rejected):`);
+    const comment = prompt(
+      status === "rejected"
+        ? "Rejecting deletes this document and emails the applicant to upload a new one.\n\nReason (sent to the applicant):"
+        : "Add a note for this document (optional):"
+    );
     if (comment === null) return;
     
     toast.info(`Marking document as ${status}...`);
@@ -687,7 +691,7 @@ export default function ApplicantDetailsPage() {
         </h2>
 
         {docs && docs.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             {docs.map((doc) => (
               <div
                 key={doc.id}
@@ -701,45 +705,33 @@ export default function ApplicantDetailsPage() {
                     console.error(err);
                   });
                 }}
-                className="p-4 rounded-lg border border-slate-200 bg-slate-50 flex items-start gap-4 hover:border-blue-300 transition-colors cursor-pointer"
+                className="p-4 rounded-lg border border-slate-200 bg-slate-50 flex flex-col gap-3 hover:border-blue-300 transition-colors cursor-pointer"
               >
-                <div className="p-3 bg-blue-100 rounded-lg text-brand-blue flex-shrink-0">
-                  <FileText className="h-6 w-6" />
-                </div>
-                <div className="overflow-hidden flex-1">
-                  <p className="font-semibold text-slate-900 text-sm truncate w-full" title={doc.filename}>
-                    {doc.filename}
-                  </p>
-                  <p className="text-xs text-slate-500 capitalize mt-0.5">
-                    {doc.document_type.replace(/_/g, " ")} • {doc.filetype.toUpperCase()}
-                  </p>
-                  {doc.document_passcode && (
-                    <p className="text-xs font-mono text-slate-600 mt-1 bg-white inline-block px-1.5 py-0.5 rounded border border-slate-200">
-                      Passcode: {doc.document_passcode}
+                <div className="flex items-start gap-3">
+                  <div className="p-3 bg-blue-100 rounded-lg text-brand-blue flex-shrink-0">
+                    <FileText className="h-6 w-6" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-slate-900 text-sm break-words line-clamp-2" title={doc.filename}>
+                      {doc.filename}
                     </p>
-                  )}
-                  <p className="text-[10px] text-slate-400 mt-1.5">
-                    {new Date(doc.uploaded_at).toLocaleString()}
-                  </p>
-                </div>
-                <div className="flex flex-col gap-2 z-10 items-end" onClick={(e) => e.stopPropagation()}>
-                  {doc.status === 'accepted' ? (
-                    <span className="text-xs text-green-600 font-bold px-2 py-1 bg-green-100 rounded">Accepted</span>
-                  ) : doc.status === 'rejected' ? (
-                    <span className="text-xs text-red-600 font-bold px-2 py-1 bg-red-100 rounded">Rejected</span>
-                  ) : (
-                    <div className="flex flex-col gap-1.5">
-                      <Button size="sm" variant="outline" className="h-6 px-3 text-[10px] border-green-200 text-green-700 hover:bg-green-50" onClick={(e) => { e.stopPropagation(); handleVerifyDocument(doc.id, 'accepted'); }}>Accept</Button>
-                      <Button size="sm" variant="outline" className="h-6 px-3 text-[10px] border-red-200 text-red-700 hover:bg-red-50" onClick={(e) => { e.stopPropagation(); handleVerifyDocument(doc.id, 'rejected'); }}>Reject</Button>
-                    </div>
-                  )}
-                  {doc.admin_comment && <p className="text-[9px] text-slate-500 italic mt-1 max-w-[100px] text-right truncate" title={doc.admin_comment}>{doc.admin_comment}</p>}
-                </div>
-                <div className="flex-shrink-0 ml-2">
+                    <p className="text-xs text-slate-600 capitalize mt-0.5">
+                      {doc.document_type.replace(/_/g, " ")} • {doc.filetype.toUpperCase()}
+                    </p>
+                    {doc.document_passcode && (
+                      <p className="text-xs font-mono text-slate-600 mt-1 bg-white inline-block px-1.5 py-0.5 rounded border border-slate-200">
+                        Passcode: {doc.document_passcode}
+                      </p>
+                    )}
+                    <p className="text-[11px] text-slate-500 mt-1.5">
+                      {new Date(doc.uploaded_at).toLocaleString()}
+                    </p>
+                  </div>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                    aria-label={`Delete ${doc.filename}`}
+                    className="h-8 w-8 flex-shrink-0 text-red-500 hover:text-red-700 hover:bg-red-50"
                     disabled={deletingDocId === doc.id}
                     onClick={(e) => handleDeleteDocument(doc.id, e)}
                   >
@@ -749,6 +741,18 @@ export default function ApplicantDetailsPage() {
                       <Trash2 className="h-4 w-4" />
                     )}
                   </Button>
+                </div>
+                {/* Review: new documents wait for a decision; a rejected one is deleted, so only "accepted" is ever shown */}
+                <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3" onClick={(e) => e.stopPropagation()}>
+                  {doc.status === "accepted" ? (
+                    <span className="text-xs text-green-700 font-bold px-2 py-1 bg-green-100 rounded">Accepted</span>
+                  ) : (
+                    <>
+                      <Button size="sm" variant="outline" className="h-7 px-3 text-xs border-green-200 text-green-700 hover:bg-green-50" onClick={() => handleVerifyDocument(doc.id, "accepted")}>Accept</Button>
+                      <Button size="sm" variant="outline" className="h-7 px-3 text-xs border-red-200 text-red-700 hover:bg-red-50" onClick={() => handleVerifyDocument(doc.id, "rejected")}>Reject</Button>
+                    </>
+                  )}
+                  {doc.admin_comment && <p className="min-w-0 basis-full text-xs italic text-slate-600 break-words">Note: {doc.admin_comment}</p>}
                 </div>
               </div>
             ))}
