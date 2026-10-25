@@ -75,6 +75,7 @@ export interface ApplicationDetails {
   loan_status?: string;
   repayment_status?: string;
   outstanding_balance?: string;
+  balance_owed?: number | string; // what is owed right now (the loan page only)
   created_at?: string;
   documents?: ApplicationDocument[];
 }

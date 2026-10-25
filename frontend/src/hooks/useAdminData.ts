@@ -33,6 +33,7 @@ export interface TransformedApplication {
   repaymentAmount: number;
   status: string;
   repaymentStatus: string;
+  balanceOwed: number; // what is owed right now; only the single-loan fetch carries it
   submittedAt: string;
   dueDate: string | null;
   documents: ApplicationDocument[];
@@ -91,6 +92,7 @@ function transformApplication(item: AdminApplicationItem): TransformedApplicatio
     repaymentAmount: totalRepayment,
     status: app.loan_status || "Pending",
     repaymentStatus: app.repayment_status || "unpaid",
+    balanceOwed: Number(app.balance_owed) || 0,
     submittedAt: app.date_submitted || app.created_at || new Date().toISOString(),
     dueDate: app.due_date || null,
     documents: app.documents || [],

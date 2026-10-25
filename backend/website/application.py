@@ -1310,6 +1310,111 @@ def _balance_owed(app):
     return _balance_due(app)
 
 
+PENALTY_STATUSES = ("unpaid", "partially_paid", "delinquent", "defaulted", "escalated")
+
+
+@application.route('/applications/penalty/<string:application_id>', methods=['POST'])
+@jwt_required()
+@role_required("admin")
+def add_penalty(application_id):
+    """Charge a penalty on an open (disbursed, not yet paid) loan: a debit on its statement, "Penalty: <description>",
+    that raises the balance owed. Like the daily job's collection fee it leaves the loan's repayment amount alone
+    (that is the contract total) and never touches late_payment_fee (a value there marks the loan as defaulted in the
+    credit statistics). The date and time are kept as typed; a backdated penalty re-balances the rows after it."""
+    data = request.get_json(silent=True) or {}
+
+    try:
+        amount = Decimal(str(data.get("amount"))).quantize(Decimal("0.01"))
+    except (InvalidOperation, ValueError, TypeError):
+        return jsonify({"error": "Enter the penalty amount."}), 400
+    if not amount.is_finite() or amount <= 0:
+        return jsonify({"error": "The penalty amount must be more than zero."}), 400
+    if amount > MAX_LOAN_AMOUNT:
+        return jsonify({"error": "That penalty amount is too large."}), 400
+
+    description = " ".join(str(data.get("description") or "").split())
+    if len(description) < 3:
+        return jsonify({"error": "Describe the penalty (at least 3 characters)."}), 400
+    if len(description) > 120:
+        return jsonify({"error": "Keep the penalty description to 120 characters or fewer."}), 400
+
+    when = datetime.now()
+    if data.get("date"):
+        try:
+            when = datetime.fromisoformat(str(data["date"])).replace(tzinfo=None)
+        except ValueError:
+            return jsonify({"error": "That date and time is not valid."}), 400
+        # a day of slack: the browser's clock can be a few hours ahead of the server's
+        if when > datetime.now() + relativedelta(days=1):
+            return jsonify({"error": "The penalty cannot be dated in the future."}), 400
+
+    app = db.session.query(Application).with_for_update().filter_by(id=application_id).first()
+    if not app:
+        db.session.rollback()
+        return jsonify({"error": "Application not found"}), 404
+    if app.created_at and when.date() < app.created_at.date():
+        db.session.rollback()
+        return jsonify({"error": "The penalty cannot be dated before the loan was applied for."}), 400
+    if app.loan_status != "disbursed":
+        db.session.rollback()
+        return jsonify({"error": "A penalty can only be added to a disbursed loan."}), 409
+    if app.repayment_status not in PENALTY_STATUSES:
+        db.session.rollback()
+        return jsonify({"error": f"This loan is already {app.repayment_status.replace('_', ' ')}, so a penalty cannot be added."}), 409
+
+    memo = f"Penalty: {description}"
+    if StatementEntry.query.filter_by(application_id=app.id, memo=memo, debit=amount, date=when).first():
+        db.session.rollback()
+        return jsonify({"error": "This penalty is already on the statement."}), 409
+
+    before = _balance_owed(app)
+    after = (before + amount).quantize(Decimal("0.01"))
+    if after > Decimal("9999999999.99"):
+        db.session.rollback()
+        return jsonify({"error": "That penalty would make the balance too large to store."}), 400
+
+    # a backdated penalty sits before some rows: they carried a balance without it
+    later = StatementEntry.query.filter(StatementEntry.application_id == app.id, StatementEntry.date > when)
+    if later.count():
+        previous = StatementEntry.query.filter(
+            StatementEntry.application_id == app.id, StatementEntry.date <= when
+        ).order_by(StatementEntry.date.desc()).first()
+        row_balance = (Decimal(str(previous.balance)) if previous else Decimal(0)) + amount
+        for row in later.all():
+            row.balance = Decimal(str(row.balance)) + amount
+    else:
+        row_balance = after
+
+    entry = StatementEntry(
+        applicant_id=app.applicant_id, application_id=app.id, memo=memo,
+        debit=amount, credit=Decimal(0), balance=row_balance, date=when,
+    )
+    db.session.add(entry)
+    app.outstanding_balance = after
+
+    email, role, company = _actor()
+    db.session.add(ApplicationAudit(
+        application_id=app.id,
+        application_old_loan_amount=float(app.amount_applied or 0),
+        application_new_loan_amount=float(app.amount_applied or 0),
+        application_old_repayment_amount=float(app.repayment_amount or 0),
+        application_new_repayment_amount=float(app.repayment_amount or 0),
+        field_name="outstanding_balance",
+        old_status=str(before),
+        new_status=str(after),
+        changed_by_email=email,
+        changed_by_role=role,
+        changed_by_company=company,
+        notes=f'Penalty of KES {amount:,.2f} charged: "{description}" (dated {when.strftime("%d %b %Y %H:%M")}).'
+    ))
+    db.session.commit()
+    return jsonify({
+        "message": "Penalty added",
+        "balance_owed": float(after),
+        "entry": {"id": entry.id, "memo": memo, "debit": float(amount), "date": when.isoformat()},
+    }), 201
+
+
 @application.route('/applications/statement-entry/<string:entry_id>', methods=['DELETE'])
 @jwt_required()
 @role_required("admin")
@@ -1583,8 +1688,13 @@ def get_one_application(application_id):
     if get_jwt().get("role") == "applicant" and app.applicant_id != get_jwt_identity():
         return jsonify({"error": "Application not found"}), 404
     applicant = Applicant.query.get(app.applicant_id)
+    open_loan = app.loan_status == "disbursed" and app.repayment_status != "paid"
     return jsonify({
-        "application": {**app.to_dict(), "amount_paid": _amount_paid_by_app([app.id]).get(app.id, 0.0)},
+        "application": {
+            **app.to_dict(),
+            "amount_paid": _amount_paid_by_app([app.id]).get(app.id, 0.0),
+            "balance_owed": float(_balance_owed(app)) if open_loan else 0.0,
+        },
         "bio_data": applicant.to_dict() if applicant else {}
     }), 200
 

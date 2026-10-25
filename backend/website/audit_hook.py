@@ -58,6 +58,7 @@ _DESCRIPTIONS = [
     ("PATCH", r"/applications/paid/", "Marked a loan as paid"),
     ("PATCH", r"/applications/partially-paid/", "Recorded a partial payment"),
     ("PATCH", r"/applications/charge-interest/", "Charged interest on a loan"),
+    ("POST", r"/applications/penalty/", "Charged a penalty on a loan"),
     ("PATCH", r"/applications/default/", "Marked a loan as defaulted"),
     ("PATCH", r"/applications/rate-confirmed/", "Confirmed the interest rate"),
     ("PATCH", r"/applications/rate-declined/", "Declined the interest rate"),

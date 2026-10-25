@@ -21,6 +21,7 @@ import {
   FileText,
   Download,
   Trash2,
+  Gavel,
 } from "lucide-react";
 import {
   useAdminApplication,
@@ -37,6 +38,21 @@ import { formatKES } from "@/lib/loanCalculations";
 // ---------------------------------------------------------------------------
 
 const KES = new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// The start of the day a timestamp falls on, as the value of a datetime-local input (undefined if it is not a date)
+const localDayStart = (value: string) => {
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return undefined;
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T00:00`;
+};
+
+// "now" as the value of a datetime-local input (the browser's own clock, to the minute)
+const localNow = () => {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 16);
+};
 
 const PAYMENT_STATUS_MAP: Record<string, { label: string; style: string }> = {
   "unpaid": { label: "Unpaid", style: "bg-orange-100 text-orange-700" },
@@ -111,6 +127,11 @@ export default function ApplicationDetailPage() {
   const [showChargeInterest, setShowChargeInterest] = useState(false);
   const [chargeInterestAmount, setChargeInterestAmount] = useState("");
   const [chargeInterestDate, setChargeInterestDate] = useState("");
+
+  const [showPenalty, setShowPenalty] = useState(false);
+  const [penaltyAmount, setPenaltyAmount] = useState("");
+  const [penaltyDate, setPenaltyDate] = useState("");
+  const [penaltyDescription, setPenaltyDescription] = useState("");
 
   const [activeDeclineForm, setActiveDeclineForm] = useState<"top" | "bottom" | null>(null);
   const [declineReason, setDeclineReason] = useState("");
@@ -447,6 +468,47 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
       setChargeInterestAmount("");
       setChargeInterestDate("");
       window.location.reload();
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const closePenalty = () => {
+    setShowPenalty(false);
+    setPenaltyAmount("");
+    setPenaltyDate("");
+    setPenaltyDescription("");
+  };
+
+  const handleAddPenalty = async () => {
+    const amount = Number(penaltyAmount);
+    if (!app || !penaltyAmount || isNaN(amount) || amount <= 0) {
+      toast.error("Please enter the penalty amount");
+      return;
+    }
+    if (penaltyDescription.trim().length < 3) {
+      toast.error("Please describe the penalty (at least 3 characters)");
+      return;
+    }
+    if (!penaltyDate) {
+      toast.error("Please select a date and time");
+      return;
+    }
+    setUpdating(true);
+    try {
+      const { data, error } = await apiCall<{ balance_owed: number }>(`/api/applications/penalty/${app.id}`, {
+        method: "POST",
+        body: { amount, date: penaltyDate, description: penaltyDescription.trim() },
+      });
+      if (error) {
+        toast.error(error);
+        return;
+      }
+      toast.success(`Penalty of ${KES.format(amount)} added. Balance owed is now ${KES.format(data?.balance_owed ?? 0)}.`);
+      closePenalty();
+      refetch();
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
@@ -941,6 +1003,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                     onClick={() => {
                       setShowPartialPayment(!showPartialPayment);
                       setShowChargeInterest(false);
+                      closePenalty();
                     }}
                     disabled={updating}
                     className="bg-brand-blue hover:bg-slate-800 text-white rounded-lg font-bold"
@@ -954,6 +1017,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                       onClick={() => {
                         setShowChargeInterest(!showChargeInterest);
                         setShowPartialPayment(false);
+                        closePenalty();
                       }}
                       disabled={updating}
                       className="bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold"
@@ -962,6 +1026,23 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
                       Charge Interest
                     </Button>
                   )}
+                  <Button
+                    onClick={() => {
+                      if (showPenalty) {
+                        closePenalty();
+                        return;
+                      }
+                      setShowPenalty(true);
+                      setPenaltyDate(localNow());
+                      setShowPartialPayment(false);
+                      setShowChargeInterest(false);
+                    }}
+                    disabled={updating}
+                    className="bg-rose-700 hover:bg-rose-800 text-white rounded-lg font-bold"
+                  >
+                    <Gavel className="mr-1.5 h-4 w-4" />
+                    Add Penalty
+                  </Button>
                   <Button
                     onClick={() => handleRepaymentAction("paid")}
                     disabled={updating}
@@ -1106,6 +1187,75 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
               </Button>
             </div>
           </div>
+        </div>
+      )}
+
+      {showPenalty && (
+        <div className="bg-rose-50 border border-rose-100 rounded-lg p-4 mt-4">
+          <h3 className="text-sm font-bold text-rose-900 mb-3">Add Penalty</h3>
+          <div className="flex flex-col sm:flex-row gap-3 items-end">
+            <div className="flex-1 w-full">
+              <label htmlFor="penalty-amount" className="block text-xs font-bold text-rose-800 uppercase tracking-wide mb-1.5">Amount (KES)</label>
+              <input
+                id="penalty-amount"
+                type="number" onWheel={(e) => e.currentTarget.blur()}
+                min="0.01"
+                step="0.01"
+                value={penaltyAmount}
+                onChange={(e) => setPenaltyAmount(e.target.value)}
+                placeholder="e.g. 500"
+                className="w-full h-[42px] px-4 py-2.5 rounded-lg border border-rose-200 text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-600/20 focus:border-rose-600 transition-colors"
+              />
+            </div>
+            <div className="flex-1 w-full">
+              <label htmlFor="penalty-date" className="block text-xs font-bold text-rose-800 uppercase tracking-wide mb-1.5">Date & Time</label>
+              <input
+                id="penalty-date"
+                type="datetime-local"
+                min={localDayStart(app.submittedAt)}
+                max={localNow()}
+                value={penaltyDate}
+                onChange={(e) => setPenaltyDate(e.target.value)}
+                className="w-full h-[42px] px-4 py-2.5 rounded-lg border border-rose-200 text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-600/20 focus:border-rose-600 transition-colors"
+              />
+            </div>
+            <div className="flex-[2] w-full">
+              <label htmlFor="penalty-description" className="block text-xs font-bold text-rose-800 uppercase tracking-wide mb-1.5">Penalty Description</label>
+              <input
+                id="penalty-description"
+                type="text"
+                maxLength={120}
+                value={penaltyDescription}
+                onChange={(e) => setPenaltyDescription(e.target.value)}
+                placeholder="e.g. Late payment, March instalment"
+                className="w-full h-[42px] px-4 py-2.5 rounded-lg border border-rose-200 text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-600/20 focus:border-rose-600 transition-colors"
+              />
+            </div>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button variant="outline" onClick={closePenalty} disabled={updating} className="flex-1 sm:flex-none rounded-lg">
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAddPenalty}
+                disabled={updating || !penaltyAmount || !penaltyDate || penaltyDescription.trim().length < 3}
+                className="flex-1 sm:flex-none bg-rose-700 hover:bg-rose-800 text-white rounded-lg font-bold"
+              >
+                Add Penalty
+              </Button>
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-slate-700" aria-live="polite">
+            {Number(penaltyAmount) > 0 ? (
+              <>
+                Balance owed: <span className="font-semibold tabular-nums">{KES.format(app.balanceOwed)}</span> →{" "}
+                <span className="font-semibold tabular-nums text-rose-800">{KES.format(Math.round((app.balanceOwed + Number(penaltyAmount)) * 100) / 100)}</span>
+                {" · "}
+              </>
+            ) : (
+              <>Balance owed now: <span className="font-semibold tabular-nums">{KES.format(app.balanceOwed)}</span>{" · "}</>
+            )}
+            Added to the statement as a charge; the repayment amount and due date do not change.
+          </p>
         </div>
       )}
 
