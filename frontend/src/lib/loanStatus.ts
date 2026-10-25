@@ -23,3 +23,9 @@ export function statusDisplay(status?: string | null): { label: string; classNam
     }
   );
 }
+
+// A loan in one of these states was never paid out, so it can be deleted without erasing money that moved. Any other state
+// (disbursed, defaulted, written off, paid, ...) cannot. The server decides too: NEVER_PAID_OUT in backend/website/application.py.
+const NEVER_PAID_OUT = new Set(["pending", "pending_processing", "processing", "amended", "rate_set", "rate_confirmed", "confirmed", "rate_declined", "approved", "declined", "rejected"]);
+
+export const canDeleteApplication = (status?: string | null) => NEVER_PAID_OUT.has((status ?? "").toLowerCase().replace(/[\s-]/g, "_"));

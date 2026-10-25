@@ -1,5 +1,6 @@
 
 
+import { canDeleteApplication } from "@/lib/loanStatus";
 import { formatName } from "@/lib/formatName";
 import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -2011,8 +2012,14 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
             Danger Zone
           </h2>
         </div>
+        {!canDeleteApplication(app.status) ? (
+          <p className="text-sm text-slate-600">
+            This loan was paid out, so it cannot be deleted: its history must stay on the borrower&apos;s statement. To correct a wrong line, use Edit or Delete on that line in the borrower&apos;s statement.
+          </p>
+        ) : (
+        <>
         <p className="text-sm text-slate-600 mb-4">
-          Deleting this application is permanent and cannot be undone. Please type <span className="font-mono font-bold select-all bg-slate-100 px-1.5 py-0.5 rounded text-slate-900">delete {app?.id}</span> to confirm.
+          Deleting this application is permanent and cannot be undone: its documents, history and statement lines are removed with it. Please type <span className="font-mono font-bold select-all bg-slate-100 px-1.5 py-0.5 rounded text-slate-900">delete {app?.id}</span> to confirm.
         </p>
 
         <div className="max-w-md space-y-3">
@@ -2032,6 +2039,8 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
             Delete Application
           </Button>
         </div>
+        </>
+        )}
       </div>
 
       {/* Delete Confirmation Modal */}

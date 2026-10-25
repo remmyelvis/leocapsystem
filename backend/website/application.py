@@ -2202,6 +2202,12 @@ def disburse_application(application_id):
     update_loan_status(app, "disbursed", *_actor(), commit=True)
     return jsonify({"message": "Disbursed", "application": app.to_dict()}), 200
 
+# A loan in one of these states was never paid out, so deleting it cannot erase money that moved. Anything else (disbursed,
+# defaulted, written off, paid, and any state added later) must stay on the borrower's statement. The frontend repeats this list
+# in lib/loanStatus.ts (canDeleteApplication).
+NEVER_PAID_OUT = {"pending", "pending_processing", "processing", "amended", "rate_set", "rate_confirmed", "confirmed", "rate_declined", "approved", "declined", "rejected"}
+
+
 @application.route('/applications/delete/<string:application_id>', methods=['DELETE'])
 @jwt_required()
 @role_required("admin", "super_admin")
@@ -2209,7 +2215,10 @@ def delete_application(application_id):
     app = Application.query.filter_by(id=application_id).first()
     if not app:
         return jsonify({"error": "Not found"}), 404
-    # A loan's own audit rows are deleted with it, so what it was and its history are kept in the system log first.
+    ledger = StatementEntry.query.filter_by(application_id=app.id)
+    if app.loan_status not in NEVER_PAID_OUT or app.disbursement_date is not None or ledger.filter(StatementEntry.credit > 0).first():
+        return jsonify({"error": "This loan was paid out, so it cannot be deleted: its history must stay on the borrower's statement."}), 409
+    # A loan's own audit rows and ledger rows are deleted with it, so what it was and its history are kept in the system log first.
     from website.audit_logs import _record_audit_log
     from website.models import AuditAction
     email, role, _ = _actor()
@@ -2218,6 +2227,7 @@ def delete_application(application_id):
         "application": app.to_dict(),
         "borrower": {"name": borrower.name, "email": borrower.email} if borrower else None,
         "history": [a.to_dict() for a in ApplicationAudit.query.filter_by(application_id=app.id).order_by(ApplicationAudit.changed_at).limit(200)],
+        "ledger": [e.to_dict() for e in ledger.order_by(StatementEntry.date).limit(200)],
     }, default=str))
     _record_audit_log(
         action=AuditAction.DELETE,
@@ -2225,8 +2235,17 @@ def delete_application(application_id):
         entity_type="Application", entity_id=app.id, actor_id=get_jwt_identity(), actor_email=email, actor_role=role,
         old_values=snapshot,
     )
-    db.session.delete(app)
-    db.session.commit()
+    try:
+        # The database will not delete a loan while rows still point at it: the ledger rows go with it, the borrower's profile
+        # documents only lose their link to it (they stay on the profile).
+        ledger.delete(synchronize_session=False)
+        ApplicantDocument.query.filter_by(application_id=app.id).update({"application_id": None}, synchronize_session=False)
+        db.session.delete(app)
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        logging.exception("Could not delete application %s", application_id)
+        return jsonify({"error": "The loan could not be deleted. Nothing was changed."}), 500
     return jsonify({"message": "Deleted"}), 200
 
 
