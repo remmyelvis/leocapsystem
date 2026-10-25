@@ -3,6 +3,7 @@ import { IS_DEMO } from './components/demo/demo';
 import DemoToolbox from './components/demo/DemoToolbox';
 import DemoPage from './pages/demo/page';
 import DemoInboxPage from './pages/demo/inbox/page';
+import DemoGuidePage from './pages/demo/guide/page';
 import AdminLayout from './pages/admin/layout';
 import DashboardLayout from './pages/dashboard/layout';
 import FinanceLayout from './pages/finance/layout';
@@ -137,6 +138,7 @@ function App() {
       {/* Demo only: the role picker and the presenter's tools. IS_DEMO is a build-time constant, so the live build contains none of it. */}
       {IS_DEMO && <Route path="/demo" element={<DemoPage />} />}
       {IS_DEMO && <Route path="/demo/inbox" element={<DemoInboxPage />} />}
+      {IS_DEMO && <Route path="/demo/guide" element={<DemoGuidePage />} />}
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
     {IS_DEMO && <DemoToolbox />}

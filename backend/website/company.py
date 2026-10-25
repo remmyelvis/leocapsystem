@@ -13,6 +13,8 @@ company_bp = Blueprint('company', __name__, url_prefix='/api')
 
 def seed_default_companies():
     """Ensure default companies exist in database on startup."""
+    if os.getenv("DEMO_MODE") == "True":  # the demo has its own fictional companies (demo_data), never the real clients
+        return
     default_companies = [
         {
             "name": "Nakama Tech LTD",

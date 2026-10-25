@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ChevronUp, Inbox, Loader2, Play, RotateCcw, Users, X } from "lucide-react";
+import { BookOpen, ChevronUp, Inbox, Loader2, Play, RotateCcw, Users, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchResetStatus, problem, runDailyJob, startReset } from "./demo";
 
@@ -95,6 +95,9 @@ export default function DemoToolbox() {
             </p>
             <Link to="/demo/inbox" className={`${ACTION} bg-white text-slate-900 ring-1 ring-slate-300 hover:bg-slate-50`}>
               <Inbox className="h-4 w-4" /> Open inbox
+            </Link>
+            <Link to="/demo/guide" className={`${ACTION} bg-white text-slate-900 ring-1 ring-slate-300 hover:bg-slate-50`}>
+              <BookOpen className="h-4 w-4" /> Presenter guide
             </Link>
           </div>
 

@@ -27,6 +27,41 @@ def only_on_a_demo_database():
         abort(404)
 
 
+def mark_pdfs_as_samples():
+    """Every PDF the demo makes gets a faint diagonal SAMPLE behind its text, so a demo document can never pass for a real one.
+    reportlab builds all of the platform's PDFs through SimpleDocTemplate.build, so one wrapper covers them all."""
+    from reportlab.platypus import SimpleDocTemplate
+
+    if getattr(SimpleDocTemplate.build, "marks_samples", False):
+        return
+    original = SimpleDocTemplate.build
+
+    def stamp(canvas, doc):
+        width, height = doc.pagesize
+        canvas.saveState()
+        canvas.setFont("Helvetica-Bold", 110)
+        canvas.setFillColorRGB(0.8, 0.1, 0.1, alpha=0.09)
+        canvas.translate(width / 2, height / 2)
+        canvas.rotate(35)
+        canvas.drawCentredString(0, -35, "SAMPLE")
+        canvas.restoreState()
+
+    def build(self, flowables, onFirstPage=None, onLaterPages=None, **options):
+        def first(canvas, doc):
+            stamp(canvas, doc)
+            if onFirstPage:
+                onFirstPage(canvas, doc)
+
+        def later(canvas, doc):
+            stamp(canvas, doc)
+            if onLaterPages:
+                onLaterPages(canvas, doc)
+        return original(self, flowables, onFirstPage=first, onLaterPages=later, **options)
+
+    build.marks_samples = True
+    SimpleDocTemplate.build = build
+
+
 @demo_bp.route("/personas", methods=["GET"])
 def personas():
     """The people a presenter can sign in as, with the shared demo password, so the picker can sign in with one click."""
@@ -39,6 +74,25 @@ def personas():
         who = P.account(key)
         out.append({**who, "key": key, "portal": portal, "company": names.get(who["company"]), "blurb": blurb})
     return jsonify({"password": P.PASSWORD, "personas": out}), 200
+
+
+@demo_bp.route("/guide", methods=["GET"])
+def guide():
+    """The presenter's stories, with the person to sign in as and links found in the database (see demo_data/guide.py)."""
+    from demo_data import guide as G, people as P
+
+    sign_in = {key: portal for key, portal, _ in P.PERSONAS}
+
+    def who(key):
+        person = P.account(key)
+        return {"key": key, "name": person["name"], "title": person["title"], "email": person["email"], "portal": sign_in[key]}
+
+    stories = G.build()
+    for story in stories:
+        story["who"] = who(story["who"])
+        for link in story["links"]:
+            link["who"] = who(link["who"])
+    return jsonify({"stories": stories}), 200
 
 
 # -- the daily job -----------------------------------------------------------------------------------------------------

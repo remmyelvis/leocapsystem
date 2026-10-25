@@ -133,6 +133,13 @@ def _create_people(w):
                           created_at=w.now - timedelta(days=c["days_ago"]))
         db.session.add(company)
         w.companies[c["code"]] = company
+    # People who borrow on their own belong to the "personal" company, as on the live platform (its row is made here because the
+    # demo never seeds the live platform's default companies). A random id, so the ids drawn after it stay as they were.
+    import uuid
+    db.session.add(Company(id=str(uuid.uuid4()), name="Personal / Individual", code="personal", hr_email=f"loans@{P.DOMAIN}",
+                           contact_person=P.LENDER_STAFF[0]["name"], contact_phone=P.LENDER_STAFF[0]["phone"], interest_rate=10.0,
+                           processing_fee_rate=3.0, access_fee_rate=0.0, legal_fee=0.0, repayment_cycle="monthly", status="active",
+                           created_at=w.now - timedelta(days=400)))
     domains = {c["code"]: c["domain"] for c in P.COMPANIES}
     onboarded = {c["code"]: c["days_ago"] for c in P.COMPANIES}
 

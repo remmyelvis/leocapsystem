@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRight, RefreshCw } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, RefreshCw } from "lucide-react";
 import BrandLogo from "@/components/global/BrandLogo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchPersonas, signInLink, type Persona, type PersonaRole } from "@/components/demo/demo";
@@ -58,9 +58,14 @@ export default function DemoPage() {
         <div className="mx-auto max-w-[1040px]">
           <div className="flex items-center justify-between">
             <BrandLogo src="/logo-wordmark.png" height="2.25rem" />
-            <Link to="/" className="inline-flex min-h-[40px] items-center gap-1.5 text-[13px] font-medium text-slate-200 transition-colors hover:text-white">
-              <ArrowLeft className="h-3.5 w-3.5" /> Back to site
-            </Link>
+            <div className="flex items-center gap-5">
+              <Link to="/demo/guide" className="inline-flex min-h-[40px] items-center gap-1.5 text-[13px] font-medium text-slate-200 transition-colors hover:text-white">
+                <BookOpen className="h-3.5 w-3.5" /> Presenter guide
+              </Link>
+              <Link to="/" className="inline-flex min-h-[40px] items-center gap-1.5 text-[13px] font-medium text-slate-200 transition-colors hover:text-white">
+                <ArrowLeft className="h-3.5 w-3.5" /> Back to site
+              </Link>
+            </div>
           </div>
           <p className="mt-10 inline-flex rounded-full border border-white/20 bg-white/5 px-3.5 py-1.5 text-[12px] font-semibold tracking-wide">Demo environment</p>
           <h1 className="mt-4 max-w-[640px] text-[34px] font-bold leading-[1.15] tracking-[-0.015em]">See Leocap through each person's eyes</h1>

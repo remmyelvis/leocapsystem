@@ -75,8 +75,9 @@ def create_app():
     register_audit_hook(app)
 
     if os.getenv("DEMO_MODE") == "True":  # the demo's own tools (who to sign in as, ...); the live API never routes to them
-        from website.demo import demo_bp
+        from website.demo import demo_bp, mark_pdfs_as_samples
         app.register_blueprint(demo_bp)
+        mark_pdfs_as_samples()  # its PDFs carry a SAMPLE mark
 
     # Ensure default companies exist within app context
     with app.app_context():

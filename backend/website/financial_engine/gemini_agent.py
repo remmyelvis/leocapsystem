@@ -12,7 +12,16 @@ def _init_gemini():
     genai.configure(api_key=api_key)
     return True
 
+def _sample_ai():
+    """The demo has no Gemini key: it answers from the statement's own numbers (demo_data/sample_ai.py). Never on the live platform."""
+    if os.environ.get("DEMO_MODE") == "True" and not os.environ.get("GEMINI_API_KEY"):
+        from demo_data import sample_ai
+        return sample_ai
+
 def generate_statement_narrative(applicant_id, txns, mpesa_metrics, credit_analysis):
+    sample = _sample_ai()
+    if sample:
+        return sample.narrative(applicant_id, txns, mpesa_metrics, credit_analysis)
     if not _init_gemini():
         return "Gemini API key not configured."
         
@@ -53,6 +62,9 @@ def generate_statement_narrative(applicant_id, txns, mpesa_metrics, credit_analy
         return f"AI Analysis failed: {str(e)}"
 
 def chat_with_statement(applicant_id, query):
+    sample = _sample_ai()
+    if sample:
+        return sample.answer(applicant_id, query)
     if not _init_gemini():
         return "Gemini API key not configured."
         

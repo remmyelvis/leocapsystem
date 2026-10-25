@@ -24,8 +24,8 @@ export default function DemoInboxPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white px-6 py-4">
-        <div className="mx-auto flex max-w-[1040px] items-center justify-between">
+      <header className="border-b border-slate-200 bg-white py-4">
+        <div className="mx-auto flex max-w-[1040px] items-center justify-between px-6">
           <BrandLogo src="/logo-wordmark.png" height="2.25rem" />
           <Link to="/demo" className="inline-flex min-h-[40px] items-center gap-1.5 text-[13px] font-medium text-slate-600 transition-colors hover:text-slate-900">
             <ArrowLeft className="h-3.5 w-3.5" /> Choose a role

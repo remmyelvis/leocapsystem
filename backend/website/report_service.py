@@ -6,11 +6,12 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, KeepInFrame
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from flask import current_app
+from website import bank_details as bank
 
 class CompanyReportPDFGenerator:
     @staticmethod
     def generate_repayment_report(company_name, company_code, month, apps, total_amount,
-                                  account_name="LEOCAP INVEST", account_number="9710240013"):
+                                  account_name=bank.ACCOUNT_NAME, account_number=bank.ACCOUNT_NUMBER):
         """
         Generates a standardized corporate PDF for the monthly repayment report (the admin and HR downloads).
         Uses landscape orientation to fit more data columns. The whole report is kept on ONE page: the layout is
@@ -161,9 +162,9 @@ class CompanyReportPDFGenerator:
         # Payment Instructions
         instructions = f"""
         <b>Payment Instructions:</b><br/>
-        Account Name: {account_name} &nbsp;|&nbsp; NCBA BANK KENYA PLC &nbsp;|&nbsp; Account Number: {account_number}
-        &nbsp;|&nbsp; Branch Name: PRESTIGE &nbsp;|&nbsp; Swift Code: CBAFKENX<br/>
-        <b>M-PESA Paybill:</b> 880100 (Deposit reference: {company_code.upper()})
+        Account Name: {account_name} &nbsp;|&nbsp; {bank.BANK_UPPER} &nbsp;|&nbsp; Account Number: {account_number}
+        &nbsp;|&nbsp; Branch Name: {bank.BRANCH} &nbsp;|&nbsp; Swift Code: {bank.SWIFT}<br/>
+        <b>M-PESA Paybill:</b> {bank.PAYBILL} (Deposit reference: {company_code.upper()})
         """
         elements.append(Paragraph(instructions, styles['Normal']))
         

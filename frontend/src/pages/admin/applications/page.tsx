@@ -17,6 +17,7 @@ import { adminApplicationsApi } from "@/lib/adminApi";
 import { apiCall } from "@/lib/apiClient";
 import { formatName } from "@/lib/formatName";
 import { Tip } from "@/components/ui/tooltip";
+import { IS_DEMO } from "@/components/demo/demo";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -279,7 +280,7 @@ return (
               Mark Selected Paid ({selectedAppIds.length})
             </button>
           )}
-          {urlType === "salary_advance" && (
+          {urlType === "salary_advance" && !IS_DEMO && (
             <>
               <Tip label="Repayment month the Mark Paid buttons clear">
                 <select

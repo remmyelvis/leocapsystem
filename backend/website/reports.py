@@ -13,6 +13,7 @@ from website.system_email_utils import send_email_smtp
 from website.models import Application, Applicant, ApplicationDocument, HrEmail, Email, Company
 from website import db, Config, export_service
 from website.role_decorator import role_required
+from website import bank_details as bank
 from flask import Response, abort, make_response
 
 from dotenv import load_dotenv
@@ -378,10 +379,10 @@ def _repayment_report_apps(identifier):
 
 
 # Nakama's repayment reports (PDF and Excel) name Nakama's own account; every other company's name the Leocap account.
-NAKAMA_ACCOUNT = {"account_name": "ELVIS KAREMI NYAGA", "account_number": "8460950033"}
+NAKAMA_ACCOUNT = bank.NAKAMA_ACCOUNT
 
 
-def _repayment_excel_response(identifier, account_name="LEOCAP INVEST", account_number="9710240013"):
+def _repayment_excel_response(identifier, account_name=bank.ACCOUNT_NAME, account_number=bank.ACCOUNT_NUMBER):
     """The repayment report as Excel: the same loans, month and payment instructions as the PDF."""
     comp_code, comp_name, month, apps = _repayment_report_apps(identifier)
 
@@ -394,11 +395,11 @@ def _repayment_excel_response(identifier, account_name="LEOCAP INVEST", account_
     bank_details = f"""
 1. Account Details:
 Account Name: {account_name}
-NCBA BANK KENYA PLC
+{bank.BANK_UPPER}
 Account Number: {account_number}
-Branch Name: PRESTIGE
-Swift Code: CBAFKENX
-Paybill Number: 880100 (Deposit reference: {comp_code.upper()})
+Branch Name: {bank.BRANCH}
+Swift Code: {bank.SWIFT}
+Paybill Number: {bank.PAYBILL} (Deposit reference: {comp_code.upper()})
 """
 
     excel_sheet = dataframe_to_excel(
