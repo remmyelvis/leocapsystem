@@ -135,6 +135,7 @@ def build_statement(world, key):
     upload = StatementUpload(id=world.ctx.uid(), applicant_id=a.id, filename=shown, filepath=path, source="mpesa", password="",
                              is_parsed=True, uploaded_at=world.now - timedelta(days=3))
     world.ctx.db.session.add(upload)
+    world.ctx.db.session.flush()  # the statement row must exist before the transactions that point to it (Postgres checks)
     for when, desc, money_in, money_out, bal in rows:
         world.ctx.db.session.add(ParsedTransaction(
             applicant_id=a.id, statement_id=upload.id, date=when, description=desc, reference=_ref(rng),
