@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { IS_DEMO } from './components/demo/demo';
 import DemoToolbox from './components/demo/DemoToolbox';
 import DemoPage from './pages/demo/page';
@@ -39,7 +39,6 @@ import Page21 from './pages/finance/applications/[id]/page';
 import Page22 from './pages/finance/apply/page';
 import Page23 from './pages/finance/dashboard/page';
 import Page24 from './pages/finance/hr-loans/page';
-import Page25 from './pages/finance/hr-loans/pending/[id]/page';
 import Page27 from './pages/finance/my-loans/page';
 import Page28 from './pages/finance/page';
 import Page29 from './pages/finance/profile/page';
@@ -61,6 +60,12 @@ import Page48 from './pages/privacy-policy/page';
 import FaqPage from './pages/faq/page';
 import Page49 from './pages/register/page';
 import NotFoundPage from './pages/not-found';
+
+// Finance reviews an HR loan on the full review page. This old address is kept because emails already sent link to it.
+function ReviewHrLoan() {
+  const { id } = useParams();
+  return <Navigate to={`/finance/applications/pending/${id}`} replace />;
+}
 
 function App() {
   return (
@@ -107,7 +112,7 @@ function App() {
         <Route path="apply" element={<Page22 />} />
         <Route path="dashboard" element={<Page23 />} />
         <Route path="hr-loans" element={<Page24 />} />
-        <Route path="hr-loans/pending/:id" element={<Page25 />} />
+        <Route path="hr-loans/pending/:id" element={<ReviewHrLoan />} />
         <Route path="my-loans" element={<Page27 />} />
         <Route path="" element={<Page28 />} />
         <Route path="profile" element={<Page29 />} />

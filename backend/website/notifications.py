@@ -120,7 +120,7 @@ def notify_hr_of_application(application, applicant):
         messages = [(r, subject, body, application.id) for r in recipients]
         if finance:
             finance_body = body.replace("in the HR portal", "in the finance portal").replace(
-                f"/hr/applications/pending/{application.id}", f"/finance/hr-loans/pending/{application.id}")
+                f"/hr/applications/pending/{application.id}", f"/finance/applications/pending/{application.id}")
             messages += [(r, subject, finance_body, application.id, "finance about an HR loan application") for r in finance]
         if team:
             team_body = body.replace("in the HR portal", "in the admin portal").replace(
