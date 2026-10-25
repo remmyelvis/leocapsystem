@@ -81,18 +81,20 @@ def create_app():
        except Exception:
            pass
 
-    # applications.employer_name was added after the live database was created: add it once, so deploying needs no manual SQL
+    # Columns added to `applications` after the live database was created: add each once, so deploying needs no manual SQL
+    # (db/04_disbursement_date.sql is the same change for running by hand)
     with app.app_context():
         from sqlalchemy import inspect, text
-        try:
-            if "employer_name" not in {c["name"] for c in inspect(db.engine).get_columns("applications")}:
-                db.session.execute(text("ALTER TABLE applications ADD COLUMN employer_name VARCHAR(150)"))
-                db.session.commit()
-        except Exception:
-            db.session.rollback()
-            # another worker may have added it a moment ago; only complain if it is still missing
-            if "employer_name" not in {c["name"] for c in inspect(db.engine).get_columns("applications")}:
-                app.logger.exception("Could not add applications.employer_name")
+        for column, ddl in (("employer_name", "VARCHAR(150)"), ("disbursement_date", "TIMESTAMP")):
+            try:
+                if column not in {c["name"] for c in inspect(db.engine).get_columns("applications")}:
+                    db.session.execute(text(f"ALTER TABLE applications ADD COLUMN {column} {ddl}"))
+                    db.session.commit()
+            except Exception:
+                db.session.rollback()
+                # another worker may have added it a moment ago; only complain if it is still missing
+                if column not in {c["name"] for c in inspect(db.engine).get_columns("applications")}:
+                    app.logger.exception("Could not add applications.%s", column)
 
     
     from flask import request, g

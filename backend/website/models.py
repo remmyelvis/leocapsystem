@@ -60,6 +60,9 @@ class Application(db.Model):
     interest_charged_date = db.Column(db.DateTime, nullable = True)
     interest_charged_count = db.Column(db.Integer, nullable = True, default = 0)
     due_date = db.Column(db.DateTime)
+    # The disbursement date entered by hand (12:00 UTC of that day). It wins over the date found in the loan's change
+    # history, which older loans do not have. Added to the live database at startup (website/__init__.py).
+    disbursement_date = db.Column(db.DateTime, nullable=True)
     memo = db.Column(db.String(255), nullable = True)
     month = db.Column(db.String(100), nullable = True, default=lambda: datetime.now().strftime("%B"))
     

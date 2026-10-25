@@ -1698,6 +1698,70 @@ def amend_statement_entry(entry_id):
     return jsonify({**answer, "dry_run": False, "message": "Entry amended"}), 200
 
 
+@application.route('/applications/disbursement-date/<string:application_id>', methods=['PATCH'])
+@jwt_required()
+@role_required("admin")
+def set_disbursement_date(application_id):
+    """Enter (or correct) the date a loan was disbursed, for loans whose change history does not have it (disbursed
+    before the history existed) or has it wrong. {"date": "YYYY-MM-DD", "reason": "..."}; {"date": null} removes a date
+    entered by hand again (the history, if any, shows through). Written to the loan's change history."""
+    data = request.get_json(silent=True) or {}
+    app = db.session.query(Application).with_for_update().filter_by(id=application_id).first()
+    if not app:
+        db.session.rollback()
+        return jsonify({"error": "Application not found"}), 404
+
+    def refuse(message, status=400):
+        db.session.rollback()
+        return jsonify({"error": message}), status
+
+    if app.loan_status not in ("disbursed", "written_off"):
+        return refuse("Only a loan that has been disbursed has a disbursement date.", 409)
+
+    raw = data.get("date")
+    new_value = None
+    if raw not in (None, ""):
+        try:
+            day = datetime.strptime(str(raw), "%Y-%m-%d")
+        except ValueError:
+            return refuse("Enter a valid date.")
+        if day.date() > (datetime.now() + relativedelta(days=1)).date():
+            return refuse("The disbursement date cannot be in the future.")
+        if day.year < 2000:
+            return refuse("That date is too far back. Check the year.")
+        new_value = day.replace(hour=12)  # noon UTC: every time zone shows the same calendar day
+    elif app.disbursement_date is None:
+        return refuse("No date was entered by hand for this loan, so there is nothing to remove.")
+    if new_value == app.disbursement_date:
+        return refuse("That is already the disbursement date.")
+
+    def shown(entry):  # East Africa Time, like the other notices
+        return (entry[0] + timedelta(hours=3)).strftime("%d %b %Y") if entry else "not recorded"
+
+    before = _disbursement_by_app([app]).get(app.id)
+    app.disbursement_date = new_value
+    db.session.flush()
+    after = _disbursement_by_app([app]).get(app.id)
+    reason = (str(data.get("reason") or "")).strip()[:200]
+    email, role, company = _actor()
+    action = "Removed the date entered by hand" if new_value is None else ("Corrected the disbursement date" if before else "Entered the disbursement date")
+    db.session.add(ApplicationAudit(
+        application_id=app.id,
+        application_old_loan_amount=float(app.amount_applied or 0), application_new_loan_amount=float(app.amount_applied or 0),
+        application_old_repayment_amount=float(app.repayment_amount or 0), application_new_repayment_amount=float(app.repayment_amount or 0),
+        field_name="disbursement_date",
+        old_status=shown(before), new_status=shown(after),
+        changed_by_email=email, changed_by_role=role, changed_by_company=company,
+        notes=f"{action}." + (f" Reason: {reason}." if reason else ""),
+    ))
+    db.session.commit()
+    return jsonify({
+        "message": "Disbursement date saved",
+        "disbursed_at": after[0] if after else None,
+        "disbursed_at_source": after[1] if after else None,
+    }), 200
+
+
 @application.route('/applications/reverse-transaction/<string:txn_id>', methods=['POST'])
 @jwt_required()
 @role_required("admin")
@@ -1818,31 +1882,34 @@ def _amount_paid_by_app(app_ids):
     return {app_id: float(total or 0) for app_id, total in rows}
 
 
-def _disbursed_at_by_app(app_ids):
-    """{application id: when it was disbursed}. A loan keeps no disbursement date of its own; its change history does:
-    the latest change INTO "disbursed" (saving a loan that is already disbursed does not count, so the date does not
-    move). Loans disbursed before the history existed have no entry."""
-    if not app_ids:
-        return {}
-    rows = db.session.query(ApplicationAudit.application_id, func.max(ApplicationAudit.changed_at)).filter(
-        ApplicationAudit.application_id.in_(app_ids),
-        ApplicationAudit.field_name == "loan_status",
-        func.lower(ApplicationAudit.new_status) == "disbursed",
-        or_(ApplicationAudit.old_status.is_(None), func.lower(ApplicationAudit.old_status) != "disbursed"),
-    ).group_by(ApplicationAudit.application_id).all()
-    return {application_id: changed_at for application_id, changed_at in rows}
+def _disbursement_by_app(apps):
+    """{application id: (when, where it came from)}. A date entered by hand (applications.disbursement_date) wins. Otherwise
+    the loan's change history has it: the latest change INTO "disbursed" (saving a loan that is already disbursed does
+    not count, so the date does not move). Loans disbursed before the history existed, and with no date entered, are absent."""
+    found = {a.id: (a.disbursement_date, "entered") for a in apps if a.disbursement_date}
+    rest = [a.id for a in apps if a.id not in found]
+    if rest:
+        rows = db.session.query(ApplicationAudit.application_id, func.max(ApplicationAudit.changed_at)).filter(
+            ApplicationAudit.application_id.in_(rest),
+            ApplicationAudit.field_name == "loan_status",
+            func.lower(ApplicationAudit.new_status) == "disbursed",
+            or_(ApplicationAudit.old_status.is_(None), func.lower(ApplicationAudit.old_status) != "disbursed"),
+        ).group_by(ApplicationAudit.application_id).all()
+        found.update({application_id: (changed_at, "history") for application_id, changed_at in rows})
+    return found
 
 
 def _applications_with_bio_data(apps):
     """Loans as the list pages show them: the loan plus the applicant's details."""
     paid = _amount_paid_by_app([a.id for a in apps])
-    disbursed = _disbursed_at_by_app([a.id for a in apps])
+    disbursed = _disbursement_by_app(apps)
     result = []
     for app in apps:
         applicant = Applicant.query.get(app.applicant_id)
         if applicant:
             result.append({
-                "application": {**app.to_dict(), "amount_paid": paid.get(app.id, 0.0), "disbursed_at": disbursed.get(app.id)},
+                "application": {**app.to_dict(), "amount_paid": paid.get(app.id, 0.0),
+                                 "disbursed_at": (disbursed.get(app.id) or (None, None))[0], "disbursed_at_source": (disbursed.get(app.id) or (None, None))[1]},
                 "bio_data": applicant.to_dict()
             })
     return result
@@ -1901,7 +1968,8 @@ def get_one_application(application_id):
         "application": {
             **app.to_dict(),
             "amount_paid": _amount_paid_by_app([app.id]).get(app.id, 0.0),
-            "disbursed_at": _disbursed_at_by_app([app.id]).get(app.id),
+            "disbursed_at": (_disbursement_by_app([app]).get(app.id) or (None, None))[0],
+            "disbursed_at_source": (_disbursement_by_app([app]).get(app.id) or (None, None))[1],
             "balance_owed": float(_balance_owed(app)) if open_loan else 0.0,
         },
         "bio_data": applicant.to_dict() if applicant else {}

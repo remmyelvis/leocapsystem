@@ -70,6 +70,7 @@ _DESCRIPTIONS = [
     ("GET", r"/applicant/statement/", "Viewed an applicant's statement"),
     ("DELETE", r"/applications/statement-entry/", "Deleted a statement entry"),
     ("PATCH", r"/applications/statement-entry/", "Amended a statement entry"),
+    ("PATCH", r"/applications/disbursement-date/", "Set a loan's disbursement date"),
     ("GET", r"/dossier", "Downloaded a debt collection dossier"),
     ("GET", r"/risk-profile", "Downloaded an applicant's risk profile"),
     ("GET", r"/documents/download/", "Downloaded a document"),
