@@ -21,7 +21,7 @@ from website.models import Application, Applicant, ApplicationDocument, HrEmail,
 from website import db, Config
 from website.role_decorator import role_required, can_access_application
 from website.upload_paths import upload_path
-from website.notifications import notify_hr_of_application, notify_loans_repaid
+from website.notifications import notify_hr_of_application, notify_loans_repaid, notify_penalty
 from flask import Response
 from sqlalchemy.orm.attributes import get_history
 from dateutil.relativedelta import relativedelta
@@ -1320,7 +1320,8 @@ def add_penalty(application_id):
     """Charge a penalty on an open (disbursed, not yet paid) loan: a debit on its statement, "Penalty: <description>",
     that raises the balance owed. Like the daily job's collection fee it leaves the loan's repayment amount alone
     (that is the contract total) and never touches late_payment_fee (a value there marks the loan as defaulted in the
-    credit statistics). The date and time are kept as typed; a backdated penalty re-balances the rows after it."""
+    credit statistics). The date and time are kept as typed; a backdated penalty re-balances the rows after it.
+    The borrower is emailed about it unless the request says notify: false."""
     data = request.get_json(silent=True) or {}
 
     try:
@@ -1408,9 +1409,13 @@ def add_penalty(application_id):
         notes=f'Penalty of KES {amount:,.2f} charged: "{description}" (dated {when.strftime("%d %b %Y %H:%M")}).'
     ))
     db.session.commit()
+
+    # the borrower is told unless the admin switched that off (entering old penalties from records, say)
+    emailed = notify_penalty(app, amount, description, when, after) if data.get("notify") is not False else False
     return jsonify({
         "message": "Penalty added",
         "balance_owed": float(after),
+        "borrower_emailed": emailed,
         "entry": {"id": entry.id, "memo": memo, "debit": float(amount), "date": when.isoformat()},
     }), 201
 

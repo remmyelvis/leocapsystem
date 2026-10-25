@@ -132,6 +132,7 @@ export default function ApplicationDetailPage() {
   const [penaltyAmount, setPenaltyAmount] = useState("");
   const [penaltyDate, setPenaltyDate] = useState("");
   const [penaltyDescription, setPenaltyDescription] = useState("");
+  const [penaltyNotify, setPenaltyNotify] = useState(true);
 
   const [activeDeclineForm, setActiveDeclineForm] = useState<"top" | "bottom" | null>(null);
   const [declineReason, setDeclineReason] = useState("");
@@ -480,6 +481,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
     setPenaltyAmount("");
     setPenaltyDate("");
     setPenaltyDescription("");
+    setPenaltyNotify(true);
   };
 
   const handleAddPenalty = async () => {
@@ -498,15 +500,17 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
     }
     setUpdating(true);
     try {
-      const { data, error } = await apiCall<{ balance_owed: number }>(`/api/applications/penalty/${app.id}`, {
+      const notify = penaltyNotify && !!app.email;
+      const { data, error } = await apiCall<{ balance_owed: number; borrower_emailed: boolean }>(`/api/applications/penalty/${app.id}`, {
         method: "POST",
-        body: { amount, date: penaltyDate, description: penaltyDescription.trim() },
+        body: { amount, date: penaltyDate, description: penaltyDescription.trim(), notify },
       });
       if (error) {
         toast.error(error);
         return;
       }
-      toast.success(`Penalty of ${KES.format(amount)} added. Balance owed is now ${KES.format(data?.balance_owed ?? 0)}.`);
+      const told = data?.borrower_emailed ? " The borrower has been emailed." : notify ? " The borrower could not be emailed (no usable address)." : "";
+      toast.success(`Penalty of ${KES.format(amount)} added. Balance owed is now ${KES.format(data?.balance_owed ?? 0)}.${told}`);
       closePenalty();
       refetch();
     } catch {
@@ -1244,7 +1248,26 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
               </Button>
             </div>
           </div>
-          <p className="mt-3 text-xs text-slate-700" aria-live="polite">
+          <label className={`mt-3 flex items-start gap-2 text-[13px] text-slate-800 ${app.email ? "cursor-pointer" : ""}`}>
+            <input
+              type="checkbox"
+              checked={penaltyNotify && !!app.email}
+              disabled={!app.email}
+              onChange={(e) => setPenaltyNotify(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-rose-300 accent-rose-700"
+            />
+            <span>
+              {app.email ? (
+                <>
+                  Email the borrower at <span className="font-semibold break-all">{app.email}</span>.{" "}
+                  <span className="text-slate-600">They are told the amount, the reason, the date and what is now owed.</span>
+                </>
+              ) : (
+                <>There is no email address on file for this borrower, so no email will be sent.</>
+              )}
+            </span>
+          </label>
+          <p className="mt-2 text-xs text-slate-700" aria-live="polite">
             {Number(penaltyAmount) > 0 ? (
               <>
                 Balance owed: <span className="font-semibold tabular-nums">{KES.format(app.balanceOwed)}</span> →{" "}

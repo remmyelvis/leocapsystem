@@ -153,6 +153,39 @@ def _repaid_message(application):
     return address, "Your loan has been fully repaid", body, application.id
 
 
+# Where a borrower can reach us (the same details the statement PDF and the website carry)
+CONTACT_LINE = "+254 722 221 502 or +254 721 834 959, or by email at info@leocapinvest.co.ke"
+
+
+def notify_penalty(application, amount, description, when, balance):
+    """Email the borrower that a penalty was added to their loan: how much, why, when, and what is now owed. Call it after
+    the penalty has been saved. Sent after the answer, like the other borrower emails, so a mail problem never fails the
+    action; it is only logged. Returns True when an email was queued (False: the borrower has no usable address)."""
+    try:
+        applicant = Applicant.query.get(application.applicant_id)
+        address = ((applicant.email if applicant else "") or "").strip()
+        if not _ADDRESS.match(address):
+            return False
+        loan_type = _LOAN_TYPES.get(application.loan_type, "loan")
+        body = (
+            f"Dear {applicant.name},\n\n"
+            f"A penalty of KES {float(amount):,.2f} has been added to your {loan_type} with Leocap Invest.\n\n"
+            f"Reason: {description}\n"
+            f"Date of the penalty: {when.strftime('%d %b %Y')}\n"
+            f"Loan reference: {application.id[:8].upper()}\n"
+            f"Amount now owed on this loan: KES {float(balance):,.2f}\n\n"
+            f"If you think this penalty was added by mistake, please contact us on {CONTACT_LINE}.\n\n"
+            f"You can sign in to see your account at {frontend_url()}\n\n"
+            "Leocap Invest"
+        )
+        _deliver("a borrower: a penalty added to their loan",
+                 [(address, "A penalty has been added to your loan", body, application.id)], mask_address=True)
+        return True
+    except Exception:
+        logging.exception("Could not send the penalty email for application %s", application.id)
+        return False
+
+
 def notify_loans_repaid(applications):
     """Email each borrower that their loan is fully repaid. Call it after the paid status has been saved, with only the
     loans that were marked paid by this action. The messages are written here and sent one after another by a single
