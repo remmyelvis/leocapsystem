@@ -1,6 +1,6 @@
 # Leocap Invest Platform: What Has Changed
 
-**For:** Elvis Karemi (owner)  
+**For:** Elvis Karemi  
 **Covers:** 15 October 2026 to today  
 **Last updated:** 25 October 2026
 
@@ -270,6 +270,7 @@ These weaknesses were found by reviewing the program, not because of a reported 
 | **Admin screen layouts** | Text was cut off. Tables were unusable on phones. Names appeared in mixed capitals. | Every admin screen fits every screen size. Long lists become cards on small screens. Names look consistent. | 22 Oct |
 | **Dashboard** | Some figures were cut off. | A slim, compact dashboard with whole-shilling figures that fit. | 22 Oct |
 | **Manage Applicants** | The page buttons did not really page. | Paging works. You can sort. | 22 Oct |
+| **Scrolling on the applicant's details page** | After the statement tool was added (25 Oct), the whole screen could scroll up into blank space, so the content seemed to cut off partway down and the top bar disappeared. On phones, large amounts in the statement totals ran outside their boxes. | The page scrolls only inside its own area, the top bar stays in place, and the totals fit on every screen size, even for amounts in the millions. The same safeguard now protects the HR, finance and applicant portals. | 25 Oct |
 | **Financial Analysis page** | Its upload, analysis, chat and PDF buttons contacted the wrong place on the live site. | They work against the right server. A "no transactions" result is shown as a message, not as a corrupt PDF download. | 22 Oct |
 
 ---
@@ -350,7 +351,7 @@ Newest first. When a change is made, a new line goes at the top.
 
 | Date | What changed | Section |
 |---|---|---|
-| **25 Oct** | Borrower is emailed about a penalty (with an opt-out tick box). **Add Penalty** on the loan page. **Delete a wrong line** from a statement. **Applicant Statement** with filters, totals and a PDF that follows them. **Overdue card** is clickable. | 5, 7 |
+| **25 Oct** | Borrower is emailed about a penalty (with an opt-out tick box). **Add Penalty** on the loan page. **Delete a wrong line** from a statement. **Applicant Statement** with filters, totals and a PDF that follows them. **Overdue card** is clickable. Fixed a scrolling fault on the applicant details page. | 5, 7, 11 |
 | **23 Oct** | Public website redesign (same wording): menu bar, footer, home page, calmer statistics. New **FAQ** page. Testimonials section built (hidden until real quotes). | 13 |
 | **22 Oct** | New sign-in, forgot-password and sign-up pages. Safer delete buttons (the old "Suspend" really suspends). Full audit trail. Every email recorded. Calculators fixed. Month-by-month "Mark Paid" with preview. "Fully repaid" email on every route. Finance and team notices. Admin, HR, finance and applicant portals made consistent and phone-friendly. | 4, 7, 10, 11, 12, 14 |
 | **21 Oct** | "Mark as Paid" fixed. Delinquent loans handled. **Daily reminders switched on.** Forgot password works. HR told of new applications. Server sets the starting interest rate. **Loan limit** added. Pop-up messages work. Security fixes (profile, uploads, cookie, links). HR and finance work for any company. "Amend Amount" built. HR report PDF and Excel fixed. | 4, 7, 8, 9, 10 |
