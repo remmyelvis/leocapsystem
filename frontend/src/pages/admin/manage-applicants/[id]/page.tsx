@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { previewFile, apiCall, downloadFile } from "@/lib/apiClient";
 import { Button } from "@/components/ui/button";
+import ApplicantStatement from "@/components/admin/ApplicantStatement";
 import { useRef } from "react";
 
 interface DocDef {
@@ -214,78 +215,15 @@ export default function ApplicantDetailsPage() {
     toast.success(limitInput.trim() && limitInput.trim() !== "0" ? "Loan limit saved" : "Loan limit removed");
   };
 
-  const [statementEntries, setStatementEntries] = useState<any[] | null>(null);
-  const [loadingStatement, setLoadingStatement] = useState(false);
-  const [downloadingStatement, setDownloadingStatement] = useState(false);
-  const [statementStartDate, setStatementStartDate] = useState("");
-  const [statementEndDate, setStatementEndDate] = useState("");
-  const [statementRequestDate, setStatementRequestDate] = useState(new Date().toISOString().split("T")[0]);
-
-  const handleGetStatement = async () => {
-    setLoadingStatement(true);
-    try {
-      let url = `/api/applicant/statement/${params.id}`;
-      const queryParams = new URLSearchParams();
-      if (statementStartDate) queryParams.append("start_date", statementStartDate);
-      if (statementEndDate) queryParams.append("end_date", statementEndDate);
-      if (statementRequestDate) queryParams.append("request_date", statementRequestDate);
-      const queryString = queryParams.toString();
-      if (queryString) url += `?${queryString}`;
-
-      const response = await apiCall(url);
-      
-      // Fetch loans
-      setLoadingLoans(true);
-      try {
-        const loansRes = await adminApplicationsApi.getAll();
-        if (!loansRes.error && loansRes.data) {
-          const filtered = loansRes.data.filter(a => a.application.applicant_id === params.id || a.application.applicant_id === response.data?.applicant?.id || a.bio_data?.email === response.data?.applicant?.email);
-          filtered.sort((a,b) => new Date(b.application.created_at || b.application.date_submitted || 0).getTime() - new Date(a.application.created_at || a.application.date_submitted || 0).getTime());
-          setApplicantLoans(filtered);
-        } else {
-          console.error("Loans API error:", loansRes.error);
-        }
-      } catch (e) {
-        console.error("Error fetching loans:", e);
-      } finally {
-        setLoadingLoans(false);
-      }
-
-      if (response.error) {
-        toast.error(response.error);
-      } else {
-        let entries = [];
-        if (Array.isArray(response.data)) {
-          entries = response.data;
-        } else if (response.data && typeof response.data === 'object') {
-          const arrayVal = Object.values(response.data).find(val => Array.isArray(val));
-          if (arrayVal) entries = arrayVal as any[];
-        }
-        setStatementEntries(entries);
-        toast.success("Statement entries loaded");
-      }
-    } catch (error) {
-      toast.error("Failed to load statement entries");
-    } finally {
-      setLoadingStatement(false);
-    }
-  };
-
-  const handleDownloadStatement = async () => {
-    setDownloadingStatement(true);
-    let url = `/api/applicant/statement/download/${params.id}`;
-    const queryParams = new URLSearchParams();
-    if (statementStartDate) queryParams.append("start_date", statementStartDate);
-    if (statementEndDate) queryParams.append("end_date", statementEndDate);
-    const queryString = queryParams.toString();
-    if (queryString) url += `?${queryString}`;
-
-    const { error } = await downloadFile(url, `statement_${params.id}.pdf`);
-    setDownloadingStatement(false);
-    if (error) {
-      toast.error(error);
-    } else {
-      toast.success("Statement downloaded");
+  // A deleted statement entry changes a loan's balance and status: reload this applicant's loans
+  const refreshLoans = async () => {
+    const res = await adminApplicationsApi.getAll();
+    if (!res.error && res.data) {
+      setApplicantLoans(
+        res.data
+          .filter((a) => a.application.applicant_id === params.id || a.bio_data?.email === data?.applicant?.email)
+          .sort((a, b) => new Date(b.application.created_at || b.application.date_submitted || 0).getTime() - new Date(a.application.created_at || a.application.date_submitted || 0).getTime()),
+      );
     }
   };
 
@@ -375,7 +313,6 @@ export default function ApplicantDetailsPage() {
     setIsLoading(true);
     setError(null);
     setApplicantLoans([]);
-    setStatementEntries([]);
     try {
       const response = await adminApplicantsApi.getOne(params.id);
       try {
@@ -703,101 +640,7 @@ export default function ApplicantDetailsPage() {
         )}
       </div>
 
-      {/* Statement Actions */}
-      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 space-y-4">
-        <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2 mb-4">
-          <FileText className="h-4 w-4 text-brand-blue" />
-          Applicant Statement
-        </h2>
-
-        <div className="flex flex-col sm:flex-row gap-4 mb-4">
-          <div className="flex-1">
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Start Date <span className="text-red-500">*</span></label>
-            <input 
-              type="date" 
-              value={statementStartDate}
-              onChange={(e) => setStatementStartDate(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-brand-blue"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">End Date <span className="text-red-500">*</span></label>
-            <input 
-              type="date" 
-              value={statementEndDate}
-              onChange={(e) => setStatementEndDate(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-brand-blue"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Request Date</label>
-            <input 
-              type="date" 
-              value={statementRequestDate}
-              onChange={(e) => setStatementRequestDate(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600"
-            />
-          </div>
-        </div>
-
-        <div className="flex gap-4">
-          <Button onClick={handleGetStatement} disabled={loadingStatement} variant="outline" className="rounded-lg flex-1">
-            {loadingStatement ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="mr-2 h-4 w-4" />}
-            View Statement Entries
-          </Button>
-          <Button 
-            onClick={handleDownloadStatement} 
-            disabled={!statementStartDate || !statementEndDate || downloadingStatement}
-            className="bg-blue-900 hover:bg-slate-800 text-white rounded-lg flex-1 disabled:opacity-50"
-          >
-            {downloadingStatement ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-            {downloadingStatement ? "Downloading..." : "Download PDF Statement"}
-          </Button>
-        </div>
-
-        {statementEntries && (
-          <div className="mt-6 border border-slate-100 rounded-lg overflow-hidden overflow-x-auto max-h-[400px] overflow-y-auto">
-            <table className="w-full text-sm text-left text-slate-500">
-              <thead className="text-xs text-gray-700 uppercase bg-slate-50">
-                <tr>
-                  <th className="px-6 py-3 sticky top-0 bg-slate-50">Date</th>
-                  <th className="px-6 py-3 sticky top-0 bg-slate-50">Memo</th>
-                  <th className="px-6 py-3 text-right sticky top-0 bg-slate-50">Debit</th>
-                  <th className="px-6 py-3 text-right sticky top-0 bg-slate-50">Credit</th>
-                  <th className="px-6 py-3 text-right sticky top-0 bg-slate-50">Balance</th>
-                </tr>
-              </thead>
-              <tbody>
-                {!Array.isArray(statementEntries) || statementEntries.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-4 py-3 text-center text-slate-500">
-                      No statement entries found.
-                    </td>
-                  </tr>
-                ) : (
-                  statementEntries.map((entry, idx) => (
-                    <tr key={idx} className="bg-white border-b hover:bg-slate-50">
-                      <td className="px-4 py-2 whitespace-nowrap">
-                        {entry.date ? new Date(entry.date).toLocaleDateString() : 'N/A'}
-                      </td>
-                      <td className="px-4 py-2">{entry.memo || entry.description || 'N/A'}</td>
-                      <td className="px-4 py-2 text-right text-red-600">
-                        {entry.debit !== undefined ? new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(entry.debit)) : 'N/A'}
-                      </td>
-                      <td className="px-4 py-2 text-right text-emerald-600">
-                        {entry.credit !== undefined ? new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(entry.credit)) : 'N/A'}
-                      </td>
-                      <td className="px-4 py-2 text-right font-medium">
-                        {entry.balance !== undefined ? new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(entry.balance)) : 'N/A'}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      <ApplicantStatement applicantId={params.id} applicantName={applicant.name} loans={applicantLoans} onChanged={refreshLoans} />
 
       {/* Upload Documents */}
       <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">

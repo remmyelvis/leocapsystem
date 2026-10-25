@@ -7,7 +7,7 @@ from io import BytesIO
 import math
 
 import pandas as pd
-from flask import Blueprint, request, jsonify, current_app, send_file
+from flask import Blueprint, request, jsonify, current_app, send_file, g
 from werkzeug.utils import secure_filename
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from uuid import uuid4
@@ -945,9 +945,14 @@ def get_statement(applicant_id):
 
     # Show each row's own stored balance (per loan), as the applicant PDF does. Summing debits and credits
     # across every loan the applicant ever had gave a meaningless running total.
+    loans = {a.id: a for a in Application.query.filter(Application.id.in_({s.application_id for s in statements if s.application_id})).all()}
     results = []
     for s in statements:
         results.append({
+            "id": s.id,
+            "application_id": s.application_id,
+            "kind": ledger_kind(s.memo, s.credit),
+            "locked": ledger_delete_block(s, loans.get(s.application_id)),  # why it cannot be deleted, or null
             "date": s.date.isoformat() if s.date else None,
             "memo": s.memo,
             "debit": str(float(s.debit) if s.debit else 0.0),
@@ -1263,6 +1268,137 @@ def get_applicant_risk_profile(applicant_id):
 
     return jsonify(risk_data), 200
 
+
+
+def ledger_kind(memo, credit):
+    """What a statement row is: loan (the amount lent), interest, payment, writeoff, or charge (any other fee)."""
+    text = (memo or "").lower()
+    if text == "new loan applied":
+        return "loan"
+    if text.startswith("loan written off"):
+        return "writeoff"
+    if text.startswith("interest charged"):
+        return "interest"
+    return "payment" if credit and Decimal(str(credit)) > 0 else "charge"
+
+
+def ledger_delete_block(row, app):
+    """Why a statement row may not be deleted, or None. The two rows written when the loan is applied ARE the loan:
+    its amount and rate are changed on the loan, which rewrites them (sync_terms_to_ledger). A written-off loan's
+    statement is closed."""
+    kind = ledger_kind(row.memo, row.credit)
+    if kind == "loan" or (kind == "interest" and (row.memo or "").startswith("Interest charged (")):
+        return "This row is the loan itself. To change its amount or rate, edit the loan's terms instead."
+    if kind == "writeoff" or (app is not None and app.loan_status == "written_off"):
+        return "This loan was written off, so its statement is closed."
+    return None
+
+
+def _balance_owed(app):
+    """What is owed on an open loan right now. The tracked balance; a zero there means either "never tracked" or "paid
+    down to nothing" (a last payment equal to the balance leaves 0 on an unpaid loan), so then the statement itself
+    says which: what it charged less what it was paid (the stored running balances are not trusted: older rows have
+    a wrong one)."""
+    tracked = Decimal(str(app.outstanding_balance)) if app.outstanding_balance else Decimal(0)
+    if tracked > 0:
+        return tracked
+    charged, paid = db.session.query(
+        func.coalesce(func.sum(StatementEntry.debit), 0), func.coalesce(func.sum(StatementEntry.credit), 0)
+    ).filter(StatementEntry.application_id == app.id).one()
+    if charged or paid:
+        return max(Decimal(str(charged)) - Decimal(str(paid)), Decimal(0))
+    return _balance_due(app)
+
+
+@application.route('/applications/statement-entry/<string:entry_id>', methods=['DELETE'])
+@jwt_required()
+@role_required("admin")
+def delete_statement_entry(entry_id):
+    """Delete a statement row that was recorded in error (a payment, rollover interest or a fee) and put its loan back
+    as if the row had never been recorded: the loan's balance, the running balance on every later row, the payment and
+    interest counters, and (when the balance says so) paid / unpaid. Written to the loan's change history with the reason.
+    With ?dry_run=1 nothing changes: the answer says what would happen, for the confirmation dialog."""
+    dry_run = request.args.get("dry_run") in ("1", "true")
+    row = db.session.query(StatementEntry).with_for_update().filter_by(id=entry_id).first()
+    if not row:
+        db.session.rollback()
+        return jsonify({"error": "This entry no longer exists. Refresh the statement."}), 404
+    app = db.session.query(Application).with_for_update().filter_by(id=row.application_id).first() if row.application_id else None
+    blocked = ledger_delete_block(row, app)
+    if blocked:
+        db.session.rollback()
+        return jsonify({"error": blocked}), 409
+
+    debit, credit = Decimal(str(row.debit or 0)), Decimal(str(row.credit or 0))
+    kind = ledger_kind(row.memo, credit)
+    answer = {"entry": {"id": row.id, "memo": row.memo, "kind": kind, "debit": float(debit), "credit": float(credit),
+                        "date": row.date.isoformat() if row.date else None}}
+
+    if app:
+        status_before = app.repayment_status
+        paid = status_before == "paid"
+        before = Decimal(0) if paid else _balance_owed(app)
+        after = (before - (debit - credit)).quantize(Decimal("0.01"))
+        status_after = status_before
+        if after <= 0 and not paid:
+            status_after = "paid"  # nothing is owed any more; a zero balance on an open loan would read as "not tracked yet"
+        elif after > 0 and paid:
+            other_payment = StatementEntry.query.filter(
+                StatementEntry.application_id == app.id, StatementEntry.id != row.id, StatementEntry.credit > 0
+            ).first()
+            status_after = "partially_paid" if other_payment else "unpaid"
+        later_rows = StatementEntry.query.filter(
+            StatementEntry.application_id == app.id, StatementEntry.id != row.id, StatementEntry.date > row.date
+        ) if row.date is not None else None
+        answer["loan"] = {
+            "balance_before": float(before), "balance_after": float(max(after, Decimal(0))),
+            "status_before": status_before, "status_after": status_after,
+            "in_credit": float(-after) if after < 0 else 0.0,
+            "later_rows": later_rows.count() if later_rows is not None else 0,
+        }
+
+    if dry_run:
+        g.audit_recorded = True  # a preview changes nothing, so the audit hook must not log it as a deletion
+        db.session.rollback()
+        return jsonify({**answer, "dry_run": True}), 200
+
+    reason = ((request.get_json(silent=True) or {}).get("reason") or "").strip()[:200] or "Recorded in error"
+    if app:
+        old_repayment = float(app.repayment_amount or 0)
+        if later_rows is not None:
+            # every later row of this loan carried the removed amount in its running balance
+            for later in later_rows.all():
+                later.balance = Decimal(str(later.balance)) - (debit - credit)
+        app.outstanding_balance = max(after, Decimal(0))
+        if kind == "interest":  # rollover interest was added to the repayment amount as well
+            app.repayment_amount = Decimal(str(app.repayment_amount)) - debit
+            app.interest_charged_count = max(0, (app.interest_charged_count or 0) - 1)
+        if (row.memo or "").startswith("Partially paid"):
+            app.partially_paid_count = max(0, (app.partially_paid_count or 0) - 1)
+
+        email, role, company = _actor()
+        what = f"payment of KES {credit:,.2f}" if credit > 0 else f"charge of KES {debit:,.2f}"
+        db.session.add(ApplicationAudit(
+            application_id=app.id,
+            application_old_loan_amount=float(app.amount_applied or 0),
+            application_new_loan_amount=float(app.amount_applied or 0),
+            application_old_repayment_amount=old_repayment,
+            application_new_repayment_amount=float(app.repayment_amount or 0),
+            field_name="outstanding_balance",
+            old_status=str(before),
+            new_status=str(max(after, Decimal(0))),
+            changed_by_email=email,
+            changed_by_role=role,
+            changed_by_company=company,
+            notes=f'Deleted the statement entry "{row.memo}" ({what}, dated {row.date.strftime("%d %b %Y") if row.date else "no date"}). Reason: {reason}.'
+        ))
+        if status_after != status_before:
+            update_repayment_status(app, status_after, email, role, company,
+                                    notes=f'Changed because the statement entry "{row.memo}" was deleted', commit=False)
+
+    db.session.delete(row)
+    db.session.commit()
+    return jsonify({**answer, "dry_run": False, "message": "Entry deleted"}), 200
 
 
 @application.route('/applications/reverse-transaction/<string:txn_id>', methods=['POST'])

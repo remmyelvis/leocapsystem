@@ -74,6 +74,7 @@ export interface ApplicationDetails {
   repayment_amount?: string;
   loan_status?: string;
   repayment_status?: string;
+  outstanding_balance?: string;
   created_at?: string;
   documents?: ApplicationDocument[];
 }
