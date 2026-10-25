@@ -27,6 +27,7 @@ import { previewFile, apiCall, downloadFile } from "@/lib/apiClient";
 import { Button } from "@/components/ui/button";
 import ApplicantStatement from "@/components/admin/ApplicantStatement";
 import { useRef } from "react";
+import { Tip } from "@/components/ui/tooltip";
 
 interface DocDef {
   key: string;
@@ -712,9 +713,11 @@ export default function ApplicantDetailsPage() {
                     <FileText className="h-6 w-6" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-slate-900 text-sm break-words line-clamp-2" title={doc.filename}>
-                      {doc.filename}
-                    </p>
+                    <Tip label={doc.filename} whenClipped>
+                      <p className="font-semibold text-slate-900 text-sm break-words line-clamp-2">
+                        {doc.filename}
+                      </p>
+                    </Tip>
                     <p className="text-xs text-slate-600 capitalize mt-0.5">
                       {doc.document_type.replace(/_/g, " ")} • {doc.filetype.toUpperCase()}
                     </p>

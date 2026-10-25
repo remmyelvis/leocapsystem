@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { Tip } from "@/components/ui/tooltip";
 
 // ---------------------------------------------------------------------------
 // Shared types, labels and formatters
@@ -96,9 +97,9 @@ function SortHeader({
       aria-sort={active ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}
       className={cn("py-0 font-semibold", align === "right" && "text-right", className)}
     >
+      <Tip label={`Sort by ${meta.label.toLowerCase()}${active ? ` (${meta[sort.dir === "asc" ? "desc" : "asc"].toLowerCase()} next)` : ""}`} side="bottom">
       <button
         onClick={() => onSort(nextSort(sort, col))}
-        title={`Sort by ${meta.label.toLowerCase()}${active ? ` (${meta[sort.dir === "asc" ? "desc" : "asc"].toLowerCase()} next)` : ""}`}
         className={cn(
           "group inline-flex items-center gap-1 whitespace-nowrap py-2 uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:text-[#0F2C59]",
           align === "right" && "flex-row-reverse",
@@ -108,6 +109,7 @@ function SortHeader({
         {col === "created_at" ? meta.label : meta.label.replace("Amount applied", "Applied")}
         <Arrow className={cn("h-3 w-3 shrink-0", active ? "text-[#0F2C59]" : "opacity-0 transition-opacity group-hover:opacity-60 group-focus-visible:opacity-60")} />
       </button>
+      </Tip>
     </th>
   );
 }
@@ -310,14 +312,15 @@ export function BookPanel({
               <p className="mt-0.5 break-normal text-xl font-extrabold tabular-nums tracking-tight text-[#081430]">{kes(openAmount)}</p>
             )}
           </div>
-          <button
-            onClick={onRefreshAging}
-            aria-label="Refresh overdue figures"
-            title="Refresh overdue figures"
-            className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800", focusRing)}
-          >
-            <RefreshCw className={cn("h-3.5 w-3.5", agingLoading && "animate-spin")} />
-          </button>
+          <Tip label="Refresh overdue figures" side="left">
+            <button
+              onClick={onRefreshAging}
+              aria-label="Refresh overdue figures"
+              className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800", focusRing)}
+            >
+              <RefreshCw className={cn("h-3.5 w-3.5", agingLoading && "animate-spin")} />
+            </button>
+          </Tip>
         </div>
 
         {agingFailed ? (
@@ -584,10 +587,12 @@ function dueNote(r: LoanRow): { text: string; tone: string } | null {
 function StatusDot({ row }: { row: LoanRow }) {
   const s = statusOf(row);
   return (
-    <span className={cn("inline-flex shrink-0 items-center gap-2 whitespace-nowrap text-[13px] font-semibold", s.text)} title={`${loanStatusLabel(row.loan_status)}, ${repaymentLabel(row.repayment_status)}`}>
-      <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: s.dot }} />
-      {s.label}
-    </span>
+    <Tip label={`${loanStatusLabel(row.loan_status)}, ${repaymentLabel(row.repayment_status)}`}>
+      <span className={cn("inline-flex shrink-0 items-center gap-2 whitespace-nowrap text-[13px] font-semibold", s.text)}>
+        <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: s.dot }} />
+        {s.label}
+      </span>
+    </Tip>
   );
 }
 

@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { formatName } from "@/lib/formatName";
 import { formatDate } from "@/lib/formatDate";
+import { Tip } from "@/components/ui/tooltip";
 
 const thCls = "px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap";
 
@@ -195,32 +196,35 @@ export default function ManageApplicantsPage() {
     const suspended = app.applicant_status === "suspended";
     return (
     <>
-      <button
-        onClick={() => navigate(`/admin/manage-applicants/${app.id}`)}
-        className="p-2 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
-        title="View Details"
-        aria-label="View details"
-      >
-        <Eye className="h-4 w-4" />
-      </button>
-      <button
-        onClick={() => handleDownloadDossier(app.id, formatName(app.name))}
-        disabled={downloadingDossier === app.id}
-        className="p-2 rounded-lg text-teal-600 hover:bg-teal-50 transition-colors disabled:opacity-40"
-        title="Export Debt Collection Dossier"
-        aria-label="Export debt collection dossier"
-      >
-        {downloadingDossier === app.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
-      </button>
-      <button
-        onClick={() => handleStatusChange(app, !suspended)}
-        disabled={isDeleting === app.id}
-        className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${suspended ? "text-emerald-600 hover:bg-emerald-50" : "text-red-600 hover:bg-red-50"}`}
-        title={suspended ? "Reactivate Applicant" : "Suspend Applicant"}
-        aria-label={suspended ? "Reactivate applicant" : "Suspend applicant"}
-      >
-        {isDeleting === app.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : suspended ? <RotateCcw className="h-4 w-4" /> : <Ban className="h-4 w-4" />}
-      </button>
+      <Tip label="View details">
+        <button
+          onClick={() => navigate(`/admin/manage-applicants/${app.id}`)}
+          className="p-2 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
+          aria-label="View details"
+        >
+          <Eye className="h-4 w-4" />
+        </button>
+      </Tip>
+      <Tip label="Export debt collection dossier">
+        <button
+          onClick={() => handleDownloadDossier(app.id, formatName(app.name))}
+          disabled={downloadingDossier === app.id}
+          className="p-2 rounded-lg text-teal-600 hover:bg-teal-50 transition-colors disabled:opacity-40"
+          aria-label="Export debt collection dossier"
+        >
+          {downloadingDossier === app.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+        </button>
+      </Tip>
+      <Tip label={suspended ? "Reactivate applicant" : "Suspend applicant"}>
+        <button
+          onClick={() => handleStatusChange(app, !suspended)}
+          disabled={isDeleting === app.id}
+          className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${suspended ? "text-emerald-600 hover:bg-emerald-50" : "text-red-600 hover:bg-red-50"}`}
+          aria-label={suspended ? "Reactivate applicant" : "Suspend applicant"}
+        >
+          {isDeleting === app.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : suspended ? <RotateCcw className="h-4 w-4" /> : <Ban className="h-4 w-4" />}
+        </button>
+      </Tip>
     </>
     );
   };
@@ -352,7 +356,7 @@ export default function ManageApplicantsPage() {
                   {paginated.map((app) => (
                     <tr key={app.id} className="hover:bg-blue-50/30 transition-colors">
                       <td className="px-4 py-2 font-semibold text-slate-900 whitespace-nowrap">{formatName(app.name) || "—"}</td>
-                      <td className="px-4 py-2 text-slate-600 max-w-[260px]"><span className="block truncate" title={app.email}>{app.email}</span></td>
+                      <td className="px-4 py-2 text-slate-600 max-w-[260px]"><Tip label={app.email} whenClipped><span className="block truncate">{app.email}</span></Tip></td>
                       <td className="px-4 py-2 text-slate-600 whitespace-nowrap">{app.id_number || "—"}</td>
                       <td className="px-4 py-2"><TypeBadge type={app.applicant_type} /></td>
                       <td className="px-4 py-2 text-slate-500 text-xs whitespace-nowrap">{formatDate(app.created_at)}</td>

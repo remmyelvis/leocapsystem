@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { applicantApi, getAllApplicants } from "@/lib/applicantApi";
 import { apiCall } from "@/lib/apiClient";
 import { formatName } from "@/lib/formatName";
+import { Tip } from "@/components/ui/tooltip";
 
 interface StaffMember {
   id: string;
@@ -142,16 +143,17 @@ export default function ManageStaffPage() {
   const deleteButton = (m: StaffMember) => {
     const armed = pendingDeleteId === m.id;
     return (
-      <button
-        onClick={() => handleDeleteClick(m)}
-        disabled={deletingId === m.id}
-        title={armed ? "Click again to remove" : "Remove staff member"}
-        aria-label={armed ? `Click again to remove ${m.name}` : `Remove ${m.name}`}
-        className={`flex items-center gap-1.5 p-2 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 ${armed ? "bg-red-500 text-white" : "text-slate-400 hover:bg-red-50 hover:text-red-500"}`}
-      >
-        {deletingId === m.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-        {armed && "Confirm?"}
-      </button>
+      <Tip label={armed ? "Click again to remove" : "Remove staff member"}>
+        <button
+          onClick={() => handleDeleteClick(m)}
+          disabled={deletingId === m.id}
+          aria-label={armed ? `Click again to remove ${m.name}` : `Remove ${m.name}`}
+          className={`flex items-center gap-1.5 p-2 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 ${armed ? "bg-red-500 text-white" : "text-slate-400 hover:bg-red-50 hover:text-red-500"}`}
+        >
+          {deletingId === m.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+          {armed && "Confirm?"}
+        </button>
+      </Tip>
     );
   };
 

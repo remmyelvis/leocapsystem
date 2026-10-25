@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import type { UserRole } from "@/types/user";
 import { companyLabel as getCompanyLabel } from "@/lib/company";
+import { Tip } from "@/components/ui/tooltip";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -128,38 +129,40 @@ function SidebarContent({
               ? pathname === href
               : pathname.startsWith(href);
           return (
-            <Link
-              key={href}
-              to={href}
-              onClick={onNavClick}
-              title={collapsed ? label : undefined}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                collapsed ? "justify-center" : ""
-              } ${
-                active
-                  ? "bg-red-600 text-white"
-                  : "text-violet-100 hover:bg-violet-800 hover:text-white"
-              }`}
-            >
-              <Icon className="h-5 w-5 flex-shrink-0" />
-              {!collapsed && <span className="truncate">{label}</span>}
-            </Link>
+            <Tip key={href} label={collapsed ? label : null} side="right">
+              <Link
+                to={href}
+                onClick={onNavClick}
+                aria-label={collapsed ? label : undefined}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                  collapsed ? "justify-center" : ""
+                } ${
+                  active
+                    ? "bg-red-600 text-white"
+                    : "text-violet-100 hover:bg-violet-800 hover:text-white"
+                }`}
+              >
+                <Icon className="h-5 w-5 flex-shrink-0" />
+                {!collapsed && <span className="truncate">{label}</span>}
+              </Link>
+            </Tip>
           );
         })}
       </nav>
 
       {/* Sign out */}
       <div className="px-2 pb-4 flex-shrink-0 border-t border-violet-800/50 pt-3">
-        <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
-          title={collapsed ? "Sign Out" : undefined}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-violet-200 hover:bg-violet-800 hover:text-white transition-colors w-full ${
-            collapsed ? "justify-center" : ""
-          }`}
-        >
-          <LogOut className="h-5 w-5 flex-shrink-0" />
-          {!collapsed && "Sign Out"}
-        </button>
+        <Tip label={collapsed ? "Sign Out" : null} side="right">
+          <button
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-violet-200 hover:bg-violet-800 hover:text-white transition-colors w-full ${
+              collapsed ? "justify-center" : ""
+            }`}
+          >
+            <LogOut className="h-5 w-5 flex-shrink-0" />
+            {!collapsed && "Sign Out"}
+          </button>
+        </Tip>
       </div>
     </>
   );

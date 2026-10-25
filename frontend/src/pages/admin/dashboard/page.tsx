@@ -14,6 +14,7 @@ import {
   History,
   TrendingUp,
 } from "lucide-react";
+import { Tip } from "@/components/ui/tooltip";
 
 // Whole shillings throughout the dashboard so figures scan quickly; the loan pages show the cents.
 const KES0 = new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", maximumFractionDigits: 0 });
@@ -188,9 +189,9 @@ export default function AdminDashboardPage() {
               return <option key={m} value={m}>{label}</option>;
             })}
           </select>
-          <button onClick={fetchData} disabled={isLoading} aria-label="Refresh" title="Refresh" className="inline-flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/15 text-white p-1.5 rounded-md transition-colors disabled:opacity-50">
+          <Tip label="Refresh" side="bottom"><button onClick={fetchData} disabled={isLoading} aria-label="Refresh" className="inline-flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/15 text-white p-1.5 rounded-md transition-colors disabled:opacity-50">
             <RefreshCw className={`h-3 w-3 ${isLoading ? "animate-spin" : ""}`} />
-          </button>
+          </button></Tip>
         </div>
       </div>
 
@@ -217,9 +218,11 @@ export default function AdminDashboardPage() {
                   </>
                 );
                 return to ? (
-                  <Link key={label} to={to} title={`View the ${label.toLowerCase()} loans`} className={`${card} block transition-colors hover:bg-slate-50 hover:ring-brand-blue/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue`}>
-                    {body}
-                  </Link>
+                  <Tip key={label} label={`View the ${label.toLowerCase()} loans`} side="bottom">
+                    <Link to={to} className={`${card} block transition-colors hover:bg-slate-50 hover:ring-brand-blue/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue`}>
+                      {body}
+                    </Link>
+                  </Tip>
                 ) : (
                   <div key={label} className={card}>{body}</div>
                 );
@@ -306,7 +309,7 @@ export default function AdminDashboardPage() {
                 <tbody className="divide-y divide-slate-50">
                   {loans.map(app => (
                     <tr key={app.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="py-2 px-4 font-semibold text-slate-800 max-w-[200px]"><span className="block truncate" title={formatName(app.applicant_name)}>{formatName(app.applicant_name)}</span></td>
+                      <td className="py-2 px-4 font-semibold text-slate-800 max-w-[200px]"><Tip label={formatName(app.applicant_name)} whenClipped><span className="block truncate">{formatName(app.applicant_name)}</span></Tip></td>
                       <td className="py-2 px-4 text-slate-600 capitalize whitespace-nowrap">{app.company}</td>
                       <td className="py-2 px-4 text-slate-700 text-right whitespace-nowrap tabular-nums">{KES0.format(parseFloat(app.amount_applied || '0'))}</td>
                       <td className="py-2 px-4 text-slate-700 text-right whitespace-nowrap tabular-nums">{KES0.format(parseFloat(app.disbursement_amount || '0'))}</td>

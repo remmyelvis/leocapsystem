@@ -12,6 +12,7 @@ import {
   DEFAULT_ACTIONS, HTTP_METHODS, ACTOR_ROLES, PAGE_SIZES, METHOD_STYLES,
   formatAction, formatRole, formatDateTime, actionStyle, buildQuery,
 } from "./auditLogTypes";
+import { Tip } from "@/components/ui/tooltip";
 
 const inputCls =
   "w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-[13px] bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors";
@@ -186,13 +187,15 @@ export default function SystemLogsTab() {
             <span className="text-xs text-slate-400 whitespace-nowrap">
               {pagination ? `${pagination.total_records.toLocaleString()} record${pagination.total_records !== 1 ? "s" : ""}` : ""}
             </span>
-            <button
-              onClick={() => setRefreshKey((k) => k + 1)}
-              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
-              title="Refresh"
-            >
-              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-            </button>
+            <Tip label="Refresh">
+              <button
+                onClick={() => setRefreshKey((k) => k + 1)}
+                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
+                aria-label="Refresh"
+              >
+                <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              </button>
+            </Tip>
           </div>
         </div>
 
@@ -230,9 +233,9 @@ export default function SystemLogsTab() {
                           {time && <p className="text-xs text-slate-400">{time}</p>}
                         </td>
                         <td className="px-4 py-2.5">
-                          <p className="font-semibold text-slate-800 truncate max-w-[180px] 2xl:max-w-[260px]" title={log.actor_email || log.actor_id || ""}>
+                          <Tip label={log.actor_email || log.actor_id} whenClipped><p className="font-semibold text-slate-800 truncate max-w-[180px] 2xl:max-w-[260px]">
                             {log.actor_email || log.actor_id || "Unknown"}
-                          </p>
+                          </p></Tip>
                           <p className="text-xs text-slate-400 capitalize">{formatRole(log.actor_role)}</p>
                         </td>
                         <td className="px-4 py-2.5 whitespace-nowrap">
@@ -242,7 +245,7 @@ export default function SystemLogsTab() {
                           {log.entity_type && <p className="text-[11px] text-slate-400 mt-1">{log.entity_type}</p>}
                         </td>
                         <td className="px-4 py-2.5 w-full max-w-0 min-w-[260px] text-slate-700">
-                          <p className="line-clamp-3 break-words" title={log.description || ""}>{log.description || "—"}</p>
+                          <Tip label={log.description} whenClipped><p className="line-clamp-3 break-words">{log.description || "—"}</p></Tip>
                           <Endpoint log={log} />
                         </td>
                         <td className="px-4 py-2.5 whitespace-nowrap"><StatusBadge failed={failed} status={log.status} /></td>
@@ -338,7 +341,7 @@ function Endpoint({ log }: { log: AuditLog }) {
   return (
     <div className="flex items-center gap-2 mt-1 min-w-0">
       {method && <span className={`shrink-0 text-[11px] font-bold px-1.5 py-0.5 rounded ${METHOD_STYLES[method] || "bg-slate-100 text-slate-600"}`}>{method}</span>}
-      {log.endpoint && <span className="font-mono text-[11px] text-slate-400 truncate" title={log.endpoint}>{log.endpoint}</span>}
+      {log.endpoint && <Tip label={log.endpoint} whenClipped><span className="font-mono text-[11px] text-slate-400 truncate">{log.endpoint}</span></Tip>}
     </div>
   );
 }

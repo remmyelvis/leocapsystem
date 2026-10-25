@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { AlertTriangle, ArrowDown, ArrowUp, Download, FileText, Lock, Pencil, RefreshCw, Search, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tip } from "@/components/ui/tooltip";
 import { apiCall, downloadFile } from "@/lib/apiClient";
 import type { AdminApplicationItem } from "@/lib/adminApi";
 import { getLoanTypeDisplay } from "@/hooks/useAdminData";
@@ -488,28 +489,32 @@ export default function ApplicantStatement({ applicantId, applicantName, loans, 
   const SortIcon = newestFirst ? ArrowDown : ArrowUp;
   const actionCell = (e: Entry) =>
     e.locked ? (
-      <span tabIndex={0} title={e.locked} className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40">
-        <Lock className="h-3.5 w-3.5" />
-        <span className="sr-only">Cannot be changed or deleted: {e.locked}</span>
-      </span>
+      <Tip label={e.locked} side="left">
+        <span tabIndex={0} className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40">
+          <Lock className="h-3.5 w-3.5" />
+          <span className="sr-only">Cannot be changed or deleted: {e.locked}</span>
+        </span>
+      </Tip>
     ) : (
       <span className="inline-flex items-center max-sm:flex-col">
-        <button
-          onClick={() => setAmending(e)}
-          aria-label={`Edit entry: ${e.memo}`}
-          title="Edit this entry (amount, date or description)"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-blue-800 transition-colors hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40"
-        >
-          <Pencil className="h-4 w-4" />
-        </button>
-        <button
-          onClick={() => setTarget(e)}
-          aria-label={`Delete entry: ${e.memo}`}
-          title="Delete this entry (recorded in error)"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-red-700 transition-colors hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
+        <Tip label="Edit amount, date or description" side="left">
+          <button
+            onClick={() => setAmending(e)}
+            aria-label={`Edit entry: ${e.memo}`}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-blue-800 transition-colors hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40"
+          >
+            <Pencil className="h-4 w-4" />
+          </button>
+        </Tip>
+        <Tip label="Delete (recorded in error)" side="left">
+          <button
+            onClick={() => setTarget(e)}
+            aria-label={`Delete entry: ${e.memo}`}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-red-700 transition-colors hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </Tip>
       </span>
     );
 
@@ -530,23 +535,25 @@ export default function ApplicantStatement({ applicantId, applicantName, loans, 
             <label htmlFor="stmt-date" className="block text-[10px] font-semibold uppercase tracking-wide text-slate-600">Date on the PDF</label>
             <input id="stmt-date" type="date" value={statementDate} onChange={(e) => setStatementDate(e.target.value)} className={cn(field, "py-1.5")} />
           </div>
-          <Button
-            onClick={handleDownload}
-            disabled={downloading || all.length === 0 || badRange}
-            title="The PDF covers the loan and dates chosen below"
-            className="h-9 rounded-lg bg-blue-900 text-white hover:bg-slate-800 disabled:opacity-50"
-          >
-            {downloading ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-            {downloading ? "Preparing…" : "Download PDF"}
-          </Button>
-          <button
-            onClick={() => { setEntries(null); load(); }}
-            aria-label="Refresh the statement"
-            title="Refresh"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 ring-1 ring-slate-200 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40"
-          >
-            <RefreshCw className={cn("h-4 w-4", entries === null && !loadError && "animate-spin")} />
-          </button>
+          <Tip label="The PDF covers the loan and dates chosen below" wrap>
+            <Button
+              onClick={handleDownload}
+              disabled={downloading || all.length === 0 || badRange}
+              className="h-9 rounded-lg bg-blue-900 text-white hover:bg-slate-800 disabled:opacity-50"
+            >
+              {downloading ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+              {downloading ? "Preparing…" : "Download PDF"}
+            </Button>
+          </Tip>
+          <Tip label="Refresh">
+            <button
+              onClick={() => { setEntries(null); load(); }}
+              aria-label="Refresh the statement"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 ring-1 ring-slate-200 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40"
+            >
+              <RefreshCw className={cn("h-4 w-4", entries === null && !loadError && "animate-spin")} />
+            </button>
+          </Tip>
         </div>
       </div>
 
@@ -657,9 +664,11 @@ export default function ApplicantStatement({ applicantId, applicantName, loans, 
                   <thead className="sticky top-0 z-10 bg-slate-50 text-[11px] font-bold uppercase tracking-wide text-slate-600 shadow-[0_1px_0_0_theme(colors.slate.200)]">
                     <tr>
                       <th scope="col" className="px-4 py-2.5" aria-sort={newestFirst ? "descending" : "ascending"}>
-                        <button onClick={() => setNewestFirst((v) => !v)} className="inline-flex items-center gap-1 font-bold uppercase tracking-wide hover:text-brand-blue" title={newestFirst ? "Newest first: click for oldest first" : "Oldest first: click for newest first"}>
-                          Date <SortIcon className="h-3 w-3" />
-                        </button>
+                        <Tip label={newestFirst ? "Newest first: click for oldest first" : "Oldest first: click for newest first"} side="bottom" align="start">
+                          <button onClick={() => setNewestFirst((v) => !v)} className="inline-flex items-center gap-1 font-bold uppercase tracking-wide hover:text-brand-blue">
+                            Date <SortIcon className="h-3 w-3" />
+                          </button>
+                        </Tip>
                       </th>
                       <th scope="col" className="px-4 py-2.5">Entry</th>
                       <th scope="col" className="px-4 py-2.5 text-right">Charged</th>
@@ -676,7 +685,7 @@ export default function ApplicantStatement({ applicantId, applicantName, loans, 
                           <p className="font-medium text-slate-900">{e.memo}</p>
                           <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-600">
                             <span className={cn("rounded-full px-2 py-0.5 font-semibold", KIND_BADGE[e.kind])}>{KIND_NAME[e.kind]}</span>
-                            {manyLoans && e.application_id && <button onClick={() => setLoan(e.application_id!)} title="Show only this loan" className="hover:text-brand-blue hover:underline">{loanName(e.application_id)}</button>}
+                            {manyLoans && e.application_id && <Tip label="Show only this loan"><button onClick={() => setLoan(e.application_id!)} className="hover:text-brand-blue hover:underline">{loanName(e.application_id)}</button></Tip>}
                           </p>
                         </td>
                         <td className="whitespace-nowrap px-4 py-2.5 text-right tabular-nums text-red-700">{amountOrDash(e.debit)}</td>

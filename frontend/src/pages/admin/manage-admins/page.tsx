@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, Info, Lock, Loader2, Mail, Phone, Shield, Trash2, User, UserPlus } from "lucide-react";
+import { Tip } from "@/components/ui/tooltip";
 
 // ---------------------------------------------------------------------------
 // Schema
@@ -229,24 +230,21 @@ export default function ManageAdminsPage({ embedded = false }: { embedded?: bool
                       </p>
                     </div>
                     {canDelete && (
-                      <button
-                        onClick={() => handleRemove(admin.id, admin.name, admin.email)}
-                        disabled={isLoading}
-                        aria-label={confirmRemoveId === admin.id ? `Click again to remove ${admin.name}` : `Remove ${admin.name}`}
-                        className={`flex items-center gap-1.5 p-2 rounded-lg text-xs font-semibold transition-colors ${
-                          confirmRemoveId === admin.id
-                            ? "bg-red-600 text-white"
-                            : "text-slate-400 hover:bg-red-50 hover:text-red-600"
-                        } disabled:opacity-50`}
-                        title={
-                          confirmRemoveId === admin.id
-                            ? "Click again to confirm"
-                            : "Remove admin"
-                        }
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        {confirmRemoveId === admin.id && "Confirm?"}
-                      </button>
+                      <Tip label={confirmRemoveId === admin.id ? "Click again to confirm" : "Remove admin"}>
+                        <button
+                          onClick={() => handleRemove(admin.id, admin.name, admin.email)}
+                          disabled={isLoading}
+                          aria-label={confirmRemoveId === admin.id ? `Click again to remove ${admin.name}` : `Remove ${admin.name}`}
+                          className={`flex items-center gap-1.5 p-2 rounded-lg text-xs font-semibold transition-colors ${
+                            confirmRemoveId === admin.id
+                              ? "bg-red-600 text-white"
+                              : "text-slate-400 hover:bg-red-50 hover:text-red-600"
+                          } disabled:opacity-50`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          {confirmRemoveId === admin.id && "Confirm?"}
+                        </button>
+                      </Tip>
                     )}
                   </div>
                 );

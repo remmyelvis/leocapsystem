@@ -4,6 +4,7 @@ import { Building2, Plus, Edit2, Trash2, X, CheckCircle2, FileText, Mail} from "
 import { apiCall } from "@/lib/apiClient";
 import axiosInstance from "@/lib/axiosInstance";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tip } from "@/components/ui/tooltip";
 
 interface Company {
   id: string;
@@ -214,15 +215,21 @@ export default function CompaniesPage() {
 
   const actions = (comp: Company) => (
     <>
-      <button onClick={() => handleDownloadMou(comp.id)} disabled={downloadingMou === comp.id} className="p-2 rounded-lg hover:bg-slate-100 hover:text-blue-600 transition-colors disabled:opacity-50" title="Download MoU" aria-label="Download MoU">
-        <FileText className="h-4 w-4" />
-      </button>
-      <button onClick={() => openOnboardModal(comp)} className="p-2 rounded-lg hover:bg-slate-100 hover:text-emerald-600 transition-colors" title="Send Onboarding Email" aria-label="Send onboarding email">
-        <Mail className="h-4 w-4" />
-      </button>
-      <button onClick={() => openEditModal(comp)} className="p-2 rounded-lg hover:bg-slate-100 hover:text-brand-blue transition-colors" title="Edit company" aria-label="Edit company">
-        <Edit2 className="h-4 w-4" />
-      </button>
+      <Tip label="Download MoU">
+        <button onClick={() => handleDownloadMou(comp.id)} disabled={downloadingMou === comp.id} className="p-2 rounded-lg hover:bg-slate-100 hover:text-blue-600 transition-colors disabled:opacity-50" aria-label="Download MoU">
+          <FileText className="h-4 w-4" />
+        </button>
+      </Tip>
+      <Tip label="Send onboarding email">
+        <button onClick={() => openOnboardModal(comp)} className="p-2 rounded-lg hover:bg-slate-100 hover:text-emerald-600 transition-colors" aria-label="Send onboarding email">
+          <Mail className="h-4 w-4" />
+        </button>
+      </Tip>
+      <Tip label="Edit company">
+        <button onClick={() => openEditModal(comp)} className="p-2 rounded-lg hover:bg-slate-100 hover:text-brand-blue transition-colors" aria-label="Edit company">
+          <Edit2 className="h-4 w-4" />
+        </button>
+      </Tip>
     </>
   );
 
@@ -278,7 +285,7 @@ export default function CompaniesPage() {
                     <tr key={comp.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-4 lg:px-6 py-2.5 font-semibold text-slate-900">{comp.name}</td>
                       <td className="px-4 py-2.5"><CodeBadge code={comp.code} /></td>
-                      <td className="px-4 py-2.5 text-slate-500 max-w-[260px]"><span className="block truncate" title={comp.hr_email || ""}>{comp.hr_email || "N/A"}</span></td>
+                      <td className="px-4 py-2.5 text-slate-500 max-w-[260px]"><Tip label={comp.hr_email} whenClipped><span className="block truncate">{comp.hr_email || "N/A"}</span></Tip></td>
                       <td className="px-4 py-2.5 text-slate-500 whitespace-nowrap">{comp.interest_rate}%</td>
                       <td className="px-4 py-2.5"><StatusBadge active={comp.status === "active"} /></td>
                       <td className="px-4 lg:px-6 py-2.5"><div className="flex items-center justify-end gap-1 text-slate-400">{actions(comp)}</div></td>

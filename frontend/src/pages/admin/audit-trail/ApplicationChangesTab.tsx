@@ -6,6 +6,7 @@ import { apiCall } from "@/lib/apiClient";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { formatRole } from "./auditLogTypes";
+import { Tip } from "@/components/ui/tooltip";
 
 interface AuditTrail {
   id: string;
@@ -62,14 +63,15 @@ const thCls = "text-left px-4 py-2 text-[11px] font-bold text-slate-500 uppercas
 function Borrower({ item }: { item: AuditTrail }) {
   return (
     <div className="min-w-0">
-      <Link
-        to={`/admin/applications/${item.application_id}`}
-        className="inline-flex items-center gap-1 max-w-[240px] font-semibold text-slate-800 hover:text-blue-700 transition-colors"
-        title={`Open loan ${item.application_id}`}
-      >
-        <span className="truncate">{formatName(item.applicant_name) || "Unknown borrower"}</span>
-        <ExternalLink className="h-3 w-3 shrink-0 text-slate-400" />
-      </Link>
+      <Tip label={`Open loan ${item.application_id}`} align="start">
+        <Link
+          to={`/admin/applications/${item.application_id}`}
+          className="inline-flex items-center gap-1 max-w-[240px] font-semibold text-slate-800 hover:text-blue-700 transition-colors"
+        >
+          <span className="truncate">{formatName(item.applicant_name) || "Unknown borrower"}</span>
+          <ExternalLink className="h-3 w-3 shrink-0 text-slate-400" />
+        </Link>
+      </Tip>
       <p className="text-xs text-slate-400 capitalize">{item.company ? label(item.company) : "—"} • {item.application_id.substring(0, 8)}</p>
     </div>
   );
@@ -190,13 +192,14 @@ export default function ApplicationChangesTab() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-100">
-                    <th
-                      className="text-left pl-6 pr-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap cursor-pointer hover:bg-slate-50 transition-colors"
-                      onClick={() => { setOrder(order === "desc" ? "asc" : "desc"); setPage(1); }}
-                      title={order === "desc" ? "Newest first (click for oldest first)" : "Oldest first (click for newest first)"}
-                    >
-                      <div className="flex items-center gap-1">Date <ArrowUpDown className="h-3 w-3" /></div>
-                    </th>
+                    <Tip label={order === "desc" ? "Newest first (click for oldest first)" : "Oldest first (click for newest first)"} side="bottom" align="start">
+                      <th
+                        className="text-left pl-6 pr-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap cursor-pointer hover:bg-slate-50 transition-colors"
+                        onClick={() => { setOrder(order === "desc" ? "asc" : "desc"); setPage(1); }}
+                      >
+                        <div className="flex items-center gap-1">Date <ArrowUpDown className="h-3 w-3" /></div>
+                      </th>
+                    </Tip>
                     <th className={thCls}>Changed by</th>
                     <th className={thCls}>Borrower</th>
                     <th className={thCls}>What changed</th>
@@ -213,13 +216,13 @@ export default function ApplicationChangesTab() {
                           {time && <p className="text-xs text-slate-400">{time}</p>}
                         </td>
                         <td className="px-4 py-2.5">
-                          <p className="font-semibold text-slate-800 truncate max-w-[180px] 2xl:max-w-[260px]" title={item.changed_by_email}>{item.changed_by_email}</p>
+                          <Tip label={item.changed_by_email} whenClipped><p className="font-semibold text-slate-800 truncate max-w-[180px] 2xl:max-w-[260px]">{item.changed_by_email}</p></Tip>
                           <p className="text-xs text-slate-400 capitalize">{roleLabel(item.changed_by_role)}{item.changed_by_company ? ` • ${item.changed_by_company}` : ""}</p>
                         </td>
                         <td className="px-4 py-2.5"><Borrower item={item} /></td>
                         <td className="px-4 py-2.5 w-full max-w-0 min-w-[240px]">
                           <p className="font-medium text-slate-800 break-words">{summarize(item)}</p>
-                          {item.notes && item.old_status !== item.new_status && <p className="text-xs text-slate-400 mt-0.5 line-clamp-2 break-words" title={item.notes}>{item.notes}</p>}
+                          {item.notes && item.old_status !== item.new_status && <Tip label={item.notes} whenClipped><p className="text-xs text-slate-400 mt-0.5 line-clamp-2 break-words">{item.notes}</p></Tip>}
                         </td>
                         <td className="pl-4 pr-6 py-2.5 text-right whitespace-nowrap"><ViewLink id={item.id} /></td>
                       </tr>

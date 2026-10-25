@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import type { UserRole } from "@/types/user";
 import { formatName } from "@/lib/formatName";
+import { Tip } from "@/components/ui/tooltip";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -65,22 +66,23 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
     navItems.map(({ href, label, icon: Icon }) => {
       const active = href === "/dashboard" ? pathname === href : pathname.startsWith(href);
       return (
-        <Link
-          key={href}
-          to={href}
-          onClick={onNav}
-          title={collapsed ? label : undefined}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-            collapsed ? "justify-center" : ""
-          } ${
-            active
-              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20 ring-1 ring-indigo-500/50 shadow-sm"
-              : "text-slate-400 hover:bg-indigo-500/10 hover:text-indigo-300"
-          }`}
-        >
-          <Icon className="h-5 w-5 flex-shrink-0" />
-          {!collapsed && <span className="truncate">{label}</span>}
-        </Link>
+        <Tip key={href} label={collapsed ? label : null} side="right">
+          <Link
+            to={href}
+            onClick={onNav}
+            aria-label={collapsed ? label : undefined}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+              collapsed ? "justify-center" : ""
+            } ${
+              active
+                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20 ring-1 ring-indigo-500/50 shadow-sm"
+                : "text-slate-400 hover:bg-indigo-500/10 hover:text-indigo-300"
+            }`}
+          >
+            <Icon className="h-5 w-5 flex-shrink-0" />
+            {!collapsed && <span className="truncate">{label}</span>}
+          </Link>
+        </Tip>
       );
     });
 
@@ -98,13 +100,15 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
         </nav>
         {/* Sign out */}
         <div className="px-2 pb-4 border-t border-slate-800 pt-3 flex-shrink-0">
-          <button
-            onClick={handleSignOut}
-            title="Sign Out"
-            className="flex items-center justify-center w-full px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-indigo-500/10 hover:text-indigo-300 transition-colors"
-          >
-            <LogOut className="h-5 w-5" />
-          </button>
+          <Tip label="Sign Out" side="right">
+            <button
+              onClick={handleSignOut}
+              aria-label="Sign out"
+              className="flex items-center justify-center w-full px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-indigo-500/10 hover:text-indigo-300 transition-colors"
+            >
+              <LogOut className="h-5 w-5" />
+            </button>
+          </Tip>
         </div>
       </aside>
 

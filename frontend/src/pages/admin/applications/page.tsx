@@ -16,6 +16,7 @@ import {
 import { adminApplicationsApi } from "@/lib/adminApi";
 import { apiCall } from "@/lib/apiClient";
 import { formatName } from "@/lib/formatName";
+import { Tip } from "@/components/ui/tooltip";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -63,11 +64,13 @@ const Pill = ({ className, children }: { className: string; children: React.Reac
 );
 
 const ViewButton = ({ id }: { id: string }) => (
-  <Link to={`/admin/applications/${id}`} aria-label="View details" title="View Details">
-    <Button size="sm" variant="outline" className="h-7 px-2 rounded-lg border-slate-200 gap-1.5">
-      <Eye className="h-3.5 w-3.5" /> <span className="xl:hidden text-xs font-semibold">View</span>
-    </Button>
-  </Link>
+  <Tip label="View details">
+    <Link to={`/admin/applications/${id}`} aria-label="View details">
+      <Button size="sm" variant="outline" className="h-7 px-2 rounded-lg border-slate-200 gap-1.5">
+        <Eye className="h-3.5 w-3.5" /> <span className="xl:hidden text-xs font-semibold">View</span>
+      </Button>
+    </Link>
+  </Tip>
 );
 
 // ---------------------------------------------------------------------------
@@ -278,16 +281,18 @@ return (
           )}
           {urlType === "salary_advance" && (
             <>
-              <select
-                value={payMonth}
-                onChange={(e) => setPayMonth(e.target.value)}
-                title="Repayment month the Mark Paid buttons clear"
-                className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-[13px] bg-white"
-              >
-                {MONTH_NAMES.map((m) => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
-              </select>
+              <Tip label="Repayment month the Mark Paid buttons clear">
+                <select
+                  value={payMonth}
+                  onChange={(e) => setPayMonth(e.target.value)}
+                  aria-label="Repayment month"
+                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-[13px] bg-white"
+                >
+                  {MONTH_NAMES.map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </Tip>
               <button
                 onClick={() => handleMarkCompanyPaid("nakama", "Nakama")}
                 disabled={marking}
@@ -447,8 +452,8 @@ return (
                           />
                         </td>
                         <td className="px-4 py-2.5 max-w-[240px]">
-                          <p className="font-semibold text-slate-800 truncate" title={formatName(app.customerName)}>{formatName(app.customerName)}</p>
-                          <p className="text-xs text-slate-400 truncate" title={app.email}>{app.email}</p>
+                          <Tip label={formatName(app.customerName)} whenClipped><p className="font-semibold text-slate-800 truncate">{formatName(app.customerName)}</p></Tip>
+                          <Tip label={app.email} whenClipped><p className="text-xs text-slate-400 truncate">{app.email}</p></Tip>
                         </td>
                         <td className="px-4 py-2.5 whitespace-nowrap">
                           <p className="text-slate-700">{getLoanTypeDisplay(app.loanType)}</p>

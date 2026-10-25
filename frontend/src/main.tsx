@@ -7,6 +7,7 @@ import './pages/globals.css';
 import { AuthProvider } from './contexts/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MetricsProvider } from './components/global/MetricsProvider';
+import { TooltipProvider } from './components/ui/tooltip';
 
 const queryClient = new QueryClient();
 
@@ -16,7 +17,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <AuthProvider initialUser={null}>
         <MetricsProvider>
           <BrowserRouter>
-            <App />
+            <TooltipProvider>
+              <App />
+            </TooltipProvider>
             <Toaster richColors position="top-right" closeButton />
           </BrowserRouter>
         </MetricsProvider>
