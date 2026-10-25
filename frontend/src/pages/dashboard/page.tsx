@@ -223,7 +223,7 @@ export default function DashboardPage() {
 
   const outstandingBalance = outstandingLoans.reduce((sum, app) => sum + (app.repaymentAmount || 0), 0);
 
-  const upcomingDueDates = applications
+  const upcomingDueDates = outstandingLoans
     .map((a) => a.dueDate)
     .filter(Boolean)
     .sort((a, b) => new Date(a!).getTime() - new Date(b!).getTime());
@@ -277,7 +277,7 @@ export default function DashboardPage() {
       value: nextDueDate
         ? new Date(nextDueDate).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" })
         : "—",
-      tip: "The earliest due date for your loan applications.",
+      tip: "The earliest due date among the loans you still owe.",
     },
   ];
 

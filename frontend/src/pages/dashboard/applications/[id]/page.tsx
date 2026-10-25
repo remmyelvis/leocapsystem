@@ -36,6 +36,7 @@ const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
 const LOAN_TYPE_LABELS: Record<string, string> = {
   IDEON_SALARY_ADVANCE: "Ideon Salary Advance",
   NAKAMA_SALARY_ADVANCE: "Nakama Salary Advance",
+  SALARY_ADVANCE: "Salary Advance",
   GENERAL_LOAN: "Personal / General Loan",
 };
 
@@ -72,7 +73,7 @@ function mapApiToApp(appData: Record<string, unknown>, bioData: Record<string, u
 
   let loanType = "GENERAL_LOAN";
   if (appData.loan_type === "salary_advance") {
-    loanType = appData.company === "nakama" ? "NAKAMA_SALARY_ADVANCE" : "IDEON_SALARY_ADVANCE";
+    loanType = appData.company === "nakama" ? "NAKAMA_SALARY_ADVANCE" : appData.company === "ideon" ? "IDEON_SALARY_ADVANCE" : "SALARY_ADVANCE";
   }
 
   // Parse amount - handle string/number and ensure 0 is preserved
@@ -388,7 +389,8 @@ export default function ApplicationDetailPage() {
 
   const isSalaryAdvance =
     app.loanType === "IDEON_SALARY_ADVANCE" ||
-    app.loanType === "NAKAMA_SALARY_ADVANCE";
+    app.loanType === "NAKAMA_SALARY_ADVANCE" ||
+    app.loanType === "SALARY_ADVANCE";
 
   // Check if rate has been set - backend now properly sets status to "RATE_SET"
   const hasRateBeenSet = app.status === "RATE_SET";
