@@ -177,7 +177,9 @@ def export_statement(applicant, apps, df, statement_request_date=None):
     apps = sorted([a for a in apps if a], key=lambda x: x.created_at if x.created_at else datetime.min)
     
     if not df.empty and 'date' in df.columns:
-        df['parsed_date'] = pd.to_datetime(df['date'], errors='coerce')
+        # The dates are isoformat strings, with or without fractions of a second. Without format='ISO8601' pandas guesses one shape
+        # from the first row and turns every row of the other shape into NaT (printed "nan", and left out of a loan's window).
+        df['parsed_date'] = pd.to_datetime(df['date'], errors='coerce', format='ISO8601')
     else:
         df['parsed_date'] = pd.NaT
 
@@ -376,7 +378,7 @@ def export_statement(applicant, apps, df, statement_request_date=None):
             
             # Format date for PDF display
             if 'parsed_date' in app_df.columns:
-                app_df['date'] = app_df['parsed_date'].dt.strftime('%d %b %Y')
+                app_df['date'] = app_df['parsed_date'].dt.strftime('%d %b %Y').fillna('N/A')
                 
             # Now drop parsed date
             if 'parsed_date' in app_df.columns:
