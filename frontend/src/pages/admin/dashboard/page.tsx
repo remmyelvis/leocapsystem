@@ -6,14 +6,20 @@ import { apiCall } from "@/lib/apiClient";
 import { formatName } from "@/lib/formatName";
 import {
   AlertTriangle,
+  ArrowRight,
   Banknote,
+  Check,
+  CheckCheck,
   CheckCircle,
   Clock,
   FileText,
   RefreshCw,
   History,
+  Loader2,
   TrendingUp,
+  X,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Tip } from "@/components/ui/tooltip";
 import { SortHeader, SortSelect, type SortSpecs, type SortState } from "@/components/ui/sortable";
 import { sortRows, timeOf } from "@/lib/sortRows";
@@ -45,6 +51,20 @@ const SORT_BY: Record<SortKey, (app: any) => string | number | null> = {
   due: (app) => (isOpenLoan(app) ? timeOf(app.due_date) : null),
 };
 
+// The actions in the pipeline's last column are real buttons: a border, a shadow, a pressed state and a focus ring. One solid
+// button per row is the next step (green = approve or finish, navy = go and pay out); Reject is the quiet outline one.
+// On a phone the 44px minimum height of globals.css applies to the buttons, and to the Disburse link through the pointer rule.
+const ACTION =
+  "inline-flex items-center justify-center gap-1.5 h-7 rounded-md border px-2.5 text-xs font-semibold whitespace-nowrap shadow-sm transition " +
+  "active:scale-[0.97] active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 " +
+  "disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100 [@media(pointer:coarse)]:min-h-11";
+const TONE = {
+  go: "border-emerald-900/20 bg-emerald-700 text-white hover:bg-emerald-800 focus-visible:ring-emerald-600",
+  reject: "border-red-200 bg-white text-red-700 hover:border-red-300 hover:bg-red-50 focus-visible:ring-red-500",
+  pay: "border-[#0F2C59]/30 bg-[#0F2C59] text-white hover:bg-[#0b2246] focus-visible:ring-[#0F2C59]",
+};
+const DONE_TEXT: Record<string, string> = { approve: "Loan approved", reject: "Loan rejected", paid: "Loan marked as paid" };
+
 const statusLabel = (status?: string) => (status || "—").replace(/_/g, " ");
 const statusStyle = (status?: string) => (status === "disbursed" ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700");
 
@@ -53,6 +73,8 @@ export default function AdminDashboardPage() {
   const [kpis, setKpis] = useState<any>(null);
   const [loans, setLoans] = useState<any[]>([]);
   const [sort, setSort] = useState<SortState<SortKey>>({ key: "created_at", dir: "desc" });
+  // the loan and action being sent: that row's buttons wait, so a double tap cannot send it twice
+  const [busy, setBusy] = useState<{ id: string; action: string } | null>(null);
   const sortedLoans = useMemo(() => sortRows(loans, sort, SORT_BY), [loans, sort]);
   const [auditTrails, setAuditTrails] = useState<any[]>([]);
   
@@ -132,15 +154,19 @@ export default function AdminDashboardPage() {
   }, [statusFilter, companyFilter]);
 
   const handleAction = async (id: string, action: string) => {
+    setBusy({ id, action });
     try {
-      const res = await apiCall(`/api/applications/${action}/${id}`, { method: "PATCH" });
-      if (!res.error) {
-        fetchData();
+      const res = await apiCall<{ message?: string }>(`/api/applications/${action}/${id}`, { method: "PATCH" });
+      if (res.error) {
+        toast.error(res.error || "Action failed");
       } else {
-        alert(res.error || "Action failed");
+        toast.success(res.data?.message === "Already paid" ? "That loan was already marked as paid" : DONE_TEXT[action] ?? "Done");
+        fetchData();
       }
-    } catch (err) {
-      alert("An error occurred");
+    } catch {
+      toast.error("Something went wrong. Nothing was changed.");
+    } finally {
+      setBusy(null);
     }
   };
 
@@ -177,22 +203,46 @@ export default function AdminDashboardPage() {
           return new Date(parseInt(yr), parseInt(mo) - 1).toLocaleString('default', { month: 'long', year: 'numeric' });
         })();
 
-  const rowActions = (app: any) => (
-    <>
-      {app.loan_status === 'pending_processing' && (
-        <>
-          <button onClick={() => handleAction(app.id, 'approve')} className="text-[11px] font-semibold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md hover:bg-emerald-200">Approve</button>
-          <button onClick={() => handleAction(app.id, 'reject')} className="text-[11px] font-semibold bg-red-100 text-red-700 px-2 py-0.5 rounded-md hover:bg-red-200">Reject</button>
-        </>
-      )}
-      {app.loan_status === 'approved' && (
-        <Link to={`/admin/applications/${app.id}`} className="text-[11px] font-semibold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md hover:bg-blue-200 inline-block">Disburse</Link>
-      )}
-      {app.loan_status === 'disbursed' && (
-        <button onClick={() => handleAction(app.id, 'paid')} className="text-[11px] font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-md hover:bg-green-200">Mark Paid</button>
-      )}
-    </>
-  );
+  const rowActions = (app: any) => {
+    const who = formatName(app.applicant_name);
+    const mine = busy?.id === app.id;
+    // one action button: icon + label, a spinner while it is being sent, and a hint for what it does
+    const act = (action: string, label: string, hint: string, tone: string, Icon: typeof Check) => (
+      <Tip label={hint}>
+        <button
+          onClick={() => handleAction(app.id, action)}
+          disabled={mine}
+          aria-busy={mine && busy?.action === action}
+          aria-label={`${label}: ${who}`}
+          className={`${ACTION} ${tone}`}
+        >
+          {mine && busy?.action === action ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Icon className="h-3.5 w-3.5" aria-hidden />}
+          {label}
+        </button>
+      </Tip>
+    );
+    return (
+      <>
+        {app.loan_status === 'pending_processing' && (
+          <>
+            {act("approve", "Approve", "Approve this application", TONE.go, Check)}
+            {act("reject", "Reject", "Reject this application", TONE.reject, X)}
+          </>
+        )}
+        {app.loan_status === 'approved' && (
+          <Tip label="Open the loan to record the payout">
+            <Link to={`/admin/applications/${app.id}`} aria-label={`Disburse: ${who}`} className={`${ACTION} ${TONE.pay}`}>
+              Disburse <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+            </Link>
+          </Tip>
+        )}
+        {isOpenLoan(app) && act("paid", "Mark paid", "Record this loan as fully repaid. The borrower is emailed.", TONE.go, CheckCheck)}
+        {app.loan_status === 'disbursed' && !isOpenLoan(app) && (
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700"><Check className="h-3.5 w-3.5" aria-hidden />Paid</span>
+        )}
+      </>
+    );
+  };
 
   return (
     <div className="p-4 sm:p-6 w-full max-w-[1600px] mx-auto space-y-3 sm:space-y-4 min-h-full">
