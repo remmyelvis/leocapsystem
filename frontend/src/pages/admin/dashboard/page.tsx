@@ -55,7 +55,7 @@ const SORT_BY: Record<SortKey, (app: any) => string | number | null> = {
 // button per row is the next step (green = approve or finish, navy = go and pay out); Reject is the quiet outline one.
 // On a phone the 44px minimum height of globals.css applies to the buttons, and to the Disburse link through the pointer rule.
 const ACTION =
-  "inline-flex items-center justify-center gap-1.5 h-7 rounded-md border px-2.5 text-xs font-semibold whitespace-nowrap shadow-sm transition " +
+  "inline-flex items-center justify-center gap-1 h-6 rounded-md border px-2 text-xs font-semibold whitespace-nowrap shadow-sm transition " +
   "active:scale-[0.97] active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 " +
   "disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100 [@media(pointer:coarse)]:min-h-11";
 const TONE = {
@@ -216,7 +216,7 @@ export default function AdminDashboardPage() {
           aria-label={`${label}: ${who}`}
           className={`${ACTION} ${tone}`}
         >
-          {mine && busy?.action === action ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Icon className="h-3.5 w-3.5" aria-hidden />}
+          {mine && busy?.action === action ? <Loader2 className="h-3 w-3 animate-spin" aria-hidden /> : <Icon className="h-3 w-3" aria-hidden />}
           {label}
         </button>
       </Tip>
@@ -232,7 +232,7 @@ export default function AdminDashboardPage() {
         {app.loan_status === 'approved' && (
           <Tip label="Open the loan to record the payout">
             <Link to={`/admin/applications/${app.id}`} aria-label={`Disburse: ${who}`} className={`${ACTION} ${TONE.pay}`}>
-              Disburse <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+              Disburse <ArrowRight className="h-3 w-3" aria-hidden />
             </Link>
           </Tip>
         )}
