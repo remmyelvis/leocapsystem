@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/contexts/AuthContext";
@@ -15,9 +15,35 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { Tip } from "@/components/ui/tooltip";
+import { SortHeader, SortSelect, type SortSpecs, type SortState } from "@/components/ui/sortable";
+import { sortRows, timeOf } from "@/lib/sortRows";
+import { statusRank } from "@/lib/loanStatus";
 
 // Whole shillings throughout the dashboard so figures scan quickly; the loan pages show the cents.
 const KES0 = new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", maximumFractionDigits: 0 });
+
+// The loan pipeline can be sorted. The API sends it newest first (that is "Date applied", which has no column of its own).
+// Status is in workflow order, what needs a decision first. Due only means something for a loan still being repaid.
+type SortKey = "created_at" | "applicant" | "applied" | "disbursed" | "repay" | "status" | "due";
+const SORTS: SortSpecs<SortKey> = {
+  created_at: { label: "Date applied", first: "desc", asc: "Oldest first", desc: "Newest first" },
+  applicant: { label: "Applicant", first: "asc", asc: "A to Z", desc: "Z to A" },
+  applied: { label: "Applied", first: "desc", asc: "Low to high", desc: "High to low" },
+  disbursed: { label: "Disbursed", first: "desc", asc: "Low to high", desc: "High to low" },
+  repay: { label: "Repayment", first: "desc", asc: "Low to high", desc: "High to low" },
+  status: { label: "Status", first: "asc", asc: "Needs action first", desc: "Finished first" },
+  due: { label: "Due", first: "asc", asc: "Soonest first", desc: "Latest first" },
+};
+const isOpenLoan = (app: any) => app.loan_status === "disbursed" && app.repayment_status !== "paid";
+const SORT_BY: Record<SortKey, (app: any) => string | number | null> = {
+  created_at: (app) => timeOf(app.created_at),
+  applicant: (app) => formatName(app.applicant_name),
+  applied: (app) => parseFloat(app.amount_applied || "0"),
+  disbursed: (app) => parseFloat(app.disbursement_amount || "0"),
+  repay: (app) => parseFloat(app.repayment_amount || "0"),
+  status: (app) => statusRank(app.loan_status),
+  due: (app) => (isOpenLoan(app) ? timeOf(app.due_date) : null),
+};
 
 const statusLabel = (status?: string) => (status || "—").replace(/_/g, " ");
 const statusStyle = (status?: string) => (status === "disbursed" ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700");
@@ -26,6 +52,8 @@ export default function AdminDashboardPage() {
   const { data: session, status: sessionStatus } = useSession();
   const [kpis, setKpis] = useState<any>(null);
   const [loans, setLoans] = useState<any[]>([]);
+  const [sort, setSort] = useState<SortState<SortKey>>({ key: "created_at", dir: "desc" });
+  const sortedLoans = useMemo(() => sortRows(loans, sort, SORT_BY), [loans, sort]);
   const [auditTrails, setAuditTrails] = useState<any[]>([]);
   
   const [isLoading, setIsLoading] = useState(true);
@@ -296,18 +324,18 @@ export default function AdminDashboardPage() {
               <table className="w-full text-[13px]">
                 <thead className="bg-slate-50 sticky top-0 shadow-sm">
                   <tr className="text-left text-[11px] font-bold text-slate-500 uppercase tracking-wide">
-                    <th className="py-2 px-4">Applicant</th>
+                    <SortHeader specs={SORTS} col="applicant" sort={sort} onSort={setSort} className="px-4 font-bold" />
                     <th className="py-2 px-4">Company</th>
-                    <th className="py-2 px-4 text-right">Applied</th>
-                    <th className="py-2 px-4 text-right">Disbursed</th>
-                    <th className="py-2 px-4 text-right">Repayment</th>
-                    <th className="py-2 px-4">Status</th>
-                    <th className="py-2 px-4">Due</th>
+                    <SortHeader specs={SORTS} col="applied" sort={sort} onSort={setSort} align="right" className="px-4 font-bold" />
+                    <SortHeader specs={SORTS} col="disbursed" sort={sort} onSort={setSort} align="right" className="px-4 font-bold" />
+                    <SortHeader specs={SORTS} col="repay" sort={sort} onSort={setSort} align="right" className="px-4 font-bold" />
+                    <SortHeader specs={SORTS} col="status" sort={sort} onSort={setSort} className="px-4 font-bold" />
+                    <SortHeader specs={SORTS} col="due" sort={sort} onSort={setSort} className="px-4 font-bold" />
                     <th className="py-2 px-4" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {loans.map(app => (
+                  {sortedLoans.map(app => (
                     <tr key={app.id} className="hover:bg-slate-50 transition-colors">
                       <td className="py-2 px-4 font-semibold text-slate-800 max-w-[200px]"><Tip label={formatName(app.applicant_name)} whenClipped><span className="block truncate">{formatName(app.applicant_name)}</span></Tip></td>
                       <td className="py-2 px-4 text-slate-600 capitalize whitespace-nowrap">{app.company}</td>
@@ -315,7 +343,7 @@ export default function AdminDashboardPage() {
                       <td className="py-2 px-4 text-slate-700 text-right whitespace-nowrap tabular-nums">{KES0.format(parseFloat(app.disbursement_amount || '0'))}</td>
                       <td className="py-2 px-4 text-slate-700 text-right whitespace-nowrap tabular-nums">{KES0.format(parseFloat(app.repayment_amount || '0'))}</td>
                       <td className="py-2 px-4 whitespace-nowrap"><span className={`px-2 py-px rounded-full text-[11px] font-semibold capitalize ${statusStyle(app.loan_status)}`}>{statusLabel(app.loan_status)}</span></td>
-                      <td className="py-2 px-4 text-slate-500 whitespace-nowrap">{app.due_date ? app.due_date.substring(0, 10) : '-'}</td>
+                      <td className="py-2 px-4 text-slate-500 whitespace-nowrap">{isOpenLoan(app) && app.due_date ? app.due_date.substring(0, 10) : '-'}</td>
                       <td className="py-2 px-4"><div className="flex justify-end gap-2 whitespace-nowrap">{rowActions(app)}</div></td>
                     </tr>
                   ))}
@@ -323,8 +351,11 @@ export default function AdminDashboardPage() {
               </table>
             </div>
 
+            <div className="xl:hidden flex justify-end border-b border-slate-100 px-4 py-2">
+              <SortSelect specs={SORTS} sort={sort} onSort={setSort} label="Sort loans" />
+            </div>
             <ul className="xl:hidden divide-y divide-slate-100 max-h-[32rem] overflow-y-auto">
-              {loans.map(app => (
+              {sortedLoans.map(app => (
                 <li key={app.id} className="px-4 py-2.5 space-y-1">
                   <div className="flex items-start justify-between gap-3">
                     <p className="text-sm font-semibold text-slate-800 break-words">{formatName(app.applicant_name)}</p>
@@ -335,7 +366,7 @@ export default function AdminDashboardPage() {
                     {" · "}repay {KES0.format(parseFloat(app.repayment_amount || '0'))}
                   </p>
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-xs text-slate-400"><span className="capitalize">{app.company}</span>{app.due_date ? ` · due ${app.due_date.substring(0, 10)}` : ""}</p>
+                    <p className="text-xs text-slate-400"><span className="capitalize">{app.company}</span>{isOpenLoan(app) && app.due_date ? ` · due ${app.due_date.substring(0, 10)}` : ""}</p>
                     <div className="flex gap-2">{rowActions(app)}</div>
                   </div>
                 </li>

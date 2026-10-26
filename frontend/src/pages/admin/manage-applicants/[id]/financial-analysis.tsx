@@ -1,9 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Download, Upload, Search, BookOpen, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { apiCall, downloadFile } from "@/lib/apiClient";
+import { SortHeader, type SortSpecs, type SortState } from "@/components/ui/sortable";
+import { sortRows, timeOf } from "@/lib/sortRows";
+
+// The sample transactions come newest first. Sorting by In or Out finds the biggest credits and debits; Description and Balance do not
+// sort (a balance only means something in date order). A row with nothing in the column goes last.
+type TxSortKey = "date" | "money_in" | "money_out";
+const TX_SORTS: SortSpecs<TxSortKey> = {
+  date: { label: "Date", first: "desc", asc: "Oldest first", desc: "Newest first" },
+  money_in: { label: "Money in", short: "In", first: "desc", asc: "Smallest first", desc: "Largest first" },
+  money_out: { label: "Money out", short: "Out", first: "desc", asc: "Smallest first", desc: "Largest first" },
+};
+const TX_SORT_BY: Record<TxSortKey, (tx: any) => number | null> = {
+  date: (tx) => timeOf(tx.date),
+  money_in: (tx) => (tx.money_in > 0 ? tx.money_in : null),
+  money_out: (tx) => (tx.money_out > 0 ? tx.money_out : null),
+};
 
 export default function FinancialAnalysisPage() {
   const params = useParams();
@@ -12,6 +28,8 @@ export default function FinancialAnalysisPage() {
   const [password, setPassword] = useState("");
   const [isUploading, setIsUploading] = useState(false);
     const [analysis, setAnalysis] = useState<any>(null);
+  const [txSort, setTxSort] = useState<SortState<TxSortKey>>({ key: "date", dir: "desc" });
+  const sortedTransactions = useMemo(() => sortRows(analysis?.recent_transactions ?? [], txSort, TX_SORT_BY), [analysis, txSort]);
     const [source, setSource] = useState("mpesa");
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [uploadId, setUploadId] = useState<number | null>(null);
@@ -390,17 +408,17 @@ export default function FinancialAnalysisPage() {
           <h3 className="text-[13px] font-bold text-slate-800 mb-3">Sample Transactions</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="bg-slate-50 text-slate-500">
+              <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                 <tr>
-                  <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3">Description</th>
-                  <th className="px-4 py-3 text-right">In</th>
-                  <th className="px-4 py-3 text-right">Out</th>
-                  <th className="px-4 py-3 text-right">Balance</th>
+                  <SortHeader specs={TX_SORTS} col="date" sort={txSort} onSort={setTxSort} className="px-4" />
+                  <th className="px-4 py-3 font-semibold">Description</th>
+                  <SortHeader specs={TX_SORTS} col="money_in" sort={txSort} onSort={setTxSort} align="right" className="px-4" />
+                  <SortHeader specs={TX_SORTS} col="money_out" sort={txSort} onSort={setTxSort} align="right" className="px-4" />
+                  <th className="px-4 py-3 text-right font-semibold">Balance</th>
                 </tr>
               </thead>
               <tbody>
-                {analysis.recent_transactions?.map((tx: any, i: number) => (
+                {sortedTransactions.map((tx: any, i: number) => (
                   <tr key={i} className="border-b border-slate-50 hover:bg-slate-50">
                     <td className="px-4 py-2 whitespace-nowrap">{tx.date?.split('T')[0]}</td>
                     <td className="px-4 py-2">{tx.description}</td>

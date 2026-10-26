@@ -2,12 +2,13 @@ import { formatName } from "@/lib/formatName";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import {
-  AlertTriangle, ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, ChevronLeft, ChevronRight, Download, FileSpreadsheet, FileText,
+  AlertTriangle, ChevronDown, ChevronLeft, ChevronRight, Download, FileSpreadsheet, FileText,
   Loader2, RefreshCw, Search, SearchX, X,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Tip } from "@/components/ui/tooltip";
+import { SortHeader as SortHeaderBase, SortSelect as SortSelectBase, type SortSpecs, type SortState as SortStateOf } from "@/components/ui/sortable";
 
 // ---------------------------------------------------------------------------
 // Shared types, labels and formatters
@@ -43,76 +44,30 @@ export const EMPTY_FILTERS: Filters = {
   search: "", company: "all", loanType: "all", loanStatus: "all", repayment: "all", startDate: "", endDate: "",
 };
 
-// Sorting happens on the server (the table is paged, so sorting only this page would mislead).
+// Sorting happens on the server (the table is paged, so sorting only this page would mislead). The header and the menu are the
+// shared ones in components/ui/sortable.tsx; the order of "status" is the workflow order in backend/website/reports.py.
 export type SortKey = "created_at" | "borrower" | "applied" | "disbursed" | "repay" | "owed" | "status" | "due";
-export type SortDir = "asc" | "desc";
-export interface SortState { key: SortKey; dir: SortDir }
+export type SortState = SortStateOf<SortKey>;
 export const DEFAULT_SORT: SortState = { key: "created_at", dir: "desc" };
 
-// kind decides the first direction a click picks and how the two directions are worded.
-const SORTS: Record<SortKey, { label: string; first: SortDir; asc: string; desc: string }> = {
+const SORTS: SortSpecs<SortKey> = {
   created_at: { label: "Applied date", first: "desc", asc: "Oldest first", desc: "Newest first" },
   borrower: { label: "Borrower", first: "asc", asc: "A to Z", desc: "Z to A" },
-  applied: { label: "Amount applied", first: "desc", asc: "Low to high", desc: "High to low" },
+  applied: { label: "Amount applied", short: "Applied", first: "desc", asc: "Low to high", desc: "High to low" },
   disbursed: { label: "Disbursed", first: "desc", asc: "Low to high", desc: "High to low" },
   repay: { label: "To repay", first: "desc", asc: "Low to high", desc: "High to low" },
   owed: { label: "Still owed", first: "desc", asc: "Low to high", desc: "High to low" },
-  status: { label: "Status", first: "asc", asc: "A to Z", desc: "Z to A" },
+  status: { label: "Status", first: "asc", asc: "Needs action first", desc: "Finished first" },
   due: { label: "Due date", first: "asc", asc: "Soonest first", desc: "Latest first" },
 };
 
-/** What clicking a column header does: a new column starts in its most useful direction, the same column flips. */
-export function nextSort(current: SortState, key: SortKey): SortState {
-  return current.key === key ? { key, dir: current.dir === "asc" ? "desc" : "asc" } : { key, dir: SORTS[key].first };
-}
+export const SortSelect = ({ sort, onSort }: { sort: SortState; onSort: (s: SortState) => void }) => (
+  <SortSelectBase specs={SORTS} sort={sort} onSort={onSort} label="Sort loans" />
+);
 
-export function SortSelect({ sort, onSort }: { sort: SortState; onSort: (s: SortState) => void }) {
-  return (
-    <label className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
-      <span className="hidden sm:inline">Sort</span>
-      <select
-        aria-label="Sort loans"
-        value={`${sort.key}:${sort.dir}`}
-        onChange={(e) => { const [key, dir] = e.target.value.split(":"); onSort({ key: key as SortKey, dir: dir as SortDir }); }}
-        className={cn("h-7 rounded-md border border-slate-200 bg-white px-2 text-[13px] font-medium text-slate-700", focusRing)}
-      >
-        {(Object.keys(SORTS) as SortKey[]).flatMap((key) =>
-          (["desc", "asc"] as SortDir[]).sort((a) => (a === SORTS[key].first ? -1 : 1)).map((dir) => (
-            <option key={`${key}:${dir}`} value={`${key}:${dir}`}>{SORTS[key].label}: {SORTS[key][dir]}</option>
-          )),
-        )}
-      </select>
-    </label>
-  );
-}
-
-function SortHeader({
-  col, sort, onSort, align = "left", className,
-}: { col: SortKey; sort: SortState; onSort: (s: SortState) => void; align?: "left" | "right"; className?: string }) {
-  const active = sort.key === col;
-  const Arrow = !active ? ArrowUpDown : sort.dir === "asc" ? ArrowUp : ArrowDown;
-  const meta = SORTS[col];
-  return (
-    <th
-      aria-sort={active ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}
-      className={cn("py-0 font-semibold", align === "right" && "text-right", className)}
-    >
-      <Tip label={`Sort by ${meta.label.toLowerCase()}${active ? ` (${meta[sort.dir === "asc" ? "desc" : "asc"].toLowerCase()} next)` : ""}`} side="bottom">
-      <button
-        onClick={() => onSort(nextSort(sort, col))}
-        className={cn(
-          "group inline-flex items-center gap-1 whitespace-nowrap py-2 uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:text-[#0F2C59]",
-          align === "right" && "flex-row-reverse",
-          active ? "text-slate-900" : "text-slate-500 hover:text-slate-800",
-        )}
-      >
-        {col === "created_at" ? meta.label : meta.label.replace("Amount applied", "Applied")}
-        <Arrow className={cn("h-3 w-3 shrink-0", active ? "text-[#0F2C59]" : "opacity-0 transition-opacity group-hover:opacity-60 group-focus-visible:opacity-60")} />
-      </button>
-      </Tip>
-    </th>
-  );
-}
+const SortHeader = (props: { col: SortKey; sort: SortState; onSort: (s: SortState) => void; align?: "left" | "right"; className?: string }) => (
+  <SortHeaderBase specs={SORTS} {...props} />
+);
 
 export type Bucket = { count: number; amount: number };
 export type Aging = Record<string, Bucket>;

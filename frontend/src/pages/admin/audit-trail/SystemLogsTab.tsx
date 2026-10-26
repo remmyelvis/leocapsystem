@@ -13,6 +13,10 @@ import {
   formatAction, formatRole, formatDateTime, actionStyle, buildQuery,
 } from "./auditLogTypes";
 import { Tip } from "@/components/ui/tooltip";
+import { SortHeader, SortSelect, type SortSpecs, type SortState } from "@/components/ui/sortable";
+
+// Newest first by default; oldest first reads an incident from the start. The server orders the pages (?order=).
+const DATE_SORT: SortSpecs<"date"> = { date: { label: "Date", first: "desc", asc: "Oldest first", desc: "Newest first" } };
 
 const inputCls =
   "w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-[13px] bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors";
@@ -33,12 +37,18 @@ export default function SystemLogsTab() {
   const [query, setQuery] = useState(""); // the search text once typing has paused; the server does the searching
   const actions = DEFAULT_ACTIONS;
   const [refreshKey, setRefreshKey] = useState(0);
+  const [order, setOrder] = useState<"asc" | "desc">("desc");
+  const dateSort: SortState<"date"> = { key: "date", dir: order };
+  const changeOrder = (s: SortState<"date">) => {
+    setOrder(s.dir);
+    setPage(1);
+  };
 
   const [showDelete, setShowDelete] = useState(false);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
-    const qs = buildQuery({ ...applied, q: query, page, page_size: pageSize });
+    const qs = buildQuery({ ...applied, q: query, page, page_size: pageSize, order });
     const res = await apiCall<AuditLogListResponse>(`/api/audit-logs/get-all?${qs}`);
     if (res.error) {
       toast.error(res.error);
@@ -49,7 +59,7 @@ export default function SystemLogsTab() {
       setPagination(res.data.pagination || null);
     }
     setLoading(false);
-  }, [applied, query, page, pageSize]);
+  }, [applied, query, page, pageSize, order]);
 
   useEffect(() => {
     fetchLogs();
@@ -214,7 +224,7 @@ export default function SystemLogsTab() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-100">
-                    <th className={`${thCls} pl-6`}>Date</th>
+                    <SortHeader specs={DATE_SORT} col="date" sort={dateSort} onSort={changeOrder} className="pl-6 pr-4 text-left text-[11px] font-bold" />
                     <th className={thCls}>Actor</th>
                     <th className={thCls}>Action</th>
                     <th className={thCls}>What happened</th>
@@ -257,6 +267,9 @@ export default function SystemLogsTab() {
               </table>
             </div>
 
+            <div className="xl:hidden flex justify-end border-b border-slate-100 px-4 py-2">
+              <SortSelect specs={DATE_SORT} sort={dateSort} onSort={changeOrder} label="Sort logs" />
+            </div>
             <ul className="xl:hidden divide-y divide-slate-100">
               {visibleLogs.map((log) => {
                 const failed = (log.status || "").toLowerCase() !== "success";

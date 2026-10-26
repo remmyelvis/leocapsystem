@@ -20,6 +20,25 @@ import { Button } from "@/components/ui/button";
 import { formatName } from "@/lib/formatName";
 import { formatDate } from "@/lib/formatDate";
 import { Tip } from "@/components/ui/tooltip";
+import { SortHeader, SortSelect, type SortSpecs, type SortState } from "@/components/ui/sortable";
+import { sortRows, timeOf } from "@/lib/sortRows";
+
+type SortKey = "name" | "email" | "id_number" | "applicant_type" | "created_at";
+const SORTS: SortSpecs<SortKey> = {
+  name: { label: "Name", first: "asc", asc: "A to Z", desc: "Z to A" },
+  email: { label: "Email", first: "asc", asc: "A to Z", desc: "Z to A" },
+  id_number: { label: "ID Number", first: "asc", asc: "Lowest first", desc: "Highest first" },
+  applicant_type: { label: "Type", first: "asc", asc: "A to Z", desc: "Z to A" },
+  created_at: { label: "Joined", first: "desc", asc: "Oldest first", desc: "Newest first" },
+};
+const DEFAULT_SORT: SortState<SortKey> = { key: "created_at", dir: "desc" };
+const SORT_BY: Record<SortKey, (a: ManageApplicant) => string | number | null> = {
+  name: (a) => formatName(a.name),
+  email: (a) => a.email,
+  id_number: (a) => a.id_number,
+  applicant_type: (a) => a.applicant_type,
+  created_at: (a) => timeOf(a.created_at),
+};
 
 const thCls = "px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap";
 
@@ -36,8 +55,7 @@ export default function ManageApplicantsPage() {
   const [applicants, setApplicants] = useState<ManageApplicant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortField, setSortField] = useState<keyof ManageApplicant>("created_at");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [sort, setSort] = useState<SortState<SortKey>>(DEFAULT_SORT);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [showSuspended, setShowSuspended] = useState(false);
   const [downloadingDossier, setDownloadingDossier] = useState<string | null>(null);
@@ -85,7 +103,7 @@ export default function ManageApplicantsPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, showSuspended]);
+  }, [searchTerm, showSuspended, sort]);
 
   const handleStatusChange = async (app: ManageApplicant, suspend: boolean) => {
     const name = formatName(app.name) || "this applicant";
@@ -110,15 +128,6 @@ export default function ManageApplicantsPage() {
     }
   };
 
-  const handleSort = (field: keyof ManageApplicant) => {
-    if (sortField === field) {
-      setSortDir(sortDir === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDir("asc");
-    }
-  };
-
   const filteredApplicants = applicants.filter(
     (app) =>
       (app.applicant_status === "suspended") === showSuspended &&
@@ -127,21 +136,11 @@ export default function ManageApplicantsPage() {
       (app.id_number ?? "").toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-    const sortedApplicants = useMemo(() => {
-    return [...filteredApplicants].sort((a, b) => {
-      if (sortField === "name") {
-        const byName = formatName(a.name).localeCompare(formatName(b.name), undefined, { sensitivity: "base" });
-        return sortDir === "asc" ? byName : -byName;
-      }
-      const aValue = a[sortField];
-      const bValue = b[sortField];
-      if (aValue === null) return 1;
-      if (bValue === null) return -1;
-      if (aValue < bValue) return sortDir === "asc" ? -1 : 1;
-      if (aValue > bValue) return sortDir === "asc" ? 1 : -1;
-      return 0;
-    });
-  }, [filteredApplicants, sortField, sortDir]);
+  // Newest first, then the chosen column (rows that tie on it stay newest first)
+  const sortedApplicants = useMemo(
+    () => sortRows(sortRows(filteredApplicants, DEFAULT_SORT, SORT_BY), sort, SORT_BY),
+    [filteredApplicants, sort],
+  );
 
   // Calculate paginated slice
   const paginated = useMemo(() => {
@@ -303,17 +302,9 @@ export default function ManageApplicantsPage() {
           />
         </div>
         <div className="flex flex-wrap items-center justify-between md:justify-end gap-x-3 gap-y-2 w-full md:w-auto">
-          <select
-            aria-label="Sort applicants"
-            value={`${sortField}:${sortDir}`}
-            onChange={(e) => { const [f, d] = e.target.value.split(":"); setSortField(f as keyof ManageApplicant); setSortDir(d as "asc" | "desc"); }}
-            className="xl:hidden px-2.5 py-1.5 rounded-lg border border-slate-200 text-[13px] bg-white"
-          >
-            <option value="created_at:desc">Newest first</option>
-            <option value="created_at:asc">Oldest first</option>
-            <option value="name:asc">Name A–Z</option>
-            <option value="name:desc">Name Z–A</option>
-          </select>
+          <div className="xl:hidden">
+            <SortSelect specs={SORTS} sort={sort} onSort={setSort} label="Sort applicants" />
+          </div>
           <div className="flex rounded-lg border border-slate-200 overflow-hidden text-[13px] font-semibold" role="group" aria-label="Applicant status">
             {([["Active", false], ["Suspended", true]] as [string, boolean][]).map(([label, value]) => (
               <button
@@ -344,10 +335,8 @@ export default function ManageApplicantsPage() {
               <table className="w-full text-left text-sm">
                 <thead className="bg-slate-50/80 border-b border-slate-100">
                   <tr>
-                    {([["name", "Name"], ["email", "Email"], ["id_number", "ID Number"], ["applicant_type", "Type"], ["created_at", "Joined"]] as [keyof ManageApplicant, string][]).map(([field, label]) => (
-                      <th key={field} className={`${thCls} cursor-pointer hover:bg-slate-100 transition-colors`} onClick={() => handleSort(field)}>
-                        {label} {sortField === field && (sortDir === "asc" ? "↑" : "↓")}
-                      </th>
+                    {(Object.keys(SORTS) as SortKey[]).map((col) => (
+                      <SortHeader key={col} specs={SORTS} col={col} sort={sort} onSort={setSort} className="px-4 text-left text-[11px] font-bold" />
                     ))}
                     <th className={`${thCls} text-right`}>Actions</th>
                   </tr>

@@ -229,3 +229,10 @@ Progress bar: 50% personal info + 50% documents
   Logos are small files; `BrandLogo` knows their pixel sizes (`LOGO_SIZE`) so no layout shift. Add a new logo file there too.
 - Measure with Lighthouse (`npx lighthouse@12 <url> --chrome-flags="--headless=new"`) on the SAME server before and after; its mobile
   score depends on simulated throttling (a pre-rendered home page looks no faster in it, but is faster in a real throttled browser).
+
+## Sorting tables (27 Oct 2026)
+
+- One shared header and menu: `components/ui/sortable.tsx` (`SortHeader` = a real button inside the `<th>` with `aria-sort` and a hint, `SortSelect` = the same on phones where a table becomes cards, `nextSort`). A table declares its columns as `SortSpecs` (label, `first` = the most useful first direction: names A to Z, money high to low, dates newest or soonest first, and how each direction reads).
+- A table held in the browser sorts with `lib/sortRows.ts` (stable; text compared like a person reads it; **blank values always last in both directions**; ties keep the incoming newest-first order). A paged table sorts on the server (`?sort=&order=`: Reports, HR and finance lists, audit logs) and the page returns to 1 on a sort change.
+- Status columns sort in **workflow order** (`statusRank` in `lib/loanStatus.ts`; the same list is `STATUS_ORDER` in `backend/website/reports.py`: keep them in step): overdue trouble, waiting for a decision, approved, rate flow, being repaid, repaid, closed.
+- Sortable: Admin All Applications (+ a Due column for loans still being repaid), Manage Applicants, HR and finance Applications, the Dashboard loan pipeline, Financial analysis transactions (Date / In / Out), System logs and Application changes (date order), Reports loans. Not sortable on purpose: a borrower's own loans, HR / finance "My loans", Companies, the amortization schedule, credit factors, ageing buckets, the statement ledger (its date toggle stays).

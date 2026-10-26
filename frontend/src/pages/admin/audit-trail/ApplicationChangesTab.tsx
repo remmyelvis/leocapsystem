@@ -1,12 +1,15 @@
 import { formatName } from "@/lib/formatName";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Eye, Loader2, ArrowUpDown, History, ExternalLink } from "lucide-react";
+import { Search, Eye, Loader2, History, ExternalLink } from "lucide-react";
 import { apiCall } from "@/lib/apiClient";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { formatRole } from "./auditLogTypes";
 import { Tip } from "@/components/ui/tooltip";
+import { SortHeader, SortSelect, type SortSpecs, type SortState } from "@/components/ui/sortable";
+
+const DATE_SORT: SortSpecs<"date"> = { date: { label: "Date", first: "desc", asc: "Oldest first", desc: "Newest first" } };
 
 interface AuditTrail {
   id: string;
@@ -108,6 +111,11 @@ export default function ApplicationChangesTab() {
   const [period, setPeriod] = useState("all");
   const [field, setField] = useState("");
   const [order, setOrder] = useState<"desc" | "asc">("desc");
+  const dateSort: SortState<"date"> = { key: "date", dir: order };
+  const changeOrder = (s: SortState<"date">) => {
+    setOrder(s.dir);
+    setPage(1);
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => { setQuery(search.trim()); setPage(1); }, 350);
@@ -192,14 +200,7 @@ export default function ApplicationChangesTab() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-100">
-                    <Tip label={order === "desc" ? "Newest first (click for oldest first)" : "Oldest first (click for newest first)"} side="bottom" align="start">
-                      <th
-                        className="text-left pl-6 pr-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap cursor-pointer hover:bg-slate-50 transition-colors"
-                        onClick={() => { setOrder(order === "desc" ? "asc" : "desc"); setPage(1); }}
-                      >
-                        <div className="flex items-center gap-1">Date <ArrowUpDown className="h-3 w-3" /></div>
-                      </th>
-                    </Tip>
+                    <SortHeader specs={DATE_SORT} col="date" sort={dateSort} onSort={changeOrder} className="pl-6 pr-4 text-left text-[11px] font-bold" />
                     <th className={thCls}>Changed by</th>
                     <th className={thCls}>Borrower</th>
                     <th className={thCls}>What changed</th>
@@ -232,6 +233,9 @@ export default function ApplicationChangesTab() {
               </table>
             </div>
 
+            <div className="xl:hidden flex justify-end border-b border-slate-100 px-4 py-2">
+              <SortSelect specs={DATE_SORT} sort={dateSort} onSort={changeOrder} label="Sort changes" />
+            </div>
             <ul className="xl:hidden divide-y divide-slate-100">
               {data.map((item) => (
                 <li key={item.id} className="px-4 sm:px-4 py-3 space-y-2">

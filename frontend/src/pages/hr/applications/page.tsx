@@ -9,6 +9,17 @@ import { apiCall, downloadFile } from "@/lib/apiClient";
 import { companyLabel as getCompanyLabel, repaymentReportPath } from "@/lib/company";
 import { toast } from "sonner";
 import { formatName } from "@/lib/formatName";
+import { SortHeader, SortSelect, type SortSpecs, type SortState } from "@/components/ui/sortable";
+
+// The list is paged on the server, so the server sorts it (the same ?sort= keys as the Reports loan table). Status is the
+// loan status shown in the column, in workflow order: what needs a decision first.
+type SortKey = "created_at" | "borrower" | "applied" | "loan_status";
+const SORTS: SortSpecs<SortKey> = {
+  created_at: { label: "Date", first: "desc", asc: "Oldest first", desc: "Newest first" },
+  borrower: { label: "Applicant", first: "asc", asc: "A to Z", desc: "Z to A" },
+  applied: { label: "Amount", first: "desc", asc: "Low to high", desc: "High to low" },
+  loan_status: { label: "Status", first: "asc", asc: "Needs action first", desc: "Finished first" },
+};
 
 const KES = new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -92,6 +103,11 @@ export default function HRApplicationsPage() {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sort, setSort] = useState<SortState<SortKey>>({ key: "created_at", dir: "desc" });
+  const changeSort = (s: SortState<SortKey>) => {
+    setSort(s);
+    setPage(1);
+  };
 
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({
@@ -126,6 +142,8 @@ export default function HRApplicationsPage() {
         params.append("page", String(page));
         params.append("page_size", "10");
         params.append("company", company);
+        params.append("sort", sort.key);
+        params.append("order", sort.dir);
         if (debouncedSearch) params.append("search", debouncedSearch);
 
         if (selectedMonth) {
@@ -159,7 +177,7 @@ export default function HRApplicationsPage() {
     if (session) {
       fetchData();
     }
-  }, [session, selectedMonth, page, company, debouncedSearch]);
+  }, [session, selectedMonth, page, company, debouncedSearch, sort]);
 
   const filtered = applications;
 
@@ -285,12 +303,12 @@ export default function HRApplicationsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 text-left text-[11px] font-bold uppercase tracking-wide text-slate-500">
-                    <th className="px-4 py-2">Date</th>
-                    <th className="px-4 py-2">Applicant</th>
+                    <SortHeader specs={SORTS} col="created_at" sort={sort} onSort={changeSort} className="px-4 font-bold" />
+                    <SortHeader specs={SORTS} col="borrower" sort={sort} onSort={changeSort} className="px-4 font-bold" />
                     <th className="px-4 py-2">Loan Type</th>
                     <th className="px-4 py-2">Company</th>
-                    <th className="px-4 py-2">Amount</th>
-                    <th className="px-4 py-2">Status</th>
+                    <SortHeader specs={SORTS} col="applied" sort={sort} onSort={changeSort} className="px-4 font-bold" />
+                    <SortHeader specs={SORTS} col="loan_status" sort={sort} onSort={changeSort} className="px-4 font-bold" />
                     <th className="px-4 py-2" />
                   </tr>
                 </thead>
@@ -332,6 +350,9 @@ export default function HRApplicationsPage() {
               </table>
             </div>
 
+            <div className="xl:hidden flex justify-end border-b border-slate-100 px-4 py-2">
+              <SortSelect specs={SORTS} sort={sort} onSort={changeSort} label="Sort applications" />
+            </div>
             <ul className="xl:hidden divide-y divide-slate-100">
               {filtered.map((item: any) => {
                 const r = rowOf(item);

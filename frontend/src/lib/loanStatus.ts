@@ -29,3 +29,23 @@ export function statusDisplay(status?: string | null): { label: string; classNam
 const NEVER_PAID_OUT = new Set(["pending", "pending_processing", "processing", "amended", "rate_set", "rate_confirmed", "confirmed", "rate_declined", "approved", "declined", "rejected"]);
 
 export const canDeleteApplication = (status?: string | null) => NEVER_PAID_OUT.has((status ?? "").toLowerCase().replace(/[\s-]/g, "_"));
+
+// Workflow order for sorting a Status column: what needs someone's attention first, finished things last (ascending).
+// Keep in step with STATUS_ORDER in backend/website/reports.py (which sorts the paged lists on the server).
+const STATUS_ORDER = [
+  "delinquent", "escalated", "defaulted",                      // overdue trouble
+  "pending", "pending_processing", "processing", "amended",    // waiting for a decision
+  "rate_confirmed", "confirmed",                               // the borrower accepted: approve
+  "approved",                                                  // approved: pay out
+  "rate_set",                                                  // waiting for the borrower
+  "disbursed",                                                 // paid out (when only the loan status is shown)
+  "unpaid", "partially_paid",                                  // being repaid
+  "paid",
+  "rate_declined", "written_off", "declined", "rejected",      // closed without being repaid
+];
+
+/** Where a loan status or a repayment status sits in the workflow order (unknown ones last). */
+export const statusRank = (status?: string | null) => {
+  const i = STATUS_ORDER.indexOf((status ?? "").toLowerCase().replace(/[\s-]/g, "_"));
+  return i < 0 ? STATUS_ORDER.length : i;
+};

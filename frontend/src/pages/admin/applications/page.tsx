@@ -17,6 +17,9 @@ import { adminApplicationsApi } from "@/lib/adminApi";
 import { apiCall } from "@/lib/apiClient";
 import { formatName } from "@/lib/formatName";
 import { Tip } from "@/components/ui/tooltip";
+import { SortHeader, SortSelect, type SortSpecs, type SortState } from "@/components/ui/sortable";
+import { sortRows, timeOf } from "@/lib/sortRows";
+import { statusRank } from "@/lib/loanStatus";
 import { IS_DEMO } from "@/components/demo/demo";
 
 // ---------------------------------------------------------------------------
@@ -53,6 +56,29 @@ const isOverdue = (a: TransformedApplication, now: number) =>
   ["unpaid", "partially_paid", "delinquent"].includes(a.repaymentStatus.toLowerCase()) &&
   !!a.dueDate &&
   new Date(a.dueDate).getTime() < now;
+
+// Loans still being repaid: the only ones whose due date means anything (a repaid loan's old due date is not news).
+const isOpen = (a: TransformedApplication) => a.status.toLowerCase() === "disbursed" && a.repaymentStatus.toLowerCase() !== "paid";
+
+type SortKey = "applicant" | "amount" | "status" | "repayment" | "applied" | "due";
+// Status and Repayment sort in workflow order: what needs someone's attention first (see statusRank).
+const SORTS: SortSpecs<SortKey> = {
+  applicant: { label: "Applicant", first: "asc", asc: "A to Z", desc: "Z to A" },
+  amount: { label: "Amount", first: "desc", asc: "Low to high", desc: "High to low" },
+  status: { label: "Status", first: "asc", asc: "Needs action first", desc: "Finished first" },
+  repayment: { label: "Repayment", first: "asc", asc: "Needs action first", desc: "Finished first" },
+  applied: { label: "Applied", first: "desc", asc: "Oldest first", desc: "Newest first" },
+  due: { label: "Due", first: "asc", asc: "Soonest first", desc: "Latest first" },
+};
+const DEFAULT_SORT: SortState<SortKey> = { key: "applied", dir: "desc" };
+const SORT_BY: Record<SortKey, (a: TransformedApplication) => string | number | null> = {
+  applicant: (a) => formatName(a.customerName),
+  amount: (a) => a.amountApplied,
+  status: (a) => statusRank(a.status),
+  repayment: (a) => statusRank(a.repaymentStatus),
+  applied: (a) => timeOf(a.submittedAt),
+  due: (a) => (isOpen(a) ? timeOf(a.dueDate) : null),
+};
 
 // "YYYY-MM" of a timestamp, in UTC like the dashboard's period filter.
 const monthOf = (iso: string) => {
@@ -104,6 +130,7 @@ export default function AllApplicationsPage() {
   const [typeFilter, setTypeFilter] = useState<string>(urlType === "all" ? "all" : urlType);
   const [companyFilter, setCompanyFilter] = useState<string>(urlCompany);
   const [dateRange, setDateRange] = useState<"all" | "7" | "30">("all");
+  const [sort, setSort] = useState<SortState<SortKey>>(DEFAULT_SORT);
 
   useEffect(() => {
     setStatusFilter(urlStatus);
@@ -151,7 +178,7 @@ export default function AllApplicationsPage() {
     // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, statusFilter, typeFilter, companyFilter, dateRange, overdueOnly, urlMonth]);
+  }, [search, statusFilter, typeFilter, companyFilter, dateRange, overdueOnly, urlMonth, sort]);
 
   // Companies come from the loans themselves (the registered list does not cover every name in use)
   const companyOptions = useMemo(() => {
@@ -241,13 +268,17 @@ export default function AllApplicationsPage() {
         ? "Personal Loan Applications"
         : "All Applications";
 
+  // The filtered list is newest first, and rows that tie on the sorted column keep that order
+  const sorted = useMemo(() => sortRows(filtered, sort, SORT_BY), [filtered, sort]);
+
     // Calculate paginated slice
   const paginated = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
-    return filtered.slice(start, start + itemsPerPage);
-  }, [filtered, currentPage]);
+    return sorted.slice(start, start + itemsPerPage);
+  }, [sorted, currentPage]);
 
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const nowMs = Date.now();
 
 return (
     <div className="p-4 sm:p-6 w-full max-w-[1600px] mx-auto space-y-5">
@@ -432,9 +463,13 @@ return (
                         onChange={(e) => handleSelectAll(e.target.checked)}
                       />
                     </th>
-                    {["Applicant", "Loan", "Amount", "Status", "Repayment", "Applied"].map((h) => (
-                      <th key={h} className="px-4 py-2 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
-                    ))}
+                    <SortHeader specs={SORTS} col="applicant" sort={sort} onSort={setSort} className="px-4 text-left text-[11px] font-bold" />
+                    <th className="px-4 py-2 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap">Loan</th>
+                    <SortHeader specs={SORTS} col="amount" sort={sort} onSort={setSort} className="px-4 text-left text-[11px] font-bold" />
+                    <SortHeader specs={SORTS} col="status" sort={sort} onSort={setSort} className="px-4 text-left text-[11px] font-bold" />
+                    <SortHeader specs={SORTS} col="repayment" sort={sort} onSort={setSort} className="px-4 text-left text-[11px] font-bold" />
+                    <SortHeader specs={SORTS} col="applied" sort={sort} onSort={setSort} className="px-4 text-left text-[11px] font-bold" />
+                    <SortHeader specs={SORTS} col="due" sort={sort} onSort={setSort} className="px-4 text-left text-[11px] font-bold" />
                     <th className="pl-4 pr-5 py-2" />
                   </tr>
                 </thead>
@@ -467,6 +502,13 @@ return (
                           <p className="text-slate-600">{shortDate(app.submittedAt)}</p>
                           <p className="text-[11px] text-slate-400 font-mono">{app.id.slice(0, 8)}</p>
                         </td>
+                        <td className="px-4 py-2.5 whitespace-nowrap">
+                          {isOpen(app) && app.dueDate ? (
+                            <span className={isOverdue(app, nowMs) ? "font-semibold text-red-600" : "text-slate-600"}>{shortDate(app.dueDate)}</span>
+                          ) : (
+                            <span className="text-slate-300">—</span>
+                          )}
+                        </td>
                         <td className="pl-4 pr-5 py-2.5 text-right"><ViewButton id={app.id} /></td>
                       </tr>
                     );
@@ -476,15 +518,18 @@ return (
             </div>
 
             <div className="xl:hidden">
-              <label className="flex items-center gap-2.5 px-4 py-2.5 border-b border-slate-100 bg-slate-50/80 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                <input
-                  type="checkbox"
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-600 cursor-pointer w-4 h-4"
-                  checked={filtered.length > 0 && selectedAppIds.length === filtered.length}
-                  onChange={(e) => handleSelectAll(e.target.checked)}
-                />
-                Select all {filtered.length}
-              </label>
+              <div className="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-slate-100 bg-slate-50/80">
+                <label className="flex shrink-0 items-center gap-2.5 whitespace-nowrap text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  <input
+                    type="checkbox"
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-600 cursor-pointer w-4 h-4"
+                    checked={filtered.length > 0 && selectedAppIds.length === filtered.length}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                  />
+                  Select all {filtered.length}
+                </label>
+                <SortSelect specs={SORTS} sort={sort} onSort={setSort} label="Sort applications" />
+              </div>
               <ul className="divide-y divide-slate-100">
                 {paginated.map((app: TransformedApplication) => {
                   const statusDisplay = getStatusDisplay(app.status);
@@ -513,6 +558,9 @@ return (
                           <div className="flex items-center gap-2 flex-wrap text-xs text-slate-400">
                             <Pill className={repaymentStyle(app.repaymentStatus)}>{app.repaymentStatus?.replace(/_/g, " ") || "—"}</Pill>
                             <span>{shortDate(app.submittedAt)}</span>
+                            {isOpen(app) && app.dueDate && (
+                              <span className={isOverdue(app, nowMs) ? "font-semibold text-red-600" : undefined}>Due {shortDate(app.dueDate)}</span>
+                            )}
                           </div>
                           <ViewButton id={app.id} />
                         </div>
