@@ -9,7 +9,6 @@ import {
   ArrowRight,
   Banknote,
   Check,
-  CheckCheck,
   CheckCircle,
   Clock,
   FileText,
@@ -55,13 +54,15 @@ const SORT_BY: Record<SortKey, (app: any) => string | number | null> = {
 // button per row is the next step (green = approve or finish, navy = go and pay out); Reject is the quiet outline one.
 // On a phone the 44px minimum height of globals.css applies to the buttons, and to the Disburse link through the pointer rule.
 const ACTION =
-  "inline-flex items-center justify-center gap-1 h-6 rounded-md border px-2 text-xs font-semibold whitespace-nowrap shadow-sm transition " +
+  "inline-flex items-center justify-center gap-1 rounded-md border px-2 text-xs font-semibold whitespace-nowrap shadow-sm transition " +
   "active:scale-[0.97] active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 " +
-  "disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100 [@media(pointer:coarse)]:min-h-11";
+  "disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100 [@media(pointer:coarse)]:min-h-[44px]";
 const TONE = {
-  go: "border-emerald-900/20 bg-emerald-700 text-white hover:bg-emerald-800 focus-visible:ring-emerald-600",
-  reject: "border-red-200 bg-white text-red-700 hover:border-red-300 hover:bg-red-50 focus-visible:ring-red-500",
-  pay: "border-[#0F2C59]/30 bg-[#0F2C59] text-white hover:bg-[#0b2246] focus-visible:ring-[#0F2C59]",
+  go: "h-6 border-emerald-900/20 bg-emerald-700 text-white hover:bg-emerald-800 focus-visible:ring-emerald-600",
+  reject: "h-6 border-red-200 bg-white text-red-700 hover:border-red-300 hover:bg-red-50 focus-visible:ring-red-500",
+  pay: "h-6 border-[#0F2C59]/30 bg-[#0F2C59] text-white hover:bg-[#0b2246] focus-visible:ring-[#0F2C59]",
+  // Mark paid repeats down the whole column, so it is the lightest: a smaller outline button with no icon
+  soft: "h-5 border-emerald-300 bg-white text-emerald-800 hover:border-emerald-400 hover:bg-emerald-50 focus-visible:ring-emerald-500",
 };
 const DONE_TEXT: Record<string, string> = { approve: "Loan approved", reject: "Loan rejected", paid: "Loan marked as paid" };
 
@@ -207,7 +208,7 @@ export default function AdminDashboardPage() {
     const who = formatName(app.applicant_name);
     const mine = busy?.id === app.id;
     // one action button: icon + label, a spinner while it is being sent, and a hint for what it does
-    const act = (action: string, label: string, hint: string, tone: string, Icon: typeof Check) => (
+    const act = (action: string, label: string, hint: string, tone: string, Icon?: typeof Check) => (
       <Tip label={hint}>
         <button
           onClick={() => handleAction(app.id, action)}
@@ -216,7 +217,7 @@ export default function AdminDashboardPage() {
           aria-label={`${label}: ${who}`}
           className={`${ACTION} ${tone}`}
         >
-          {mine && busy?.action === action ? <Loader2 className="h-3 w-3 animate-spin" aria-hidden /> : <Icon className="h-3 w-3" aria-hidden />}
+          {mine && busy?.action === action ? <Loader2 className="h-3 w-3 animate-spin" aria-hidden /> : Icon && <Icon className="h-3 w-3" aria-hidden />}
           {label}
         </button>
       </Tip>
@@ -236,7 +237,7 @@ export default function AdminDashboardPage() {
             </Link>
           </Tip>
         )}
-        {isOpenLoan(app) && act("paid", "Mark paid", "Record this loan as fully repaid. The borrower is emailed.", TONE.go, CheckCheck)}
+        {isOpenLoan(app) && act("paid", "Mark paid", "Record this loan as fully repaid. The borrower is emailed.", TONE.soft)}
         {app.loan_status === 'disbursed' && !isOpenLoan(app) && (
           <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700"><Check className="h-3.5 w-3.5" aria-hidden />Paid</span>
         )}
