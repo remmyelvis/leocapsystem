@@ -220,7 +220,7 @@ Progress bar: 50% personal info + 50% documents
 - **Server rules** are `public/.htaccess` (www -> main address, app. gets `X-Robots-Tag: noindex`, html `no-cache`, `/faq` -> `faq.html`,
   `/faq/` -> `/faq`, everything else -> the app) and `public/assets/.htaccess` (1 year immutable; a missing `/assets/*` is a real 404).
   Test changes on a local Apache (`httpd -f`) before pushing: a wrong rule takes the whole site down. The demo deploy appends
-  `noindex, nofollow` to the same file. NOTE: until the second step the live deploy excludes `**/.htaccess` (see deploy-frontend.yml).
+  `noindex, nofollow` to the same file. The live deploy ships it to public_html and app. (since 2026-10-26). If it ever breaks the site, restore the old 4 lines by hand in cPanel first (RewriteEngine On, two `RewriteCond %{REQUEST_FILENAME} !-f / !-d`, `RewriteRule ^ /index.html [L]`): a plain revert makes the deploy delete the file.
 - **Every page except the home page is a lazy chunk** (`lazy(() => import(...))` in `App.tsx`); keep new pages lazy. Stale tabs after a
   deploy: `vite:preloadError` + `PageLoadBoundary` reload once (`lib/reloadForUpdate.ts`). The home page prefetches sign-in / register /
   FAQ / privacy while idle.
