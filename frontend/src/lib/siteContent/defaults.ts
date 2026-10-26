@@ -234,9 +234,10 @@ For any privacy-related inquiries, requests, or complaints, you may contact:
 > **Data Protection Officer**
 > Leocap Invest
 >
-> **Email:** privacy@leocap.com
-> **Telephone:** +254 700 000000
-> **Postal Address:** P.O. Box 184-00100, Nairobi, Kenya`,
+> **Email:** {{email}}
+> **Telephone:** {{phones}}
+> **Physical Address:** {{address}}
+> **Postal Address:** P.O. Box 184-00100 GPO, Nairobi, Kenya`,
       },
       {
         title: "Information We Collect",
