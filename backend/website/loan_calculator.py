@@ -5,15 +5,6 @@ from dateutil.relativedelta import relativedelta
 from flask import Blueprint, request, jsonify, Response
 from flask_jwt_extended import jwt_required
 
-import openpyxl
-from openpyxl.styles import Font, PatternFill, Alignment, numbers
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter, A4
-from reportlab.lib.units import mm
-from reportlab.lib.enums import TA_LEFT, TA_RIGHT, TA_CENTER
-from reportlab.lib.styles import ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
 
 from website.models import Application, Company
 
@@ -320,6 +311,13 @@ def _download(data, mimetype, filename):
 
 @loan_calc_bp.route('/loans/amortization/pdf', methods=['POST'])
 def export_amortization_pdf():
+    from reportlab.lib.pagesizes import A4
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.enums import TA_LEFT, TA_RIGHT, TA_CENTER
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.units import mm
     try:
         breakdown, schedule = _get_loan_data_from_request()
         
@@ -446,6 +444,8 @@ def export_amortization_pdf():
 
 @loan_calc_bp.route('/loans/amortization/excel', methods=['POST'])
 def export_amortization_excel():
+    from openpyxl.styles import Font, PatternFill, Alignment
+    import openpyxl
     try:
         breakdown, schedule = _get_loan_data_from_request()
         

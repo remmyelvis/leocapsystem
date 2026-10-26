@@ -1,35 +1,17 @@
 from io import BytesIO
-import pandas as pd
-from reportlab.lib.pagesizes import portrait, landscape, A1, A4, A3
-from reportlab.lib import colors
-from reportlab.lib.units import cm, mm
 from datetime import datetime
-from openpyxl.styles import Alignment, Font
-from openpyxl.drawing.image import Image as XLImage
-from openpyxl.utils import get_column_letter
-from reportlab.platypus import Image
 from PIL import Image as PILImage
 from website import bank_details as bank
 import os
 from decimal import Decimal
 
-
-from reportlab.platypus import (
-    KeepTogether, HRFlowable, 
-    SimpleDocTemplate,
-    Table,
-    TableStyle,
-    Paragraph,
-    Spacer
-)
-
-from reportlab.lib import colors, pagesizes
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-
 from website.models import Application, Applicant, StatementEntry
 
 
 def dataframe_to_excel(df, title, total_amount, payment_details):
+    from openpyxl.styles import Alignment, Font
+    from openpyxl.drawing.image import Image as XLImage
+    import pandas as pd
     output = BytesIO()
 
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
@@ -122,6 +104,8 @@ def dataframe_to_excel(df, title, total_amount, payment_details):
 
 
 def export_statement(applicant, apps, df, statement_request_date=None):
+    from reportlab.lib.pagesizes import portrait, A4
+    import pandas as pd
     from reportlab.platypus import KeepTogether, HRFlowable, SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
     from reportlab.lib import colors, pagesizes
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -452,6 +436,10 @@ def export_statement(applicant, apps, df, statement_request_date=None):
 
 
 def export_applicant(df, title, applicant):
+    from reportlab.lib.pagesizes import landscape, A4
+    from reportlab.platypus import Image
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet
     output = BytesIO()
 
     doc = SimpleDocTemplate(output, pagesize=landscape(A4))

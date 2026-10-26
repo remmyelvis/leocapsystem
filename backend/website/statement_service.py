@@ -4,14 +4,6 @@ from datetime import datetime
 from flask import Blueprint, request, jsonify, send_file
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 
-from reportlab.lib.pagesizes import A4
-from reportlab.lib import colors
-from reportlab.lib.units import inch, mm
-from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether, HRFlowable
-)
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
 
 from website.models import Applicant, Application, StatementEntry, Company
 from website.role_decorator import role_required
@@ -24,6 +16,12 @@ class StatementPDFGenerator:
 
     @staticmethod
     def generate_statement_pdf(applicant: Applicant, start_date=None, end_date=None) -> io.BytesIO:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether, HRFlowable
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+        from reportlab.lib import colors
+        from reportlab.lib.units import inch, mm
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(
             buffer,

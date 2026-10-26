@@ -1,7 +1,6 @@
 import time
 import os
 import json
-import google.generativeai as genai
 from website.models import ParsedTransaction
 
 def _init_gemini():
@@ -9,6 +8,7 @@ def _init_gemini():
     if not api_key:
         print("WARNING: GEMINI_API_KEY is not set.")
         return False
+    import google.generativeai as genai  # imported here: loading it costs ~0.2 s CPU in every new worker
     genai.configure(api_key=api_key)
     return True
 
@@ -26,8 +26,9 @@ def generate_statement_narrative(applicant_id, txns, mpesa_metrics, credit_analy
         return "Gemini API key not configured."
         
     try:
+        import google.generativeai as genai
         model = genai.GenerativeModel('gemini-3.5-flash-lite')
-        
+
         # Prepare context payload
         context = {
             "metrics": mpesa_metrics,
@@ -69,6 +70,7 @@ def chat_with_statement(applicant_id, query):
         return "Gemini API key not configured."
         
     try:
+        import google.generativeai as genai
         txns = ParsedTransaction.query.filter_by(applicant_id=applicant_id).order_by(ParsedTransaction.date.desc()).limit(1000).all()
         model = genai.GenerativeModel('gemini-3.5-flash-lite')
         

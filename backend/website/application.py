@@ -6,7 +6,6 @@ from decimal import Decimal, InvalidOperation
 from io import BytesIO
 import math
 
-import pandas as pd
 from flask import Blueprint, request, jsonify, current_app, send_file, g
 from werkzeug.utils import secure_filename
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
@@ -968,6 +967,7 @@ def get_statement(applicant_id):
 @jwt_required()
 @role_required("admin", "hr", "finance")
 def download_statement(applicant_id):
+    import pandas as pd
     
     date_str = request.args.get("start_date")
     date_stp = request.args.get("end_date") 

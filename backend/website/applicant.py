@@ -18,7 +18,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import random, os
-import pandas as pd
 import secrets
 import io
 import csv
@@ -455,6 +454,7 @@ def set_interest_rate(id):
 @jwt_required()
 @role_required('admin', 'hr')
 def bulk_upload_employees():
+    import pandas as pd
     if 'file' not in request.files:
         return jsonify({'message': 'No file part'}), 400
     file = request.files['file']

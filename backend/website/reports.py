@@ -1,7 +1,6 @@
 import os
 from io import BytesIO
 
-import pandas as pd
 from flask import Blueprint, request, jsonify, current_app, send_file
 from sqlalchemy import select, or_, and_, case, func
 from werkzeug.utils import secure_filename
@@ -406,6 +405,7 @@ NAKAMA_ACCOUNT = bank.NAKAMA_ACCOUNT
 
 def _repayment_excel_response(identifier, account_name=bank.ACCOUNT_NAME, account_number=bank.ACCOUNT_NUMBER):
     """The repayment report as Excel: the same loans, month and payment instructions as the PDF."""
+    import pandas as pd
     comp_code, comp_name, month, apps = _repayment_report_apps(identifier)
 
     if not apps:

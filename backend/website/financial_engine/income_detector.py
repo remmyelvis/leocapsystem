@@ -1,11 +1,11 @@
 from website.models import ParsedTransaction
 from datetime import timedelta
-import numpy as np
 
 def detect_recurring_income(applicant_id):
     """
     Analyzes all income to detect recurring patterns (Salary/Business).
     """
+    import numpy as np
     inflows = ParsedTransaction.query.filter(
         ParsedTransaction.applicant_id == applicant_id,
         ParsedTransaction.money_in > 0,

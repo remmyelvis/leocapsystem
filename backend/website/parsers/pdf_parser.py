@@ -1,9 +1,10 @@
-import pdfplumber
-import pandas as pd
 import re
 from datetime import datetime
 
+# pdfplumber / pandas are imported inside the functions: loading them costs ~0.3 s CPU in every new worker
+
 def unlock_and_parse_mpesa(filepath, password=None):
+    import pdfplumber
     extracted_data = []
     try:
         with pdfplumber.open(filepath, password=password) as pdf:
@@ -78,6 +79,8 @@ def unlock_and_parse_mpesa(filepath, password=None):
 
 
 def unlock_and_parse_bank(filepath, password=None):
+    import pdfplumber
+    import pandas as pd
     extracted_data = []
     try:
         with pdfplumber.open(filepath, password=password) as pdf:

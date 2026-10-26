@@ -1,10 +1,6 @@
 import os
 from io import BytesIO
 from datetime import datetime
-from reportlab.lib.pagesizes import landscape, letter
-from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, KeepInFrame
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from flask import current_app
 from website import bank_details as bank
 
@@ -18,6 +14,10 @@ class CompanyReportPDFGenerator:
         compact and, for a long list, everything is scaled down to fit. account_name/account_number are the
         account the payment instructions name (Nakama pays into its own).
         """
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, KeepInFrame
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib import colors
+        from reportlab.lib.pagesizes import landscape, letter
         buffer = BytesIO()
         doc = SimpleDocTemplate(
             buffer,

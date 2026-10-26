@@ -1,6 +1,5 @@
 import os
 import re
-import pytesseract
 from PIL import Image
 import threading
 from flask import Blueprint, request, jsonify, current_app, send_file
@@ -57,6 +56,7 @@ def upload_applicant_documents(applicant_id):
         ocr_match = None
         if "national id" in field_name.lower():
             try:
+                import pytesseract  # imported here: it pulls in pandas (~0.2 s CPU) in every new worker
                 img = Image.open(filepath)
                 text = pytesseract.image_to_string(img)
                 numbers = re.findall(r'\d{6,9}', text)
