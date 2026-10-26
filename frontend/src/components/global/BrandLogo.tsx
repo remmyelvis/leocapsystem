@@ -10,6 +10,9 @@ interface BrandLogoProps {
   onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 }
 
+// The real size of each logo file, so the browser keeps the right amount of room for it before it has loaded.
+const LOGO_SIZE: Record<string, [number, number]> = { "/logo.png": [384, 384], "/logo-wordmark.png": [360, 117], "/logo-mark.png": [256, 256] };
+
 export default function BrandLogo({ size = "md", className = "", width, height, src = "/logo.png", onClick }: BrandLogoProps) {
   const location = useLocation();
 
@@ -36,7 +39,9 @@ export default function BrandLogo({ size = "md", className = "", width, height, 
       <img
         src={src}
         alt="Leocap Invest"
-        className={`${width || height ? "" : defaultHeightClass} object-contain ${className}`.trim()}
+        width={LOGO_SIZE[src]?.[0]}
+        height={LOGO_SIZE[src]?.[1]}
+        className={`${width || height ? "" : defaultHeightClass} w-auto object-contain ${className}`.trim()}
         style={customStyle}
       />
     </Link>

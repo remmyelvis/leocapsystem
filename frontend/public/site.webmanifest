@@ -1,0 +1,13 @@
+{
+  "name": "Leocap Invest",
+  "short_name": "Leocap",
+  "description": "Salary advances and personal loans for Kenyan professionals.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#ffffff",
+  "theme_color": "#0F2C59",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

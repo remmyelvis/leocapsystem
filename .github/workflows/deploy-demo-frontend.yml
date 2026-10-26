@@ -30,21 +30,15 @@ jobs:
           VITE_DEMO: "true"
         run: npm ci && npm run build
 
-      # a brand-new folder has no routing rules: send every page address to the app, and keep search engines out
-      - name: Add routing rules and robots.txt
+      # the page rules are the live site's (frontend/public/.htaccess, already in dist); on top of them keep search engines out
+      - name: Keep search engines out
         run: |
           printf 'User-agent: *\nDisallow: /\n' > frontend/dist/robots.txt
-          cat > frontend/dist/.htaccess <<'HTACCESS'
+          rm -f frontend/dist/sitemap.xml
+          cat >> frontend/dist/.htaccess <<'HTACCESS'
+
           <IfModule mod_headers.c>
             Header set X-Robots-Tag "noindex, nofollow"
-          </IfModule>
-          <IfModule mod_rewrite.c>
-            RewriteEngine On
-            RewriteBase /
-            RewriteRule ^index\.html$ - [L]
-            RewriteCond %{REQUEST_FILENAME} !-f
-            RewriteCond %{REQUEST_FILENAME} !-d
-            RewriteRule . /index.html [L]
           </IfModule>
           HTACCESS
 

@@ -40,6 +40,13 @@ jobs:
           password: ${{ secrets.FTP_WEB_PASSWORD }}
           local-dir: ./frontend/dist/
           server-dir: /
+          # STAGE 1 (temporary): the server keeps its own 4-line .htaccess until frontend/public/.htaccess has run on the demo
+          # host first. Remove these three lines to put the new rules live.
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.htaccess
 
       # app.leocapinvest.co.ke -> /home/leocapin/app.leocapinvest.co.ke
       - name: Upload dist to app.leocapinvest.co.ke
@@ -52,3 +59,10 @@ jobs:
           password: ${{ secrets.FTP_APP_PASSWORD }}
           local-dir: ./frontend/dist/
           server-dir: /
+          # STAGE 1 (temporary): the server keeps its own 4-line .htaccess until frontend/public/.htaccess has run on the demo
+          # host first. Remove these three lines to put the new rules live.
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.htaccess

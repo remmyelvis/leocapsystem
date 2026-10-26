@@ -8,8 +8,14 @@ import { AuthProvider } from './contexts/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MetricsProvider } from './components/global/MetricsProvider';
 import { TooltipProvider } from './components/ui/tooltip';
+import { reloadForUpdate } from './lib/reloadForUpdate';
 
 const queryClient = new QueryClient();
+
+// Vite raises this when the files a lazily loaded page depends on cannot be fetched (see lib/reloadForUpdate.ts).
+window.addEventListener('vite:preloadError', (event) => {
+  if (reloadForUpdate()) event.preventDefault();
+});
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

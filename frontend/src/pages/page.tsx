@@ -31,8 +31,6 @@ import { useContact, useSiteContent } from "@/lib/siteContent/useSiteContent";
 
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 
-const PHOTO = "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1920&q=80";
-
 // The icons of the three steps, in order (the hero card and the How It Works section share them).
 const STEP_ICONS = [Users, CreditCard, TrendingUp];
 
@@ -107,8 +105,8 @@ function HeroSection() {
 
   return (
     <section id="home" className="relative isolate flex min-h-[100svh] items-center overflow-hidden bg-[#081430] pt-16">
-      {/* The photo is greyscale, so the navy scrim makes it a navy duotone instead of an unrelated colour cast. */}
-      <div className="absolute inset-0 -z-10 bg-cover grayscale" style={{ backgroundImage: `url('${PHOTO}')`, backgroundPosition: "center top" }} />
+      {/* The photo is greyscale, so the navy scrim makes it a navy duotone instead of an unrelated colour cast (see .hero-photo in globals.css). */}
+      <div className="hero-photo absolute inset-0 -z-10" />
       {/* Small screens: text spans the full width, so keep the scrim even top to bottom */}
       <div
         className="absolute inset-0 -z-10 lg:hidden"

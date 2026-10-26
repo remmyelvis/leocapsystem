@@ -1,0 +1,4 @@
+# Every file here has a fingerprint in its name (a new build means new names), so browsers can keep them for a year.
+<IfModule mod_headers.c>
+  Header set Cache-Control "public, max-age=31536000, immutable"
+</IfModule>

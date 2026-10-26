@@ -1,0 +1,13 @@
+# https://leocapinvest.co.ke
+# The public pages may be crawled. The signed-in areas and password pages are for account holders only.
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /finance
+Disallow: /hr
+Disallow: /login/admin
+Disallow: /forgot-password
+Disallow: /reset-password
+
+Sitemap: https://leocapinvest.co.ke/sitemap.xml

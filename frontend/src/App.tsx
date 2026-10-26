@@ -1,68 +1,77 @@
-import { Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { IS_DEMO } from './components/demo/demo';
 import DemoToolbox from './components/demo/DemoToolbox';
 import PreviewBar from './components/landing/PreviewBar';
-import SiteContentPage from './pages/admin/site-content/page';
-import SiteContentEditorPage from './pages/admin/site-content/[key]/page';
-import DemoPage from './pages/demo/page';
-import DemoInboxPage from './pages/demo/inbox/page';
-import DemoGuidePage from './pages/demo/guide/page';
-import AdminLayout from './pages/admin/layout';
-import DashboardLayout from './pages/dashboard/layout';
-import FinanceLayout from './pages/finance/layout';
-import HRLayout from './pages/hr/layout';
-
-import Page0 from './pages/admin/applications/page';
-import Page1 from './pages/admin/applications/[id]/page';
-import Page2 from './pages/admin/audit-trail/page';
-import Page3 from './pages/admin/audit-trail/[id]/page';
-import AuditLogDetailPage from './pages/admin/audit-trail/logs/[logId]/page';
-import Page4 from './pages/admin/dashboard/page';
-import Page5 from './pages/admin/manage-admins/page';
-import Page6 from './pages/admin/manage-applicants/page';
-import FinancialAnalysisPage from './pages/admin/manage-applicants/[id]/financial-analysis';
-import Page7 from './pages/admin/manage-applicants/[id]/page';
-import Page8 from './pages/admin/manage-staff/page';
-import Page9 from './pages/admin/profile/page';
-import Page10 from './pages/admin/reports/page';
-import Page11 from './pages/admin/settings/page';
-import Page50 from './pages/admin/calculators/page';
-import CustomReportBuilder from './pages/admin/reports/builder/page';
-import CompaniesPage from './pages/admin/manage-companies/page';
-import Page12 from './pages/dashboard/applications/page';
-import Page13 from './pages/dashboard/applications/[id]/page';
-import Page14 from './pages/dashboard/apply/general-loan/page';
-import Page15 from './pages/dashboard/apply/page';
-import Page16 from './pages/dashboard/apply/salary-advance/page';
-import Page17 from './pages/dashboard/page';
-import Page18 from './pages/dashboard/profile/page';
-import Page19 from './pages/finance/applications/page';
-import Page20 from './pages/finance/applications/pending/[id]/page';
-import Page21 from './pages/finance/applications/[id]/page';
-import Page22 from './pages/finance/apply/page';
-import Page23 from './pages/finance/dashboard/page';
-import Page24 from './pages/finance/hr-loans/page';
-import Page27 from './pages/finance/my-loans/page';
-import Page28 from './pages/finance/page';
-import Page29 from './pages/finance/profile/page';
-import Page30 from './pages/forgot-password/page';
-import ResetPasswordPage from './pages/reset-password/page';
-import Page31 from './pages/hr/applications/page';
-import Page32 from './pages/hr/applications/pending/[id]/page';
-import Page33 from './pages/hr/applications/[id]/page';
-import Page34 from './pages/hr/apply/page';
-import Page35 from './pages/hr/dashboard/page';
-import Page38 from './pages/hr/my-loans/page';
-import Page40 from './pages/hr/page';
-import Page41 from './pages/hr/profile/page';
-import Page42 from './pages/login/admin/page';
-import Page43 from './pages/login/applicant/page';
-import Page46 from './pages/login/page';
+import PageLoadBoundary from './components/global/PageLoadBoundary';
+import RouteSeo from './lib/seo/RouteSeo';
 import Page47 from './pages/page';
-import Page48 from './pages/privacy-policy/page';
-import FaqPage from './pages/faq/page';
-import Page49 from './pages/register/page';
-import NotFoundPage from './pages/not-found';
+
+// Every page except the home page is its own file, fetched when it is first opened: a visitor to the public pages does not
+// download the admin, HR, finance and borrower screens. See the note on `vite:preloadError` in main.tsx.
+const SiteContentPage = lazy(() => import('./pages/admin/site-content/page'));
+const SiteContentEditorPage = lazy(() => import('./pages/admin/site-content/[key]/page'));
+const DemoPage = lazy(() => import('./pages/demo/page'));
+const DemoInboxPage = lazy(() => import('./pages/demo/inbox/page'));
+const DemoGuidePage = lazy(() => import('./pages/demo/guide/page'));
+const AdminLayout = lazy(() => import('./pages/admin/layout'));
+const DashboardLayout = lazy(() => import('./pages/dashboard/layout'));
+const FinanceLayout = lazy(() => import('./pages/finance/layout'));
+const HRLayout = lazy(() => import('./pages/hr/layout'));
+const Page0 = lazy(() => import('./pages/admin/applications/page'));
+const Page1 = lazy(() => import('./pages/admin/applications/[id]/page'));
+const Page2 = lazy(() => import('./pages/admin/audit-trail/page'));
+const Page3 = lazy(() => import('./pages/admin/audit-trail/[id]/page'));
+const AuditLogDetailPage = lazy(() => import('./pages/admin/audit-trail/logs/[logId]/page'));
+const Page4 = lazy(() => import('./pages/admin/dashboard/page'));
+const Page5 = lazy(() => import('./pages/admin/manage-admins/page'));
+const Page6 = lazy(() => import('./pages/admin/manage-applicants/page'));
+const FinancialAnalysisPage = lazy(() => import('./pages/admin/manage-applicants/[id]/financial-analysis'));
+const Page7 = lazy(() => import('./pages/admin/manage-applicants/[id]/page'));
+const Page8 = lazy(() => import('./pages/admin/manage-staff/page'));
+const Page9 = lazy(() => import('./pages/admin/profile/page'));
+const Page10 = lazy(() => import('./pages/admin/reports/page'));
+const Page11 = lazy(() => import('./pages/admin/settings/page'));
+const Page50 = lazy(() => import('./pages/admin/calculators/page'));
+const CustomReportBuilder = lazy(() => import('./pages/admin/reports/builder/page'));
+const CompaniesPage = lazy(() => import('./pages/admin/manage-companies/page'));
+const Page12 = lazy(() => import('./pages/dashboard/applications/page'));
+const Page13 = lazy(() => import('./pages/dashboard/applications/[id]/page'));
+const Page14 = lazy(() => import('./pages/dashboard/apply/general-loan/page'));
+const Page15 = lazy(() => import('./pages/dashboard/apply/page'));
+const Page16 = lazy(() => import('./pages/dashboard/apply/salary-advance/page'));
+const Page17 = lazy(() => import('./pages/dashboard/page'));
+const Page18 = lazy(() => import('./pages/dashboard/profile/page'));
+const Page19 = lazy(() => import('./pages/finance/applications/page'));
+const Page20 = lazy(() => import('./pages/finance/applications/pending/[id]/page'));
+const Page21 = lazy(() => import('./pages/finance/applications/[id]/page'));
+const Page22 = lazy(() => import('./pages/finance/apply/page'));
+const Page23 = lazy(() => import('./pages/finance/dashboard/page'));
+const Page24 = lazy(() => import('./pages/finance/hr-loans/page'));
+const Page27 = lazy(() => import('./pages/finance/my-loans/page'));
+const Page28 = lazy(() => import('./pages/finance/page'));
+const Page29 = lazy(() => import('./pages/finance/profile/page'));
+const Page30 = lazy(() => import('./pages/forgot-password/page'));
+const ResetPasswordPage = lazy(() => import('./pages/reset-password/page'));
+const Page31 = lazy(() => import('./pages/hr/applications/page'));
+const Page32 = lazy(() => import('./pages/hr/applications/pending/[id]/page'));
+const Page33 = lazy(() => import('./pages/hr/applications/[id]/page'));
+const Page34 = lazy(() => import('./pages/hr/apply/page'));
+const Page35 = lazy(() => import('./pages/hr/dashboard/page'));
+const Page38 = lazy(() => import('./pages/hr/my-loans/page'));
+const Page40 = lazy(() => import('./pages/hr/page'));
+const Page41 = lazy(() => import('./pages/hr/profile/page'));
+const Page42 = lazy(() => import('./pages/login/admin/page'));
+const loadSignIn = () => import('./pages/login/applicant/page');
+const Page43 = lazy(loadSignIn);
+const Page46 = lazy(() => import('./pages/login/page'));
+const loadPrivacy = () => import('./pages/privacy-policy/page');
+const Page48 = lazy(loadPrivacy);
+const loadFaq = () => import('./pages/faq/page');
+const FaqPage = lazy(loadFaq);
+const loadRegister = () => import('./pages/register/page');
+const Page49 = lazy(loadRegister);
+const NotFoundPage = lazy(() => import('./pages/not-found'));
 
 // Finance reviews an HR loan on the full review page. This old address is kept because emails already sent link to it.
 function ReviewHrLoan() {
@@ -70,9 +79,28 @@ function ReviewHrLoan() {
   return <Navigate to={`/finance/applications/pending/${id}`} replace />;
 }
 
+// While someone reads the home page, fetch the pages they are most likely to open next (they then open at once).
+function usePrefetchPublicPages(pathname: string) {
+  useEffect(() => {
+    if (pathname !== '/') return;
+    const run = () => [loadSignIn, loadRegister, loadFaq, loadPrivacy].forEach((load) => load().catch(() => {}));
+    if ('requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(run, { timeout: 4000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = window.setTimeout(run, 2500);
+    return () => window.clearTimeout(id);
+  }, [pathname]);
+}
+
 function App() {
+  const { pathname } = useLocation();
+  usePrefetchPublicPages(pathname);
   return (
     <>
+    <RouteSeo />
+    <PageLoadBoundary resetKey={pathname}>
+    <Suspense fallback={<div role="status" className="grid min-h-screen place-items-center text-sm text-slate-500">Loading...</div>}>
     <Routes>
       {/* Admin Routes */}
       <Route path="/admin" element={<AdminLayout />}>
@@ -152,6 +180,8 @@ function App() {
       {IS_DEMO && <Route path="/demo/guide" element={<DemoGuidePage />} />}
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
+    </Suspense>
+    </PageLoadBoundary>
     {IS_DEMO && <DemoToolbox />}
     {!IS_DEMO && <PreviewBar />}
     </>
