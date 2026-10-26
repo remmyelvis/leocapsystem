@@ -166,7 +166,7 @@ export default function FinanceDashboardPage() {
           </p>
         </div>
         <Link to="/finance/apply"
-          className="inline-flex items-center gap-2 bg-violet-700 hover:bg-violet-600 text-white text-[13px] font-bold px-3 py-1.5 rounded-lg transition-colors"
+          className="tap-btn inline-flex items-center gap-2 bg-violet-700 hover:bg-violet-600 text-white text-[13px] font-bold px-3 py-1.5 rounded-lg transition-colors"
         >
           Apply for Loan
           <ArrowRight className="h-4 w-4" />
@@ -213,7 +213,7 @@ export default function FinanceDashboardPage() {
               Recent Company Applications
             </h2>
             <Link to="/finance/applications"
-              className="text-xs text-violet-700 font-semibold hover:underline"
+              className="tap-link shrink-0 whitespace-nowrap text-xs text-violet-700 font-semibold hover:underline"
             >
               View all →
             </Link>

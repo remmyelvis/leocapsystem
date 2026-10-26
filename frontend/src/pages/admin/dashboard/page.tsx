@@ -318,20 +318,20 @@ export default function AdminDashboardPage() {
       {!loading && kpis && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3">
           <div className="bg-white px-4 py-3 rounded-lg shadow-sm ring-1 ring-slate-200">
-            <h3 className="max-sm:!text-[11px] max-sm:!leading-4 text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Loans by status</h3>
+            <h3 className="max-sm:!text-[12px] max-sm:!leading-4 text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Loans by status</h3>
             <div className="divide-y divide-slate-100">
               {Object.entries(kpis.loans_by_status || {}).map(([status, count]) => (
-                <Link to={`/admin/applications?status=${status}`} key={status} className="flex justify-between gap-3 text-[13px] text-slate-600 py-1 px-2 -mx-2 rounded-md hover:bg-slate-50 hover:text-brand-blue transition-colors">
+                <Link to={`/admin/applications?status=${status}`} key={status} className="flex justify-between gap-3 max-sm:min-h-[44px] max-sm:items-center text-[13px] text-slate-600 py-1 px-2 -mx-2 rounded-md hover:bg-slate-50 hover:text-brand-blue transition-colors">
                   <span className="capitalize">{status.replace(/_/g, ' ')}</span><span className="font-bold text-slate-800 tabular-nums">{count as number}</span>
                 </Link>
               ))}
             </div>
           </div>
           <div className="bg-white px-4 py-3 rounded-lg shadow-sm ring-1 ring-slate-200">
-            <h3 className="max-sm:!text-[11px] max-sm:!leading-4 text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Loans by company</h3>
+            <h3 className="max-sm:!text-[12px] max-sm:!leading-4 text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Loans by company</h3>
             <div className="divide-y divide-slate-100">
               {(kpis.loans_by_company || []).map((c: any) => (
-                <Link to={`/admin/applications?company=${c.company}`} key={c.company} className="flex justify-between gap-3 text-[13px] text-slate-600 py-1 px-2 -mx-2 rounded-md hover:bg-slate-50 hover:text-brand-blue transition-colors">
+                <Link to={`/admin/applications?company=${c.company}`} key={c.company} className="flex justify-between gap-3 max-sm:min-h-[44px] max-sm:items-center text-[13px] text-slate-600 py-1 px-2 -mx-2 rounded-md hover:bg-slate-50 hover:text-brand-blue transition-colors">
                   <span className="capitalize">{c.company}</span>
                   <span className="text-right tabular-nums"><span className="font-bold text-slate-800">{c.count}</span> <span className="text-slate-400">· {KES0.format(c.total_amount)}</span></span>
                 </Link>
@@ -344,7 +344,7 @@ export default function AdminDashboardPage() {
       {/* Loan Pipeline Table */}
       <div className="bg-white rounded-lg shadow-sm ring-1 ring-slate-200 overflow-hidden">
         <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <h3 className="max-sm:!text-[11px] max-sm:!leading-4 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Loan pipeline</h3>
+          <h3 className="max-sm:!text-[12px] max-sm:!leading-4 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Loan pipeline</h3>
           <div className="grid grid-cols-2 sm:flex gap-2">
             <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="text-xs bg-white border border-slate-200 rounded-md px-2.5 py-1 font-semibold text-slate-600 focus:ring-2 focus:ring-brand-blue/20">
               <option value="">All Status</option>
@@ -433,7 +433,7 @@ export default function AdminDashboardPage() {
           className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex justify-between items-center cursor-pointer hover:bg-slate-100"
           onClick={() => setShowAudit(!showAudit)}
         >
-          <h3 className="max-sm:!text-[11px] max-sm:!leading-4 text-[11px] font-bold text-slate-500 uppercase tracking-wide flex items-center">
+          <h3 className="max-sm:!text-[12px] max-sm:!leading-4 text-[11px] font-bold text-slate-500 uppercase tracking-wide flex items-center">
             <History className="h-3.5 w-3.5 mr-2 text-purple-500" /> Audit trail viewer
           </h3>
           <span className="text-xs text-slate-500">{showAudit ? 'Hide' : 'Show'}</span>

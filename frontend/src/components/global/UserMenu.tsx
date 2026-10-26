@@ -38,7 +38,7 @@ export default function UserMenu({ name, roleLabel, bgColorClass, profileHref, i
     <div className="relative" ref={menuRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-3 focus:outline-none hover:opacity-80 transition-opacity"
+        className="flex items-center gap-3 max-sm:min-w-[44px] max-sm:justify-center focus:outline-none hover:opacity-80 transition-opacity"
       >
         <div className="text-right hidden sm:block">
           <p className="text-sm font-semibold text-gray-800 leading-tight">
@@ -58,7 +58,7 @@ export default function UserMenu({ name, roleLabel, bgColorClass, profileHref, i
           <Link 
             to={profileHref} 
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            className="tap-btn flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
           >
             <User className="h-4 w-4 text-gray-400" />
             Go to profile

@@ -129,7 +129,7 @@ function SidebarContent({
                 to={href}
                 onClick={onNavClick}
                 aria-label={collapsed ? label : undefined}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                className={`tap-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                   collapsed ? "justify-center" : ""
                 } ${
                   active
@@ -186,7 +186,7 @@ export default function HRShell({ user, children }: HRShellProps) {
   const companyLabel = getCompanyLabel(user.company, user.companyName);
 
   return (
-    <div className="flex h-screen bg-slate-50/50 overflow-hidden">
+    <div className="flex h-screen h-dvh bg-slate-50/50 overflow-hidden">
       {/* ── Desktop sidebar (lg+) ── */}
       <aside
         className={`hidden lg:flex lg:flex-col bg-emerald-900 flex-shrink-0 transition-all duration-300 ${

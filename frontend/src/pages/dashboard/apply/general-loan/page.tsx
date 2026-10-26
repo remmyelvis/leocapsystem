@@ -214,7 +214,7 @@ function StepIndicator({
               )}
               {/* Label below */}
               <span
-                className={`absolute top-10 text-xs whitespace-nowrap font-semibold ${isDone
+                className={`absolute top-10 text-xs whitespace-nowrap font-semibold ${isCurrent ? "" : "max-sm:hidden"} ${isDone
                   ? "text-brand-blue"
                   : isCurrent
                     ? "text-red-600"

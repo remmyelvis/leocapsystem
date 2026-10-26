@@ -69,7 +69,7 @@ function Borrower({ item }: { item: AuditTrail }) {
       <Tip label={`Open loan ${item.application_id}`} align="start">
         <Link
           to={`/admin/applications/${item.application_id}`}
-          className="inline-flex items-center gap-1 max-w-[240px] font-semibold text-slate-800 hover:text-blue-700 transition-colors"
+          className="tap-link inline-flex items-center gap-1 max-w-[240px] font-semibold text-slate-800 hover:text-blue-700 transition-colors"
         >
           <span className="truncate">{formatName(item.applicant_name) || "Unknown borrower"}</span>
           <ExternalLink className="h-3 w-3 shrink-0 text-slate-400" />
@@ -82,7 +82,7 @@ function Borrower({ item }: { item: AuditTrail }) {
 
 function ViewLink({ id }: { id: string }) {
   return (
-    <Link to={`/admin/audit-trail/${id}`} className="inline-flex items-center gap-1.5 text-sm font-bold text-blue-700 hover:text-brand-blue transition-colors whitespace-nowrap">
+    <Link to={`/admin/audit-trail/${id}`} className="tap-link inline-flex items-center gap-1.5 text-sm font-bold text-blue-700 hover:text-brand-blue transition-colors whitespace-nowrap">
       <Eye className="h-4 w-4" /> View
     </Link>
   );

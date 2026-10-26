@@ -71,7 +71,7 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
             to={href}
             onClick={onNav}
             aria-label={collapsed ? label : undefined}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+            className={`tap-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
               collapsed ? "justify-center" : ""
             } ${
               active
@@ -87,7 +87,7 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
     });
 
   return (
-    <div className="flex h-screen bg-slate-50/50 overflow-hidden">
+    <div className="flex h-screen h-dvh bg-slate-50/50 overflow-hidden">
       {/* ── Desktop sidebar (md+): full labels ── */}
       <aside className="hidden md:flex lg:hidden flex-col w-16 bg-slate-900 flex-shrink-0">
         {/* Logo icon only */}

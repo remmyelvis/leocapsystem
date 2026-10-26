@@ -401,7 +401,7 @@ export default function CompaniesPage() {
       {/* Edit Company Modal */}
       {isEditModalOpen && editingCompany && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden max-h-[90vh] flex flex-col">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden max-h-[90vh] supports-[height:1dvh]:max-h-[90dvh] flex flex-col">
             <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
               <h2 className="text-[13px] font-bold text-slate-900">Edit Company: {editingCompany.name}</h2>
               <button
@@ -552,7 +552,7 @@ export default function CompaniesPage() {
       {/* Onboarding Modal */}
       {isOnboardModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[90vh] supports-[height:1dvh]:max-h-[90dvh]">
             <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <h3 className="text-[13px] font-semibold text-slate-800 flex items-center gap-2">
                 <Mail className="h-5 w-5 text-emerald-600" />

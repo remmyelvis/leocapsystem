@@ -365,12 +365,12 @@ function ContactSection() {
     {
       icon: MapPin,
       label: "Address",
-      content: <a href={contact.mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-block py-1.5 hover:text-brand-blue hover:underline">{contact.address}</a>,
+      content: <a href={contact.mapsUrl} target="_blank" rel="noopener noreferrer" className="tap-link inline-block py-1.5 hover:text-brand-blue hover:underline">{contact.address}</a>,
     },
     {
       icon: Mail,
       label: "Email",
-      content: <a href={`mailto:${contact.email}`} className="inline-block py-1.5 hover:text-brand-blue hover:underline">{contact.email}</a>,
+      content: <a href={`mailto:${contact.email}`} className="tap-link inline-block py-1.5 hover:text-brand-blue hover:underline">{contact.email}</a>,
     },
     {
       icon: Phone,
@@ -380,7 +380,7 @@ function ContactSection() {
           {contact.phones.map((p, i) => (
             <span key={p.href}>
               {i > 0 && " | "}
-              <a href={p.href} className="inline-block py-1.5 hover:text-brand-blue hover:underline">{p.label}</a>
+              <a href={p.href} className="tap-link inline-block py-1.5 hover:text-brand-blue hover:underline">{p.label}</a>
             </span>
           ))}
         </>

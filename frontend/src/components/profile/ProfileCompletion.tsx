@@ -412,9 +412,9 @@ export function ProfileIncompleteBanner({
   });
 
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 flex items-start gap-3 [.admin-ui_&]:rounded-lg [.admin-ui_&]:px-4 [.admin-ui_&]:py-3">
+    <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 flex flex-wrap items-start gap-3 [.admin-ui_&]:rounded-lg [.admin-ui_&]:px-4 [.admin-ui_&]:py-3">
       <UserCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-[12rem]">
         <p className="text-sm font-semibold text-amber-800 [.admin-ui_&]:text-[13px]">
           Complete your profile before applying for a loan
         </p>
@@ -495,7 +495,7 @@ export function ProfileIncompleteBanner({
         )}
       </div>
       <Link to={profileHref}
-        className="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors flex-shrink-0"
+        className="tap-btn flex items-center max-sm:w-full max-sm:justify-center bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors flex-shrink-0"
       >
         Complete Profile
       </Link>

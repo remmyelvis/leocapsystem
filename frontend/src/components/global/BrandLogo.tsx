@@ -35,7 +35,7 @@ export default function BrandLogo({ size = "md", className = "", width, height, 
   }
 
   return (
-    <Link to={targetPath} onClick={onClick} className="inline-block transition-opacity hover:opacity-90 active:opacity-80">
+    <Link to={targetPath} onClick={onClick} className="tap-link inline-block transition-opacity hover:opacity-90 active:opacity-80">
       <img
         src={src}
         alt="Leocap Invest"

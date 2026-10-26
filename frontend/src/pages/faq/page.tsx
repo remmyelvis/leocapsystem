@@ -159,7 +159,7 @@ export default function FaqPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               aria-label="Search questions"
-              placeholder="Search, for example: password, documents, repay"
+              placeholder="Search, e.g. password"
               className="min-h-[56px] w-full rounded-2xl border-0 bg-white pl-14 pr-14 text-[16px] text-slate-900 shadow-xl shadow-black/20 placeholder:text-slate-500 focus:outline-none focus:ring-4 focus:ring-white/30 [&::-webkit-search-cancel-button]:hidden"
             />
             {query && (
@@ -291,7 +291,7 @@ export default function FaqPage() {
                   <span>
                     <span className="block text-[12px] font-bold uppercase tracking-wider text-slate-600">Phone</span>
                     {contact.phones.map((p) => (
-                      <a key={p.href} href={p.href} className="block py-0.5 text-[14px] font-semibold text-slate-900 hover:text-brand-blue">
+                      <a key={p.href} href={p.href} className="tap-link block py-0.5 text-[14px] font-semibold text-slate-900 hover:text-brand-blue">
                         {p.label}
                       </a>
                     ))}

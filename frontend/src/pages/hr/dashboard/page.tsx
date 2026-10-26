@@ -168,7 +168,7 @@ export default function HRDashboardPage() {
           </p>
         </div>
         <Link to="/hr/apply"
-          className="inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-600 text-white text-[13px] font-bold px-3 py-1.5 rounded-lg transition-colors"
+          className="tap-btn inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-600 text-white text-[13px] font-bold px-3 py-1.5 rounded-lg transition-colors"
         >
           Apply for Loan
           <ArrowRight className="h-4 w-4" />
@@ -215,7 +215,7 @@ export default function HRDashboardPage() {
               {companyLabel} Applications
             </h2>
             <Link to="/hr/applications"
-              className="text-xs text-emerald-700 font-semibold hover:underline"
+              className="tap-link shrink-0 whitespace-nowrap text-xs text-emerald-700 font-semibold hover:underline"
             >
               View all →
             </Link>

@@ -87,7 +87,7 @@ export default function LoginForm({
             error={errors.password?.message}
             labelRight={
               variant === "applicant" ? (
-                <Link to="/forgot-password" className="inline-flex min-h-[28px] items-center text-[12px] font-semibold text-brand-blue hover:underline">
+                <Link to="/forgot-password" className="tap-btn inline-flex min-h-[28px] items-center text-[12px] font-semibold text-brand-blue hover:underline">
                   Forgot password?
                 </Link>
               ) : undefined

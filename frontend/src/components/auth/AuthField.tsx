@@ -231,7 +231,7 @@ export function AuthLinkButton({ to, children }: { to: string; children: ReactNo
 
 export function BackLink({ to, children }: { to: string; children: ReactNode }) {
   return (
-    <Link to={to} className="mb-6 inline-flex min-h-[32px] items-center gap-1.5 text-[13px] font-medium text-slate-600 transition-colors hover:text-slate-900">
+    <Link to={to} className="tap-btn mb-6 inline-flex min-h-[32px] items-center gap-1.5 text-[13px] font-medium text-slate-600 transition-colors hover:text-slate-900">
       <ArrowLeft className="h-3.5 w-3.5" /> {children}
     </Link>
   );

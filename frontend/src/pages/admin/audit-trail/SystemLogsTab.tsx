@@ -370,7 +370,7 @@ function StatusBadge({ failed, status }: { failed: boolean; status?: string | nu
 
 function ViewLink({ id }: { id: string }) {
   return (
-    <Link to={`/admin/audit-trail/logs/${id}`} className="inline-flex items-center gap-1.5 text-sm font-bold text-blue-700 hover:text-brand-blue transition-colors whitespace-nowrap">
+    <Link to={`/admin/audit-trail/logs/${id}`} className="tap-link inline-flex items-center gap-1.5 text-sm font-bold text-blue-700 hover:text-brand-blue transition-colors whitespace-nowrap">
       <Eye className="h-4 w-4" /> View
     </Link>
   );

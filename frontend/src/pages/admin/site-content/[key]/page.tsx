@@ -251,7 +251,7 @@ function Editor({ blockKey }: { blockKey: BlockKey }) {
         <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-[13px] text-red-800 ring-1 ring-red-200">
           {loadError}
         </p>
-        <Link to="/admin/site-content" className="text-[13px] font-medium text-brand-blue hover:underline">
+        <Link to="/admin/site-content" className="tap-link text-[13px] font-medium text-brand-blue hover:underline">
           Back to Site content
         </Link>
       </div>
@@ -266,7 +266,7 @@ function Editor({ blockKey }: { blockKey: BlockKey }) {
   return (
     <div className="mx-auto w-full max-w-[1100px] space-y-4 p-4 sm:p-6">
       <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-[13px] text-slate-500">
-        <Link to="/admin/site-content" className="font-medium text-brand-blue hover:underline">
+        <Link to="/admin/site-content" className="tap-link font-medium text-brand-blue hover:underline">
           Site content
         </Link>
         <ChevronRight className="h-3.5 w-3.5" aria-hidden />

@@ -72,7 +72,7 @@ export default function FinanceMyLoansPage() {
           </p>
         </div>
         <Link to="/finance/apply"
-          className="inline-flex items-center gap-1.5 bg-violet-700 hover:bg-violet-600 text-white text-[13px] font-bold px-3 py-1.5 rounded-lg transition-colors"
+          className="tap-btn inline-flex items-center gap-1.5 bg-violet-700 hover:bg-violet-600 text-white text-[13px] font-bold px-3 py-1.5 rounded-lg transition-colors"
         >
           <PlusCircle className="h-3.5 w-3.5" />
           Apply for Loan

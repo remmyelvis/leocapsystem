@@ -33,13 +33,13 @@ export default function NotFound() {
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link to="/"
-            className="inline-flex items-center justify-center gap-2 bg-white text-blue-900 font-bold px-6 py-3 rounded-xl text-sm hover:bg-blue-50 transition-colors"
+            className="tap-btn inline-flex items-center justify-center gap-2 bg-white text-blue-900 font-bold px-6 py-3 rounded-xl text-sm hover:bg-blue-50 transition-colors"
           >
             <HomeIcon className="h-4 w-4" />
             Go Home
           </Link>
           <Link to="/dashboard"
-            className="inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors"
+            className="tap-btn inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors"
           >
             My Dashboard
           </Link>

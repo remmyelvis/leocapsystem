@@ -654,7 +654,7 @@ export default function ApplicantDetailsPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Link to={`/admin/applications/${item.application.id}`} className="text-xs bg-white border border-slate-200 text-slate-700 font-bold px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors">
+                  <Link to={`/admin/applications/${item.application.id}`} className="tap-btn inline-flex items-center text-xs bg-white border border-slate-200 text-slate-700 font-bold px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors">
                     View Details
                   </Link>
                   <Button 

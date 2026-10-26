@@ -526,7 +526,7 @@ return (
                     checked={filtered.length > 0 && selectedAppIds.length === filtered.length}
                     onChange={(e) => handleSelectAll(e.target.checked)}
                   />
-                  Select all {filtered.length}
+                  Select all<span className="max-sm:hidden"> {filtered.length}</span>
                 </label>
                 <SortSelect specs={SORTS} sort={sort} onSort={setSort} label="Sort applications" />
               </div>
