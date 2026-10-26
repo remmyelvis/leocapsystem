@@ -196,6 +196,7 @@ These changes were made **directly to the live data**, not just to the program. 
 | **HR repayment Excel** | "All months" failed for Nakama and Ideon. | Works. The month defaults to the current month. The title shows the month. | 21 Oct |
 | **Repayment reports for other companies** | HR and finance staff of companies other than Nakama and Ideon were not set up for them. | Any company's staff can download their own company's report. | 21 Oct |
 | **A failed download** | A vague "Failed to download". | Shows the real reason (for example "no loans due this month"). | 21 Oct |
+| **Dates on the account statement PDF** | On some statements the DATE column of the transaction table printed "nan" instead of a date. It happened when an applicant's first ledger lines were typed in from your spreadsheet (stored without fractions of a second) and later lines were recorded by the platform (stored with them): the later lines lost their date, could be put in the wrong order, and a line not tied to a loan could be left out entirely. Two applicants were affected on 26 Oct, four lines in all. | Every date prints correctly, in order, and no line is dropped. A date that is truly missing would print "N/A", never "nan". Nothing in the stored data was wrong, so nothing needed correcting: download the statement again. | 26 Oct |
 
 ---
 
@@ -453,6 +454,7 @@ Newest first. When a change is made, a new line goes at the top.
 
 | Date | What changed | Section |
 |---|---|---|
+| **26 Oct** | **Account statement PDF no longer shows "nan" instead of dates** (it affected statements that mix lines typed in from your spreadsheet with lines the platform recorded since; two applicants today). Download the statement again. No data was changed. | 6 |
 | **26 Oct** | **Privacy Policy contact details corrected**: the Data Controller section showed made-up details (privacy@leocap.com and +254 700 000000). It now shows your real email, phone numbers and address, taken from Site content so it follows any edit there, plus the P.O. Box from your loan agreements. Nothing else in the policy changed. | 13.1, 15 |
 | **26 Oct** | **Search engines and speed**: own title, description and link preview for every public page, robots.txt, sitemap, tab icon, one official address, business details for search engines, pages that should not be listed marked; the home page downloads about a quarter of what it did (screens load when opened), the photo, font and logos come from your own site and are smaller; a safety net for tabs left open during an update; security updates to Zod, Vite and about sixty packages. The server rules (www redirect, "do not list" on app., caching, each page's own title) were published after a check on the demo site; live search score 83 to 100. | 13.2 |
 | **25 Oct** | **Delete Application fixed**: the button failed for every loan; it now deletes a loan that was never paid out (with its statement lines, keeping a copy in the system log) and explains why a paid-out loan cannot be deleted. | 11 |
