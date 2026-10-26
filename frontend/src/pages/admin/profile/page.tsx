@@ -240,11 +240,11 @@ export default function AdminProfilePage({ embedded = false }: { embedded?: bool
 
       {/* Super Admin Notice */}
       {isSuper && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-[13px] text-amber-700 flex items-start gap-2.5">
-          <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
+        <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-[13px] text-blue-800 flex items-start gap-2.5">
+          <Info className="h-4 w-4 flex-shrink-0 mt-0.5 text-blue-600" />
           <div>
             <p className="font-semibold">Super Admin Account</p>
-            <p className="text-amber-600 mt-0.5">
+            <p className="text-blue-700 mt-0.5">
               This is the primary administrator account. Profile information is managed through system configuration.
             </p>
           </div>
