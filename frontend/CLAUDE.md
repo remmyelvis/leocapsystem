@@ -30,7 +30,8 @@ src/
 ├── store/                 # Zustand stores (auth, loan, admin, profiles, ...)
 ├── repositories/ services/ hooks/ schemas/ types/ configs/
 ├── lib/                   # API clients, loan math, company helpers
-└── lib/siteContent/       # the editable text of the public pages (defaults, text format, hook)
+├── lib/siteContent/       # the editable text of the public pages (defaults, text format, hook)
+└── lib/seo/               # titles / descriptions of the public pages (pages.ts) and RouteSeo (keeps the <head> right per route)
 
 ## Backend API Endpoints
 
@@ -207,3 +208,24 @@ Progress bar: 50% personal info + 50% documents
 - macOS: port 5000 is taken by AirPlay Receiver. Run Flask on another port and
   update the proxy target in vite.config.ts (or turn AirPlay Receiver off)
 - Demo mode: `DEMO_MODE=True` stops real emails (see ../start_demo.bat)
+
+## Search engines and speed (26 Oct 2026)
+
+- **Public pages' titles, descriptions and canonical address** live in one table, `src/lib/seo/pages.ts` (`PUBLIC_PAGES`, `SITE_URL`).
+  `vite-seo.ts` (a plugin in `vite.config.ts`) writes them into `index.html` between the `<!--seo:start/end-->` markers at build time and
+  writes `faq.html`, `privacy-policy.html`, `register.html`, `login-applicant.html` (flat names: a `login/` folder would break `/login`);
+  `RouteSeo` keeps title / description / canonical / robots right while the visitor moves around. Every page that is not in `PUBLIC_PAGES`
+  (portals, 404, password reset), the app. host and the demo build are `noindex` with no canonical. Adding a public page: add it to
+  `PUBLIC_PAGES`, `public/sitemap.xml`, and check `public/robots.txt`. Quote no loan numbers in the texts (owner decision 1).
+- **Server rules** are `public/.htaccess` (www -> main address, app. gets `X-Robots-Tag: noindex`, html `no-cache`, `/faq` -> `faq.html`,
+  `/faq/` -> `/faq`, everything else -> the app) and `public/assets/.htaccess` (1 year immutable; a missing `/assets/*` is a real 404).
+  Test changes on a local Apache (`httpd -f`) before pushing: a wrong rule takes the whole site down. The demo deploy appends
+  `noindex, nofollow` to the same file. NOTE: until the second step the live deploy excludes `**/.htaccess` (see deploy-frontend.yml).
+- **Every page except the home page is a lazy chunk** (`lazy(() => import(...))` in `App.tsx`); keep new pages lazy. Stale tabs after a
+  deploy: `vite:preloadError` + `PageLoadBoundary` reload once (`lib/reloadForUpdate.ts`). The home page prefetches sign-in / register /
+  FAQ / privacy while idle.
+- **No third-party requests while a public page loads** (except the Google map iframe): the font (`pages/fonts`, latin variable woff2,
+  preloaded from `index.html`) and the hero photo (`pages/images/hero-800.webp` / `hero-1920.webp`, already greyscale) are self-hosted.
+  Logos are small files; `BrandLogo` knows their pixel sizes (`LOGO_SIZE`) so no layout shift. Add a new logo file there too.
+- Measure with Lighthouse (`npx lighthouse@12 <url> --chrome-flags="--headless=new"`) on the SAME server before and after; its mobile
+  score depends on simulated throttling (a pre-rendered home page looks no faster in it, but is faster in a real throttled browser).

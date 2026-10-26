@@ -2,7 +2,7 @@
 
 **For:** Elvis Karemi  
 **Covers:** 15 October 2026 to today  
-**Last updated:** 25 October 2026
+**Last updated:** 26 October 2026
 
 This document lists, in plain language, every improvement and correction made to the loan platform since work began on 15 October 2026. For each change it shows what things were **like before** and what they are **like now**.
 
@@ -58,6 +58,7 @@ This document lists, in plain language, every improvement and correction made to
 10. **New tools for you:** a clickable **Overdue** card, a **searchable applicant statement** with a per-line delete, and **Add Penalty**.
 11. **The public website was redesigned** (same wording), with a new FAQ page.
 12. **You can now edit the words of the public website yourself** (Section 13.1): contact details, an announcement banner, the home page headings, hero numbers, product cards and "How it works" steps, testimonials, the FAQs and the Privacy Policy, with a private draft, a preview, one-click publishing and a history.
+13. **The public website is now ready for search engines and loads faster** (Section 13.2): each page has its own title and description, link previews show a picture, there is a sitemap and a tab icon, and the first download is about a quarter of the size.
 
 ---
 
@@ -222,6 +223,7 @@ These weaknesses were found by reviewing the program, not because of a reported 
 |---|---|---|---|
 | **Changing any loan's figures** | Any signed-in person could change any field of any loan. | Staff only. | 15 Oct |
 | **Approving, rejecting, disbursing, deleting loans** | Any signed-in applicant could do this to **anyone's** loan, and could read anyone's application. | Approve and reject: staff. Disburse and delete: admins only. An applicant sees only their own loans. | 19 Oct |
+| **Out-of-date building blocks** | Zod, Vite and follow-redirects (and about sixty packages they use) had published security fixes that were not installed. | Updated. The packages that reach visitors show 0 known problems; three moderate findings remain in a build tool (Tailwind), which would need a major upgrade and cannot affect visitors. | 26 Oct |
 | **Creating or removing admin accounts** | Anyone could create an admin account. Any signed-in person could delete or change an admin. | Only admins can create or change admin accounts. | 19 Oct |
 | **Borrowers' documents (ID, KRA, payslips)** | Any signed-in person could download or delete anyone's documents. | Only the owner, an admin, or HR or finance of the same company. | 19 Oct |
 | **The daily reminder check** | Open to anyone on the internet. | Needs a secret key (Section 4). | 19-21 Oct |
@@ -348,6 +350,33 @@ An admin can change some of the words on the public pages without a developer. *
 
 **Good to know.** The hero card, the first product and the three step names are one set of words, so changing one changes the others. Numbers appear in more than one place on purpose (for example "500+" in the opening section and in the "Ready to get started?" band): change them together. Nothing checks a figure against the calculators.
 
+### 13.2 Search engines and speed (26 Oct)
+
+The public pages are Home, FAQ, Privacy Policy, Create account and Sign in. Everything below changes how they are found and how fast they open. **The wording and the look are unchanged** (the home page photo was compared with the old one: the difference is below what the eye can see).
+
+| What | Before | After | Date |
+|---|---|---|---|
+| **Page titles and descriptions** | Every page was called "Leocap Loan App" and had no description, so Google had to guess what to show. | Each public page has its own title and a short description (for example "Salary Advance & Personal Loans in Kenya \| Leocap Invest"). They quote **no loan limits, rates or fees** (decision 1). The admin, HR, finance and applicant portals keep the old title. | 26 Oct |
+| **Link previews** (WhatsApp, Facebook, LinkedIn, X) | A shared link showed only "Leocap Loan App". | It shows the page title, the description and a picture with the logo. | 26 Oct |
+| **Files search engines look for** | The server answered "robots.txt" and "sitemap.xml" with the app's own page, which search engines cannot read. | Both files exist. The sitemap lists the five public pages; the robots file asks engines to stay out of the admin, HR, finance and applicant areas and the password pages. | 26 Oct |
+| **Tab icon** | None (browsers showed a blank icon, and Google could not show your logo next to the result). | The Leocap mark, in the sizes browsers, phones and Google ask for. | 26 Oct |
+| **One address for the site** | leocapinvest.co.ke, www.leocapinvest.co.ke and app.leocapinvest.co.ke all showed the same pages, so search engines could list three copies. | Each page names **leocapinvest.co.ke** as its address. The server sends www to it, and marks the app. copy "do not list". | 26 Oct (server part: second step, see below) |
+| **Business details for search engines** | None. | The home page tells search engines your name, email, phone numbers and address, taken from **Site content > Contact details**, so an edit there is followed. No ratings, reviews or prices are claimed. | 26 Oct |
+| **Pages that should not be listed** | Nothing told search engines to skip the sign-in areas, password pages or the "page not found" screen. | They are marked "do not list". | 26 Oct |
+| **Speed: what a visitor downloads first** | One 1.4 MB program file holding every screen, including the admin, HR, finance and applicant screens. | The home page downloads only what it needs (about a quarter of the size). Each other screen is fetched when it is first opened, and the sign-in and apply pages are fetched quietly while the home page is being read. | 26 Oct |
+| **Speed: the home page photo** | A 1 MB picture fetched from another company's website (Unsplash) at full size, even on phones, under a dark layer that hides most of it. | The same photo, kept on your own site and made smaller: 42 KB for phones and tablets, 171 KB for computers. | 26 Oct |
+| **Speed and privacy: the font** | The text font was fetched from Google before the page could appear. | The same font, kept on your own site and loaded at once (so a visitor's browser no longer contacts Google for it). The Google map in the Contact section still does, as before. | 26 Oct |
+| **Speed: the logos** | The square logo was 4167 by 4167 pixels (158 KB) and the header logo 39 KB. | 14 KB each, same size on screen. | 26 Oct |
+| **Open tabs after an update** | (New safety net.) A tab opened before an update would have asked for a screen file that no longer exists and shown a blank page. | The page reloads itself once to pick up the new version; if the site is really unreachable it shows a short message with a **Reload** button instead of a blank screen. | 26 Oct |
+
+**Measured** (a test copy of the site on one computer, a simulated mid-range phone on slow 4G, Google's Lighthouse tool, old version against new): performance score **67 to 90**; first content on screen **4.5 s to 2.6 s**; the main headline **5.2 s to 3.0 s**; usable **7.3 s to 3.3 s**; data downloaded **1,588 KB to 352 KB**; accessibility stays at 100. On the live site Lighthouse gave 64 before. **Not yet measured on the live site after publishing, and not measured on real visitors**: Google's real-visitor figures (Chrome UX Report) need more traffic than a new site has, and ranking position cannot be measured from here.
+
+**Server rules, published in a second step.** The main address, www and app. share one folder of server rules (a small file called .htaccess). It is published to the demo site first, checked there, and then to the live site. Until then the live server keeps its own four-line rule, so these parts are not active yet: www to the main address, the "do not list" mark on app., one year of caching for the program files, and each page (FAQ, Privacy, ...) answering with its own title in the raw page. Everything else above is active as soon as the site is published.
+
+**Security check done at the same time.** Updated Zod, Vite, follow-redirects and about sixty other packages to their fixed versions: the packages that reach visitors now show **0** known problems. Three moderate findings remain in a build tool (Tailwind) and need a major upgrade; they cannot affect visitors.
+
+**Left for you** (they need your accounts or facts, so we cannot do them): see decisions 17 to 19 in Section 15.
+
 ---
 
 ## 14. Looks and phone-friendliness
@@ -384,6 +413,9 @@ These need your input. Nothing here is broken, but each affects what customers o
 | 14 | **Who may open and reset the demo.** Today anyone who has the link can open it and sign in with one click, and any admin sign-in can press Reset (once every 3 minutes). Search engines are told not to list it. | Fine for presenting. Tell us if you want a shared access code, or Reset limited to you. |
 | 15 | **The map on the home page.** It searches for "Applewood Adams, Ngong Road, Nairobi" (the word "Along" is missing), which shows several pins around Adams Arcade. Searching for the full address, "Applewood Adams, Along Ngong Road, Nairobi", centres the map on Applewood Adams. We left it exactly as it was. | Say if you want it changed (one line). If you edit the address under Site content, the map follows the new address. |
 | 16 | **Placeholder contact details in the Privacy Policy.** Section 2 (Data Controller) shows `privacy@leocap.com`, `+254 700 000000` and a P.O. Box that do not match your real details (info@leocapinvest.co.ke, +254 722 221 502). We left the wording exactly as it was because it is a legal text. | Now that the policy is editable you can put the right details in (the editor has Insert buttons for the current email, phones and address). Please confirm what the policy should say. |
+| 17 | **Tell the search engines the site exists.** Sign in to Google Search Console and Bing Webmaster Tools with a company account, add leocapinvest.co.ke, verify it (a small tag or a DNS record) and submit https://leocapinvest.co.ke/sitemap.xml. Create a Google Business Profile for the Nairobi office. | Without this, search engines find the site slowly and you see none of their data. We cannot do it: it needs your Google and Microsoft sign-ins. Tell us the verification tag and we add it. |
+| 18 | **Trust information a lender should show.** Your licence or registration number (and who regulates you), full company name, and a Terms and Conditions page. We have not invented any. Also social media links if you have them. | Loans are a "your money" topic, so Google weighs who is behind the site. Send the facts and we add them to the home page, the footer and the search details. |
+| 19 | **Pre-drawing the home page (optional).** We built and measured it: the headline would appear in about 1.1 s instead of 1.8 s on a slow phone. We did **not** keep it: both are inside Google's "good" limit (2.5 s), and it would remove the scroll animations on first visit, add a step to every publish, and show out-of-date text for a moment after you edit Site content. | Say if you want it anyway. |
 
 ---
 
@@ -405,6 +437,10 @@ These were looked at and **left unchanged on purpose**. They are listed so you k
 - **A published change reaches visitors within about a minute** (the pages keep a copy for a minute to stay fast). Someone who already has the page open sees it on their next visit.
 - **Site content cannot be edited in the demo**; the demo shows the program's built-in text.
 - **The Site content editor does not stop you quoting numbers** in an FAQ answer. The built-in answers quote no loan limits, rates or fees on purpose (see decision 1); if an editor adds figures, nothing checks them against the calculators.
+- **"Page not found" has a normal status.** An address that does not exist shows the app's "Page not found" screen, but the server still answers "OK" (200) instead of 404, and the screen is marked "do not list". A real 404 would need the server to know every page address, which would have to be kept in step with the program by hand.
+- **Search engines see changes to Site content when they next open the page** (Google does this within days). The link-preview text (title, description, picture) is built into the program, not editable under Site content.
+- **The page font covers English letters and common punctuation** (Latin). Any other alphabet is shown in the device's own font.
+- **Speed figures are from a test copy and a simulation**, not from real visitors (see Section 13.2).
 - **The demo is unavailable for about a minute while it rebuilds** (every night at 3 am, or when someone presses Reset). Everyone using the demo shares the same data, so a change one person makes is seen by the next.
 - **The demo's nightly rebuild has been set up but not yet seen running** (its first run is 3 am on 26 October). We will check its log and say so here.
 - **The demo's home page is the real public home page**, with its public numbers (see decision 1), while the demo's own data is smaller.
@@ -417,6 +453,7 @@ Newest first. When a change is made, a new line goes at the top.
 
 | Date | What changed | Section |
 |---|---|---|
+| **26 Oct** | **Search engines and speed**: own title, description and link preview for every public page, robots.txt, sitemap, tab icon, one official address, business details for search engines, pages that should not be listed marked; the home page downloads about a quarter of what it did (screens load when opened), the photo, font and logos come from your own site and are smaller; a safety net for tabs left open during an update; security updates to Zod, Vite and about sixty packages. Server rules (www redirect, caching) follow in a second step. | 13.2 |
 | **25 Oct** | **Delete Application fixed**: the button failed for every loan; it now deletes a loan that was never paid out (with its statement lines, keeping a copy in the system log) and explains why a paid-out loan cannot be deleted. | 11 |
 | **25 Oct** | **Edit more of the public pages**: Site content now also covers the home page text (opening section with its three numbers, loan product cards with the Most Popular / Coming Soon switches, the three "How it works" steps and the band under them, the Contact and Testimonials headings) and the **Privacy Policy** (sections can be added, removed and reordered). With nothing published the pages are unchanged. Found: the policy's Data Controller section has placeholder contact details (decision 16). | 13.1 |
 | **25 Oct** | **Edit the public pages yourself**: a new **Site content** screen in the admin menu for the contact details, an announcement banner, testimonials (only with the client's agreement) and the FAQs, with private drafts, a preview on the real page, publishing, history with restore, and every change in the Audit Trail. Contact details are now kept in one place (the header, footer, home page, sign-in pages and FAQs all follow them). Not in the demo. | 13.1 |
