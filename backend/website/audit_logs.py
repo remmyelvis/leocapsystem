@@ -231,8 +231,11 @@ def get_all_audit_logs():
         ))
         applied_filters["q"] = search
 
-    # Order by newest first
-    query = query.order_by(AuditLog.created_at.desc())
+    # Newest first, or ?order=asc to read what happened from the start (the id keeps rows of the same second in a fixed order)
+    order = request.args.get("order", "desc")
+    if order not in ("asc", "desc"):
+        return jsonify({"error": "order must be asc or desc."}), 400
+    query = query.order_by(AuditLog.created_at.asc() if order == "asc" else AuditLog.created_at.desc(), AuditLog.id)
 
     # Pagination
     page = request.args.get("page", default=1, type=int)

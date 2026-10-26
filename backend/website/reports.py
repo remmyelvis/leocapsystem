@@ -63,6 +63,25 @@ def _date_range_args():
     return start, end
 
 
+# Workflow order for sorting a Status column: what needs someone's attention first, finished things last (ascending).
+# Keep in step with STATUS_ORDER in frontend/src/lib/loanStatus.ts.
+STATUS_ORDER = [
+    "delinquent", "escalated", "defaulted",                      # overdue trouble
+    "pending", "pending_processing", "processing", "amended",    # waiting for a decision
+    "rate_confirmed", "confirmed",                               # the borrower accepted: approve
+    "approved",                                                  # approved: pay out
+    "rate_set",                                                  # waiting for the borrower
+    "disbursed",                                                 # paid out (when only the loan status is shown)
+    "unpaid", "partially_paid",                                  # being repaid
+    "paid",
+    "rate_declined", "written_off", "declined", "rejected",      # closed without being repaid
+]
+
+
+def _status_rank(expr):
+    return case(*[(expr == name, rank) for rank, name in enumerate(STATUS_ORDER)], else_=len(STATUS_ORDER))
+
+
 # ?sort= keys of the loans table in Reports (the column the admin clicked) -> what to order by.
 _SORT_COLUMNS = {
     "created_at": Application.created_at,
@@ -76,8 +95,10 @@ _SORT_COLUMNS = {
 def _sort_clause():
     """ORDER BY list for ?sort=<column>&order=asc|desc (default: newest application first).
     Computed columns match what the table shows: borrower = the applicant's name (ignoring case and stray spaces), status = the loan
-    status (or the repayment status once disbursed), owed = what is still owed on an open loan (loans that are not open have
-    none and always come last). Blank values always come last; ties fall back to newest first so pages never shuffle."""
+    status (or the repayment status once disbursed) in workflow order (STATUS_ORDER: needs action first when ascending),
+    loan_status = the loan status alone in the same order (the HR and finance lists show that), owed = what is still owed on an
+    open loan (loans that are not open have none and always come last). Blank values always come last; ties fall back to newest
+    first so pages never shuffle."""
     sort = request.args.get("sort", "created_at")
     order = request.args.get("order", "desc")
     if order not in ("asc", "desc"):
@@ -85,7 +106,8 @@ def _sort_clause():
     is_open = and_(Application.loan_status == "disbursed", Application.repayment_status != "paid")
     computed = {
         "borrower": func.lower(func.trim(Applicant.name)),
-        "status": case((Application.loan_status == "disbursed", Application.repayment_status), else_=Application.loan_status),
+        "status": _status_rank(case((Application.loan_status == "disbursed", Application.repayment_status), else_=Application.loan_status)),
+        "loan_status": _status_rank(Application.loan_status),
         "owed": case((is_open, case((Application.outstanding_balance > 0, Application.outstanding_balance), else_=Application.repayment_amount)), else_=None),
     }
     column = _SORT_COLUMNS.get(sort)
