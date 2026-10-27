@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties, MouseEvent, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, CircleHelp, Mail, Phone } from "lucide-react";
 import BrandLogo from "@/components/global/BrandLogo";
@@ -91,6 +91,13 @@ function Eyebrow({ children }: { children: ReactNode }) {
   );
 }
 
+// A box checks itself when the cursor leaves it, and its error line pushes everything below it down. A link or button pressed
+// at that moment has moved by the time the mouse is released, so the first click did nothing (the second worked). Pressing a
+// link, button or label therefore keeps the cursor where it is: no check runs, nothing moves, and the click still goes through.
+const keepCursorOnPress = (e: MouseEvent<HTMLElement>) => {
+  if (e.button === 0 && (e.target as HTMLElement).closest("a, button, label")) e.preventDefault();
+};
+
 export default function AuthLayout({ variant, children, top = false }: { variant: AuthPage; children: ReactNode; top?: boolean }) {
   const copy = COPY[variant];
   const contact = useContact();
@@ -109,7 +116,7 @@ export default function AuthLayout({ variant, children, top = false }: { variant
       </header>
 
       {/* Form column */}
-      <main className="relative -mt-6 flex flex-1 flex-col rounded-t-[28px] bg-white xl:mt-0 xl:rounded-none">
+      <main onMouseDown={keepCursorOnPress} className="relative -mt-6 flex flex-1 flex-col rounded-t-[28px] bg-white xl:mt-0 xl:rounded-none">
         <div className="mx-auto flex w-full max-w-[400px] flex-1 flex-col px-6 pb-8 pt-7 xl:px-0 xl:py-10">
           <div className="flex items-center justify-between">
             <BrandLogo src="/logo-wordmark.png" height="2.25rem" />
