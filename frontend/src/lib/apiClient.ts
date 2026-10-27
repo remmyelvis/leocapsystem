@@ -99,6 +99,11 @@ export interface ApiResponse<T = unknown> {
   status: number;
 }
 
+// The server did not answer at all (status 0: unreachable, or the request failed before any reply) or broke (5xx, for example the
+// host's "temporarily busy" page). That is not the person's mistake, so a sign-in must not tell them their details are wrong.
+export const isServerDown = (status: number) => status === 0 || status >= 500;
+export const SERVER_DOWN_MESSAGE = "The server is not responding right now. Please try again in a moment.";
+
 export async function apiCall<T>(
   endpoint: string,
   options: ApiOptions = {}

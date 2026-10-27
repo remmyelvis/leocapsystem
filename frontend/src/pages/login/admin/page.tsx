@@ -7,7 +7,7 @@ import AuthLayout from "@/components/auth/AuthLayout";
 import LoginForm, { type LoginFormData } from "@/components/auth/LoginForm";
 import { useDemoSignIn } from "@/components/demo/demo";
 import { adminApi } from "@/lib/adminApi";
-import { setToken, setAdminUser, clearToken, clearAdminUser } from "@/lib/apiClient";
+import { setToken, setAdminUser, clearToken, clearAdminUser, isServerDown, SERVER_DOWN_MESSAGE } from "@/lib/apiClient";
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
@@ -23,6 +23,11 @@ export default function AdminLoginPage() {
 
     try {
       const res = await adminApi.login(data.email, data.password);
+
+      if (isServerDown(res.status)) {
+        setError(SERVER_DOWN_MESSAGE);
+        return;
+      }
 
       // Check if login was successful (backend returns user object with role)
       const user = res.data?.user;

@@ -7,7 +7,7 @@ import AuthLayout from "@/components/auth/AuthLayout";
 import LoginForm, { type LoginFormData } from "@/components/auth/LoginForm";
 import { useDemoSignIn } from "@/components/demo/demo";
 import { applicantApi } from "@/lib/applicantApi";
-import { setToken, clearToken, clearAdminUser } from "@/lib/apiClient";
+import { setToken, clearToken, clearAdminUser, isServerDown, SERVER_DOWN_MESSAGE } from "@/lib/apiClient";
 import { useAuthStore } from "@/store/authStore";
 import { fetchCompanyName } from "@/lib/company";
 import type { UserRole } from "@/types/user";
@@ -36,7 +36,7 @@ export default function ApplicantLoginPage() {
       const res = await applicantApi.login(data.email, data.password);
 
       if (res.error || !res.data) {
-        setError("Invalid email or password. Please try again.");
+        setError(isServerDown(res.status) ? SERVER_DOWN_MESSAGE : "Invalid email or password. Please try again.");
         return;
       }
 
