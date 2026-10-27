@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -15,17 +15,16 @@ const loginSchema = z.object({
 
 export type LoginFormData = z.infer<typeof loginSchema>;
 
-const COPY: Record<AuthVariant, { title: string; sub: string; submit: string; emailAutocomplete: string; placeholder: string }> = {
+// No sub-heading: the label above the form (and, on a desktop, the brand panel) already says which portal this is.
+const COPY: Record<AuthVariant, { title: string; submit: string; emailAutocomplete: string; placeholder: string }> = {
   applicant: {
     title: "Welcome back",
-    sub: "Applicants, HR and Finance staff sign in here.",
     submit: "Sign in",
     emailAutocomplete: "email",
     placeholder: "you@example.com",
   },
   admin: {
     title: "Admin sign-in",
-    sub: "For Leocap administrators only.",
     submit: "Sign in to admin console",
     emailAutocomplete: "username",
     placeholder: "name@leocapinvest.co.ke",
@@ -44,6 +43,7 @@ export default function LoginForm({
   isLoading: boolean;
 }) {
   const copy = COPY[variant];
+  const { search } = useLocation(); // keeps ?session=expired when someone goes to the other sign-in
   const {
     register,
     handleSubmit,
@@ -58,9 +58,7 @@ export default function LoginForm({
 
   return (
     <>
-      <div className="mt-7">
-        <AuthHeading title={copy.title} sub={copy.sub} />
-      </div>
+      <AuthHeading title={copy.title} />
 
       <div className="mt-6">
         <SessionExpiredNotice />
@@ -83,7 +81,6 @@ export default function LoginForm({
             label="Password"
             caps
             autoComplete="current-password"
-            placeholder="Your password"
             error={errors.password?.message}
             labelRight={
               variant === "applicant" ? (
@@ -108,9 +105,17 @@ export default function LoginForm({
             </Link>
           </p>
         ) : (
-          <p className="mt-6 rounded-xl bg-slate-50 px-4 py-3 text-center text-[12px] leading-relaxed text-slate-600 ring-1 ring-slate-200/70">
-            Admin access is by invitation only. Contact your system administrator if you need access.
-          </p>
+          <>
+            <p className="mt-6 rounded-xl bg-slate-50 px-4 py-3 text-center text-[12px] leading-relaxed text-slate-600 ring-1 ring-slate-200/70">
+              Admin access is by invitation only. Contact your system administrator if you need access.
+            </p>
+            <p className="mt-4 text-center text-[14px] text-slate-600">
+              Applicant or staff?{" "}
+              <Link to={{ pathname: "/login/applicant", search }} className="tap-link font-semibold text-brand-blue hover:underline">
+                Sign in here
+              </Link>
+            </p>
+          </>
         )}
       </div>
     </>

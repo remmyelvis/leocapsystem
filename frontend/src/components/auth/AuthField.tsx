@@ -208,11 +208,11 @@ export function MatchNote({ show }: { show: boolean }) {
   );
 }
 
-export function AuthHeading({ title, sub }: { title: string; sub: ReactNode }) {
+export function AuthHeading({ title, sub }: { title: string; sub?: ReactNode }) {
   return (
     <>
       <h1 className="text-[28px] font-bold leading-tight tracking-[-0.015em] text-slate-900">{title}</h1>
-      <p className="mt-1.5 text-[14px] leading-relaxed text-slate-600">{sub}</p>
+      {sub && <p className="mt-1.5 text-[14px] leading-relaxed text-slate-600">{sub}</p>}
     </>
   );
 }

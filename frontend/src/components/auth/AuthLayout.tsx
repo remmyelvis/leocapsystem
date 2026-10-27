@@ -1,10 +1,9 @@
 import type { CSSProperties, ReactNode } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { ArrowLeft, CircleHelp, Mail, Phone, Shield, User } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowLeft, CircleHelp, Mail, Phone } from "lucide-react";
 import BrandLogo from "@/components/global/BrandLogo";
 import { GRAIN, MarkMotif } from "@/components/global/brandArt";
 import StepsCard, { type PanelStep } from "./StepsCard";
-import { statusDisplay } from "@/lib/loanStatus";
 import { useContact } from "@/lib/siteContent/useSiteContent";
 
 export type AuthVariant = "applicant" | "admin";
@@ -21,20 +20,18 @@ const PANEL: CSSProperties = {
   backgroundSize: "180px 180px, auto, auto, auto",
 };
 
-// What the brand panel says on each page: a headline and one card that helps with the task in hand.
-// `text` is optional: the sign-up page leaves it out because the steps card right below says the same thing.
+// What the brand panel says on each page: a headline and, where the page has a task to explain, one card that helps with it.
+// `text` is optional: the sign-in and sign-up pages leave it out (the headline, or the steps card below it, already says it).
 const COPY: Record<AuthPage, { eyebrow: string; lead: string; accent: string; text?: string }> = {
   applicant: {
     eyebrow: "Applicant & staff portal",
     lead: "Your loan, tracked from ",
     accent: "application to payout.",
-    text: "See where every application stands, what you owe and when it is due, all in one place.",
   },
   admin: {
     eyebrow: "Administrator console",
     lead: "Run the loan book ",
     accent: "with clarity.",
-    text: "Review, price and disburse loans, with every action recorded in the audit trail.",
   },
   forgot: {
     eyebrow: "Account recovery",
@@ -55,49 +52,15 @@ const COPY: Record<AuthPage, { eyebrow: string; lead: string; accent: string; te
   },
 };
 
-const status = (key: string, text: string): PanelStep => {
-  const s = statusDisplay(key);
-  return { label: s.label, chipClassName: s.className, text };
-};
-
 const RESET_STEPS: PanelStep[] = [
   { label: "Enter your email", text: "Use the address you signed up with." },
   { label: "Open the email we send", text: "The link works once and expires in 1 hour." },
   { label: "Choose a new password", text: "Then sign in as usual." },
 ];
 
+// The sign-in pages have no card: someone signing in wants the form, not an explainer next to it.
 function PanelCard({ page }: { page: AuthPage }) {
   switch (page) {
-    case "applicant":
-      return (
-        <StepsCard
-          title="Application journey"
-          tag="Example"
-          cycle
-          foot="These are the statuses you will see on your dashboard."
-          steps={[
-            status("pending_processing", "We check your details and documents."),
-            status("rate_set", "Personal loans: you see the rate and accept or decline it."),
-            status("approved", "Approved and waiting for payout."),
-            status("disbursed", "Funds sent. Your repayment date is on your dashboard."),
-          ]}
-        />
-      );
-    case "admin":
-      return (
-        <StepsCard
-          title="Application journey"
-          tag="Example"
-          cycle
-          foot="Applicants see these same statuses on their dashboard."
-          steps={[
-            status("pending_processing", "A new application arrives with its documents."),
-            status("rate_set", "Set the rate on personal loans."),
-            status("approved", "Sign off the application."),
-            status("disbursed", "Add the transfer note, then mark it as sent."),
-          ]}
-        />
-      );
     case "forgot":
       return <StepsCard title="How a reset works" foot="Nothing changes on your account until you save a new password." steps={RESET_STEPS} current={0} />;
     case "reset":
@@ -114,6 +77,8 @@ function PanelCard({ page }: { page: AuthPage }) {
           ]}
         />
       );
+    default:
+      return null;
   }
 }
 
@@ -123,28 +88,6 @@ function Eyebrow({ children }: { children: ReactNode }) {
       <span className="h-2 w-2 rounded-full bg-red-400 motion-safe:animate-pulse" />
       <span className="text-[12px] font-semibold tracking-wide text-white">{children}</span>
     </div>
-  );
-}
-
-function PortalSwitch({ variant }: { variant: AuthVariant }) {
-  const { search } = useLocation(); // keeps ?session=expired when someone switches portal
-  const item = (to: string, label: string, Icon: typeof User, on: boolean) => (
-    <Link
-      to={{ pathname: to, search }}
-      aria-current={on ? "page" : undefined}
-      className={`flex min-h-[40px] flex-1 items-center justify-center gap-2 rounded-lg px-3 text-[13px] font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40 ${
-        on ? "bg-white text-brand-blue shadow-sm ring-1 ring-slate-900/5" : "text-slate-600 hover:text-slate-900"
-      }`}
-    >
-      <Icon className="h-4 w-4" />
-      {label}
-    </Link>
-  );
-  return (
-    <nav aria-label="Choose portal" className="flex gap-1 rounded-xl bg-slate-100 p-1">
-      {item("/login/applicant", "Applicant & staff", User, variant === "applicant")}
-      {item("/login/admin", "Admin", Shield, variant === "admin")}
-    </nav>
   );
 }
 
@@ -176,16 +119,25 @@ export default function AuthLayout({ variant, children, top = false }: { variant
           </div>
 
           <div className={`py-8 motion-safe:animate-auth-rise ${top ? "" : "xl:mt-[max(0px,calc(50vh-330px))]"}`}>
-            {(variant === "applicant" || variant === "admin") && <PortalSwitch variant={variant} />}
             {children}
           </div>
 
-          <p className="text-center text-[12px] text-slate-600">
-            <Link to="/privacy-policy" className="hover:text-slate-900 hover:underline">Privacy policy</Link>
-            <span className="mx-2">·</span>
-            <Link to="/faq" className="hover:text-slate-900 hover:underline">FAQs</Link>
-            <span className="mx-2">·</span>
-            <span>© {new Date().getFullYear()} Leocap Invest</span>
+          {/* One line from 400 px up; on a narrower phone the links keep one line and the copyright takes its own, so nothing breaks in the middle of a name. */}
+          <p className="flex flex-col items-center gap-y-1 text-center text-[12px] text-slate-600 min-[400px]:flex-row min-[400px]:justify-center">
+            <span className="whitespace-nowrap">
+              <Link to="/privacy-policy" className="hover:text-slate-900 hover:underline">Privacy policy</Link>
+              <span className="mx-2">·</span>
+              <Link to="/faq" className="hover:text-slate-900 hover:underline">FAQs</Link>
+              {/* The few administrators find their sign-in here, so the applicants' form has nothing about it. */}
+              {variant === "applicant" && (
+                <>
+                  <span className="mx-2">·</span>
+                  <Link to="/login/admin" className="tap-link hover:text-slate-900 hover:underline">Admin</Link>
+                </>
+              )}
+            </span>
+            <span className="mx-2 hidden min-[400px]:inline">·</span>
+            <span className="whitespace-nowrap">© {new Date().getFullYear()} Leocap Invest</span>
           </p>
         </div>
       </main>
@@ -202,9 +154,11 @@ export default function AuthLayout({ variant, children, top = false }: { variant
             {copy.text && <p className="mt-4 max-w-[420px] text-[15px] leading-relaxed text-white/80 [@media(max-height:780px)]:hidden">{copy.text}</p>}
           </div>
 
-          <div className="relative">
-            <PanelCard page={variant} />
-          </div>
+          {variant !== "applicant" && variant !== "admin" && (
+            <div className="relative">
+              <PanelCard page={variant} />
+            </div>
+          )}
 
           <div className="relative flex flex-wrap items-center gap-x-6 gap-y-1.5 text-[13px] text-white/75">
             <span>{variant === "register" ? "Questions before you sign up?" : "Need help signing in?"}</span>
