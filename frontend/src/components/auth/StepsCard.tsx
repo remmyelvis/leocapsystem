@@ -22,7 +22,7 @@ export default function StepsCard({
   title: string;
   tag?: string;
   steps: PanelStep[];
-  foot: string;
+  foot?: string;
   cycle?: boolean;
   current?: number;
 }) {
@@ -78,7 +78,7 @@ export default function StepsCard({
         })}
       </ol>
 
-      <p className="mt-4 border-t border-white/10 pt-3 text-[12px] text-white/75">{foot}</p>
+      {foot && <p className="mt-4 border-t border-white/10 pt-3 text-[12px] text-white/75">{foot}</p>}
     </div>
   );
 }

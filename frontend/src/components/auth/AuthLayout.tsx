@@ -22,7 +22,8 @@ const PANEL: CSSProperties = {
 };
 
 // What the brand panel says on each page: a headline and one card that helps with the task in hand.
-const COPY: Record<AuthPage, { eyebrow: string; lead: string; accent: string; text: string }> = {
+// `text` is optional: the sign-up page leaves it out because the steps card right below says the same thing.
+const COPY: Record<AuthPage, { eyebrow: string; lead: string; accent: string; text?: string }> = {
   applicant: {
     eyebrow: "Applicant & staff portal",
     lead: "Your loan, tracked from ",
@@ -51,7 +52,6 @@ const COPY: Record<AuthPage, { eyebrow: string; lead: string; accent: string; te
     eyebrow: "New applicant",
     lead: "Open your account, ",
     accent: "then apply online.",
-    text: "Create your account in a minute, add your documents, and apply when you are ready.",
   },
 };
 
@@ -106,8 +106,6 @@ function PanelCard({ page }: { page: AuthPage }) {
       return (
         <StepsCard
           title="What happens next"
-          cycle
-          foot="You can sign in as soon as your account is created."
           steps={[
             { label: "Create your account", text: "Choose your company so you see the right loans." },
             { label: "Complete your profile", text: "Add your ID copy and KRA PIN document. Partner-company staff also add their contract." },
@@ -201,7 +199,7 @@ export default function AuthLayout({ variant, children, top = false }: { variant
               {copy.lead}
               <span className="bg-gradient-to-r from-red-300 via-red-200 to-amber-200 bg-clip-text text-transparent">{copy.accent}</span>
             </p>
-            <p className="mt-4 max-w-[420px] text-[15px] leading-relaxed text-white/80 [@media(max-height:780px)]:hidden">{copy.text}</p>
+            {copy.text && <p className="mt-4 max-w-[420px] text-[15px] leading-relaxed text-white/80 [@media(max-height:780px)]:hidden">{copy.text}</p>}
           </div>
 
           <div className="relative">

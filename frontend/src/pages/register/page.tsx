@@ -7,30 +7,25 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { Building2, Mail, Phone, User } from "lucide-react";
 import AuthLayout from "@/components/auth/AuthLayout";
-import { AuthAlert, AuthField, AuthHeading, AuthSelect, AuthSubmit, FieldError, MatchNote, PasswordField, StrengthMeter } from "@/components/auth/AuthField";
+import { AuthAlert, AuthField, AuthHeading, AuthSelect, AuthSubmit, FieldError, PasswordField, StrengthMeter } from "@/components/auth/AuthField";
 import { applicantApi } from "@/lib/applicantApi";
 
-const registerSchema = z
-  .object({
-    name: z.string().min(2, "Full name must be at least 2 characters"),
-    email: z.string().email("Please enter a valid email address"),
-    phone_number: z
-      .string()
-      .regex(
-        /^(\+254|0)[17]\d{8}$/,
-        "Enter a valid Kenyan phone (e.g. 0712345678 or +254712345678)"
-      ),
-    applicant_type: z.string().min(1, "Please select your company or loan type"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-    confirmPassword: z.string().min(1, "Please confirm your password"),
-    privacyAccepted: z.literal(true, {
-      error: "You must accept the Privacy Policy to create an account",
-    }),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+// No "confirm password" box: the eye button on the password field lets the person check what they typed.
+const registerSchema = z.object({
+  name: z.string().min(2, "Full name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  phone_number: z
+    .string()
+    .regex(
+      /^(\+254|0)[17]\d{8}$/,
+      "Enter a valid Kenyan phone (e.g. 0712345678 or +254712345678)"
+    ),
+  applicant_type: z.string().min(1, "Please select your company, or Personal"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  privacyAccepted: z.literal(true, {
+    error: "You must accept the Privacy Policy to create an account",
+  }),
+});
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
@@ -80,7 +75,6 @@ export default function RegisterPage() {
 
   const isPrivacyAccepted = watch("privacyAccepted");
   const password = watch("password") ?? "";
-  const confirm = watch("confirmPassword") ?? "";
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
@@ -114,7 +108,7 @@ export default function RegisterPage() {
 
   return (
     <AuthLayout variant="register" top>
-      <AuthHeading title="Create your account" sub="It takes about a minute. You can sign in as soon as it is created." />
+      <AuthHeading title="Create your account" sub="About a minute, then you can sign in." />
 
       <div className="mt-6">
         {error && <AuthAlert>{error}</AuthAlert>}
@@ -124,7 +118,7 @@ export default function RegisterPage() {
           <AuthField id="reg-email" label="Email address" icon={Mail} type="email" autoComplete="email" placeholder="jane@example.com" error={errors.email?.message} {...register("email")} />
           <AuthField id="reg-phone" label="Phone number" icon={Phone} type="tel" inputMode="tel" autoComplete="tel" placeholder="0712345678" error={errors.phone_number?.message} {...register("phone_number")} />
 
-          <AuthSelect id="reg-company" label="Your company" icon={Building2} disabled={loadingCompanies} error={errors.applicant_type?.message} {...register("applicant_type")}>
+          <AuthSelect id="reg-company" label="Your company (or Personal)" icon={Building2} disabled={loadingCompanies} error={errors.applicant_type?.message} {...register("applicant_type")}>
             <option value="" disabled hidden>
               {loadingCompanies ? "Loading companies…" : "Select your company…"}
             </option>
@@ -143,15 +137,6 @@ export default function RegisterPage() {
             error={errors.password?.message}
             below={<StrengthMeter value={password} />}
             {...register("password")}
-          />
-          <PasswordField
-            id="reg-confirm"
-            label="Confirm password"
-            autoComplete="new-password"
-            placeholder="Type it again"
-            error={errors.confirmPassword?.message}
-            below={<MatchNote show={!!confirm && confirm === password} />}
-            {...register("confirmPassword")}
           />
 
           <div>
