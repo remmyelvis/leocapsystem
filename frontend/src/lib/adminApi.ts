@@ -1,5 +1,5 @@
 // Admin-facing API calls (uses /api/auth/* endpoints for User/Admin management)
-import { apiCall } from "./apiClient";
+import { apiCall, SIGN_IN_TIMEOUT_MS } from "./apiClient";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -129,6 +129,7 @@ export const adminApi = {
       method: "POST",
       body: { email, password },
       requiresAuth: false,
+      timeoutMs: SIGN_IN_TIMEOUT_MS,
     }),
 
   updateProfile: (id: string, payload: Partial<Omit<RegisterAdminPayload, "password">>) =>

@@ -1,5 +1,5 @@
 // All applicant-facing API calls in one place
-import { apiCall } from "./apiClient";
+import { apiCall, SIGN_IN_TIMEOUT_MS } from "./apiClient";
 
 export interface UpdateApplicantPayload {
   name?: string;
@@ -87,6 +87,7 @@ export const applicantApi = {
       method: "POST",
       body: { email, password },
       requiresAuth: false,
+      timeoutMs: SIGN_IN_TIMEOUT_MS,
     }),
 
   getProfile: (id: string) =>

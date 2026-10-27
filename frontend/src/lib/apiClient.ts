@@ -91,6 +91,8 @@ interface ApiOptions {
   formData?: FormData;
   requiresAuth?: boolean;
   skipProxy?: boolean;
+  /** Give up after this many milliseconds. Left out, a request waits as long as the browser lets it (reports and PDFs can be slow). */
+  timeoutMs?: number;
 }
 
 export interface ApiResponse<T = unknown> {
@@ -104,6 +106,10 @@ export interface ApiResponse<T = unknown> {
 export const isServerDown = (status: number) => status === 0 || status >= 500;
 export const SERVER_DOWN_MESSAGE = "The server is not responding right now. Please try again in a moment.";
 
+// A sign-in normally answers in about half a second. When the host stalls (5 to 20 seconds was measured under load) a person
+// should not wait on "Signing in…" for minutes: after this long the request is dropped (status 0, so the message above is shown).
+export const SIGN_IN_TIMEOUT_MS = 30_000;
+
 export async function apiCall<T>(
   endpoint: string,
   options: ApiOptions = {}
@@ -115,6 +121,7 @@ export async function apiCall<T>(
     formData,
     requiresAuth = true,
     skipProxy = false,
+    timeoutMs,
   } = options;
 
   const baseUrl = skipProxy
@@ -140,6 +147,7 @@ export async function apiCall<T>(
       method,
       headers,
       data: isFormData && formData ? formData : body,
+      timeout: timeoutMs, // undefined = no limit, as before
     };
 
     const response = await axiosInstance(config);

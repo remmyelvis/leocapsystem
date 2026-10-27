@@ -83,7 +83,7 @@ export default function ApplicantLoginPage() {
 
   return (
     <AuthLayout variant="applicant" showCard={isNewHere}>
-      <LoginForm variant="applicant" onSubmit={onSubmit} error={error} isLoading={isLoading} />
+      <LoginForm variant="applicant" onSubmit={onSubmit} error={error} isLoading={isLoading} hidePasswordHint={isNewHere} />
     </AuthLayout>
   );
 }
