@@ -4,6 +4,7 @@ import { ArrowLeft, CircleHelp, Mail, Phone } from "lucide-react";
 import BrandLogo from "@/components/global/BrandLogo";
 import { GRAIN, MarkMotif } from "@/components/global/brandArt";
 import StepsCard, { type PanelStep } from "./StepsCard";
+import { statusDisplay } from "@/lib/loanStatus";
 import { useContact } from "@/lib/siteContent/useSiteContent";
 
 export type AuthVariant = "applicant" | "admin";
@@ -52,15 +53,37 @@ const COPY: Record<AuthPage, { eyebrow: string; lead: string; accent: string; te
   },
 };
 
+const status = (key: string, text: string): PanelStep => {
+  const s = statusDisplay(key);
+  return { label: s.label, chipClassName: s.className, text };
+};
+
 const RESET_STEPS: PanelStep[] = [
   { label: "Enter your email", text: "Use the address you signed up with." },
   { label: "Open the email we send", text: "The link works once and expires in 1 hour." },
   { label: "Choose a new password", text: "Then sign in as usual." },
 ];
 
-// The sign-in pages have no card: someone signing in wants the form, not an explainer next to it.
+// The admin sign-in has no card. The applicant sign-in has one that walks slowly through the statuses (it shows the journey;
+// it stands still for anyone who asked their device for less motion) and is shown only to people it is new to (`showCard`,
+// decided by the page); a returning person just wants the form.
 function PanelCard({ page }: { page: AuthPage }) {
   switch (page) {
+    case "applicant":
+      return (
+        <StepsCard
+          title="Application journey"
+          tag="Example"
+          cycle
+          foot="These are the statuses you will see on your dashboard."
+          steps={[
+            status("pending_processing", "We check your details and documents."),
+            status("rate_set", "Personal loans: you see the rate and accept or decline it."),
+            status("approved", "Approved and waiting for payout."),
+            status("disbursed", "Funds sent. Your repayment date is on your dashboard."),
+          ]}
+        />
+      );
     case "forgot":
       return <StepsCard title="How a reset works" foot="Nothing changes on your account until you save a new password." steps={RESET_STEPS} current={0} />;
     case "reset":
@@ -98,7 +121,17 @@ const keepCursorOnPress = (e: MouseEvent<HTMLElement>) => {
   if (e.button === 0 && (e.target as HTMLElement).closest("a, button, label")) e.preventDefault();
 };
 
-export default function AuthLayout({ variant, children, top = false }: { variant: AuthPage; children: ReactNode; top?: boolean }) {
+export default function AuthLayout({
+  variant,
+  children,
+  top = false,
+  showCard = variant !== "applicant" && variant !== "admin", // the sign-in pages ask for it (applicant: only for new visitors)
+}: {
+  variant: AuthPage;
+  children: ReactNode;
+  top?: boolean;
+  showCard?: boolean;
+}) {
   const copy = COPY[variant];
   const contact = useContact();
   return (
@@ -161,7 +194,7 @@ export default function AuthLayout({ variant, children, top = false }: { variant
             {copy.text && <p className="mt-4 max-w-[420px] text-[15px] leading-relaxed text-white/80 [@media(max-height:780px)]:hidden">{copy.text}</p>}
           </div>
 
-          {variant !== "applicant" && variant !== "admin" && (
+          {showCard && (
             <div className="relative">
               <PanelCard page={variant} />
             </div>

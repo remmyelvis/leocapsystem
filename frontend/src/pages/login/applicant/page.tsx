@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import AuthLayout from "@/components/auth/AuthLayout";
 import LoginForm, { type LoginFormData } from "@/components/auth/LoginForm";
 import { useDemoSignIn } from "@/components/demo/demo";
@@ -10,6 +10,7 @@ import { applicantApi } from "@/lib/applicantApi";
 import { setToken, clearToken, clearAdminUser, isServerDown, SERVER_DOWN_MESSAGE } from "@/lib/apiClient";
 import { useAuthStore } from "@/store/authStore";
 import { fetchCompanyName } from "@/lib/company";
+import { hasSignedInBefore, rememberSignedIn } from "@/lib/returningVisitor";
 import type { UserRole } from "@/types/user";
 
 function getRoleHome(role: string): { url: string; userRole: UserRole } {
@@ -25,6 +26,10 @@ export default function ApplicantLoginPage() {
   const { setUser } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { state } = useLocation();
+  // The example card beside the form is for people this is new to: someone who has just signed up (the register page sends
+  // their email along), or a browser that has never signed in. Decided once, so it does not vanish while signing in.
+  const [isNewHere] = useState(() => !!state?.email || !hasSignedInBefore());
 
   const onSubmit = async (data: LoginFormData) => {
     clearToken();
@@ -64,6 +69,7 @@ export default function ApplicantLoginPage() {
         localStorage.setItem("leocap_user_company", applicant.applicant_type);
       }
 
+      rememberSignedIn();
       navigate(redirectUrl);
 
     } catch {
@@ -76,7 +82,7 @@ export default function ApplicantLoginPage() {
   useDemoSignIn(onSubmit);
 
   return (
-    <AuthLayout variant="applicant">
+    <AuthLayout variant="applicant" showCard={isNewHere}>
       <LoginForm variant="applicant" onSubmit={onSubmit} error={error} isLoading={isLoading} />
     </AuthLayout>
   );
