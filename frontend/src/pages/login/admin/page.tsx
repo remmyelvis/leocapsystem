@@ -69,7 +69,7 @@ export default function AdminLoginPage() {
 
   return (
     <AuthLayout variant="admin">
-      <LoginForm variant="admin" onSubmit={onSubmit} error={error} isLoading={isLoading} hidePasswordHint />
+      <LoginForm variant="admin" onSubmit={onSubmit} error={error} isLoading={isLoading} />
     </AuthLayout>
   );
 }

@@ -36,14 +36,11 @@ export default function LoginForm({
   onSubmit,
   error,
   isLoading,
-  hidePasswordHint = false,
 }: {
   variant: AuthVariant;
   onSubmit: (data: LoginFormData) => void | Promise<void>;
   error: string | null;
   isLoading: boolean;
-  /** No "Your password" hint in the password box. Off for new visitors (the example card is showing beside the form) and on the admin sign-in; only returning applicants get it. */
-  hidePasswordHint?: boolean;
 }) {
   const copy = COPY[variant];
   const { search, state } = useLocation(); // search keeps ?session=expired when someone goes to the other sign-in
@@ -88,7 +85,6 @@ export default function LoginForm({
             label="Password"
             caps
             autoComplete="current-password"
-            placeholder={hidePasswordHint ? undefined : "Your password"}
             error={errors.password?.message}
             labelRight={
               variant === "applicant" ? (
