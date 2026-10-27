@@ -43,18 +43,22 @@ export default function LoginForm({
   isLoading: boolean;
 }) {
   const copy = COPY[variant];
-  const { search } = useLocation(); // keeps ?session=expired when someone goes to the other sign-in
+  const { search, state } = useLocation(); // search keeps ?session=expired when someone goes to the other sign-in
+  // Right after sign-up the sign-in page opens with the address just used already in the email box. It travels in the
+  // navigation state (see the register page), never in the web address.
+  const signedUpEmail: string = typeof state?.email === "string" ? state.email : "";
   const {
     register,
     handleSubmit,
     setFocus,
     formState: { errors },
-  } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema), mode: "onTouched" });
+  } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema), mode: "onTouched", defaultValues: { email: signedUpEmail } });
 
-  // Put the cursor in the email box on a desktop screen; on a phone that would only throw the keyboard up.
+  // Put the cursor on a desktop screen (on a phone that would only throw the keyboard up): in the password box when the
+  // email is already there, otherwise in the email box.
   useEffect(() => {
-    if (window.matchMedia("(min-width: 1024px)").matches) setFocus("email");
-  }, [setFocus]);
+    if (window.matchMedia("(min-width: 1024px)").matches) setFocus(signedUpEmail ? "password" : "email");
+  }, [setFocus, signedUpEmail]);
 
   return (
     <>
@@ -81,6 +85,7 @@ export default function LoginForm({
             label="Password"
             caps
             autoComplete="current-password"
+            placeholder="Your password"
             error={errors.password?.message}
             labelRight={
               variant === "applicant" ? (

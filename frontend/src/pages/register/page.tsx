@@ -96,7 +96,8 @@ export default function RegisterPage() {
       }
 
       toast.success("Account created successfully! Please sign in.");
-      navigate("/login/applicant");
+      // The sign-in page opens with this email already filled in (state, not the web address: no personal data in a URL).
+      navigate("/login/applicant", { state: { email: data.email } });
     } catch {
       const msg = "Something went wrong. Please try again.";
       setError(msg);
