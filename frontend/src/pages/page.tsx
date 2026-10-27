@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   ArrowRight,
   Briefcase,
+  Calculator,
   Check,
   CheckCircle,
   ChevronRight,
@@ -22,7 +23,7 @@ import SiteHeader from "@/components/landing/SiteHeader";
 import SiteFooter from "@/components/landing/SiteFooter";
 import SectionHeader from "@/components/landing/SectionHeader";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
-import { APPLY_TO } from "@/components/landing/site";
+import { APPLY_TO, CONSULTANCY_URL } from "@/components/landing/site";
 import { InlineText } from "@/lib/siteContent/format";
 import type { ProductCard } from "@/lib/siteContent/types";
 import { useContact, useSiteContent } from "@/lib/siteContent/useSiteContent";
@@ -383,6 +384,21 @@ function ContactSection() {
               <a href={p.href} className="tap-link inline-block py-1.5 hover:text-brand-blue hover:underline">{p.label}</a>
             </span>
           ))}
+        </>
+      ),
+    },
+    // Not a loan question: point it to the consultancy so it does not land in the loan inbox.
+    {
+      icon: Calculator,
+      label: "Business tax & accounting",
+      content: (
+        <>
+          <a href={CONSULTANCY_URL} target="_blank" rel="noopener" className="tap-link inline-flex items-center gap-1.5 py-1.5 hover:text-brand-blue hover:underline">
+            Leocap Consultancy
+            <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
+          <span className="block text-[14px] font-normal text-slate-600">Tax, accounting and payroll support for businesses.</span>
         </>
       ),
     },

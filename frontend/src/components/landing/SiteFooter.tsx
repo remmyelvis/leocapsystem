@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { ArrowUp, LayoutDashboard } from "lucide-react";
+import { ArrowUp, ExternalLink, LayoutDashboard } from "lucide-react";
 import BrandLogo from "@/components/global/BrandLogo";
 import { MarkMotif, navy } from "@/components/global/brandArt";
 import { useAuth } from "@/contexts/AuthContext";
 import { useContact } from "@/lib/siteContent/useSiteContent";
-import { APPLY_TO, portalFor, SIGN_IN_TO } from "./site";
+import { APPLY_TO, CONSULTANCY_URL, portalFor, SIGN_IN_TO } from "./site";
 
 const footerLink = "inline-flex min-h-[40px] items-center text-slate-300 transition-colors hover:text-white md:min-h-[30px]";
 
@@ -94,6 +94,14 @@ export default function SiteFooter({ home = true }: { home?: boolean }) {
                 <Link to="/privacy-policy" className={footerLink}>
                   Privacy Policy
                 </Link>
+              </li>
+              <li>
+                {/* No "noreferrer": the consultancy's own site statistics can then see that the visit came from here. */}
+                <a href={CONSULTANCY_URL} target="_blank" rel="noopener" className={`${footerLink} gap-1.5`}>
+                  Leocap Consultancy
+                  <ExternalLink className="h-3.5 w-3.5 opacity-70" aria-hidden />
+                  <span className="sr-only"> (opens in a new tab)</span>
+                </a>
               </li>
             </ul>
           </div>
