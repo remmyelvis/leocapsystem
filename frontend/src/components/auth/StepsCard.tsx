@@ -42,7 +42,7 @@ export default function StepsCard({
   return (
     <div className="rounded-2xl bg-white/[0.06] p-5 ring-1 ring-white/15 backdrop-blur-sm">
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-[13px] font-bold text-white">{title}</p>
+        <p className="text-[13px] font-extrabold text-white">{title}</p>
         {tag && <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white/85">{tag}</span>}
       </div>
 
@@ -68,10 +68,11 @@ export default function StepsCard({
                 {step.chipClassName ? (
                   <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-bold ${step.chipClassName}`}>{step.label}</span>
                 ) : (
-                  <p className={`text-[13px] font-semibold transition-colors duration-500 ${isCurrent || done ? "text-white" : "text-white/80"}`}>{step.label}</p>
+                  <p className={`text-[13px] font-extrabold transition-colors duration-500 ${isCurrent || done ? "text-white" : "text-white/90"}`}>{step.label}</p>
                 )}
-                {/* Only the words dim for steps not reached yet; the badges keep their full colour so they stay readable. */}
-                <p className={`mt-1 text-[13px] leading-snug transition-colors duration-500 ${isCurrent || done ? "text-white/90" : "text-white/75"}`}>{step.text}</p>
+                {/* Only the words dim for steps not reached yet; the badges keep their full colour so they stay readable.
+                    The step text sits a notch below the bold step name, so the two read as two levels. */}
+                <p className={`mt-1 text-[13px] leading-snug transition-colors duration-500 ${isCurrent || done ? "text-white/80" : "text-white/70"}`}>{step.text}</p>
               </div>
             </li>
           );
