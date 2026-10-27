@@ -42,7 +42,7 @@ export default function LoginForm({
   onSubmit: (data: LoginFormData) => void | Promise<void>;
   error: string | null;
   isLoading: boolean;
-  /** No "Your password" hint in the password box (the applicant page turns it off while the example card is showing beside the form). */
+  /** No "Your password" hint in the password box. Off for new visitors (the example card is showing beside the form) and on the admin sign-in; only returning applicants get it. */
   hidePasswordHint?: boolean;
 }) {
   const copy = COPY[variant];
