@@ -2,6 +2,8 @@
 // New visitors need an account first, so the "Apply" buttons go to Register; returning people use Sign In.
 export const APPLY_TO = "/register";
 export const SIGN_IN_TO = "/login/applicant";
+// Where an applicant sees how their applications are doing (the top strip's "Track application" lands here after sign-in).
+export const APPLICATIONS_TO = "/dashboard/applications";
 // Leocap Consultancy (tax, accounting and payroll for businesses) has its own site; the footer and the contact section link to it.
 export const CONSULTANCY_URL = "https://home.leocapinvest.co.ke/";
 // The contact details (email, phones, address) are editable content: see lib/siteContent and its useContact().

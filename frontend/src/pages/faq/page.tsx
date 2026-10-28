@@ -141,7 +141,7 @@ export default function FaqPage() {
       <SiteHeader home={false} current="faq" />
 
       {/* Title band with the search */}
-      <section className="relative isolate overflow-hidden px-4 pb-16 pt-28 text-white sm:px-6 lg:px-8" style={navy("linear-gradient(160deg, #0F2C59 0%, #0b2246 55%, #081430 100%)")}>
+      <section className="relative isolate overflow-hidden px-4 pb-16 pt-32 text-white sm:px-6 lg:px-8" style={navy("linear-gradient(160deg, #0F2C59 0%, #0b2246 55%, #081430 100%)")}>
         <MarkMotif className="pointer-events-none absolute -bottom-20 -right-10 -z-10 w-[420px]" strength={1.4} />
         <div className="mx-auto max-w-3xl text-center">
           <span className="inline-flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-red-300">

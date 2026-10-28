@@ -70,7 +70,10 @@ export default function ApplicantLoginPage() {
       }
 
       rememberSignedIn();
-      navigate(redirectUrl);
+      // The landing page's "Track application" asks to land on the applications list. It is passed along by the link itself (never the
+      // address bar, so nobody can craft a link that sends people elsewhere), and only an applicant's own pages are honoured.
+      const next = typeof state?.next === "string" && state.next.startsWith("/dashboard/") ? state.next : null;
+      navigate(redirectUrl === "/dashboard" && next ? next : redirectUrl);
 
     } catch {
       setError("Something went wrong. Please try again.");

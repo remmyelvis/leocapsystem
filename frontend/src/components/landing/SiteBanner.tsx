@@ -11,6 +11,9 @@ const TONES = {
   success: { bar: "bg-emerald-700 text-white", Icon: CircleCheck },
 };
 
+/** An announcement shows only when an admin has switched it on and written something. */
+export const bannerShowing = (b: BannerBlock) => b.enabled && b.text.trim() !== "";
+
 /** The bar itself. The admin editor shows it too, as the preview of what is being typed. */
 export function BannerBar({ banner, barRef }: { banner: BannerBlock; barRef?: Ref<HTMLDivElement> }) {
   const { bar: colours, Icon } = TONES[banner.tone] ?? TONES.info;
@@ -49,7 +52,7 @@ export function BannerBar({ banner, barRef }: { banner: BannerBlock; barRef?: Re
 export default function SiteBanner() {
   const { banner } = useSiteContent();
   const bar = useRef<HTMLDivElement>(null);
-  const show = banner.enabled && banner.text.trim() !== "";
+  const show = bannerShowing(banner);
 
   useEffect(() => {
     const el = bar.current;

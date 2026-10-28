@@ -7,6 +7,7 @@ import { MarkMotif, navy } from "@/components/global/brandArt";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActiveSection, useScrollProgress, useScrolled } from "./motion";
 import SiteBanner from "./SiteBanner";
+import TopBar from "./TopBar";
 import { useContact } from "@/lib/siteContent/useSiteContent";
 import { APPLY_TO, initials, portalFor, SIGN_IN_TO } from "./site";
 
@@ -114,6 +115,7 @@ export default function SiteHeader({ home = true, current, skipTo = "#main-conte
           scrolled || open ? "border-slate-200/80 bg-white/95 shadow-[0_8px_24px_-12px_rgba(15,44,89,0.22)]" : "border-transparent bg-white"
         }`}
       >
+        <TopBar show={!scrolled && !open} portal={portal} />
         <SiteBanner />
         <div className={`mx-auto flex max-w-7xl items-center justify-between px-4 transition-[height] duration-300 motion-reduce:transition-none sm:px-6 lg:px-8 ${scrolled ? "h-14" : "h-16"}`}>
           <BrandLogo src="/logo-wordmark.png" height={scrolled ? "2rem" : "2.25rem"} className="transition-[height] duration-300 motion-reduce:transition-none" onClick={goTop} />
