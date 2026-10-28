@@ -218,3 +218,55 @@ body {
     background-image: url('./images/hero-1920.webp');
   }
 }
+
+/* Leo, the chat assistant (components/assistant): everything below only moves for people who have not asked their device for less motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .leo-launcher { animation: leo-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+  .leo-greet, .leo-in { animation: leo-rise 0.32s ease-out both; }
+  .leo-panel { animation: leo-sheet 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .leo-dot { animation: leo-bounce 1s ease-in-out infinite; }
+}
+@keyframes leo-pop { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: none; } }
+@keyframes leo-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes leo-sheet { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+@keyframes leo-bounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.5; } 30% { transform: translateY(-4px); opacity: 1; } }
+
+/* Leo's round button floats over the bottom right corner, so the last line of a page keeps clear of it (the widget sets "leo-on" on <html> while it shows). */
+html.leo-on .leo-room { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
+@media (max-width: 639px) { html.leo-on .leo-room-sm { padding-bottom: calc(88px + env(safe-area-inset-bottom)); } }
+/* On the applicant dashboard a phone also has the bar of tabs along the bottom (48px), and Leo floats above it. */
+@media (max-width: 767px) { html.leo-on .leo-room-nav { padding-bottom: calc(136px + env(safe-area-inset-bottom)); } }
+
+/* The water around Leo's badge (components/assistant/leo.tsx, LeoOrb). The white rim itself is an SVG ring that wind ripples (drawn by script, only while
+   something is going on); this is the rocking, the ripples that drift away from the badge towards the hello bubble (up and to the left, the way the wind blows)
+   and the splash. Motion only for people who have not asked for less. */
+.leo-ripple, .leo-burst { position: absolute; inset: 0; border-radius: 9999px; pointer-events: none; opacity: 0; }
+.leo-ripple { border: 1.5px solid rgba(255, 255, 255, 0.6); box-shadow: 0 0 0 1px rgba(15, 44, 89, 0.14); }
+.leo-burst { border: 3px solid rgba(255, 255, 255, 0.9); box-shadow: 0 0 0 1px rgba(15, 44, 89, 0.16); }
+.leo-burst::after { content: ""; position: absolute; inset: -3px; border-radius: inherit; border: 2px solid rgba(147, 197, 253, 0.9); }
+.leo-orb-face { transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@media (prefers-reduced-motion: no-preference) {
+  /* afloat: up and down on one rhythm, a slight roll on another, so it never repeats exactly */
+  .leo-orb--welcome, .leo-orb--call { animation: leo-float 4.6s ease-in-out infinite; }
+  .leo-orb--welcome .leo-orb-face { animation: leo-roll 6.7s ease-in-out infinite; }
+  .leo-orb--call .leo-ripple { animation: leo-ripple 3.2s cubic-bezier(0.2, 0.6, 0.3, 1) infinite; }
+  .leo-orb--call .leo-ripple-2 { animation-delay: 1.45s; }
+  .leo-orb--call .leo-orb-face { animation: leo-wave 1s ease-in-out 0.3s both; }
+  .leo-burst { animation: leo-burst 0.9s ease-out both; }
+}
+/* on a larger screen the chat window grows out of the corner where the badge was */
+@media (prefers-reduced-motion: no-preference) and (min-width: 640px) {
+  .leo-panel { transform-origin: 100% 100%; animation-name: leo-grow; }
+}
+@keyframes leo-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@keyframes leo-roll { 0%, 100% { transform: rotate(-1.1deg); } 50% { transform: rotate(1.1deg); } }
+@keyframes leo-ripple { 0% { transform: translate(0, 0) scale(1); opacity: 0.7; } 100% { transform: translate(-9px, -13px) scale(1.8); opacity: 0; } }
+@keyframes leo-wave { 0%, 100% { transform: rotate(0); } 18% { transform: rotate(14deg); } 38% { transform: rotate(-11deg); } 58% { transform: rotate(8deg); } 78% { transform: rotate(-4deg); } }
+@keyframes leo-burst { 0% { transform: scale(1); opacity: 0.95; border-width: 3px; } 100% { transform: scale(1.5); opacity: 0; border-width: 0.5px; } }
+@keyframes leo-grow { from { opacity: 0; transform: scale(0.88) translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* Leo's "Ask Leo" capsule is drawn and moved by script (components/assistant/askLeo.tsx): two springs, water at its edge, letters blown in. The one thing
+   left to CSS is the end of it: the moment the capsule arrives ([data-settled]) he lowers his head a little: a gentle settle, not a snap. Reduced motion: no tilt. */
+@media (prefers-reduced-motion: no-preference) {
+  .leo-hover[data-settled="true"] .leo-orb-face { transform: rotate(-5deg); transition: transform 0.6s cubic-bezier(0.22, 0.9, 0.3, 1.08); }
+}

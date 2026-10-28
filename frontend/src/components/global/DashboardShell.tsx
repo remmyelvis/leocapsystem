@@ -145,7 +145,7 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
         </header>
 
         {/* Page content — add bottom padding on mobile for bottom nav */}
-        <main className="relative flex-1 overflow-y-auto w-full">
+        <main className="leo-room leo-room-nav relative flex-1 overflow-y-auto w-full">
           {children}
         </main>
       </div>

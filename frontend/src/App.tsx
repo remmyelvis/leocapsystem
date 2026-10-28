@@ -4,6 +4,7 @@ import { IS_DEMO } from './components/demo/demo';
 import DemoToolbox from './components/demo/DemoToolbox';
 import PreviewBar from './components/landing/PreviewBar';
 import PageLoadBoundary from './components/global/PageLoadBoundary';
+import AssistantWidget from './components/assistant/AssistantWidget';
 import RouteSeo from './lib/seo/RouteSeo';
 import Page47 from './pages/page';
 
@@ -99,6 +100,7 @@ function App() {
   return (
     <>
     <RouteSeo />
+    <AssistantWidget />
     <PageLoadBoundary resetKey={pathname}>
     <Suspense fallback={<div role="status" className="grid min-h-screen place-items-center text-sm text-slate-500">Loading...</div>}>
     <Routes>

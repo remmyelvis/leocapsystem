@@ -40,7 +40,7 @@ export default function SiteFooter({ home = true }: { home?: boolean }) {
     window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
 
   return (
-    <footer className="relative overflow-hidden text-slate-300" style={navy("linear-gradient(180deg, #081430 0%, #050c1f 100%)")}>
+    <footer className="leo-room relative overflow-hidden text-slate-300" style={navy("linear-gradient(180deg, #081430 0%, #050c1f 100%)")}>
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/60 to-transparent" aria-hidden />
       <MarkMotif className="pointer-events-none absolute -bottom-36 -left-28 hidden w-[460px] md:block" strength={0.9} />
 

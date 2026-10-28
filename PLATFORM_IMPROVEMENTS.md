@@ -2,7 +2,7 @@
 
 **For:** Elvis Karemi  
 **Covers:** 15 October 2026 to today  
-**Last updated:** 27 October 2026
+**Last updated:** 28 October 2026
 
 This document lists, in plain language, every improvement and correction made to the loan platform since work began on 15 October 2026. For each change it shows what things were **like before** and what they are **like now**.
 
@@ -59,6 +59,7 @@ This document lists, in plain language, every improvement and correction made to
 11. **The public website was redesigned** (same wording), with a new FAQ page.
 12. **You can now edit the words of the public website yourself** (Section 13.1): contact details, an announcement banner, the home page headings, hero numbers, product cards and "How it works" steps, testimonials, the FAQs and the Privacy Policy, with a private draft, a preview, one-click publishing and a history.
 13. **The public website is now ready for search engines and loads faster** (Section 13.2): each page has its own title and description, link previews show a picture, there is a sitemap and a tab icon, and the first download is about a quarter of the size.
+14. **A friendly assistant, Leo, now helps visitors and applicants** (Section 13.3): he answers the questions that stop people applying, can estimate what a loan would pay out, and walks them to the next step. He works on phones first.
 
 ---
 
@@ -383,6 +384,22 @@ The public pages are Home, FAQ, Privacy Policy, Create account and Sign in. Ever
 
 **Left for you** (they need your accounts or facts, so we cannot do them): see decisions 17 to 19 in Section 15.
 
+### 13.3 Leo, the chat assistant (28 Oct)
+
+A round button with a lion cub, **Leo**, now sits at the bottom right of the public pages (home, FAQs, sign-up, sign-in, Privacy Policy) and of an applicant's own pages. It does not appear for admin, HR or finance, or on the admin sign-in and password-reset pages. Tapping it opens a chat: on a phone it rises from the bottom of the screen, on a computer it is a small window in the corner.
+
+| What | Before | After | Date |
+|---|---|---|---|
+| **Help for visitors** | A visitor with a question had to read the FAQs, scroll the home page or write an email. | Leo opens with "What do you need today?" and tappable choices (cash before payday, a bigger loan, check my numbers, how do I apply, is it safe, talk to a person). People can also type; he understands everyday English and a little Swahili ("habari", "asante", "mkopo"). Every answer ends with one clear next step: create an account, sign in, or complete a profile. | 28 Oct |
+| **Where his answers come from** | Not applicable. | Money, timing, documents, password and contact answers are **read from your FAQs and contact details** (Site content, Section 13.1), so when you edit them Leo says the new thing with no developer. The only things written into the program are his short introductions. | 28 Oct |
+| **"Check my numbers"** | A visitor could not see what a loan would pay out until they had created an account and filled in the form. | Leo asks for basic monthly pay (a rough figure such as 50,000 or 50k is fine) and shows an **estimate**: the amount, the fees, what would be paid out, and for a Salary Advance what would be repaid. It uses **exactly the same formulas as the application forms**, so the two cannot disagree. A Personal Loan estimate shows the payout **before interest**, because you set that rate after reviewing the application. Every estimate is labelled as an estimate. | 28 Oct |
+| **Signed-in applicants** | Nothing. | On the applicant dashboard Leo greets them by name, shows how complete their profile is and what is still missing, and offers a button to finish it (or to start an application). Elsewhere he sends them to their dashboard. | 28 Oct |
+| **First hello** | Not applicable. | A small speech bubble appears once, a few seconds after a visitor arrives on the home, FAQs, sign-up or sign-in page, with a line that fits that page (for example "Forgot your password? Leo can help." on sign-in). It goes away by itself, can be dismissed, and is not shown again to the same browser for a week. | 28 Oct |
+| **Pointing at him (on a computer)** | Nothing. | After a moment's pause, Leo leads: he glides a short way out to the left, and a white capsule saying **Ask Leo** follows, flowing out from behind him; its letters fade in one after another as the edge passes them. When it has arrived, Leo lowers his head a little. Everything eases out and settles without any bounce, to match the calm of the rest of the platform. Moving away plays it backwards. It also opens for someone who tabs to him with the keyboard (and screen readers announce it). A phone has no hover, so there it never appears (the one-time hello bubble does that job); for anyone who has asked for less motion the capsule simply appears. | 28 Oct |
+| **Phones first** | Not applicable. | Large thumb-sized buttons, text never smaller than 12 pixels, a typing box that does not make iPhones zoom, a sheet built to stay above the on-screen keyboard, and room left at the end of each page so Leo never covers the last button. Anyone who has asked their phone for less motion sees no animation. Measured on screens from 320 to 1440 pixels wide. | 28 Oct |
+| **Privacy and honesty** | Not applicable. | Nothing a visitor types is sent anywhere or stored on a server: the conversation is kept only in their own browser for that visit. Leo says plainly that he is an **automated guide**, and that figures are estimates. | 28 Oct |
+| **His look** | Not applicable. | Leo was designed with Google's Stitch design tool: a lion cub whose mane uses the red-orange of your logo, on your navy. He changes expression (greeting, thinking, happy, celebrating, winking) as the conversation moves. The white rim around him is made to behave like the surface of water with a little wind across it. It is a still, perfect circle at almost all times. When something is going on, fine ripples run across it all in the same direction, strengthening in gusts and easing in lulls, as on a pond: for his first seconds on a page (a light breeze, and the badge rocks gently), while the hello bubble shows (a stronger gust, and ripples drift off towards the bubble, the way the wind blows, as Leo tips his head to wave), when someone points at or touches it, and while he is "typing" in the chat. When an estimate arrives a splash of rings spreads from his badge and he cheers. The water settles smoothly afterwards and nothing keeps running. Nothing moves for anyone who has asked their phone for less motion. | 28 Oct |
+
 ---
 
 ## 14. Looks and phone-friendliness
@@ -434,6 +451,8 @@ These need your input. Nothing here is broken, but each affects what customers o
 | 18 | **Trust information a lender should show.** You told us there is **no licence or registration number for now**, so none is shown anywhere and none has been invented. Still useful when you have them: the full company name, social media links, and a Terms and Conditions page. **Please confirm with a lawyer** whether Kenya's Central Bank rules for digital credit providers (the Digital Credit Providers Regulations, 2022, in force since 18 September 2022) apply to your salary advance and personal loans: they require a licence from the Central Bank for digital lending. This is not legal advice from us. | Loans are a "your money" topic, so Google weighs who is behind the site, and a licence number, once you have one, is the strongest trust signal. Send it and we add it to the home page, the footer and the search details. |
 | 19 | **Pre-drawing the home page (optional).** We built and measured it: the headline would appear in about 1.1 s instead of 1.8 s on a slow phone. We did **not** keep it: both are inside Google's "good" limit (2.5 s), and it would remove the scroll animations on first visit, add a step to every publish, and show out-of-date text for a moment after you edit Site content. | Say if you want it anyway. |
 | 20 | **How should the home page describe Leocap Consultancy?** The home page now links to the consultancy's own site, using only its name and the line "Tax, accounting and payroll support for businesses." We do not know how the two businesses are related, so nothing like "our sister company" is claimed. | Say whether you want the link and how it should be described, so that a visitor is not misled about who is behind it. |
+| 21 | **Leo now shows loan estimates to anyone, before they sign up.** They use the platform's own formulas, so they match what the application form shows (for a Salary Advance, roughly 30% of basic pay becomes the loan). That is **different from the home page's "up to 50% of net salary"**. This makes decision 1 more urgent: a visitor can now see both numbers. | The public promise and the real figure should agree. Tell us what the home page should say and we will change it. |
+| 22 | **WhatsApp.** Leo offers a one-tap Call button for each of your numbers and shows your email address. Many Kenyans prefer WhatsApp. If one of your numbers is on WhatsApp, tell us which and we will add a WhatsApp button. | An easier way for customers to reach you; it also moves some questions out of phone calls. |
 
 ---
 
@@ -441,6 +460,7 @@ These need your input. Nothing here is broken, but each affects what customers o
 
 These were looked at and **left unchanged on purpose**. They are listed so you know about them.
 
+- **Leo is a guided assistant, not an artificial-intelligence chatbot.** He answers what your FAQs, contact details and the loan formulas cover, and offers a person when he does not understand. That is on purpose: he cannot invent a loan term. There is also no count of how many people use him, because nothing about visitors is tracked.
 - **"Mark selected as paid"** (the tick-box action on All Applications) credits the loan's **full repayment amount** and does not adjust the balance of a part-paid loan. The two single-loan and company-month routes do it correctly.
 - **A borrower's "Amount Paid"** counts only payments recorded against that loan. For some older loans, earlier payments may not be linked, so the figure can look lower than what was really paid.
 - **New application emails to HR** have been tested and the sending mailbox has been proven (a test email arrived), but a real application notice has not yet been seen arriving in live use. This is parked until you want to check it.
@@ -473,6 +493,7 @@ Newest first. When a change is made, a new line goes at the top.
 
 | Date | What changed | Section |
 |---|---|---|
+| **28 Oct** | **Leo, a chat assistant with a lion-cub mascot**, on the public pages and the applicant dashboard: answers common questions from your FAQs, estimates what a loan would pay out using the application form's own formulas, greets signed-in applicants with their profile progress, and is built for phones first. Two decisions added (21, 22). | 13.3, 15, 16 |
 | **27 Oct** | **Simpler sign-up and sign-in pages** (one password box on sign-up, each message said once, nothing moving beside the forms, admins reach their sign-in through a small link) a **link to Leocap Consultancy** on the home page, and a fix so links and buttons on the sign-in and sign-up pages work on the first click, the sign-in page opening with your email already filled in right after you sign up, and an honest message on the sign-in pages when the server is busy or down (instead of "Invalid email or password"). | 14, 15 |
 | **27 Oct** | **Phone review of every screen**: no iPhone zoom on tapping a box, text never under 12 px, larger tap areas for small links and menu rows, menus and pop-ups sized to the visible iPhone screen, the profile banner no longer overlaps. | 14, 16 |
 | **27 Oct** | **Dashboard action buttons**: Approve, Reject, Disburse and Mark paid in the Loan pipeline now look and behave like buttons (spinner, no double click, on-screen result instead of a pop-up). | 11 |

@@ -150,7 +150,7 @@ export default function AuthLayout({
 
       {/* Form column */}
       <main onMouseDown={keepCursorOnPress} className="relative -mt-6 flex flex-1 flex-col rounded-t-[28px] bg-white xl:mt-0 xl:rounded-none">
-        <div className="mx-auto flex w-full max-w-[400px] flex-1 flex-col px-6 pb-8 pt-7 xl:px-0 xl:py-10">
+        <div className="leo-room-sm mx-auto flex w-full max-w-[400px] flex-1 flex-col px-6 pb-8 pt-7 xl:px-0 xl:py-10">
           <div className="flex items-center justify-between">
             <BrandLogo src="/logo-wordmark.png" height="2.25rem" />
             <Link to="/" className="inline-flex min-h-[40px] items-center gap-1.5 text-[13px] font-medium text-slate-600 transition-colors hover:text-slate-900">
