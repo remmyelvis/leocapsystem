@@ -18,16 +18,16 @@ export const bannerShowing = (b: BannerBlock) => b.enabled && b.text.trim() !== 
 export function BannerBar({ banner, barRef }: { banner: BannerBlock; barRef?: Ref<HTMLDivElement> }) {
   const { bar: colours, Icon } = TONES[banner.tone] ?? TONES.info;
   const link = banner.link_label && isSafeUrl(banner.link_url) ? banner.link_url : null;
-  const linkClass = "inline-flex min-h-[28px] items-center gap-1 font-semibold underline underline-offset-2 hover:no-underline";
+  // The message and its link run on as one sentence (the link used to wrap onto a row of its own on phones, making a 3-line bar). The bar is
+  // one line on a laptop (about 31 px) and two on a phone (about 44 px); touch screens get a larger invisible tap area (tap-link, globals.css).
+  const linkClass = "tap-link ml-1 inline-flex items-center gap-1 whitespace-nowrap font-semibold underline underline-offset-2 hover:no-underline";
   const arrow = <ArrowRight className="h-3.5 w-3.5" aria-hidden />;
 
   return (
-    <div ref={barRef} role="region" aria-label="Announcement" className={`${colours} px-4 py-2 text-[13.5px] leading-snug sm:px-6 lg:px-8`}>
-      <p className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center">
-        <span className="inline-flex items-center gap-2">
-          <Icon className="h-4 w-4 flex-shrink-0" aria-hidden />
-          {banner.text}
-        </span>
+    <div ref={barRef} role="region" aria-label="Announcement" className={`${colours} px-4 py-[6px] text-[12.5px] leading-[1.3] sm:px-6 sm:py-[7px] sm:text-[13px] lg:px-8`}>
+      <p className="mx-auto max-w-7xl text-center">
+        <Icon className="mr-1.5 inline-block h-3.5 w-3.5 align-[-2px]" aria-hidden />
+        {banner.text}{" "}
         {link &&
           (link.startsWith("/") ? (
             <Link to={link} className={linkClass}>
