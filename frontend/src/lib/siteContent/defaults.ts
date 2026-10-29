@@ -171,8 +171,8 @@ If the email does not arrive, check your spam folder.
         title: "Salary Advance",
         tag: "For Employed Professionals",
         description:
-          "Access up to 50% of your net salary before payday. Quick disbursement directly to M-Pesa or your bank account, with repayment deducted from your next paycheck.",
-        features: ["Up to 50% of net salary", "Same-day disbursement", "Zero collateral required"],
+          "Access up to 30% of your gross salary before payday. Quick disbursement directly to M-Pesa or your bank account, with repayment deducted from your next paycheck.",
+        features: ["Up to 30% of gross salary", "Same-day disbursement", "Zero collateral required"],
         featured: false,
         coming_soon: false,
       },

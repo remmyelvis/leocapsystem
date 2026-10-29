@@ -2,7 +2,7 @@
 // Plain data with no imports: vite.config.ts reads it at build time (to write each page's own <head>), and the app reads it
 // while running (RouteSeo), so the two can never disagree. The sitemap lives in public/sitemap.xml: keep both in step.
 //
-// No loan limits, rates or fees in these texts: the public numbers are still an owner decision (see PLATFORM_IMPROVEMENTS.md).
+// No loan limits, rates or fees in these texts, on purpose: add figures only if the owner asks (the card numbers were settled on 29 Oct, PLATFORM_IMPROVEMENTS.md decision 1).
 
 export const SITE_NAME = "Leocap Invest";
 /** The one address search engines should list (www. and app. serve the same pages but point here). */
