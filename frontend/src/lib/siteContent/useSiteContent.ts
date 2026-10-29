@@ -43,7 +43,7 @@ const count = (v: unknown, lo: number, hi: number) => Array.isArray(v) && v.leng
 
 const SHAPE: { [K in keyof SiteBlocks]: (v: unknown) => boolean } = {
   contact: (v) =>
-    isObj(v) && isStr(v.email) && isStr(v.address) && isStr(v.maps_url) && listOf(v.phones, (p) => isStr(p.number)) && (v.phones as unknown[]).length > 0,
+    isObj(v) && isStr(v.email) && isStr(v.address) && isStr(v.maps_url) && (v.hours === undefined || isStr(v.hours)) && listOf(v.phones, (p) => isStr(p.number)) && (v.phones as unknown[]).length > 0,
   banner: (v) =>
     isObj(v) && typeof v.enabled === "boolean" && isStr(v.text) && isStr(v.link_label) && isStr(v.link_url) && (BANNER_TONES as readonly unknown[]).includes(v.tone),
   testimonials: (v) => isObj(v) && listOf(v.items, (t) => isStr(t.name) && isStr(t.role) && isStr(t.quote)),
@@ -139,6 +139,7 @@ export function useContact(): ContactView {
       address: contact.address,
       mapsUrl: contact.maps_url || `https://www.google.com/maps/search/?api=1&query=${search}`,
       mapEmbedUrl: `https://maps.google.com/maps?q=${mapSearch(contact.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`,
+      hours: contact.hours ?? DEFAULTS.contact.hours ?? "",
     };
   }, [contact]);
 }

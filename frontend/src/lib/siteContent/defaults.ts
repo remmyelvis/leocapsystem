@@ -10,6 +10,7 @@ export const DEFAULTS: SiteBlocks = {
     phones: [{ number: "+254 722 221 502" }, { number: "+254 721 834 959" }],
     address: "Applewood Adams, Along Ngong Road, Nairobi",
     maps_url: "https://www.google.com/maps/search/?api=1&query=Applewood+Adams+Ngong+Road+Nairobi",
+    hours: "Mon–Fri 8 am–5 pm",
   },
   banner: { enabled: false, text: "", link_label: "", link_url: "", tone: "info" },
   testimonials: { items: [] },

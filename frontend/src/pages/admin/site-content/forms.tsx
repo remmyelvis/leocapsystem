@@ -65,6 +65,10 @@ export function ContactForm({ value, onChange }: FormProps<ContactValue>) {
         <input id="contact-address" value={value.address} onChange={(e) => set({ address: e.target.value })} className={inputClass} />
       </Field>
 
+      <Field label="Opening hours (optional)" htmlFor="contact-hours" count={{ n: (value.hours ?? "").length, max: 40 }} hint="One short line (about 35 characters fit), shown in the dark strip above the page header from tablet width up and in the phone menu. Leave it empty to show no hours.">
+        <input id="contact-hours" value={value.hours ?? ""} onChange={(e) => set({ hours: e.target.value })} placeholder="Mon–Fri 8 am–5 pm" className={inputClass} />
+      </Field>
+
       <Field label="Map link (optional)" htmlFor="contact-map" hint="Where the address links to. Leave it empty to link to a Google Maps search for the address. Must start with https://">
         <input id="contact-map" value={value.maps_url} onChange={(e) => set({ maps_url: e.target.value })} placeholder="https://www.google.com/maps/..." className={inputClass} />
       </Field>

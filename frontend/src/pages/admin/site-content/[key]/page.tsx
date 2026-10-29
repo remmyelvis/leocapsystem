@@ -22,7 +22,10 @@ const json = (v: unknown) => JSON.stringify(strip(v));
 function withKeys(key: BlockKey, source: unknown): any {
   const copy = JSON.parse(JSON.stringify(source));
   const tag = (list: any[]) => list.map((row) => ({ ...row, _k: newKey() }));
-  if (key === "contact") copy.phones = tag(copy.phones);
+  if (key === "contact") {
+    copy.phones = tag(copy.phones);
+    if (copy.hours === undefined) copy.hours = DEFAULTS.contact.hours; // a copy saved before opening hours existed shows the built-in wording
+  }
   if (key === "testimonials" || key === "faq" || key === "home_products" || key === "privacy") copy.items = tag(copy.items);
   return copy;
 }

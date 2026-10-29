@@ -12,6 +12,8 @@ export interface ContactBlock {
   address: string;
   /** Blank means "a Google Maps search for the address". */
   maps_url: string;
+  /** Opening hours as one line of text. Missing (a copy saved before this existed) means the built-in wording; empty means none are shown. */
+  hours?: string;
 }
 
 export interface BannerBlock {
@@ -115,4 +117,6 @@ export interface ContactView {
   mapsUrl: string;
   /** Embeddable map of the address (home page). */
   mapEmbedUrl: string;
+  /** Opening hours, one line ("" = show none). */
+  hours: string;
 }

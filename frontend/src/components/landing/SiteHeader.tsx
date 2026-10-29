@@ -230,7 +230,7 @@ export default function SiteHeader({ home = true, current, skipTo = "#main-conte
               <div className="relative mt-5 grid gap-3">
                 <a href={contact.phones[0].href} className="flex min-h-[56px] items-center gap-3 rounded-xl bg-white/10 px-3.5 ring-1 ring-white/15 transition-colors hover:bg-white/15">
                   <Phone className="h-4 w-4 flex-shrink-0 text-red-300" />
-                  <span className="text-[13px] font-semibold leading-tight">Call us<span className="mt-0.5 block text-[12px] font-normal text-white/80">{contact.phones[0].label}</span></span>
+                  <span className="text-[13px] font-semibold leading-tight">Call us<span className="mt-0.5 block text-[12px] font-normal text-white/80">{contact.phones[0].label}</span>{contact.hours && <span className="mt-0.5 block text-[12px] font-normal text-white/65">{contact.hours}</span>}</span>
                 </a>
                 <a href={`mailto:${contact.email}`} className="flex min-h-[56px] items-center gap-3 rounded-xl bg-white/10 px-3.5 ring-1 ring-white/15 transition-colors hover:bg-white/15">
                   <Mail className="h-4 w-4 flex-shrink-0 text-red-300" />

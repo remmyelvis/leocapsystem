@@ -175,8 +175,14 @@ def _contact(data):
     maps = c.url(d.get("maps_url"), "Map link", False)
     if maps and not maps.startswith("https://"):
         c.fail("Map link", "must start with https://")
+    # Opening hours are optional text. A copy saved before they existed has none (the site then uses its built-in wording);
+    # an empty text means "show no hours".
+    hours = c.text(d.get("hours"), "Opening hours", 0, 40) if "hours" in d else None
     c.done()
-    return {"email": email, "phones": phones, "address": address, "maps_url": maps}
+    block = {"email": email, "phones": phones, "address": address, "maps_url": maps}
+    if hours is not None:
+        block["hours"] = hours
+    return block
 
 
 def _banner(data):
