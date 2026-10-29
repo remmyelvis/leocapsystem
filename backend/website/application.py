@@ -1982,16 +1982,26 @@ def get_one_application(application_id):
         return jsonify({"error": "Application not found"}), 404
     applicant = Applicant.query.get(app.applicant_id)
     open_loan = app.loan_status == "disbursed" and app.repayment_status != "paid"
-    return jsonify({
-        "application": {
-            **app.to_dict(),
-            "amount_paid": _amount_paid_by_app([app.id]).get(app.id, 0.0),
-            "disbursed_at": (_disbursement_by_app([app]).get(app.id) or (None, None))[0],
-            "disbursed_at_source": (_disbursement_by_app([app]).get(app.id) or (None, None))[1],
-            "balance_owed": float(_balance_owed(app)) if open_loan else 0.0,
-        },
-        "bio_data": applicant.to_dict() if applicant else {}
-    }), 200
+    detail = {
+        **app.to_dict(),
+        "amount_paid": _amount_paid_by_app([app.id]).get(app.id, 0.0),
+        "disbursed_at": (_disbursement_by_app([app]).get(app.id) or (None, None))[0],
+        "disbursed_at_source": (_disbursement_by_app([app]).get(app.id) or (None, None))[1],
+        "balance_owed": float(_balance_owed(app)) if open_loan else 0.0,
+    }
+    if get_jwt().get("role") in ("admin", "super_admin"):
+        # A part-paid, late or defaulted loan does not stop the borrower applying again (only "unpaid" does), so the admin deciding on
+        # this application is told about it. A defaulted loan's loan status is "defaulted"; a late or escalated one stays "disbursed".
+        detail["owing_elsewhere"] = [
+            {"id": other.id, "balance_owed": float(_balance_owed(other)), "repayment_status": other.repayment_status,
+             "due_date": other.due_date.isoformat() if other.due_date else None}
+            for other in Application.query.filter(
+                Application.applicant_id == app.applicant_id, Application.id != app.id,
+                Application.loan_status.in_(["disbursed", "defaulted"]),
+                Application.repayment_status.in_(["partially_paid", "delinquent", "escalated", "defaulted"]),
+            ).order_by(Application.created_at).all()
+        ]
+    return jsonify({"application": detail, "bio_data": applicant.to_dict() if applicant else {}}), 200
 
 def sync_terms_to_ledger(app):
     """Rewrite the ledger rows created when the loan was applied so they follow the current amount and rate.

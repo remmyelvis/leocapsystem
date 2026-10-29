@@ -76,6 +76,8 @@ export interface ApplicationDetails {
   repayment_status?: string;
   outstanding_balance?: string;
   balance_owed?: number | string; // what is owed right now (the loan page only)
+  /** The borrower's OTHER loans that are part paid, late or in default (the loan page, admins only). */
+  owing_elsewhere?: { id: string; balance_owed: number; repayment_status: string; due_date: string | null }[];
   disbursed_at?: string | null; // when the loan was disbursed; null for loans that were disbursed before this was recorded
   disbursed_at_source?: "entered" | "history" | null; // a date typed in by an admin, or the one the loan's change history has
   created_at?: string;

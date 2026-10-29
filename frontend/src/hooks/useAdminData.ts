@@ -34,6 +34,7 @@ export interface TransformedApplication {
   status: string;
   repaymentStatus: string;
   balanceOwed: number; // what is owed right now; only the single-loan fetch carries it
+  owingElsewhere: { id: string; balanceOwed: number; repaymentStatus: string; dueDate: string | null }[]; // the borrower's other part-paid, late or defaulted loans; only the single-loan fetch carries them
   submittedAt: string;
   dueDate: string | null;
   documents: ApplicationDocument[];
@@ -93,6 +94,7 @@ function transformApplication(item: AdminApplicationItem): TransformedApplicatio
     status: app.loan_status || "Pending",
     repaymentStatus: app.repayment_status || "unpaid",
     balanceOwed: Number(app.balance_owed) || 0,
+    owingElsewhere: (app.owing_elsewhere ?? []).map((l) => ({ id: l.id, balanceOwed: Number(l.balance_owed) || 0, repaymentStatus: l.repayment_status, dueDate: l.due_date })),
     submittedAt: app.date_submitted || app.created_at || new Date().toISOString(),
     dueDate: app.due_date || null,
     documents: app.documents || [],

@@ -86,6 +86,9 @@ const monthOf = (iso: string) => {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 };
 
+// Applications still waiting for a decision or a payout. A borrower's part-paid, late or defaulted loan does not stop them applying again, so these get a flag.
+const NOT_DECIDED = new Set(["pending", "pending_processing", "processing", "amended", "rate_set", "rate_confirmed", "confirmed", "approved"]);
+
 const Pill = ({ className, children }: { className: string; children: React.ReactNode }) => (
   <span className={`inline-flex shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap capitalize ${className}`}>{children}</span>
 );
@@ -107,6 +110,18 @@ const ViewButton = ({ id }: { id: string }) => (
 export default function AllApplicationsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { applications, isLoading, error, refetch } = useAdminApplications();
+
+  // Borrowers who still owe on a loan that is part paid, late or in default (a defaulted loan's own status is "defaulted"), from the full list
+  const owingBorrowers = useMemo(
+    () =>
+      new Set(
+        applications
+          .filter((a) => ["disbursed", "defaulted"].includes(a.status.toLowerCase()) && ["partially_paid", "delinquent", "escalated", "defaulted"].includes(a.repaymentStatus.toLowerCase()))
+          .map((a) => a.applicantId)
+      ),
+    [applications]
+  );
+  const owesElsewhere = (a: TransformedApplication) => NOT_DECIDED.has(a.status.toLowerCase().replace(/[\s-]/g, "_")) && owingBorrowers.has(a.applicantId);
 
   // Pre-fill type filter from sidebar query param
   const urlType = searchParams.get("type") ?? "all";
@@ -496,7 +511,16 @@ return (
                           <p className="text-xs text-slate-400 capitalize">{app.company || "—"}</p>
                         </td>
                         <td className="px-4 py-2.5 text-slate-800 font-medium whitespace-nowrap">{app.amountApplied ? KES.format(app.amountApplied) : "—"}</td>
-                        <td className="px-4 py-2.5 whitespace-nowrap"><Pill className={statusDisplay.style}>{statusDisplay.label}</Pill></td>
+                        <td className="px-4 py-2.5 whitespace-nowrap">
+                          <div className="flex items-center gap-1.5">
+                            <Pill className={statusDisplay.style}>{statusDisplay.label}</Pill>
+                            {owesElsewhere(app) && (
+                              <Tip label="This borrower still owes on another loan that is part paid, late or in default">
+                                <span><Pill className="bg-amber-100 text-amber-800 !normal-case">Owes on a loan</Pill></span>
+                              </Tip>
+                            )}
+                          </div>
+                        </td>
                         <td className="px-4 py-2.5 whitespace-nowrap"><Pill className={repaymentStyle(app.repaymentStatus)}>{app.repaymentStatus?.replace(/_/g, " ") || "—"}</Pill></td>
                         <td className="px-4 py-2.5 whitespace-nowrap">
                           <p className="text-slate-600">{shortDate(app.submittedAt)}</p>
@@ -557,6 +581,7 @@ return (
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-2 flex-wrap text-xs text-slate-400">
                             <Pill className={repaymentStyle(app.repaymentStatus)}>{app.repaymentStatus?.replace(/_/g, " ") || "—"}</Pill>
+                            {owesElsewhere(app) && <Pill className="bg-amber-100 text-amber-800 !normal-case">Owes on another loan</Pill>}
                             <span>{shortDate(app.submittedAt)}</span>
                             {isOpen(app) && app.dueDate && (
                               <span className={isOverdue(app, nowMs) ? "font-semibold text-red-600" : undefined}>Due {shortDate(app.dueDate)}</span>

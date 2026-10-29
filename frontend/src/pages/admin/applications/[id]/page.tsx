@@ -3,7 +3,7 @@
 import { canDeleteApplication } from "@/lib/loanStatus";
 import { formatName } from "@/lib/formatName";
 import { useState, useRef, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -1282,6 +1282,33 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
           </p>
         </div>
       )}
+
+      {/* A part-paid, late or defaulted loan does not stop the borrower applying again (only "unpaid" does), so whoever decides on this
+          application is told about it (until the money is paid out; the applications list flags the same ones). Red when any is late. */}
+      {app.owingElsewhere.length > 0 && ["pending", "pending_processing", "processing", "amended", "rate_set", "rate_confirmed", "confirmed", "approved"].includes(normalizedStatus) && (() => {
+        const late = app.owingElsewhere.some((l) => l.repaymentStatus !== "partially_paid");
+        const STATE: Record<string, string> = { partially_paid: "part paid", delinquent: "late", escalated: "late, escalated", defaulted: "in default" };
+        return (
+          <div role="note" className={`flex items-start gap-3 rounded-lg border p-3.5 ${late ? "border-red-200 bg-red-50 text-red-950" : "border-amber-200 bg-amber-50 text-amber-950"}`}>
+            <AlertTriangle className={`mt-0.5 h-5 w-5 flex-shrink-0 ${late ? "text-red-600" : "text-amber-600"}`} aria-hidden />
+            <div className="min-w-0 text-[13px] leading-snug">
+              <p className="font-semibold">This borrower still owes on another loan</p>
+              <ul className="mt-1 space-y-0.5">
+                {app.owingElsewhere.map((l) => (
+                  <li key={l.id}>
+                    <Link to={`/admin/applications/${l.id}`} className="font-medium underline underline-offset-2 hover:no-underline">
+                      Loan #{l.id.slice(0, 8)}
+                    </Link>{" "}
+                    ({STATE[l.repaymentStatus] ?? l.repaymentStatus.replace(/_/g, " ")}): <span className="font-semibold tabular-nums">{KES.format(l.balanceOwed)}</span> still owed
+                    {l.dueDate ? `, due ${new Date(l.dueDate).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" })}` : ""}.
+                  </li>
+                ))}
+              </ul>
+              <p className={`mt-1 ${late ? "text-red-900/80" : "text-amber-900/80"}`}>A loan that is part paid, late or in default does not stop someone applying again. Please check it when you review this application.</p>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Applicant Info ── */}
       {/* AI Decision Engine Card */}
