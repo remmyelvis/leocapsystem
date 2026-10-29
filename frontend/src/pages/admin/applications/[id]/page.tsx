@@ -526,12 +526,21 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
     setUpdating(true);
     try {
       if (action === "escalate") {
-        const { error } = await downloadFile(`/api/applications/escalate/${app.id}`, `Escalated_Demand_Notice.pdf`);
+        // Escalating issues the demand notice AND charges the 15% collection fee (once), so the admin sees it first: the server says what would happen.
+        const preview = await apiCall<{ fee: number; balance_before: number; balance_after: number }>(`/api/applications/escalate/${app.id}?dry_run=1`);
+        if (preview.error || !preview.data) {
+          toast.error(preview.error ?? "Could not check this loan. Please try again.");
+          return;
+        }
+        const { fee, balance_before: before, balance_after: after } = preview.data;
+        if (fee > 0 && !window.confirm(`Escalating issues the demand notice and charges the 15% collection fee of ${KES.format(fee)}.\n\nBalance owed: ${KES.format(before)} to ${KES.format(after)}.\n\nContinue?`)) return;
+        const { error } = await downloadFile(`/api/applications/escalate/${app.id}`, `Escalated_Demand_Notice.pdf`, { method: "POST" });
         if (error) {
           toast.error(error);
           return;
         }
-        toast.success("Escalation export downloaded");
+        toast.success(fee > 0 ? `Escalated: the 15% collection fee of ${KES.format(fee)} was charged and the demand notice downloaded` : "Demand notice downloaded");
+        await refetch(); // the loan is now escalated and its balance may have changed
       } else {
         const { error } = await apiCall(`/api/applications/${action}/${app.id}`, {
           method: "PATCH",
@@ -1069,7 +1078,7 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
               className="bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold"
             >
               <AlertTriangle className="mr-1.5 h-4 w-4" />
-              Escalate
+              {normalizedRepaymentStatus === "escalated" ? "Download demand notice" : "Escalate"}
             </Button>
           )}
           <Button
