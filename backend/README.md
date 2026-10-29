@@ -47,12 +47,12 @@ What is sent: password reset links (see `forgot_password`), the daily reminder a
 
 ## Daily reminder job (cron)
 
-`POST /api/cron/reminders` is meant to be called **once a day** (cPanel > Cron Jobs). For every disbursed loan that is unpaid or part-paid it emails the borrower 7 days before the due date, 3 days before, on the due date and 7 days after, and on day 8 after the due date it marks the loan `delinquent`, adds a 15% collection fee to the outstanding balance and writes a "Delinquency Collection Fee" ledger row. Each reminder fires on its exact day, so a day the job does not run is a reminder that is never sent.
+`POST /api/cron/reminders` is meant to be called **once a day** (cPanel > Cron Jobs). For every disbursed loan that is unpaid or part-paid it emails the borrower 7 days before the due date, 3 days before, on the due date and 7 days after, and on day 8 after the due date it marks the loan `delinquent`, sends the delinquency notice and (for loans applied for on or after `LATE_CHARGE_FROM`, 26 Oct 2026) adds a 10% late-payment charge and writes a "Late Payment Charge" ledger row. It does **not** charge the 15% collection fee: that follows the demand notice and is charged by Escalate (below). Each reminder fires on its exact day, so a day the job does not run is a reminder that is never sent.
 
 It is locked behind a secret: set `CRON_SECRET` in the server's `website/.env` (restart the app afterwards) and send it with the call, for example
 `curl -s -X POST -H "X-Cron-Secret: <secret>" https://api.leocapinvest.co.ke/api/cron/reminders` (or `?key=<secret>`). Without `CRON_SECRET` the endpoint answers 503, with a wrong one 401.
 
-A delinquent loan can still be paid down from the admin application page (partial payments keep it `delinquent`, so the job never charges the fee twice) marked paid, or moved on like any overdue loan (Mark as Default, then Escalate). Rollover interest ("Charge Interest") is not offered on a delinquent loan.
+A delinquent loan can still be paid down from the admin application page (partial payments keep it `delinquent`, so the job never charges the late-payment charge twice) marked paid, or moved on like any overdue loan (Mark as Default, then Escalate). Rollover interest ("Charge Interest") is not offered on a delinquent loan.
 
 ## API Documentation
 
@@ -628,7 +628,8 @@ Marks the unpaid, disbursed loans of that company and repayment month as paid: e
 #### Endpoint: escalate
 
 ```http
-    GET /applications/escalate/<string:application_id>
+    POST /applications/escalate/<string:application_id>
+    GET  /applications/escalate/<string:application_id>?dry_run=1
 ```
 
 #### Permissions
@@ -639,6 +640,9 @@ admin
 | Parameter | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
 | `application_id`      | `string` | **Required**. Id of application to escalate |
+| `dry_run`      | `string` | **Optional** (GET) `1` answers what escalating would do (`fee`, `balance_before`, `balance_after`, `fee_already_charged`) and changes nothing |
+
+Issues the demand notice for a **defaulted** loan (403 otherwise) and returns it as a PDF. **The 15% collection fee is charged here**, not by the daily job: on the first escalation (`defaulted` to `escalated`) it adds 15% of the balance owed at that moment to the outstanding balance, as a "Delinquency Collection Fee" ledger row, with an entry in the loan's change history and the audit log. It is charged once: posting again only returns the notice, a loan that already has the fee row (charged by the daily job before this rule changed) is not charged, and a loan that was already `escalated` is not charged afterwards. A `GET` without `dry_run` only returns the notice of a loan that is already escalated (a GET never changes a balance; otherwise 405).
 
 ## Applicant Documents
 

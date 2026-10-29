@@ -274,7 +274,7 @@ def stage_one(world, loan):
 
 
 def stage_two(world, loan):
-    """What happens after the job has charged its fees on a loan that went late."""
+    """What happens after the job has charged its late-payment charge on a loan that went late."""
     s, o, collections = loan.spec, loan.spec["outcome"], world.actors["collections"]
     due, T = s["due"], world.today
     if o == "late_paid":

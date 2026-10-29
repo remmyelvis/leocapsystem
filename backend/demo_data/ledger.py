@@ -177,7 +177,7 @@ class Loan:
         self.row(f"Partially paid {plain(amount)}", credit=amount, when=when)
         self.app.partially_paid_date, self.app.partially_paid_count = when, (self.app.partially_paid_count or 0) + 1
         self.app.memo = f"Partially paid {plain(amount)}"
-        # a delinquent loan stays delinquent while it is paid down (the daily job would charge the fee again otherwise)
+        # a delinquent loan stays delinquent while it is paid down (the daily job would charge the late-payment charge again otherwise)
         if self.app.repayment_status != "delinquent":
             self.set_repayment_status("partially_paid", by, when)
         self.ctx.log("PATCH", f"/api/applications/partially-paid/{self.app.id}", by, when, fields=["amount"], values={"amount": float(amount)})
@@ -212,8 +212,11 @@ class Loan:
         self.ctx.log("PATCH", f"/api/applications/default/{self.app.id}", by, when)
 
     def escalate(self, by, when):
+        """Issue the demand notice the way the Escalate button does: the 15% collection fee follows the notice, so it is charged now, once,
+        on what is owed (it is no longer charged by the daily job on day 8)."""
+        self.row("Delinquency Collection Fee", debit=money(max(self.balance, D(0)) * D("0.15")), when=when)
         self.app.repayment_status = "escalated"
-        self.ctx.log("GET", f"/api/applications/escalate/{self.app.id}", by, when, action=AuditAction.UPDATE)
+        self.ctx.log("POST", f"/api/applications/escalate/{self.app.id}", by, when, action=AuditAction.UPDATE)
 
     def write_off(self, by, when):
         owed = max(self.balance, D(0))

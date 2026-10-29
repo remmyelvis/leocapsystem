@@ -596,7 +596,7 @@ def mark_as_partially_paid(application_id):
         return jsonify({'error': 'Application cannot be marked as partially paid'}), 403
 
     # A delinquent loan stays delinquent while it is paid down. The daily reminder job only looks at unpaid and
-    # part-paid loans, so turning it back into partially_paid would make the job add the 15% collection fee again.
+    # part-paid loans, so turning it back into partially_paid would make the job add the late-payment charge again.
     new_status = "delinquent" if status == "delinquent" else "partially_paid"
     app.repayment_status = new_status
     app.partially_paid_count += 1
@@ -755,18 +755,33 @@ def new_due_date():
     return datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + relativedelta(days=30)
 
 
-@application.route('/applications/escalate/<string:application_id>', methods=['GET'])
+COLLECTION_FEE_MEMO = "Delinquency Collection Fee"  # the statement line the demand notice and the reports read
+COLLECTION_FEE_RATE = Decimal("0.15")
+
+
+@application.route('/applications/escalate/<string:application_id>', methods=['GET', 'POST'])
 @jwt_required()
 @role_required("admin")
 def escalate(application_id):
+    """Issue the demand notice for a defaulted loan. The 15% collection fee follows the demand notice, so it is charged HERE (once, on the
+    balance owed at that moment) and no longer by the daily job on day 8. POST escalates: the loan becomes "escalated", the fee is
+    charged and the notice PDF comes back. The fee is never charged twice: not when the notice is downloaded again, and not for a loan
+    that already has the fee line (charged by the daily job before this rule changed). A loan that was already escalated is not
+    charged afterwards either. GET with ?dry_run=1 says what escalating would do (nothing changes); a GET without it only downloads
+    the notice of a loan that is already escalated, because a GET must never change a balance."""
     from flask import Response
     from website.export_service import generate_debt_dossier_pdf
+
+    dry_run = request.args.get("dry_run") in ("1", "true")
+    if dry_run:
+        g.audit_recorded = True  # a preview changes nothing, so the audit hook must not log it as an escalation
 
     app = db.session.query(Application).filter_by(id=application_id).with_for_update().first()
 
     if not app:
+        db.session.rollback()
         return jsonify({'error': 'Application not found'}), 404
-        
+
     data = request.get_json(silent=True) or {}
     external_ref = data.get('external_reference')
     if external_ref:
@@ -774,7 +789,7 @@ def escalate(application_id):
         if existing_txn:
             db.session.rollback()
             return jsonify({'error': 'Duplicate transaction: External reference already exists'}), 409
-            
+
     idempotency_key = data.get('idempotency_key')
     if idempotency_key:
         existing_txn = StatementEntry.query.filter_by(external_reference=idempotency_key).first()
@@ -782,14 +797,53 @@ def escalate(application_id):
             db.session.rollback()
             return jsonify({'error': 'Duplicate transaction: Idempotency key already processed'}), 409
 
-
     allowed_statuses = ["defaulted", "escalated"]
 
     if app.repayment_status not in allowed_statuses:
+        db.session.rollback()
         return jsonify({'error': 'You can only escalate defaulted loans'}), 403
 
-    app.repayment_status = "escalated"
-    db.session.commit()
+    first_time = app.repayment_status == "defaulted"
+    fee_already = StatementEntry.query.filter_by(application_id=app.id, memo=COLLECTION_FEE_MEMO).first() is not None
+    before = _balance_owed(app)
+    fee = (before * COLLECTION_FEE_RATE).quantize(Decimal("0.01")) if (first_time and not fee_already) else Decimal("0")
+
+    if dry_run:
+        db.session.rollback()
+        return jsonify({
+            "dry_run": True, "status": app.repayment_status, "fee": float(fee), "fee_rate": float(COLLECTION_FEE_RATE),
+            "fee_already_charged": fee_already, "balance_before": float(before), "balance_after": float(before + fee),
+        }), 200
+
+    if request.method == "GET" and first_time:
+        db.session.rollback()
+        return jsonify({'error': 'Escalating charges the collection fee. Use the Escalate button on the loan page.'}), 405
+
+    if first_time:
+        email, role, company = _actor()
+        app.repayment_status = "escalated"
+        if fee > 0:
+            after = before + fee
+            db.session.add(StatementEntry(
+                applicant_id=app.applicant_id, application_id=app.id, memo=COLLECTION_FEE_MEMO,
+                debit=fee, credit=Decimal(0), balance=after, date=datetime.now(),
+            ))
+            app.outstanding_balance = after  # the repayment amount stays the contract total, like the daily job's late-payment charge
+            db.session.add(ApplicationAudit(
+                application_id=app.id,
+                application_old_loan_amount=float(app.amount_applied or 0),
+                application_new_loan_amount=float(app.amount_applied or 0),
+                application_old_repayment_amount=float(app.repayment_amount or 0),
+                application_new_repayment_amount=float(app.repayment_amount or 0),
+                field_name="outstanding_balance",
+                old_status=str(before),
+                new_status=str(after),
+                changed_by_email=email,
+                changed_by_role=role,
+                changed_by_company=company,
+                notes=f"Escalated (demand notice issued): the 15% collection fee of KES {fee:,.2f} was charged on the balance owed of KES {before:,.2f}.",
+            ))
+        db.session.commit()
 
     applicant = Applicant.query.get(app.applicant_id)
 

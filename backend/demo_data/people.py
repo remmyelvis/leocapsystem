@@ -121,7 +121,7 @@ PERSONAS = [
     ("joseph_k", "applicant", "Finance Manager of the same employer: sees what is owed and what to remit from payroll."),
     ("nancy", "applicant", "HR at a second employer: sees only her own company's staff and loans, never Savannah's."),
     ("wanjiku", "applicant", "An employee with a spotless record. Her salary advance falls due in 7 days."),
-    ("grace", "applicant", "A borrower who is late: collection fee, late-payment charge, part payments and a penalty."),
+    ("grace", "applicant", "A borrower who is late: late-payment charge, part payments and a penalty."),
     ("tom", "applicant", "Runs his own business, no employer. A KES 100,000 loan is waiting for the lender's decision."),
 ]
 

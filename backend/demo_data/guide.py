@@ -69,7 +69,7 @@ def build():
     story("job", "The platform chases the money for you", "Reminders and late fees run by themselves, every morning, and every message is on record.", "credit",
           ["Open the Demo menu (bottom-left) and press Run today's job.",
            "Four borrowers get a reminder: due in 7 days, due in 3 days, due today and 7 days late. Peter, 8 days late, is marked delinquent and sent a notice.",
-           "Open the inbox to read the messages. Open Peter's statement: the 15% collection fee and the 10% late-payment charge are now lines in it."], job)
+           "Open the inbox to read the messages. Open Peter's statement: the 10% late-payment charge is now a line in it. (The 15% collection fee is charged later, when a loan is escalated.)"], job)
 
     def collections():
         grace, loan = _find("Grace Wairimu", repayment_status="delinquent")
@@ -77,9 +77,9 @@ def build():
         return [("Grace's statement", f"/admin/manage-applicants/{grace.id}"), ("Grace's loan: record a payment", f"/admin/applications/{loan.id}"),
                 ("Samuel: sent for recovery", f"/admin/applications/{samuel.id}")]
     story("collections", "Collections that leave a paper trail", "Fees, part payments, penalties and demand letters are all lines in the ledger and entries in the audit trail, so nothing is argued from memory.", "collections",
-          ["Open Grace's statement and find the Applicant statement: the collection fee, the late-payment charge, two part payments and a penalty, each its own line, grouped by loan. Download PDF gives the borrower's copy.",
+          ["Open Grace's statement and find the Applicant statement: the late-payment charge, two part payments and a penalty, each its own line, grouped by loan. Download PDF gives the borrower's copy.",
            "On Grace's loan, Mark as Partially Paid and Add Penalty record new lines. Mark as Default and Mark as Paid close it out.",
-           "Open Samuel's loan: defaulted and escalated. Escalate produces the demand letter, and Export Debt Dossier the full file for a recovery agent."], collections)
+           "Open Samuel's loan: defaulted and escalated. Escalate produced the demand letter and charged the 15% collection fee (one more line on his statement), and Export Debt Dossier gives the full file for a recovery agent."], collections)
 
     def employer():
         _, kevin = _find("Kevin Kiprop", loan_status="pending_processing")

@@ -219,8 +219,9 @@ def _build(w, spec):
 
 
 def _run_daily_job(w):
-    """Run the product's own daily job on the loans that are late. It adds the 15% collection fee and the 10% late-payment
-    charge and records the delinquency notice. (For the demo the 10% applies to every loan, whatever its application date.)"""
+    """Run the product's own daily job on the loans that are late. It adds the 10% late-payment charge and records the delinquency
+    notice; the 15% collection fee is not its job (it is charged when a loan is escalated). (For the demo the 10% applies to every
+    loan, whatever its application date.)"""
     import website.cron as cron
 
     cron.LATE_CHARGE_FROM = datetime(2000, 1, 1)
@@ -244,7 +245,7 @@ def _run_daily_job(w):
 
 
 def _backdate_job_charges(w, loan):
-    """The job charged these loans just now; date its fee rows and notice to the day it would have (8 days after the due date)."""
+    """The job charged these loans just now; date its charge row and notice to the day it would have (8 days after the due date)."""
     from website.models import AuditLog, StatementEntry
 
     app = loan.app

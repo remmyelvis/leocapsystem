@@ -64,6 +64,7 @@ _DESCRIPTIONS = [
     ("PATCH", r"/applications/rate-declined/", "Declined the interest rate"),
     ("POST", r"/applications/write-off/", "Wrote off a loan"),
     ("POST", r"/applications/reverse-transaction/", "Reversed a transaction"),
+    ("POST", r"/applications/escalate/", "Escalated a loan (demand notice)"),
     ("GET", r"/applications/escalate/", "Escalated a loan (demand notice)"),
     ("GET", r"/reports/applications/get-all/repayment/(?:company/)?([^/]+)/(pdf|excel)", r"Downloaded the \1 repayment report (\2)"),
     ("GET", r"/applicant/statement/download/", "Downloaded an applicant's statement"),
@@ -202,6 +203,8 @@ def _record(response):
         if not actor_id and "/cron/" not in path and "/register" not in path and "/forgot-password" not in path and "/reset-password" not in path:
             return  # anonymous noise (scanners, expired sessions) is not worth a row
         action = {"POST": AuditAction.CREATE, "PUT": AuditAction.UPDATE, "PATCH": AuditAction.UPDATE, "DELETE": AuditAction.DELETE}.get(method, AuditAction.UPDATE)
+        if "/escalate" in path:
+            action = AuditAction.UPDATE  # escalating changes the loan (status and the collection fee)
 
     failed = response.status_code >= 400
     error = None

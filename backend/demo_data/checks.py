@@ -57,18 +57,20 @@ def run(now):
                   and ((a.due_date.date() - today).days in (7, 3, 0, -7) or (a.due_date.date() - today).days <= -8))
     check("the daily job's next run acts on exactly the five live cases", acts == [-8, -7, 0, 3, 7], acts)
 
-    # the fees the job already charged: 15% and 10% of the same base, dated the 8th day after the due date
+    # the daily job charges the 10% late-payment charge on the 8th day after the due date; the 15% collection fee follows the demand
+    # notice, so only escalated loans have it
     ok = True
     for a in apps:
         rows = rows_by.get(a.id, [])
-        fee = next((r for r in rows if r.memo == "Delinquency Collection Fee"), None)
-        if not fee:
-            continue
         charge = next((r for r in rows if r.memo == "Late Payment Charge"), None)
-        base = D(str(fee.balance)) - D(str(fee.debit))
-        ok &= bool(charge) and D(str(fee.debit)) == (base * D("0.15")).quantize(D("0.01")) and D(str(charge.debit)) == (base * D("0.10")).quantize(D("0.01"))
-        ok &= fee.date.date() == a.due_date.date() + timedelta(days=8)
-    check("every charged loan has its 15% fee and 10% charge, dated 8 days after the due date", ok)
+        if charge:
+            base = D(str(charge.balance)) - D(str(charge.debit))
+            ok &= D(str(charge.debit)) == (base * D("0.10")).quantize(D("0.01")) and charge.date.date() == a.due_date.date() + timedelta(days=8)
+        fee = next((r for r in rows if r.memo == "Delinquency Collection Fee"), None)
+        if fee:
+            base = D(str(fee.balance)) - D(str(fee.debit))
+            ok &= a.repayment_status == "escalated" and D(str(fee.debit)) == (base * D("0.15")).quantize(D("0.01"))
+    check("the job's 10% late-payment charge is dated 8 days after the due date, and the 15% collection fee is only on escalated loans", ok)
 
     def loans(name):
         person = Applicant.query.filter_by(name=name).first()
@@ -79,11 +81,13 @@ def run(now):
         check(f"{name} has one open loan due at day {offset:+d}", len(open_) == 1 and (open_[0].due_date.date() - today).days == offset)
     grace = loans("Grace Wairimu")[-1:] or [None]
     memos = [r.memo for r in rows_by.get(grace[0].id, [])] if grace[0] else []
-    check("Grace is delinquent with both charges, two part payments and a penalty",
+    check("Grace is delinquent with the late-payment charge, two part payments and a penalty",
           grace[0] is not None and grace[0].repayment_status == "delinquent" and "Late Payment Charge" in memos
           and sum(m.startswith("Partially paid") for m in memos) == 2 and any(m.startswith("Penalty:") for m in memos), memos)
     samuel = loans("Samuel Kiprono")[-1:] or [None]
-    check("Samuel's loan is escalated after default", samuel[0] is not None and (samuel[0].repayment_status, samuel[0].loan_status) == ("escalated", "defaulted"))
+    check("Samuel's loan is escalated after default, with the 15% collection fee the demand notice charged",
+          samuel[0] is not None and (samuel[0].repayment_status, samuel[0].loan_status) == ("escalated", "defaulted")
+          and "Delinquency Collection Fee" in [r.memo for r in rows_by.get(samuel[0].id, [])])
     check("Daniel has a written-off loan", any(a.loan_status == "written_off" for a in loans("Daniel Mutua")))
     check("Tom has a pending application with both statements attached",
           any(a.loan_status == "pending_processing" and len(a.application_documents) == 2 for a in loans("Tom Ochieng")))

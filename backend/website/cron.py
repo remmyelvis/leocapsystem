@@ -4,7 +4,7 @@ from hmac import compare_digest
 from flask import Blueprint, jsonify, request
 from website.models import Application, Applicant
 from website import db
-from datetime import datetime, timedelta
+from datetime import datetime
 from website.system_email_utils import send_audited
 
 cron_bp = Blueprint('cron', __name__, url_prefix='/api/cron')
@@ -65,37 +65,25 @@ def run_reminders():
             subject = "OVERDUE: Loan is 7 Days Late"
             body = f"Dear {applicant.name},<br/>Your loan (ID: {app.id}) is 7 days overdue. Please make a payment immediately to avoid {'a collection fee and a late-payment charge' if late_terms else 'collection fees'}."
             
-        # 8th day -> delinquent
+        # 8th day -> delinquent. The 10% late-payment charge (only loans on the terms that have it) is charged now, on the balance owed;
+        # the loan's repayment amount stays the contract total. The 15% collection fee is NOT charged here: it follows the demand notice,
+        # so it is charged when an admin escalates the loan (application.py, escalate).
         elif days_diff <= -8 and app.repayment_status != 'delinquent':
             app.repayment_status = 'delinquent'
-            
-            # Apply collection charges: a 15% collection fee and a 10% late-payment charge, both on the balance owed
-            # before either is added (the loan's repayment amount stays the contract total)
+
             from decimal import Decimal
             outstanding = Decimal(app.outstanding_balance) if app.outstanding_balance else Decimal(app.repayment_amount)
-            collection_fee = round(outstanding * Decimal('0.15'), 2) # 15% charge
             late_charge = round(outstanding * Decimal('0.10'), 2) if late_terms else Decimal('0') # 10% late-payment charge
-            
-            app.outstanding_balance = str(round(outstanding + collection_fee + late_charge, 2))
-            
+            app.outstanding_balance = str(round(outstanding + late_charge, 2))
+
             subject = "NOTICE OF DELINQUENCY"
-            applied = f"A collection fee of KES {collection_fee:,.2f} and a late-payment charge of KES {late_charge:,.2f} have been" if late_charge else f"A collection fee of KES {collection_fee:,.2f} has been"
-            body = (f"Dear {applicant.name},<br/>Your loan (ID: {app.id}) has been marked as DELINQUENT. {applied} applied. "
-                    f"Your outstanding balance is now KES {Decimal(app.outstanding_balance):,.2f}.")
-            
-            # Write to ledger: one row per charge, a second apart so the statement always reads fee, then charge
-            from website.models import StatementEntry
-            when = datetime.utcnow()
-            db.session.add(StatementEntry(
-                applicant_id=app.applicant_id,
-                application_id=app.id,
-                memo="Delinquency Collection Fee",
-                debit=collection_fee,
-                credit=Decimal(0),
-                balance=outstanding + collection_fee,
-                date=when
-            ))
+            applied = f" A late-payment charge of KES {late_charge:,.2f} has been applied." if late_charge else ""
+            body = (f"Dear {applicant.name},<br/>Your loan (ID: {app.id}) has been marked as DELINQUENT.{applied} "
+                    f"Your outstanding balance is KES {Decimal(app.outstanding_balance):,.2f}.<br/>"
+                    f"Please pay immediately. A collection fee is added if a demand notice has to be issued.")
+
             if late_charge:
+                from website.models import StatementEntry
                 db.session.add(StatementEntry(
                     applicant_id=app.applicant_id,
                     application_id=app.id,
@@ -103,10 +91,10 @@ def run_reminders():
                     debit=late_charge,
                     credit=Decimal(0),
                     balance=Decimal(app.outstanding_balance),
-                    date=when + timedelta(seconds=1)
+                    date=datetime.utcnow()
                 ))
             count_delinquent += 1
-            
+
         if subject and body:
             try:
                 ok, _ = send_audited(applicant.email, subject, body, html=True, purpose="a delinquency notice" if "DELINQUENCY" in subject else "a repayment reminder",
