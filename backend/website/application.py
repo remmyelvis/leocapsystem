@@ -154,9 +154,15 @@ def create_application():
 
     applicant = Applicant.query.get(applicant_id)
 
+    # An application that was declined was never paid out, but it keeps the starting repayment status "unpaid": it must
+    # not count as a loan still to repay (a decline used to block every later application).
     unpaid_count = (
         Application.query
-        .filter_by(applicant_id=applicant_id, repayment_status="unpaid")
+        .filter(
+            Application.applicant_id == applicant_id,
+            Application.repayment_status == "unpaid",
+            Application.loan_status.notin_(["declined", "rejected", "rate_declined"]),
+        )
         .count()
     )
 

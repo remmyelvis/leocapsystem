@@ -51,8 +51,8 @@ export default function ApplyPage() {
     (async () => {
       const { data } = await applicationApi.getAll();
       const rows = (Array.isArray(data) ? data : []).map((item: unknown) => ((item as { application?: Record<string, unknown> }).application ?? item) as Record<string, unknown>);
-      // A new application starts as "unpaid" too, so "unpaid" only counts once the loan has been paid out (the server's own check does not make
-      // that difference yet: see the owner doc, decision 24)
+      // A new application starts as "unpaid" too, so "unpaid" only counts once the loan has been paid out (the server's own check ignores
+      // declined applications since decision 24, and still counts the ones in progress)
       const unpaid = rows.find((a) => a.repayment_status === "unpaid" && a.loan_status === "disbursed");
       const open = rows.find((a) => ["pending_processing", "approved"].includes(String(a.loan_status)));
       const found = unpaid ?? open;
