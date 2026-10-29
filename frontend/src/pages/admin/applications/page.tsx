@@ -1,6 +1,7 @@
 
 
 import { useState, useMemo, useEffect } from "react";
+import { asRepaymentFilter, matchesRepayment, repaymentCounts, stillOwed, type RepaymentFilter } from "@/lib/repaymentFilter";
 import { Link } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -127,6 +128,8 @@ export default function AllApplicationsPage() {
   const urlType = searchParams.get("type") ?? "all";
   const urlStatus = searchParams.get("status") ?? "all";
   const urlCompany = searchParams.get("company") ?? "all";
+  // ?repayment=owing|unpaid|part|late|paid lets other pages link straight to a repayment view
+  const urlRepayment = asRepaymentFilter(searchParams.get("repayment"));
   // From the dashboard's Overdue card: only overdue loans, optionally within the period picked there
   const overdueOnly = searchParams.get("overdue") === "1";
   const urlMonth = overdueOnly ? searchParams.get("month") : null;
@@ -144,13 +147,15 @@ export default function AllApplicationsPage() {
   const [statusFilter, setStatusFilter] = useState<string>(urlStatus);
   const [typeFilter, setTypeFilter] = useState<string>(urlType === "all" ? "all" : urlType);
   const [companyFilter, setCompanyFilter] = useState<string>(urlCompany);
+  const [repaymentFilter, setRepaymentFilter] = useState<RepaymentFilter>(urlRepayment);
   const [dateRange, setDateRange] = useState<"all" | "7" | "30">("all");
   const [sort, setSort] = useState<SortState<SortKey>>(DEFAULT_SORT);
 
   useEffect(() => {
     setStatusFilter(urlStatus);
     setCompanyFilter(urlCompany);
-  }, [urlStatus, urlCompany]);
+    setRepaymentFilter(urlRepayment);
+  }, [urlStatus, urlCompany, urlRepayment]);
   const [marking, setMarking] = useState(false);
   const [payMonth, setPayMonth] = useState(MONTH_NAMES[new Date().getMonth()]);
   const [selectedAppIds, setSelectedAppIds] = useState<string[]>([]);
@@ -193,7 +198,7 @@ export default function AllApplicationsPage() {
     // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, statusFilter, typeFilter, companyFilter, dateRange, overdueOnly, urlMonth, sort]);
+  }, [search, statusFilter, typeFilter, companyFilter, repaymentFilter, dateRange, overdueOnly, urlMonth, sort]);
 
   // Companies come from the loans themselves (the registered list does not cover every name in use)
   const companyOptions = useMemo(() => {
@@ -202,8 +207,8 @@ export default function AllApplicationsPage() {
     return Array.from(names).sort((a, b) => a.localeCompare(b));
   }, [applications, urlCompany]);
 
-  const filtered = useMemo(() => {
-    
+  // Everything the filter bar says except repayment. The repayment options' counts come from this list: each says what picking it would show.
+  const base = useMemo(() => {
     const now = Date.now();
     return [...applications]
       .filter((a) => {
@@ -233,6 +238,11 @@ export default function AllApplicationsPage() {
           new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
       );
   }, [applications, search, statusFilter, typeFilter, companyFilter, dateRange, overdueOnly, urlMonth]);
+
+  const repayCounts = useMemo(() => repaymentCounts(base), [base]);
+  const filtered = useMemo(() => base.filter((a) => matchesRepayment(a, repaymentFilter)), [base, repaymentFilter]);
+  // The next question after "which are unpaid?": how much is still owed on the ones shown
+  const totalOwed = useMemo(() => filtered.reduce((sum, a) => sum + stillOwed(a), 0), [filtered]);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -304,6 +314,7 @@ return (
           <p className="text-slate-500 text-[13px] mt-0.5">
             {filtered.length} application{filtered.length !== 1 ? "s" : ""}
             {overdueOnly && ` · disbursed and past their due date${monthLabel ? `, submitted in ${monthLabel}` : ""}`}
+            {["owing", "unpaid", "part", "late"].includes(repaymentFilter) && ` · ${KES.format(totalOwed)} still owed`}
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -395,6 +406,25 @@ return (
             className="w-full pl-9 pr-3 py-1.5 text-[13px] border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue"
           />
         </div>
+
+        {/* Repayment filter. "Unpaid" only counts loans that were paid out and not fully repaid: a waiting or declined application also starts as
+            "unpaid" but owes nothing (lib/repaymentFilter.ts). Counts follow the other filters. Its own row on
+            a phone, where a half-width box clips the longer labels. */}
+        <select
+          value={repaymentFilter}
+          onChange={(e) => setRepaymentFilter(e.target.value as RepaymentFilter)}
+          aria-label="Repayment"
+          className="col-span-2 w-full sm:col-span-1 sm:w-auto text-[13px] border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white"
+        >
+          <option value="all">All repayments</option>
+          <optgroup label="Unpaid (paid out, not fully repaid)">
+            <option value="owing">All unpaid ({repayCounts.owing})</option>
+            <option value="unpaid">Nothing paid yet ({repayCounts.unpaid})</option>
+            <option value="part">Part paid ({repayCounts.part})</option>
+            <option value="late">Late or in default ({repayCounts.late})</option>
+          </optgroup>
+          <option value="paid">Paid in full ({repayCounts.paid})</option>
+        </select>
 
         {/* Status filter */}
         <select

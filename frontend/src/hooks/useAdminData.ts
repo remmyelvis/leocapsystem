@@ -31,6 +31,7 @@ export interface TransformedApplication {
   interestRate: number;
   disbursementAmount: number;
   repaymentAmount: number;
+  outstandingBalance: number; // what the server tracks as still owed (0 when nothing is tracked)
   status: string;
   repaymentStatus: string;
   balanceOwed: number; // what is owed right now; only the single-loan fetch carries it
@@ -91,6 +92,7 @@ function transformApplication(item: AdminApplicationItem): TransformedApplicatio
     interestRate,
     disbursementAmount: parseFloat(app.disbursement_amount || "0") || 0,
     repaymentAmount: totalRepayment,
+    outstandingBalance: parseFloat(app.outstanding_balance || "0") || 0,
     status: app.loan_status || "Pending",
     repaymentStatus: app.repayment_status || "unpaid",
     balanceOwed: Number(app.balance_owed) || 0,
