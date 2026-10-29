@@ -13,20 +13,20 @@ PASSWORD = "demo123"
 # loans look like it grew over the year.
 COMPANIES = [
     dict(code="savannah", name="Savannah Freight & Logistics Ltd", domain="savannahfreight.example", contact="Mercy Achieng",
-         phone="0722 410 201", rate=10.0, days_ago=395, branch="Industrial Area, Nairobi",
+         phone="0722410201", rate=10.0, days_ago=395, branch="Industrial Area, Nairobi",
          notes="Pays salaries on the last working day. Remits loan deductions by the 5th."),
     dict(code="kilele", name="Kilele Health Group", domain="kilelehealth.example", contact="Nancy Mwikali",
-         phone="0733 510 302", rate=10.0, days_ago=300, branch="Upper Hill, Nairobi",
+         phone="0733510302", rate=10.0, days_ago=300, branch="Upper Hill, Nairobi",
          notes="Hospital group with 4 sites. Remits loan deductions with the monthly payroll."),
     dict(code="tanda", name="Tanda Agro-Processors Ltd", domain="tandaagro.example", contact="Patricia Wanjiru",
-         phone="0711 620 403", rate=8.0, days_ago=150, branch="Thika Road, Thika",
+         phone="0711620403", rate=8.0, days_ago=150, branch="Thika Road, Thika",
          notes="Negotiated an 8% rate under the staff MOU."),
 ]
 
 # The lender's own staff (the admin side).
 LENDER_STAFF = [
-    dict(key="credit", name="Wanjiru Ndung'u", title="Head of Credit", phone="0700 100 001"),
-    dict(key="collections", name="Amina Said", title="Collections Officer", phone="0700 100 002"),
+    dict(key="credit", name="Wanjiru Ndung'u", title="Head of Credit", phone="0700100001"),
+    dict(key="collections", name="Amina Said", title="Collections Officer", phone="0700100002"),
 ]
 
 # HR and finance staff of each employer. They are applicants with a staff role, as in the real system.

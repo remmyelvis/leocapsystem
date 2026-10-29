@@ -108,7 +108,8 @@ def _world(app, db, now):
 
 
 def _phone(rng):
-    return f"07{rng.choice('1237')}{rng.randint(0, 9)} {rng.randint(100, 999)} {rng.randint(100, 999)}"
+    # no spaces: every phone box on the site accepts only 07xxxxxxxx / +2547xxxxxxxx (a spaced number made the demo's borrowers unable to apply)
+    return f"07{rng.choice('1237')}{rng.randint(0, 9)}{rng.randint(100, 999)}{rng.randint(100, 999)}"
 
 
 def _create_people(w):
