@@ -1334,6 +1334,14 @@ def _read_when(raw, what="date"):
     return when, None
 
 
+def _statement_net(app):
+    """What the loan's statement charged less what it was paid (negative when it holds more payments than charges)."""
+    charged, paid = db.session.query(
+        func.coalesce(func.sum(StatementEntry.debit), 0), func.coalesce(func.sum(StatementEntry.credit), 0)
+    ).filter(StatementEntry.application_id == app.id).one()
+    return Decimal(str(charged)) - Decimal(str(paid))
+
+
 def _ledger_plan(app, row, new_debit, new_credit, row_stays):
     """What changing a statement row to new_debit / new_credit does to its loan (new amounts 0 and row_stays False means
     deleting it): the balance owed before and after, and whether the loan becomes paid or open again. Delete and amend
@@ -1342,7 +1350,12 @@ def _ledger_plan(app, row, new_debit, new_credit, row_stays):
     status_before = app.repayment_status
     paid = status_before == "paid"
     before = Decimal(0) if paid else _balance_owed(app)
-    after = (before + (new_debit - old_debit) - (new_credit - old_credit)).quantize(Decimal("0.01"))
+    # A paid loan owes nothing, but its statement can hold more payments than charges (an interest line lowered after the
+    # loan was marked paid). That credit is still there: the next change starts from it, so lowering the payment to match
+    # the lowered interest leaves the loan paid instead of reopening it. Older loans with rows missing (more charged than
+    # paid) start from zero, as before.
+    start = min(_statement_net(app), Decimal(0)) if paid else before
+    after = (start + (new_debit - old_debit) - (new_credit - old_credit)).quantize(Decimal("0.01"))
     status_after = status_before
     if after <= 0 and not paid:
         status_after = "paid"  # nothing is owed any more; a zero balance on an open loan would read as "not tracked yet"
