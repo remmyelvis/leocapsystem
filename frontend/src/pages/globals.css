@@ -236,6 +236,11 @@ html.leo-on .leo-room { padding-bottom: calc(88px + env(safe-area-inset-bottom))
 @media (max-width: 639px) { html.leo-on .leo-room-sm { padding-bottom: calc(88px + env(safe-area-inset-bottom)); } }
 /* On the applicant dashboard a phone also has the bar of tabs along the bottom (48px), and Leo floats above it. */
 @media (max-width: 767px) { html.leo-on .leo-room-nav { padding-bottom: calc(136px + env(safe-area-inset-bottom)); } }
+/* The apply form keeps a bar (what you receive, Submit) along the bottom, above the phone's tab bar (DashboardShell "shell-footer"): Leo's button stands above it, not over Submit. */
+@media (max-width: 767px) { html.has-apply-bar .leo-launcher { bottom: calc(48px + 128px + env(safe-area-inset-bottom)); } }
+@media (min-width: 768px) { html.has-apply-bar .leo-launcher { bottom: calc(128px + 12px); } }
+/* ...and the page above the bar no longer needs the room the tab bar used to take (the bar and the tab bar sit outside the page) */
+@media (max-width: 767px) { html.leo-on.has-apply-bar .leo-room-nav { padding-bottom: calc(88px + env(safe-area-inset-bottom)); } }
 
 /* The water around Leo's badge (components/assistant/leo.tsx, LeoOrb). The white rim itself is an SVG ring that wind ripples (drawn by script, only while
    something is going on); this is the rocking, the ripples that drift away from the badge towards the hello bubble (up and to the left, the way the wind blows)

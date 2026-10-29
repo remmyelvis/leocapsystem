@@ -1,6 +1,6 @@
 
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { useSession } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -160,8 +160,11 @@ function DocumentRow({
           <Lock className="h-4 w-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-slate-500">{doc.label}</p>
-          <p className="text-xs text-slate-400 mt-0.5 leading-snug">{doc.description}</p>
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-sm font-bold text-slate-500">{doc.label}</p>
+            <span className="shrink-0 rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-600">Locked</span>
+          </div>
+          <p className="text-xs text-slate-500 mt-0.5 leading-snug">{doc.description}</p>
           <p className="text-xs text-slate-400 mt-1 italic">
             Complete your personal information first
           </p>
@@ -193,10 +196,19 @@ function DocumentRow({
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-slate-800">{doc.label}</p>
-        <p className="text-xs text-slate-400 mt-0.5 leading-snug">{doc.description}</p>
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-sm font-bold text-slate-800">{doc.label}</p>
+          <span
+            className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold whitespace-nowrap ${
+              isUploaded ? "bg-emerald-100 text-emerald-700" : selectedFile ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-800"
+            }`}
+          >
+            {isUploaded ? "Uploaded" : selectedFile ? "Ready to upload" : "Needed"}
+          </span>
+        </div>
+        <p className="text-xs text-slate-500 mt-0.5 leading-snug">{doc.description}</p>
         {isUploaded && serverDoc ? (
-          <p className="text-xs text-emerald-600 font-semibold mt-1">
+          <p className="text-xs text-emerald-700 font-semibold mt-1 break-all">
             {serverDoc.filename} &middot;{" "}
             {new Date(serverDoc.uploaded_at).toLocaleDateString("en-KE", {
               day: "2-digit",
@@ -205,45 +217,28 @@ function DocumentRow({
             })}
           </p>
         ) : selectedFile ? (
-          <p className="text-xs text-blue-600 font-semibold mt-1">
-            {selectedFile.name} (Ready to upload)
-          </p>
+          <p className="text-xs text-blue-700 font-semibold mt-1 break-all">{selectedFile.name}</p>
         ) : (
-          <p className="text-xs text-slate-400 mt-1">PDF only · max {MAX_DOC_SIZE_MB} MB</p>
+          <p className="text-xs text-slate-500 mt-1">PDF, JPG or PNG · max {MAX_DOC_SIZE_MB} MB</p>
+        )}
+
+        {/* Action: under the text, full width on a phone */}
+        {!isUploaded && (
+          <div className="mt-3">
+            <Button
+              size="sm"
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full rounded-lg border-slate-200 text-[13px] font-semibold sm:w-auto"
+            >
+              <Upload className="mr-1.5 h-3.5 w-3.5" />
+              {selectedFile ? "Change file" : "Choose file"}
+            </Button>
+            <input ref={fileInputRef} type="file" accept=".pdf, image/jpeg, image/png, image/jpg" className="hidden" onChange={handleFileChange} />
+          </div>
         )}
       </div>
-
-      {/* Action */}
-      {!isUploaded && (
-        <div className="flex-shrink-0">
-          <Button
-            size="sm"
-            type="button"
-            variant="outline"
-            onClick={() => fileInputRef.current?.click()}
-            className="rounded-lg text-xs font-semibold border-slate-200"
-          >
-            {selectedFile ? (
-              <>
-                <Upload className="mr-1.5 h-3 w-3" />
-                Change
-              </>
-            ) : (
-              <>
-                <Upload className="mr-1.5 h-3 w-3" />
-                Select File
-              </>
-            )}
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf, image/jpeg, image/png, image/jpg"
-            className="hidden"
-            onChange={handleFileChange}
-          />
-        </div>
-      )}
     </div>
   );
 }
@@ -294,6 +289,7 @@ export default function ProfilePage() {
         idNumber: detailsData.applicant.id_number ?? null,
         kraPin: detailsData.applicant.kra_pin ?? null,
         payrollNumber: detailsData.applicant.payroll_number ?? null,
+        loanLimit: detailsData.applicant.loan_limit ?? null,
         applicantType: detailsData.applicant.applicant_type ?? "",
         docs: Array.isArray(docsData) ? docsData : [],
         fetchedAt: new Date().toISOString(),
@@ -444,20 +440,28 @@ export default function ProfilePage() {
     <div className="p-4 sm:p-6 w-full space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-lg font-bold text-slate-900">My Profile</h1>
+        <h1 className="text-xl font-extrabold tracking-tight text-slate-900">My Profile</h1>
         <p className="text-slate-500 text-sm mt-1">
           View and update your personal information and documents.
         </p>
       </div>
 
       {/* Avatar + name */}
-      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 flex items-center gap-4">
+      <div className="bg-white rounded-2xl ring-1 ring-slate-200/80 shadow-card p-4 flex items-center gap-4">
         <div className="w-12 h-12 rounded-lg bg-blue-900 flex items-center justify-center text-white text-lg font-bold select-none flex-shrink-0">
           {user?.name?.charAt(0).toUpperCase() ?? "?"}
         </div>
-        <div>
+        <div className="min-w-0">
           <p className="text-lg font-bold text-slate-900">{formatName(user?.name)}</p>
-          <p className="text-slate-500 text-[13px] mt-0.5">{user?.email}</p>
+          {/* a long address wraps after the @ or a dot, not in the middle of a word */}
+          <p className="text-slate-500 text-[13px] mt-0.5">
+            {user?.email?.split(/([@.])/).map((t, i) => (
+              <Fragment key={i}>
+                {t}
+                {(t === "@" || t === ".") && <wbr />}
+              </Fragment>
+            ))}
+          </p>
           <div className="flex items-center gap-2 mt-2">
             <span className="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded-full">
               Applicant
@@ -479,7 +483,7 @@ export default function ProfilePage() {
       />
 
       {/* Personal Information */}
-      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl ring-1 ring-slate-200/80 shadow-card overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <User className="h-4 w-4 text-slate-400" />
@@ -662,7 +666,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Documents */}
-      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl ring-1 ring-slate-200/80 shadow-card overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-2">
           <FileText className="h-4 w-4 text-slate-400" />
           <h2 className="text-[13px] font-bold text-slate-900">Documents</h2>
@@ -724,34 +728,6 @@ export default function ProfilePage() {
             </form>
           )}
 
-          {/* Summary */}
-          {serverProfile && (
-            <div className="mt-4 pt-4 border-t border-slate-100">
-              <div className="flex flex-wrap gap-2">
-                {requiredDocs.map((doc) => {
-                  const uploaded = serverDocs.some(
-                    (d) => d.document_type === doc.serverType
-                  );
-                  return (
-                    <span
-                      key={doc.key}
-                      className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${uploaded
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-slate-100 text-slate-500"
-                        }`}
-                    >
-                      {uploaded ? (
-                        <CheckCircle className="h-3 w-3" />
-                      ) : (
-                        <Clock className="h-3 w-3" />
-                      )}
-                      {doc.label}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 

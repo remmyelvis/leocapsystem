@@ -93,8 +93,8 @@ function PersonalLoanModule() {
           {includeAdmin && <div className="flex justify-between text-sm"><span className="text-slate-600">Admin Fees (2%)</span><span className="font-bold">{KES.format(admin)}</span></div>}
           <div className="flex justify-between text-sm"><span className="text-slate-600">Legal Fees</span><span className="font-bold">{KES.format(legalFee)}</span></div>
           <hr className="border-blue-200" />
-          <div className="flex justify-between"><span className="font-semibold text-[13px] text-gray-700">Disbursement (Net)</span><span className="font-bold text-emerald-600 text-base">{KES.format(disbursement)}</span></div>
-          <div className="flex justify-between"><span className="font-semibold text-[13px] text-gray-700">Repayment (Gross)</span><span className="font-bold text-amber-600 text-base">{KES.format(repayment)}</span></div>
+          <div className="flex justify-between"><span className="font-semibold text-[13px] text-gray-700">Disbursement (Net)</span><span className="font-bold text-emerald-600 text-base">{Number(amount) > 0 ? KES.format(disbursement) : "—"}</span></div>
+          <div className="flex justify-between"><span className="font-semibold text-[13px] text-gray-700">Repayment (Gross)</span><span className="font-bold text-amber-600 text-base">{Number(amount) > 0 ? KES.format(repayment) : "—"}</span></div>
         </div>
       </div>
     </div>
@@ -137,8 +137,8 @@ function SalaryAdvanceModule() {
           <div className="flex justify-between text-sm"><span className="text-slate-600">Legal Charge</span><span className="font-bold">{KES.format(legal)}</span></div>
           <div className="flex justify-between text-sm"><span className="text-slate-600">Interest (10%)</span><span className="font-bold">{KES.format(interest)}</span></div>
           <hr className="border-purple-200" />
-          <div className="flex justify-between"><span className="font-semibold text-[13px] text-gray-700">Disbursement</span><span className="font-bold text-emerald-600 text-base">{KES.format(disbursement)}</span></div>
-          <div className="flex justify-between"><span className="font-semibold text-[13px] text-gray-700">Repayment</span><span className="font-bold text-amber-600 text-base">{KES.format(repayment)}</span></div>
+          <div className="flex justify-between"><span className="font-semibold text-[13px] text-gray-700">Disbursement</span><span className="font-bold text-emerald-600 text-base">{loanAmount > 0 ? KES.format(disbursement) : "—"}</span></div>
+          <div className="flex justify-between"><span className="font-semibold text-[13px] text-gray-700">Repayment</span><span className="font-bold text-amber-600 text-base">{loanAmount > 0 ? KES.format(repayment) : "—"}</span></div>
         </div>
       </div>
     </div>

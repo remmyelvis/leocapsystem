@@ -66,6 +66,9 @@ const config: Config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      boxShadow: {
+        card: "0 1px 2px rgba(15,44,89,0.05), 0 8px 24px -14px rgba(15,44,89,0.16)",
+      },
       fontFamily: {
         sans: ["Plus Jakarta Sans", "Inter", "sans-serif"],
       },

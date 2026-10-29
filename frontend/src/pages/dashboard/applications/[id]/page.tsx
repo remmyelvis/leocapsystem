@@ -5,7 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useLoanStore } from "@/store/loanStore";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, FileText, CheckCircle, AlertCircle, Clock, Mail, Download, Paperclip, RefreshCw, UploadCloud, X } from "lucide-react";
+import { ArrowLeft, ChevronDown, FileText, CheckCircle, AlertCircle, Clock, Mail, Download, Paperclip, RefreshCw, UploadCloud, X } from "lucide-react";
 import { calculateGeneralLoan, calculateSalaryAdvanceFromAmount, formatKES } from "@/lib/loanCalculations";
 import type { LoanStatus, PaymentStatus } from "@/types/loan";
 import { paymentStatusFromRepayment } from "@/lib/paymentStatus";
@@ -14,6 +14,9 @@ import { downloadFile, apiCall } from "@/lib/apiClient";
 import { statusDisplay } from "@/lib/loanStatus";
 import { emailApi, type Email, type EmailDocument } from "@/lib/emailApi";
 import { formatName } from "@/lib/formatName";
+import ApplicationProgress from "@/components/dashboard/ApplicationProgress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { loanProgress } from "@/lib/loanProgress";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -165,6 +168,7 @@ function mapApiToApp(appData: Record<string, unknown>, bioData: Record<string, u
     disbursementConfirmed: undefined as boolean | undefined,
     paymentStatus,
     amountPaid,
+    dueDate: typeof appData.due_date === "string" ? appData.due_date : undefined,
     idCopyUrl: undefined as string | undefined,
     kraPinDocUrl: undefined as string | undefined,
     payslipUrl: undefined as string | undefined,
@@ -175,6 +179,20 @@ function mapApiToApp(appData: Record<string, unknown>, bioData: Record<string, u
     documents: appData.documents || [],
     notes: typeof appData.notes === 'string' ? appData.notes : undefined,
   };
+}
+
+/** What has been repaid on a paid-out loan and what is still owed. The payment card and the progress card at the top both use it. */
+function repaymentAmounts(
+  app: { apiTotalRepayment?: number; amountRequested?: number; amountApplied?: number; amountPaid?: number; apiOutstanding?: number; paymentStatus?: string },
+  isSalaryAdvance: boolean
+) {
+  const totalRepayment = app.apiTotalRepayment ?? (isSalaryAdvance ? (app.amountRequested ?? app.amountApplied ?? 0) : (app.amountApplied ?? 0));
+  if (app.paymentStatus === "FULLY_PAID") return { paid: totalRepayment, remaining: 0 };
+  if (app.paymentStatus === "UNPAID") return { paid: 0, remaining: totalRepayment };
+  // PARTIALLY_PAID, DELINQUENT or other. What is still owed is the outstanding balance (it includes any
+  // collection fee), or the repayment amount on older loans that never had one: their repayment amount
+  // was already lowered by each payment, so subtracting the amount paid again would count it twice.
+  return { paid: app.amountPaid ?? 0, remaining: (app.apiOutstanding ?? 0) > 0 ? app.apiOutstanding! : totalRepayment };
 }
 
 // ---------------------------------------------------------------------------
@@ -199,7 +217,7 @@ function Field({
         : String(value);
   return (
     <div>
-      <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-0.5">
+      <p className="text-[12px] font-semibold text-slate-500 uppercase tracking-wide mb-0.5">
         {label}
       </p>
       <p className="text-sm text-slate-800 font-medium">{display}</p>
@@ -215,7 +233,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
+    <div className="bg-white rounded-2xl ring-1 ring-slate-200/80 shadow-card p-4">
       <h2 className="text-[13px] font-bold text-slate-900 uppercase tracking-wide mb-3">
         {title}
       </h2>
@@ -366,8 +384,15 @@ export default function ApplicationDetailPage() {
 
   if (loading) {
     return (
-      <div className="p-6 text-center text-slate-400">
-        Loading application...
+      <div className="space-y-4 p-4 sm:p-6" role="status" aria-label="Loading your application">
+        <Skeleton className="h-8 w-48 rounded-lg" />
+        <Skeleton className="h-52 rounded-2xl" />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-20 rounded-2xl" />
+          ))}
+        </div>
+        <Skeleton className="h-64 rounded-2xl" />
       </div>
     );
   }
@@ -394,6 +419,12 @@ export default function ApplicationDetailPage() {
 
   // Check if rate has been set - backend now properly sets status to "RATE_SET"
   const hasRateBeenSet = app.status === "RATE_SET";
+
+  // What the progress card and the money cards show (this page's data is loosely typed, so convert here)
+  const dueDate = app.dueDate as string | undefined;
+  const toReceive = Number(app.apiDisbursementAmount) || 0;
+  const toRepay = Number(app.apiTotalRepayment) || 0;
+  const progress = loanProgress({ id: String(app.id), status: String(app.status), paymentStatus: app.paymentStatus as string | undefined, dueDate, owed: repaymentAmounts(app, isSalaryAdvance).remaining });
 
   // Get interest rate - prioritize API response, then rate store
   const effectiveInterestRate = app.agreedInterestRate ?? rateStoreData?.interestRate;
@@ -495,7 +526,7 @@ export default function ApplicationDetailPage() {
           <ArrowLeft className="h-4 w-4" />
         </button>
         <div>
-          <h1 className="text-lg font-bold text-slate-900">
+          <h1 className="text-xl font-extrabold tracking-tight text-slate-900">
             {LOAN_TYPE_LABELS[app.loanType] ?? app.loanType}
           </h1>
           <p className="text-slate-400 text-xs mt-0.5 font-mono">
@@ -507,42 +538,28 @@ export default function ApplicationDetailPage() {
         </span>
       </div>
 
-      {/* Summary strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {[
-          {
-            label: "Date Submitted",
-            value: formatDate(app.submittedAt),
-          },
-          {
-            label: "Amount",
-            value: app.amountApplied != null ? KES.format(app.amountApplied) : "—",
-          },
-          {
-            label: "Last Updated",
-            value: formatDate(app.updatedAt),
-          },
-        ].map(({ label, value }) => (
-          <div
-            key={label}
-            className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4"
-          >
-            <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wide mb-0.5">
-              {label}
-            </p>
-            <p className="text-sm font-bold text-slate-800">{value}</p>
-          </div>
-        ))}
-      </div>
+      {/* Where it is, and what happens next */}
+      <ApplicationProgress progress={progress} />
 
-      {/* Bio Data */}
-      <Section title="Bio Data">
-        <Field label="Full Name" value={formatName(app.customerName)} />
-        <Field label="ID Number" value={app.idNumber} />
-        <Field label="Phone Number" value={app.phoneNumber} />
-        <Field label="Email Address" value={app.emailAddress} />
-        {app.kraPin && <Field label="KRA PIN" value={app.kraPin} />}
-      </Section>
+      {/* The money first: what they asked for, what reaches them, what they repay and when */}
+      <div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            { label: "Loan amount", value: app.amountApplied != null ? KES.format(Number(app.amountApplied)) : "—" },
+            { label: "You receive", value: toReceive ? KES.format(toReceive) : app.loanType === "GENERAL_LOAN" ? "After review" : "—" },
+            { label: "Total to repay", value: toRepay ? KES.format(toRepay) : app.loanType === "GENERAL_LOAN" ? "After review" : "—" },
+            { label: "Due date", value: dueDate ? formatDate(dueDate) : "—" },
+          ].map(({ label, value }) => (
+            <div key={label} className="rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
+              <p className="mb-0.5 text-[12px] font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+              <p className="text-[17px] font-bold tabular-nums leading-tight text-slate-900">{value}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 text-[12px] text-slate-500">
+          Submitted {formatDate(app.submittedAt as string)} · Updated {formatDate(app.updatedAt as string)}
+        </p>
+      </div>
 
       {/* ── LOAN DETAILS ── */}
       <Section title="Loan Details">
@@ -562,6 +579,21 @@ export default function ApplicationDetailPage() {
         <Field label="Repayment Amount" value={KES.format(Number(app.apiTotalRepayment ?? 0))} />
       </Section>
 
+      {/* Your details: collapsed, they know their own name and ID */}
+      <details className="group rounded-2xl bg-white shadow-card ring-1 ring-slate-200/80">
+        <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between px-4 text-[13px] font-bold uppercase tracking-wide text-slate-900 [&::-webkit-details-marker]:hidden">
+          Your details
+          <ChevronDown className="h-4 w-4 text-slate-500 transition-transform group-open:rotate-180" aria-hidden />
+        </summary>
+        <div className="grid grid-cols-1 gap-x-4 gap-y-3 px-4 pb-4 sm:grid-cols-2">
+          <Field label="Full Name" value={formatName(app.customerName)} />
+          <Field label="ID Number" value={app.idNumber} />
+          <Field label="Phone Number" value={app.phoneNumber} />
+          <Field label="Email Address" value={app.emailAddress} />
+          {app.kraPin && <Field label="KRA PIN" value={app.kraPin} />}
+        </div>
+      </details>
+
       {/* ── DOCUMENTS ── */}
       {app.documents && app.documents.length > 0 && (
         <Section title="Documents">
@@ -573,7 +605,7 @@ export default function ApplicationDetailPage() {
 
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-50 border border-slate-100 rounded-lg p-4 transition-colors hover:bg-slate-100/80 gap-4">
                 <div className="flex items-center gap-4 overflow-hidden w-full sm:w-auto">
-                  <div className="bg-white p-2 rounded-lg ring-1 ring-slate-200 shadow-sm flex-shrink-0">
+                  <div className="bg-white p-2 rounded-2xl ring-1 ring-slate-200/80 shadow-card flex-shrink-0">
                     <FileText className="h-5 w-5 text-blue-600" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -687,17 +719,6 @@ export default function ApplicationDetailPage() {
         </Section>
       )}
 
-      {/* Already confirmed/declined note */}
-      {isSalaryAdvance && app.status === "APPROVED" && (
-        <div className="bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2 text-[13px] text-emerald-700">
-          <div className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4" />
-            <span className="font-semibold">Your loan has been approved</span>
-          </div>
-          <p className="mt-1 text-emerald-600">Your funds are being processed for disbursement. You will be notified once disbursed.</p>
-        </div>
-      )}
-
       {/* General Loan fields */}
       {app.loanType === "GENERAL_LOAN" && (
         <Section title="General Loan Details">
@@ -765,7 +786,7 @@ export default function ApplicationDetailPage() {
 
       {/* Rate Confirmation Section - Shows when rate has been set (RATE_SET status or pending with interest rate) */}
       {hasRateBeenSet && loanBreakdown && (
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg overflow-hidden">
+        <div id="rate-review" className="scroll-mt-20 bg-blue-50 border-2 border-blue-200 rounded-lg overflow-hidden">
           <div className="bg-blue-100 px-4 py-2.5 border-b border-blue-200">
             <div className="flex items-center gap-3">
               <Clock className="h-5 w-5 text-blue-600" />
@@ -883,7 +904,7 @@ export default function ApplicationDetailPage() {
 
       {/* Documents */}
       {(app.idCopyUrl || app.kraPinDocUrl || app.payslipUrl) && (
-        <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
+        <div className="bg-white rounded-2xl ring-1 ring-slate-200/80 shadow-card p-4">
           <h2 className="text-[13px] font-bold text-slate-900 uppercase tracking-wide mb-3">
             Documents Submitted
           </h2>
@@ -915,7 +936,7 @@ export default function ApplicationDetailPage() {
 
       {/* Payment Status - Only show for disbursed loans */}
       {app.status === "DISBURSED" && (
-        <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
+        <div className="bg-white rounded-2xl ring-1 ring-slate-200/80 shadow-card p-4">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
               Payment Status
@@ -932,26 +953,7 @@ export default function ApplicationDetailPage() {
 
           {/* Payment details */}
           {(() => {
-            const totalRepayment = app.apiTotalRepayment ?? 
-              (isSalaryAdvance ? (app.amountRequested ?? app.amountApplied ?? 0) : (app.amountApplied ?? 0));
-            const actualPaid = app.amountPaid ?? 0;
-
-            let displayAmountPaid = 0;
-            let displayAmountRemaining = 0;
-
-            if (app.paymentStatus === "FULLY_PAID") {
-              displayAmountPaid = totalRepayment;
-              displayAmountRemaining = 0;
-            } else if (app.paymentStatus === "UNPAID") {
-              displayAmountPaid = 0;
-              displayAmountRemaining = totalRepayment;
-            } else {
-              // PARTIALLY_PAID, DELINQUENT or other. What is still owed is the outstanding balance (it includes any
-              // collection fee), or the repayment amount on older loans that never had one: their repayment amount
-              // was already lowered by each payment, so subtracting the amount paid again would count it twice.
-              displayAmountPaid = actualPaid;
-              displayAmountRemaining = (app.apiOutstanding ?? 0) > 0 ? app.apiOutstanding! : totalRepayment;
-            }
+            const { paid: displayAmountPaid, remaining: displayAmountRemaining } = repaymentAmounts(app, isSalaryAdvance);
 
             return (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -1020,37 +1022,8 @@ export default function ApplicationDetailPage() {
         </div>
       )}
 
-      {/* Status note */}
-      {app.status === "PENDING" && (
-        <div className="bg-yellow-50 border border-yellow-100 rounded-lg px-3 py-2 text-[13px] text-yellow-700">
-          Your application is under review. You will be notified once a
-          decision is made (within 24 hours).
-        </div>
-      )}
-      {app.status === "CONFIRMED" && (
-        <div className="bg-cyan-50 border border-cyan-100 rounded-lg px-3 py-2 text-[13px] text-cyan-700">
-          <div className="flex items-center gap-2 mb-1">
-            <CheckCircle className="h-4 w-4" />
-            <span className="font-semibold">Terms Confirmed</span>
-          </div>
-          You have accepted the loan terms. Your application is now awaiting final
-          admin approval and disbursement.
-        </div>
-      )}
-      {app.status === "APPROVED" && (
-        <div className="bg-green-50 border border-green-100 rounded-lg px-3 py-2 text-[13px] text-green-700">
-          Your application has been approved. Disbursement is being processed.
-        </div>
-      )}
-      {app.status === "DECLINED" && (
-        <div className="bg-red-50 border border-red-100 rounded-lg px-3 py-2 text-[13px] text-red-700">
-          Your application was not approved at this time. Contact us for more
-          information.
-        </div>
-      )}
-
       {/* ── Messages from Admin ── */}
-      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
+      <div className="bg-white rounded-2xl ring-1 ring-slate-200/80 shadow-card p-4">
         <div className="flex items-center gap-2 mb-4">
           <Mail className="h-5 w-5 text-blue-600" />
           <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
@@ -1116,7 +1089,7 @@ export default function ApplicationDetailPage() {
       </div>
 
       {app.notes && (
-        <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4">
+        <div className="bg-white rounded-2xl ring-1 ring-slate-200/80 shadow-card p-4">
           <div className="flex items-center gap-2 mb-4">
             <FileText className="h-5 w-5 text-blue-600" />
             <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide">

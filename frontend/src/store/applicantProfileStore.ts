@@ -17,6 +17,8 @@ export interface ApplicantProfileData {
   idNumber: string | null;
   kraPin: string | null;
   payrollNumber?: string | null;
+  /** The most the lender will lend this person in one application (set by an admin), if one is set. */
+  loanLimit?: number | null;
   applicantType: string;
   docs: ApplicantDoc[];
   fetchedAt: string; // ISO timestamp

@@ -34,6 +34,7 @@ const Page9 = lazy(() => import('./pages/admin/profile/page'));
 const Page10 = lazy(() => import('./pages/admin/reports/page'));
 const Page11 = lazy(() => import('./pages/admin/settings/page'));
 const Page50 = lazy(() => import('./pages/admin/calculators/page'));
+const BorrowerCalculator = lazy(() => import('./pages/dashboard/calculators/page'));
 const CustomReportBuilder = lazy(() => import('./pages/admin/reports/builder/page'));
 const CompaniesPage = lazy(() => import('./pages/admin/manage-companies/page'));
 const Page12 = lazy(() => import('./pages/dashboard/applications/page'));
@@ -137,7 +138,7 @@ function App() {
         <Route path="apply/salary-advance" element={<Page16 />} />
         <Route path="" element={<Page17 />} />
         <Route path="profile" element={<Page18 />} />
-        <Route path="calculators" element={<Page50 />} />
+        <Route path="calculators" element={<BorrowerCalculator />} />
       </Route>
 
       {/* Finance Routes */}

@@ -68,13 +68,13 @@ export function ProfileProgressBar({
   const isComplete = overallPercent === 100;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4 [.admin-ui_&]:rounded-lg [.admin-ui_&]:p-4 [.admin-ui_&]:space-y-3">
+    <div className="bg-white rounded-2xl ring-1 ring-slate-200/80 shadow-card p-6 space-y-4 [.admin-ui_&]:p-4 [.admin-ui_&]:space-y-3">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-base font-black text-gray-900 [.admin-ui_&]:text-[13px] [.admin-ui_&]:font-bold">Profile Completion</h2>
           <p className={`text-xs mt-0.5 font-medium ${isComplete ? "text-emerald-600" : "text-gray-400"}`}>
             {isComplete
-              ? "Profile complete ✅ You can apply for loans"
+              ? "Profile complete. You can apply for loans"
               : "Complete your profile to apply for loans"}
           </p>
         </div>
@@ -95,18 +95,18 @@ export function ProfileProgressBar({
       <div className="grid grid-cols-2 gap-4">
         {/* Personal details */}
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-semibold text-gray-600 flex items-center gap-1">
               <User className="h-3 w-3" />
-              Personal Details
+              Personal
             </span>
-            <span className={`text-xs font-bold ${personalPercent === 100 ? "text-emerald-600" : "text-gray-400"}`}>
+            <span className={`shrink-0 whitespace-nowrap text-xs font-bold ${personalPercent === 100 ? "text-emerald-600" : "text-gray-400"}`}>
               {personalPercent === 100 ? (
                 <span className="flex items-center gap-0.5">
                   <CheckCircle2 className="h-3 w-3" /> Done
                 </span>
               ) : (
-                `${Math.round(personalPercent / 2)}% of 50%`
+                `${personalPercent}%`
               )}
             </span>
           </div>
@@ -120,18 +120,18 @@ export function ProfileProgressBar({
 
         {/* Documents */}
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-semibold text-gray-600 flex items-center gap-1">
               <FileText className="h-3 w-3" />
               Documents
             </span>
-            <span className={`text-xs font-bold ${documentsPercent === 100 ? "text-emerald-600" : "text-gray-400"}`}>
+            <span className={`shrink-0 whitespace-nowrap text-xs font-bold ${documentsPercent === 100 ? "text-emerald-600" : "text-gray-400"}`}>
               {documentsPercent === 100 ? (
                 <span className="flex items-center gap-0.5">
                   <CheckCircle2 className="h-3 w-3" /> Done
                 </span>
               ) : (
-                `${Math.round(documentsPercent / 2)}% of 50%`
+                `${documentsPercent}%`
               )}
             </span>
           </div>

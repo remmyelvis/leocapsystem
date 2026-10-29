@@ -1,4 +1,5 @@
-import { calculateSalaryAdvance, estimateGeneralLoan } from "@/lib/loanCalculations";
+import { calculateSalaryAdvance, calculateSalaryAdvanceForAmount, estimateGeneralLoan } from "@/lib/loanCalculations";
+import { LOAN_SETTINGS } from "@/configs/loanSettings";
 
 // The assistant's "check my numbers": the same maths the application forms use (lib/loanCalculations.ts), fed one figure.
 // The forms ask for the last 3 months of basic pay; here one rough figure stands for all three, so the result is an estimate.
@@ -22,6 +23,17 @@ export function estimate(loan: Loan, pay: number): Estimate | null {
   }
   const r = estimateGeneralLoan(pay, pay, pay);
   return r.estimatedDisbursement > 0 ? { amount: r.maxLoanAmount, fees: r.maxLoanAmount - r.estimatedDisbursement, receive: r.estimatedDisbursement } : null;
+}
+
+/** What a chosen amount of this loan would pay out (and, for a salary advance, repay). Shared by the assistant and the borrower calculator. */
+export function quote(loan: Loan, amount: number): Estimate {
+  if (loan === "advance") {
+    const r = calculateSalaryAdvanceForAmount(amount);
+    return { amount, fees: amount - r.disbursementAmount, receive: r.disbursementAmount, repay: r.repaymentAmount };
+  }
+  const { processingFeeRate, accessFeeRate, legalFees } = LOAN_SETTINGS.generalLoan;
+  const receive = amount - amount * processingFeeRate - amount * accessFeeRate - legalFees;
+  return { amount, fees: amount - receive, receive };
 }
 
 const MIN_PAY = 1_000;

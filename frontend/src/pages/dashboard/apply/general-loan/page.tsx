@@ -1,7 +1,7 @@
 
 
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,6 +10,8 @@ import { useLoanStore } from "@/store/loanStore";
 import { toast } from "sonner";
 import { useProfileCompletion } from "@/hooks/useProfileCompletion";
 import { useApplicantProfileStore } from "@/store/applicantProfileStore";
+import LimitNote from "@/components/dashboard/LimitNote";
+import { useApplyAgain } from "@/hooks/useApplyAgain";
 import { Button } from "@/components/ui/button";
 import {
   AlertCircle,
@@ -329,6 +331,7 @@ export default function GeneralLoanPage() {
     trigger,
     reset,
     getValues,
+    setValue,
     setError,
     formState: { errors },
   } = useForm<FullFormData>({
@@ -344,6 +347,18 @@ export default function GeneralLoanPage() {
 
   const termsAccepted = watch("termsAccepted");
   const privacyAccepted = watch("privacyAccepted");
+
+  // "Apply again": start from the last application (employment type, purpose and amount; never the pay figures, statements or passcodes)
+  const againFilled = useApplyAgain(
+    useSearchParams()[0].get("again"),
+    () => false,
+    (a) => {
+      if (a.employment_type === "employed" || a.employment_type === "self_employed") setValue("employmentType", a.employment_type === "employed" ? "Employed" : "Self Employed", { shouldDirty: true });
+      if (a.loan_purpose) setValue("loanPurpose", String(a.loan_purpose), { shouldDirty: true });
+      const amount = Number(a.amount_applied);
+      if (amount > 0) setValue("amountApplied", amount, { shouldDirty: true });
+    }
+  );
 
   // Pre-fill personal details from profile (read-only)
   useEffect(() => {
@@ -499,7 +514,7 @@ export default function GeneralLoanPage() {
   if (submitted) {
     return (
       <div className="p-4 sm:p-6 w-full max-w-2xl mx-auto space-y-5">
-        <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-6 flex flex-col items-center text-center gap-4">
+        <div className="bg-white rounded-2xl ring-1 ring-slate-200/80 shadow-card p-6 flex flex-col items-center text-center gap-4">
           <div className="w-20 h-20 bg-green-50 rounded-lg flex items-center justify-center">
             <span className="text-4xl">🎉</span>
           </div>
@@ -533,7 +548,7 @@ export default function GeneralLoanPage() {
           <ChevronLeft className="h-4 w-4" />
           Back
         </button>
-        <h1 className="text-lg font-bold text-slate-900">
+        <h1 className="text-xl font-extrabold tracking-tight text-slate-900">
           Personal / General Loan
         </h1>
         <p className="text-slate-500 text-[13px] mt-0.5">
@@ -547,7 +562,12 @@ export default function GeneralLoanPage() {
       </div>
 
       {/* Card */}
-      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 sm:p-5">
+      {againFilled && (
+        <div role="status" className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-[13px] text-blue-800">
+          We filled in the loan details from your last application. Please check they are still right: your pay and your statements are needed again.
+        </div>
+      )}
+      <div className="bg-white rounded-2xl ring-1 ring-slate-200/80 shadow-card p-4 sm:p-5">
         {/* Step-level errors */}
         {stepErrors.length > 0 && (
           <div className="flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-lg px-3 py-2 mb-4 text-[13px]">
@@ -1019,6 +1039,8 @@ export default function GeneralLoanPage() {
                   </p>
                 )}
 
+                <LimitNote limit={serverProfile?.loanLimit} amount={watch("amountApplied")} />
+
                 {/* Live KES preview */}
                 {(() => {
                   const amt = watch("amountApplied");
@@ -1123,7 +1145,7 @@ export default function GeneralLoanPage() {
                 disabled={isSubmitting || !termsAccepted || !privacyAccepted}
                 className={`font-bold rounded-lg px-6 transition-all ${isSubmitting || !termsAccepted || !privacyAccepted
                   ? "bg-gray-300 text-slate-500 cursor-not-allowed opacity-50"
-                  : "bg-brand-blue hover:bg-slate-800 text-white transition-colors"
+                  : "bg-red-600 hover:bg-red-700 text-white transition-colors"
                   }`}
               >
                 {isSubmitting ? (

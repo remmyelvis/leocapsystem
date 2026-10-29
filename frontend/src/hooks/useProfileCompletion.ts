@@ -85,6 +85,11 @@ export function useProfileCompletion(): ProfileCompletion {
   const getApplicantProfile = useApplicantProfileStore((s) => s.getProfile);
   const getHrProfile = useHrProfileStore((s) => s.getProfile);
   const getFinanceProfile = useFinanceProfileStore((s) => s.getProfile);
+  // The getters above never change, so on their own the result below would not refresh when a profile arrives from the server (a complete
+  // profile showed as incomplete, depending on timing). Subscribing to the stored profiles themselves makes it recompute at once.
+  const applicantProfiles = useApplicantProfileStore((s) => s.profiles);
+  const hrProfiles = useHrProfileStore((s) => s.profiles);
+  const financeProfiles = useFinanceProfileStore((s) => s.profiles);
 
   return useMemo(() => {
     const user = session?.user;
@@ -189,5 +194,6 @@ export function useProfileCompletion(): ProfileCompletion {
       uploadedDocumentTypes,
       checks,
     };
-  }, [session, getApplicantProfile, getHrProfile, getFinanceProfile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, getApplicantProfile, getHrProfile, getFinanceProfile, applicantProfiles, hrProfiles, financeProfiles]);
 }

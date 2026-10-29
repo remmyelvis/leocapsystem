@@ -1,7 +1,7 @@
 
 
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,8 +10,13 @@ import { useLoanStore } from "@/store/loanStore";
 import { useApplicantProfileStore } from "@/store/applicantProfileStore";
 import { toast } from "sonner";
 import { useProfileCompletion } from "@/hooks/useProfileCompletion";
+import { clearFormDraft, useFormDraft } from "@/hooks/useFormDraft";
+import { useApplyAgain } from "@/hooks/useApplyAgain";
+import ApplyBar from "@/components/dashboard/ApplyBar";
+import LimitNote from "@/components/dashboard/LimitNote";
+import { formatName } from "@/lib/formatName";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle2, ChevronLeft, Info, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, ChevronDown, ChevronLeft, Info, Loader2 } from "lucide-react";
 import type { LoanType } from "@/types/loan";
 import {
   calculateSalaryAdvance,
@@ -163,6 +168,9 @@ const inputClass =
 
 const labelClass = "block text-[13px] font-semibold text-slate-700 mb-1";
 
+// Never kept in a draft: filled from the profile each time, and the consent ticks (agreed afresh on every application).
+const DRAFT_SKIP = ["customerName", "idNumber", "kraPin", "phoneNumber", "emailAddress", "payrollNumber", "termsAccepted", "privacyAccepted"];
+
 const errorClass =
   "text-red-500 text-xs mt-1 flex items-center gap-1";
 
@@ -189,7 +197,7 @@ export default function SalaryAdvancePage() {
     }
   }, [profileCompletion.isComplete, navigate]);
 
-  const company = searchParams.get("company") ?? "ideon";
+  const company = searchParams.get("company") || session?.user?.applicant_type || session?.user?.company || "ideon";
   const isIdeon = company === "ideon";
   const formatCompanyLabel = (c: string) => {
     if (c === "ideon") return "Ideon Limited";
@@ -212,6 +220,8 @@ export default function SalaryAdvancePage() {
     handleSubmit,
     watch,
     reset,
+    getValues,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(salaryAdvanceSchema),
@@ -238,6 +248,29 @@ export default function SalaryAdvancePage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id, serverProfile?.idNumber, serverProfile?.kraPin, serverProfile?.payrollNumber]);
+
+  // What they type is kept while this tab is open (leaving to check a payslip must not cost them the form)
+  const draftKey = session?.user?.id ? `leocap_draft_salary_advance_${session.user.id}_${company}` : null;
+  const draftRestored = useFormDraft({ watch, getValues, setValue }, draftKey, DRAFT_SKIP);
+
+  // "Apply again": start from the last application (employment details and the amount; never the pay figures, which change each month)
+  const againFilled = useApplyAgain(
+    searchParams.get("again"),
+    () => {
+      try {
+        return Boolean(draftKey && sessionStorage.getItem(draftKey));
+      } catch {
+        return false;
+      }
+    },
+    (a) => {
+      const nature = String(a.employment_nature ?? "");
+      if (nature === "Agent" || nature === "Management" || nature === "Other") setValue("natureOfEmployment", nature, { shouldDirty: true });
+      if (a.designation) setValue("designation", String(a.designation), { shouldDirty: true });
+      const amount = Number(a.amount_applied);
+      if (amount > 0) setValue("amountRequested", amount, { shouldDirty: true });
+    }
+  );
 
   // Check if user has applied this calendar month (legal fee waiver)
   const hasAppliedThisMonth = useMemo(() => {
@@ -283,6 +316,12 @@ export default function SalaryAdvancePage() {
   // Use requested amount calc if available, otherwise show max eligible
   const displayCalc = requestedCalc ?? salaryCalc;
   const maxLoanAmount = salaryCalc?.loanAmount ?? 0;
+  // what reaches them and what they repay, for the bar that stays in view (the legal fee is waived after the first application of a month)
+  const youReceive = displayCalc ? (hasAppliedThisMonth ? displayCalc.disbursementAmount + displayCalc.legalCharge : displayCalc.disbursementAmount) : null;
+  // These come from the profile and cannot be edited here: if one is not valid, say which, instead of a form that silently refuses to send
+  const personalProblems = [errors.payrollNumber, errors.customerName, errors.idNumber, errors.kraPin, errors.phoneNumber, errors.emailAddress].filter(Boolean).map((e) => e?.message as string);
+  const personalErrors = personalProblems.length > 0;
+  const applyingAsLine = [watch("idNumber") ? `ID ending ${String(watch("idNumber")).slice(-3)}` : "", watch("phoneNumber")].filter(Boolean).join(" · ");
 
   const onSubmit = async (data: FormData) => {
 
@@ -358,6 +397,7 @@ export default function SalaryAdvancePage() {
 
       setSubmittedCalc(calc);
       toast.success("Application submitted successfully!");
+      clearFormDraft(draftKey);
       setSubmitted(true);
     } catch {
       toast.error("Something went wrong. Please try again.");
@@ -370,7 +410,7 @@ export default function SalaryAdvancePage() {
   if (submitted) {
     return (
       <div className="p-4 sm:p-6 w-full max-w-2xl mx-auto space-y-5">
-        <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-6 flex flex-col items-center text-center gap-4">
+        <div className="bg-white rounded-2xl ring-1 ring-slate-200/80 shadow-card p-6 flex flex-col items-center text-center gap-4">
           <div className="w-16 h-16 bg-green-50 rounded-lg flex items-center justify-center">
             <CheckCircle2 className="h-8 w-8 text-green-500" />
           </div>
@@ -437,7 +477,7 @@ export default function SalaryAdvancePage() {
             {companyLabel}
           </span>
         </div>
-        <h1 className="text-lg font-bold text-slate-900">
+        <h1 className="text-xl font-extrabold tracking-tight text-slate-900">
           {companyLabel} Salary Advance Application
         </h1>
         <p className="text-slate-500 text-[13px] mt-0.5">
@@ -445,75 +485,142 @@ export default function SalaryAdvancePage() {
         </p>
       </div>
 
+      {againFilled && !draftRestored && (
+        <div role="status" className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-[13px] text-blue-800">
+          We filled this in from your last application. Please enter your pay for the last 3 months and check the amount.
+        </div>
+      )}
+      {draftRestored && (
+        <div role="status" className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-[13px] text-blue-800">
+          <span>We kept what you had typed.</span>
+          <button
+            type="button"
+            onClick={() => {
+              clearFormDraft(draftKey);
+              window.location.reload();
+            }}
+            className="tap-link font-semibold underline underline-offset-2 hover:no-underline"
+          >
+            Start over
+          </button>
+        </div>
+      )}
+
       {/* Form card */}
-      <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm p-4 sm:p-5">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-          {/* ── Personal details (pre-filled, read-only) ── */}
-          <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 flex items-start gap-2 text-xs text-blue-700">
-            <Info className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
-            <span>Personal details are pre-filled from your profile and cannot be edited here. To update them, visit your <strong>Profile</strong> page.</span>
-          </div>
+      <div className="bg-white rounded-2xl ring-1 ring-slate-200/80 shadow-card p-4 sm:p-5">
+        <form id="salary-advance-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+          {/* ── Who is applying: filled from the profile, so folded away until they want to look ── */}
+          <details open={personalErrors || undefined} className="group rounded-lg border border-slate-200 bg-slate-50">
+            <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 [&::-webkit-details-marker]:hidden">
+              <span className="min-w-0">
+                <span className="block truncate text-[13px] font-semibold text-slate-900">Applying as {formatName(watch("customerName")) || "you"}</span>
+                {applyingAsLine && <span className="block truncate text-[12px] text-slate-500">{applyingAsLine}</span>}
+              </span>
+              <span className="inline-flex shrink-0 items-center gap-1 text-[13px] font-semibold text-blue-700">
+                Details
+                <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden />
+              </span>
+            </summary>
+            <div className="space-y-4 border-t border-slate-200 px-3 pb-3 pt-3">
+              {/* ── Personal details (pre-filled, read-only) ── */}
+              <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 flex items-start gap-2 text-xs text-blue-700">
+                <Info className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+                <span>Personal details are pre-filled from your profile and cannot be edited here. To update them, visit your <strong>Profile</strong> page.</span>
+              </div>
 
-          {/* ── Payroll Number (pre-filled from profile, read-only) ── */}
-          <div>
-            <label className={labelClass}>Payroll Number</label>
-            <input
-              {...register("payrollNumber")}
-              type="text"
-              disabled
-              className={inputClass + " disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"}
-            />
-            {errors.payrollNumber && (
-              <p className={errorClass}>
-                <AlertCircle className="h-3 w-3" />
-                {errors.payrollNumber.message}
+              {/* ── Payroll Number (pre-filled from profile, read-only) ── */}
+              <div>
+                <label className={labelClass}>Payroll Number</label>
+                <input
+                  {...register("payrollNumber")}
+                  type="text"
+                  disabled
+                  className={inputClass + " disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"}
+                />
+                {errors.payrollNumber && (
+                  <p className={errorClass}>
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.payrollNumber.message}
+                  </p>
+                )}
+              </div>
+
+              {/* ── Name of Customer ── */}
+              <div>
+                <label className={labelClass}>Name of Customer</label>
+                <input
+                  {...register("customerName")}
+                  type="text"
+                  disabled
+                  className={inputClass + " disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"}
+                />
+              </div>
+
+              {/* ── ID No. + KRA PIN (2-col) ── */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>ID No.</label>
+                  <input
+                    {...register("idNumber")}
+                    type="text"
+                    disabled
+                    className={inputClass + " disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>KRA PIN</label>
+                  <input
+                    {...register("kraPin")}
+                    type="text"
+                    disabled
+                    className={inputClass + " disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"}
+                  />
+                </div>
+              </div>
+
+              {/* ── Phone No. ── */}
+              <div>
+                <label className={labelClass}>Phone No.</label>
+                <input
+                  {...register("phoneNumber")}
+                  type="tel"
+                  disabled
+                  className={inputClass + " disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"}
+                />
+              </div>
+
+              {/* ── Email Address ── */}
+              <div>
+                <label className={labelClass}>Email Address</label>
+                <input
+                  {...register("emailAddress")}
+                  type="email"
+                  disabled
+                  className={inputClass + " disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"}
+                />
+              </div>
+            </div>
+          </details>
+          {personalErrors && (
+            <div role="alert" className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-[13px] text-red-700">
+              <p className="flex items-center gap-1.5 font-semibold">
+                <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                Some details from your profile cannot be used here
               </p>
-            )}
-          </div>
-
-          {/* ── Name of Customer ── */}
-          <div>
-            <label className={labelClass}>Name of Customer</label>
-            <input
-              {...register("customerName")}
-              type="text"
-              disabled
-              className={inputClass + " disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"}
-            />
-          </div>
-
-          {/* ── ID No. + KRA PIN (2-col) ── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>ID No.</label>
-              <input
-                {...register("idNumber")}
-                type="text"
-                disabled
-                className={inputClass + " disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"}
-              />
+              <ul className="mt-1 list-disc pl-6">
+                {personalProblems.map((m) => (
+                  <li key={m}>{m}</li>
+                ))}
+              </ul>
+              <p className="mt-1">
+                Please correct them in your{" "}
+                <Link to="/dashboard/profile" className="font-semibold underline underline-offset-2 hover:no-underline">
+                  Profile
+                </Link>
+                , then come back: what you typed here is kept.
+              </p>
             </div>
-            <div>
-              <label className={labelClass}>KRA PIN</label>
-              <input
-                {...register("kraPin")}
-                type="text"
-                disabled
-                className={inputClass + " disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"}
-              />
-            </div>
-          </div>
-
-          {/* ── Phone No. ── */}
-          <div>
-            <label className={labelClass}>Phone No.</label>
-            <input
-              {...register("phoneNumber")}
-              type="tel"
-              disabled
-              className={inputClass + " disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"}
-            />
-          </div>
+          )}
 
           {/* ── Nature of Employment ── */}
           <div>
@@ -584,17 +691,6 @@ export default function SalaryAdvancePage() {
                 {errors.designation.message}
               </p>
             )}
-          </div>
-
-          {/* ── Email Address ── */}
-          <div>
-            <label className={labelClass}>Email Address</label>
-            <input
-              {...register("emailAddress")}
-              type="email"
-              disabled
-              className={inputClass + " disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"}
-            />
           </div>
 
           {/* ── Basic Pay Last 3 Months ── */}
@@ -690,6 +786,7 @@ export default function SalaryAdvancePage() {
                 Amount exceeds maximum eligible ({formatKES(maxLoanAmount)})
               </p>
             )}
+            <LimitNote limit={serverProfile?.loanLimit} amount={requestedAmount} />
           </div>
 
           {/* ── Live Calculation Breakdown ── */}
@@ -808,15 +905,26 @@ export default function SalaryAdvancePage() {
             </div>
           </div>
 
-          {/* ── Submit ── */}
-          <div className="pt-2">
+          {/* ── Submit: stays in view with what they would receive and repay ── */}
+          <ApplyBar>
+            <div className="mb-2 flex items-start justify-between gap-3" aria-live="polite">
+              <p className="text-[12px] text-slate-500">
+                You receive
+                <span className="block text-[15px] font-bold tabular-nums text-slate-900">{youReceive !== null ? formatKES(youReceive) : "—"}</span>
+              </p>
+              <p className="text-right text-[12px] text-slate-500">
+                Total to repay
+                <span className="block text-[15px] font-bold tabular-nums text-slate-900">{displayCalc ? formatKES(displayCalc.repaymentAmount) : "—"}</span>
+              </p>
+            </div>
             <Button
               type="submit"
+              form="salary-advance-form"
               disabled={isLoading || !termsAccepted || !privacyAccepted}
               className={`w-full font-bold h-9 rounded-lg text-sm transition-all ${
                 isLoading || !termsAccepted || !privacyAccepted
                   ? "bg-gray-300 text-slate-500 cursor-not-allowed opacity-50"
-                  : "bg-brand-blue hover:bg-slate-800 text-white"
+                  : "bg-red-600 hover:bg-red-700 text-white"
               }`}
             >
               {isLoading ? (
@@ -828,7 +936,7 @@ export default function SalaryAdvancePage() {
                 "Submit Application"
               )}
             </Button>
-          </div>
+          </ApplyBar>
         </form>
       </div>
     </div>
