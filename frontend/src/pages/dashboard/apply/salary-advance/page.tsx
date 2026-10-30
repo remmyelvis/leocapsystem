@@ -29,80 +29,15 @@ import {
 } from "@/components/loans/LoanBreakdownCard";
 import { LOAN_SETTINGS } from "@/configs/loanSettings";
 import { applicationApi, type CreateApplicationPayload } from "@/lib/applicationApi";
+import { useAgreement, useAgreementChanged } from "@/hooks/useAgreement";
+import { agreementChanged } from "@/lib/agreementText";
+import AgreementBox from "@/components/dashboard/AgreementBox";
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const getTermsText = (employerName: string) => `LOAN AGREEMENT
-
-This Loan Agreement ("Agreement") is made and deemed executed in Nairobi, Kenya on the date of electronic acceptance by the Borrower.
-
-PARTIES
-
-1. LEOCAP INVEST, a business duly incorporated/registered under the laws of the Republic of Kenya, of P.O. Box 184–00100 GPO, Nairobi (hereinafter referred to as the "Lender", which expression shall include its successors and assigns);
-
-AND
-
-2. The Applicant, being the individual whose identification details, employment details, and address are provided in the online application form (hereinafter referred to as the "Borrower", which expression shall include personal representatives and assigns).
-
-A. LOAN AMOUNT AND DISBURSEMENT
-The Lender agrees to advance to the Borrower a loan amount as approved through the online application system ("Loan Amount").
-The Borrower acknowledges that approval is subject to employment verification under the Memorandum of Understanding between the Lender and ${employerName}.
-The Borrower shall pay:
-A processing fee of 3%, An Admin & Access Fee of 2% of the Loan Amount, and
-Legal Fees of KES 1,500
-These fees may be deducted upfront from the Loan Amount prior to disbursement.
-
-B. LOAN LIMIT
-The Borrower's approved loan limit shall be determined solely by the Lender based on internal credit assessment and employer MOU limits.
-The Lender reserves the right to review, vary, or revoke the loan limit at its discretion.
-The Borrower shall not be entitled to exceed the approved loan limit unless expressly authorized in writing.
-
-C. LOAN TERM
-The loan shall be for a maximum period of one (1) month, unless otherwise extended or rescheduled in writing by the Lender.
-
-D. INTEREST
-The Loan shall attract interest at the rate communicated and agreed at the time of approval.
-Interest shall accrue monthly and be payable together with the principal unless otherwise agreed.
-
-E. REPAYMENT
-The Borrower shall repay the Loan Amount together with interest in accordance with the repayment schedule provided.
-Repayment shall be effected through salary deduction under the employer check-off arrangement pursuant to the MOU with ${employerName}.
-Any unpaid balance shall continue to accrue interest at the contractual rate until fully settled.
-
-F. DEFAULT
-An event of default occurs when the Borrower fails to pay any instalment on its due date.
-Upon default:
-a. The overdue instalment may be rescheduled subject to a rescheduling fee of 10% of the instalment or KES 1,500 (whichever is higher);
-b. A debt recovery fee of 15% of the outstanding balance may be charged after 7 days of default and issuance of demand notice;
-c. A late-payment charge of 10% of the outstanding balance may be charged after 7 days of default;
-d. Returned or unpaid cheques shall attract actual bank charges or KES 3,000 (whichever is higher) plus 15% collection fee.
-The Lender reserves the right to engage third-party debt collection agents or legal counsel for recovery.
-
-G. DATA PROTECTION AND DISCLOSURE CONSENT
-The Borrower expressly consents to the collection, processing, storage, and sharing of their personal and employment data strictly for purposes of:
-Loan assessment and administration;
-Salary verification and check-off processing;
-Debt recovery and enforcement.
-The Borrower acknowledges that data may be shared with:
-${employerName} (employer);
-Authorized debt collection agents;
-Legal practitioners; and
-Regulatory authorities where required by law.
-All processing shall comply with the Data Protection Act, 2019 of Kenya.
-
-H. DISPUTE RESOLUTION
-Any dispute arising shall first be resolved amicably through negotiation.
-If unresolved, the dispute shall be referred to the courts of competent jurisdiction in Kenya.
-
-I. ELECTRONIC ACCEPTANCE
-The Borrower agrees that ticking acceptance on the online portal constitutes a legally binding electronic signature under Kenyan law.
-The Borrower confirms they have read, understood, and accepted all terms herein.
-
-J. ENTIRE AGREEMENT
-This Agreement constitutes the entire understanding between the parties and supersedes all prior representations or agreements.`;
-
+// The loan agreement is not typed in here any more: the server sends the one in force (hooks/useAgreement.ts), so an admin can edit it under Site content.
 // ---------------------------------------------------------------------------
 // Schema
 // ---------------------------------------------------------------------------
@@ -293,6 +228,11 @@ export default function SalaryAdvancePage() {
   const rawPay3 = watch("basicPayMonth3");
   const rawRequested = watch("amountRequested");
   const termsAccepted = watch("termsAccepted");
+  const agreement = useAgreement("salary");
+  useAgreementChanged(agreement, () => {
+    setValue("termsAccepted", false as never); // what they ticked was the text they had read, not this one
+    toast.error("The loan agreement was updated while you were applying. Please read it and accept it again.");
+  });
   const privacyAccepted = watch("privacyAccepted");
 
   // NaN-safe: ?? doesn't catch NaN, so normalise here
@@ -325,12 +265,20 @@ export default function SalaryAdvancePage() {
 
   const onSubmit = async (data: FormData) => {
 
+    const shown = agreement.data;
+    if (!shown) {
+      toast.error("The loan agreement is still loading. Please wait a moment and try again.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       const calc = calculateSalaryAdvanceForAmount(data.amountRequested);
 
       const payload: CreateApplicationPayload = {
+        agreement_version: String(shown.version),
+        agreement_employer: companyLabel,
         employment_type: data.natureOfEmployment === "Agent" ? "employed" : "self_employed",
         company,
         employment_nature: data.natureOfEmployment,
@@ -354,6 +302,10 @@ export default function SalaryAdvancePage() {
       const { data: apiData, error } = await applicationApi.create(payload);
 
       if (error || !apiData) {
+        if (agreementChanged(error)) {
+          agreement.refetch(); // the text changed while the borrower was reading: show the new one and ask for acceptance again
+          setValue("termsAccepted", false as never);
+        }
         toast.error(error ?? "Submission failed. Please try again.");
         return;
       }
@@ -843,11 +795,7 @@ export default function SalaryAdvancePage() {
             </div>
 
             {/* Terms text box */}
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 max-h-64 overflow-y-auto">
-              <pre className="text-xs text-slate-600 whitespace-pre-wrap leading-relaxed font-sans">
-                {getTermsText(companyLabel)}
-              </pre>
-            </div>
+            <AgreementBox agreement={agreement} employer={companyLabel} />
 
             {/* Accept checkbox */}
             <div className="space-y-4">

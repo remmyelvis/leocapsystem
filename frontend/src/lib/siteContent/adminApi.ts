@@ -21,6 +21,8 @@ export interface BlockSummary {
 export interface BlockDetail<K extends BlockKey = BlockKey> extends BlockSummary {
   draft: SiteBlocks[K] | null;
   published: SiteBlocks[K] | null;
+  /** The text that came with the system, for blocks whose built-in text lives on the server (the loan agreements). */
+  built_in?: SiteBlocks[K] | null;
 }
 
 export interface Version {
@@ -62,7 +64,8 @@ export const siteContentApi = {
 };
 
 /** The public page where a block can be seen, for "Preview on the site" and "View on the site". */
-export const PAGE_FOR: Record<BlockKey, string> = {
+/** `null` = no public page to show (the loan agreements appear inside the application forms, which an admin cannot open). */
+export const PAGE_FOR: Record<BlockKey, string | null> = {
   contact: "/",
   banner: "/",
   testimonials: "/",
@@ -72,4 +75,6 @@ export const PAGE_FOR: Record<BlockKey, string> = {
   home_how: "/",
   home_headings: "/",
   privacy: "/privacy-policy",
+  agreement_salary: null,
+  agreement_personal: null,
 };

@@ -77,11 +77,25 @@ export interface ApplicationDetails {
   outstanding_balance?: string;
   balance_owed?: number | string; // what is owed right now (the loan page only)
   /** The borrower's OTHER loans that are part paid, late or in default (the loan page, admins only). */
+  /** What the borrower accepted when applying (null for an application made before acceptances were recorded). Admins only. */
+  agreement?: AgreementSummary | null;
   owing_elsewhere?: { id: string; balance_owed: number; repayment_status: string; due_date: string | null }[];
   disbursed_at?: string | null; // when the loan was disbursed; null for loans that were disbursed before this was recorded
   disbursed_at_source?: "entered" | "history" | null; // a date typed in by an admin, or the one the loan's change history has
   created_at?: string;
   documents?: ApplicationDocument[];
+}
+
+export interface AgreementSummary {
+  reference: string;
+  key: string;
+  version: number;
+  title: string | null;
+  accepted_at: string;
+  ip_address: string | null;
+  device: string | null;
+  /** The record still matches its seal. */
+  verified: boolean;
 }
 
 export interface AdminApplicationItem {

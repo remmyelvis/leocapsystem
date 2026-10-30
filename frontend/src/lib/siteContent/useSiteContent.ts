@@ -70,6 +70,8 @@ const SHAPE: { [K in keyof SiteBlocks]: (v: unknown) => boolean } = {
     isObj(v.cta) &&
     allStrings(v.cta, ["title", "text", "button"]),
   home_headings: (v) => isObj(v) && allStrings(v, ["contact_eyebrow", "contact_title", "contact_lead", "testimonials_eyebrow", "testimonials_title", "testimonials_lead"]),
+  agreement_salary: () => false, // served by their own endpoint, never merged into the pages' content
+  agreement_personal: () => false,
   privacy: (v) => isObj(v) && count(v.items, 1, 30) && listOf(v.items, (s) => isStr(s.title) && isStr(s.body)),
   faq: (v) =>
     isObj(v) &&

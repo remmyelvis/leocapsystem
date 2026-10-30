@@ -8,12 +8,12 @@ import { useContact } from "@/lib/siteContent/useSiteContent";
 import { PAGE_FOR, siteContentApi, type BlockDetail, type BlockKey, type Version } from "@/lib/siteContent/adminApi";
 import { newKey, StatusBadge, when } from "../fields";
 import { BannerForm, ContactForm, FaqForm, TestimonialsForm, type ContactValue, type FaqValue, type TestimonialsValue } from "../forms";
-import { HeadingsForm, HeroForm, HowForm, PolicyForm, ProductsForm, type PolicyValue, type ProductsValue } from "../homeForms";
+import { AgreementForm, HeadingsForm, HeroForm, HowForm, PolicyForm, ProductsForm, type AgreementValue, type PolicyValue, type ProductsValue } from "../homeForms";
 
 // The editor for one section. The working copy lives here; nothing reaches visitors until "Publish".
 // Edits that are not saved yet are also kept in this tab (sessionStorage), so a click on another menu item cannot lose them.
 
-const KEYS: BlockKey[] = ["banner", "contact", "home_hero", "home_products", "home_how", "home_headings", "testimonials", "faq", "privacy"];
+const KEYS: BlockKey[] = ["banner", "contact", "home_hero", "home_products", "home_how", "home_headings", "testimonials", "faq", "privacy", "agreement_salary", "agreement_personal"];
 
 /** The block without the helper keys the lists carry on screen. */
 const strip = (v: unknown) => JSON.parse(JSON.stringify(v, (k, x) => (k === "_k" || k === "_auto" ? undefined : x)));
@@ -26,7 +26,7 @@ function withKeys(key: BlockKey, source: unknown): any {
     copy.phones = tag(copy.phones);
     if (copy.hours === undefined) copy.hours = DEFAULTS.contact.hours; // a copy saved before opening hours existed shows the built-in wording
   }
-  if (key === "testimonials" || key === "faq" || key === "home_products" || key === "privacy") copy.items = tag(copy.items);
+  if (key === "testimonials" || key === "faq" || key === "home_products" || key === "privacy" || key === "agreement_salary" || key === "agreement_personal") copy.items = tag(copy.items);
   return copy;
 }
 
@@ -92,7 +92,7 @@ function Editor({ blockKey }: { blockKey: BlockKey }) {
   const backupKey = `leocap.siteEdit.${blockKey}`;
 
   const show = (d: BlockDetail, restoreEdits = false) => {
-    const fresh = withKeys(blockKey, d.draft ?? d.published ?? DEFAULTS[blockKey]);
+    const fresh = withKeys(blockKey, d.draft ?? d.published ?? d.built_in ?? DEFAULTS[blockKey]); // an agreement's built-in text comes from the server
     let working = fresh;
     if (restoreEdits) {
       try {
@@ -176,6 +176,7 @@ function Editor({ blockKey }: { blockKey: BlockKey }) {
       tab?.close();
       return;
     }
+    if (!PAGE_FOR[blockKey]) return;
     const address = `${PAGE_FOR[blockKey]}?preview=1`;
     if (tab) tab.location.href = address;
     else window.open(address, "_blank");
@@ -245,6 +246,10 @@ function Editor({ blockKey }: { blockKey: BlockKey }) {
         return <HeadingsForm value={data} onChange={setData} {...common} />;
       case "privacy":
         return <PolicyForm value={data as PolicyValue} onChange={setData} {...common} />;
+      case "agreement_salary":
+        return <AgreementForm kind="salary" value={data as AgreementValue} onChange={setData} {...common} />;
+      case "agreement_personal":
+        return <AgreementForm kind="personal" value={data as AgreementValue} onChange={setData} {...common} />;
     }
   }, [blockKey, data, contact]);
 
@@ -293,9 +298,11 @@ function Editor({ blockKey }: { blockKey: BlockKey }) {
         <Btn variant="primary" onClick={save} disabled={!dirty} busy={busy === "save"}>
           {busy === "save" ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save draft
         </Btn>
-        <Btn onClick={preview} disabled={working}>
-          <Eye className="h-4 w-4" /> Preview on the site
-        </Btn>
+        {PAGE_FOR[blockKey] && (
+          <Btn onClick={preview} disabled={working}>
+            <Eye className="h-4 w-4" /> Preview on the site
+          </Btn>
+        )}
         <Btn onClick={() => setAsking("publish")} disabled={!hasUnpublished || working}>
           <Rocket className="h-4 w-4" /> Publish
         </Btn>
@@ -345,8 +352,17 @@ function Editor({ blockKey }: { blockKey: BlockKey }) {
 
       {asking === "publish" && (
         <Confirm title={`Publish "${detail.title}"?`} label="Publish" busy={busy === "publish"} onConfirm={publish} onCancel={() => setAsking(null)}>
-          <p>Visitors will see this on the public pages within about a minute.{dirty && " Your unsaved changes are saved first."}</p>
-          <p>The previous published version stays in the history.</p>
+          {blockKey.startsWith("agreement_") ? (
+            <>
+              <p>Borrowers who apply from now on (within about a minute) will be shown and will accept this text.{dirty && " Your unsaved changes are saved first."}</p>
+              <p>Applications already made keep the exact text their borrower accepted. The previous published version stays in the history.</p>
+            </>
+          ) : (
+            <>
+              <p>Visitors will see this on the public pages within about a minute.{dirty && " Your unsaved changes are saved first."}</p>
+              <p>The previous published version stays in the history.</p>
+            </>
+          )}
         </Confirm>
       )}
       {asking === "discard" && (
@@ -356,7 +372,7 @@ function Editor({ blockKey }: { blockKey: BlockKey }) {
       )}
       {asking === "reset" && (
         <Confirm title="Go back to the built-in text?" label="Reset" danger busy={busy === "reset"} onConfirm={reset} onCancel={() => setAsking(null)}>
-          <p>The public pages show the text that came with the site again, and the published text and any draft for this section are removed.</p>
+          <p>{blockKey.startsWith("agreement_") ? "New applications use the text that came with the system again" : "The public pages show the text that came with the site again"}, and the published text and any draft for this section are removed.</p>
           <p>Published versions stay in the history, so an earlier one can be brought back as a draft.</p>
         </Confirm>
       )}

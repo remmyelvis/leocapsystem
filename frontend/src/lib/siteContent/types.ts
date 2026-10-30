@@ -97,6 +97,13 @@ export interface PolicySection {
   body: string;
 }
 
+/** A loan agreement: a title, an opening paragraph and lettered sections of plain lines (kept as typed). "{{employer}}" (the Salary Advance one only) is filled in when it is shown. */
+export interface AgreementBlock {
+  title: string;
+  intro: string;
+  items: PolicySection[];
+}
+
 export interface SiteBlocks {
   contact: ContactBlock;
   banner: BannerBlock;
@@ -107,6 +114,9 @@ export interface SiteBlocks {
   home_how: HowBlock;
   home_headings: HeadingsBlock;
   privacy: { items: PolicySection[] };
+  /** Never part of the public pages' content: the forms fetch them from /api/site-content/agreement/<kind>. The built-in text lives on the server. */
+  agreement_salary: AgreementBlock;
+  agreement_personal: AgreementBlock;
 }
 
 /** The contact details as the pages use them. */

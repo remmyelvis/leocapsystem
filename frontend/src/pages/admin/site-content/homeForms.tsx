@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { agreementText } from "@/lib/agreementText";
 import type { ContactView, HeadingsBlock, HeroBlock, HowBlock, PolicySection, ProductCard, ProductsBlock } from "@/lib/siteContent/types";
 import RichTextField from "./RichTextField";
 import { AddButton, card, Check, dropItem, Field, inputClass, moveItem, newKey, patchItem, RowTools } from "./fields";
@@ -9,6 +10,7 @@ import type { Keyed } from "./forms";
 
 export type ProductsValue = Omit<ProductsBlock, "items"> & { items: Keyed<ProductCard>[] };
 export type PolicyValue = { items: Keyed<PolicySection>[] };
+export type AgreementValue = { title: string; intro: string; items: Keyed<PolicySection>[] };
 
 interface FormProps<T> {
   value: T;
@@ -331,3 +333,94 @@ export function PolicyForm({ value, onChange, contact }: FormProps<PolicyValue>)
     </div>
   );
 }
+
+// ─── Loan agreements ──────────────────────────────────────────────────────────
+
+const textareaClass = `${inputClass} min-h-[7rem] leading-snug`;
+
+/** The Salary Advance or Personal Loan agreement: a title, an opening paragraph and lettered sections of plain lines (kept exactly as typed). */
+export function AgreementForm({ value, onChange, kind }: FormProps<AgreementValue> & { kind: "salary" | "personal" }) {
+  const [open, setOpen] = useState<Set<string>>(new Set());
+  const set = (patch: Partial<AgreementValue>) => onChange({ ...value, ...patch });
+  const toggle = (k: string) =>
+    setOpen((prev) => {
+      const next = new Set(prev);
+      next.has(k) ? next.delete(k) : next.add(k);
+      return next;
+    });
+  return (
+    <div className="space-y-3">
+      <p className={note}>
+        This is the contract a borrower accepts when they apply. <strong>Every acceptance is recorded with the exact text, the time and the device it came from</strong>, so a change here only applies to applications made after you publish it: what earlier borrowers accepted never changes.
+        It is a legal text: please have a change checked by your adviser before you publish it. Type the section letters yourself (for example "A. LOAN AMOUNT"). Lines are shown exactly as you break them.
+        {kind === "salary" ? (
+          <>
+            {" "}Where the borrower's employer should appear, type <code className="rounded bg-white/70 px-1">{"{{employer}}"}</code>; it is filled in for each borrower. HR and finance staff accept this same text for their own loans.
+          </>
+        ) : (
+          " This agreement has no placeholders."
+        )}
+      </p>
+      <div className={`${card} space-y-3.5`}>
+        <Field label="Title" htmlFor="agreement-title" count={{ n: value.title.length, max: 80 }}>
+          <input id="agreement-title" value={value.title} onChange={(e) => set({ title: e.target.value })} className={inputClass} />
+        </Field>
+        <Field label="Opening paragraph (optional)" htmlFor="agreement-intro" count={{ n: value.intro.length, max: 3000 }}>
+          <textarea id="agreement-intro" rows={4} value={value.intro} onChange={(e) => set({ intro: e.target.value })} className={textareaClass} />
+        </Field>
+      </div>
+      <ul className="space-y-2">
+        {value.items.map((sec, i) => {
+          const isOpen = open.has(sec._k);
+          const panel = `agreement-${sec._k}`;
+          const put = (patch: Partial<Keyed<PolicySection>>) => set({ items: patchItem(value.items, i, patch) });
+          return (
+            <li key={sec._k} className={`${card} !p-0`}>
+              <div className="flex items-center gap-1 pr-2">
+                <button
+                  type="button"
+                  aria-expanded={isOpen}
+                  aria-controls={panel}
+                  onClick={() => toggle(sec._k)}
+                  className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-4 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40"
+                >
+                  <ChevronDown className={`h-4 w-4 flex-shrink-0 text-slate-500 transition-transform ${isOpen ? "rotate-180" : ""}`} aria-hidden />
+                  <span className="line-clamp-2 min-w-0 flex-1 break-words text-[13px] font-semibold text-slate-900 sm:line-clamp-1">{sec.title || "New section"}</span>
+                </button>
+                <RowTools index={i} count={value.items.length} what={`section ${i + 1}`} onMove={(to) => set({ items: moveItem(value.items, i, to) })} onRemove={() => value.items.length > 1 && set({ items: dropItem(value.items, i) })} />
+              </div>
+              {isOpen && (
+                <div id={panel} className="space-y-3.5 border-t border-slate-100 px-4 py-4">
+                  <Field label="Title (with its letter)" htmlFor={`${panel}-title`} count={{ n: sec.title.length, max: 120 }}>
+                    <input id={`${panel}-title`} value={sec.title} onChange={(e) => put({ title: e.target.value })} className={inputClass} />
+                  </Field>
+                  <Field label="Text" htmlFor={`${panel}-body`} count={{ n: sec.body.length, max: 8000 }}>
+                    <textarea id={`${panel}-body`} rows={10} value={sec.body} onChange={(e) => put({ body: e.target.value })} className={textareaClass} />
+                  </Field>
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      <AddButton
+        disabled={value.items.length >= 40}
+        onClick={() => {
+          const k = newKey();
+          set({ items: [...value.items, { _k: k, title: "", body: "" }] });
+          setOpen((prev) => new Set(prev).add(k));
+        }}
+      >
+        Add a section
+      </AddButton>
+      <details className={`${card} group`}>
+        <summary className="cursor-pointer text-[13px] font-semibold text-slate-900">What the borrower will see</summary>
+        <div className="mt-3 max-h-80 overflow-y-auto rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed text-slate-600">{agreementText(value, "Sample Employer Ltd")}</pre>
+        </div>
+        <p className="mt-2 text-[12px] text-slate-500">This is the text as it will appear in the application form (the employer shown here is only an example).</p>
+      </details>
+    </div>
+  );
+}
+

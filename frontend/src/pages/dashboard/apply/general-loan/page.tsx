@@ -24,6 +24,9 @@ import {
 } from "lucide-react";
 import { estimateGeneralLoan, formatKES } from "@/lib/loanCalculations";
 import { applicationApi, type CreateApplicationPayload } from "@/lib/applicationApi";
+import { useAgreement, useAgreementChanged } from "@/hooks/useAgreement";
+import { agreementChanged } from "@/lib/agreementText";
+import AgreementBox from "@/components/dashboard/AgreementBox";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -31,72 +34,7 @@ import { applicationApi, type CreateApplicationPayload } from "@/lib/application
 
 const TOTAL_STEPS = 4;
 
-const TERMS_TEXT = `LOAN AGREEMENT
-
-This Loan Agreement ("Agreement") is made and deemed executed in Nairobi, Kenya on the date of electronic acceptance by the Borrower.
-
-PARTIES
-
-LEOCAP INVEST, a business duly registered under the laws of Kenya, of P.O. Box 184–00100 GPO, Nairobi (the "Lender");
-
-AND
-
-The Applicant, being the individual whose identification and personal details are provided in the online application (the "Borrower").
-
-A. LOAN AMOUNT AND DISBURSEMENT
-The Lender agrees to advance to the Borrower a loan amount approved through the application system ("Loan Amount").
-The Borrower acknowledges receipt and acceptance of the Loan Amount upon disbursement.
-The Borrower shall pay:
-A processing fee of 3% of the Loan Amount, and
-A legal/administration fee of KES 1,000
-which may be deducted from the Loan Amount prior to disbursement or charged separately as determined by the Lender.
-
-B. INTEREST
-The Loan shall attract interest at the rate communicated and accepted at approval.
-Interest shall accrue on a reducing or flat balance basis as disclosed at the time of approval.
-
-C. REPAYMENT
-The Borrower shall repay the Loan Amount together with interest in monthly instalments as communicated in the repayment schedule.
-The Borrower shall remain fully liable until the Loan is repaid in full.
-Early repayment shall be permitted unless otherwise stated in the repayment terms.
-
-D. DEFAULT
-An event of default occurs if the Borrower fails to pay any instalment on its due date.
-Upon default:
-a. The outstanding amount shall continue to accrue interest at the contractual rate.
-b. A late payment penalty may be charged as communicated at approval.
-c. A restructuring fee of 10% of the overdue instalment or KES 1,500 (whichever is higher) may apply where repayment arrangements are revised.
-d. A late-payment charge of 10% of the outstanding balance may be charged after 7 days of default.
-The Lender may initiate recovery action, including engagement of third-party debt collectors or legal proceedings.
-
-E. CHEQUE / PAYMENT DEFAULTS
-Returned or dishonoured payments shall attract:
-Actual bank charges or KES 3,000 (whichever is higher), and
-A collection fee of up to 15% of the dishonoured amount.
-
-F. DATA PROTECTION AND INFORMATION SHARING
-The Borrower consents to the collection, processing, storage, and use of personal data in accordance with the Data Protection Act, 2019 of Kenya.
-The Borrower consents to disclosure of relevant information to:
-Credit reference bureaus (CRBs);
-Debt collection agents;
-Legal advisors and courts; and
-Regulatory authorities where required by law.
-Data shall be processed strictly for credit assessment, loan administration, and recovery purposes.
-
-G. DISPUTE RESOLUTION
-Parties shall first attempt amicable resolution.
-Failing settlement, disputes shall be submitted to courts of competent jurisdiction in Kenya.
-
-H. ELECTRONIC ACCEPTANCE
-The Borrower agrees that electronic acceptance (click-wrap or digital signature) constitutes a legally binding signature under Kenyan law.
-System logs and application records shall serve as evidence of acceptance.
-
-I. ENTIRE AGREEMENT
-This Agreement constitutes the entire agreement between the parties and supersedes all prior representations.
-
-J. LIMITATION OF LIABILITY
-Nothing in this Agreement shall be construed as limiting any rights of the Borrower or Lender under applicable law.`;
-
+// The loan agreement is not typed in here any more: the server sends the one in force (hooks/useAgreement.ts), so an admin can edit it under Site content.
 // ---------------------------------------------------------------------------
 // Zod schemas (one per step)
 // ---------------------------------------------------------------------------
@@ -346,6 +284,11 @@ export default function GeneralLoanPage() {
   });
 
   const termsAccepted = watch("termsAccepted");
+  const agreement = useAgreement("personal");
+  useAgreementChanged(agreement, () => {
+    setValue("termsAccepted", false as never); // what they ticked was the text they had read, not this one
+    toast.error("The loan agreement was updated while you were applying. Please read it and accept it again.");
+  });
   const privacyAccepted = watch("privacyAccepted");
 
   // "Apply again": start from the last application (employment type, purpose and amount; never the pay figures, statements or passcodes)
@@ -429,10 +372,17 @@ export default function GeneralLoanPage() {
   };
 
   const onSubmit = async (data: FullFormData) => {
+    const shown = agreement.data;
+    if (!shown) {
+      toast.error("The loan agreement is still loading. Please wait a moment and try again.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const payload: CreateApplicationPayload = {
+        agreement_version: String(shown.version),
         employment_type: data.employmentType === "Employed" ? "employed" : "self_employed",
         company: "personal",
         employer_name: data.companyName || undefined,
@@ -466,6 +416,10 @@ export default function GeneralLoanPage() {
       });
 
       if (error || !apiData) {
+        if (agreementChanged(error)) {
+          agreement.refetch(); // the text changed while the borrower was reading: show the new one and ask for acceptance again
+          setValue("termsAccepted", false as never);
+        }
         toast.error(error ?? "Submission failed. Please try again.");
         setIsSubmitting(false);
         return;
@@ -943,11 +897,7 @@ export default function GeneralLoanPage() {
               </div>
 
               {/* Terms text box */}
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 max-h-64 overflow-y-auto">
-                <pre className="text-xs text-slate-600 whitespace-pre-wrap leading-relaxed font-sans">
-                  {TERMS_TEXT}
-                </pre>
-              </div>
+              <AgreementBox agreement={agreement} />
 
               {/* Accept checkboxes */}
               <div className="space-y-4">

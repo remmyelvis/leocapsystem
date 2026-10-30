@@ -1,6 +1,6 @@
 // Hooks for admin operations
 import { useState, useEffect, useCallback } from "react";
-import { adminApplicationsApi, AdminApplicationItem, isSuperAdmin, ApplicationDocument } from "@/lib/adminApi";
+import { adminApplicationsApi, AdminApplicationItem, AgreementSummary, isSuperAdmin, ApplicationDocument } from "@/lib/adminApi";
 import { getAdminUser } from "@/lib/apiClient";
 
 // ---------------------------------------------------------------------------
@@ -35,6 +35,7 @@ export interface TransformedApplication {
   status: string;
   repaymentStatus: string;
   balanceOwed: number; // what is owed right now; only the single-loan fetch carries it
+  agreement: AgreementSummary | null; // what the borrower accepted when applying; only the single-loan fetch carries it (null: made before records were kept)
   owingElsewhere: { id: string; balanceOwed: number; repaymentStatus: string; dueDate: string | null }[]; // the borrower's other part-paid, late or defaulted loans; only the single-loan fetch carries them
   submittedAt: string;
   dueDate: string | null;
@@ -96,6 +97,7 @@ function transformApplication(item: AdminApplicationItem): TransformedApplicatio
     status: app.loan_status || "Pending",
     repaymentStatus: app.repayment_status || "unpaid",
     balanceOwed: Number(app.balance_owed) || 0,
+    agreement: app.agreement ?? null,
     owingElsewhere: (app.owing_elsewhere ?? []).map((l) => ({ id: l.id, balanceOwed: Number(l.balance_owed) || 0, repaymentStatus: l.repayment_status, dueDate: l.due_date })),
     submittedAt: app.date_submitted || app.created_at || new Date().toISOString(),
     dueDate: app.due_date || null,

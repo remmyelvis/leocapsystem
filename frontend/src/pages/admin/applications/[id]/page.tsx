@@ -1807,6 +1807,21 @@ const [auditTrail, setAuditTrail] = useState<any[]>([]);
         </div>
       )}
 
+      {/* What the borrower accepted: the version of the agreement, when, from where, and whether the record is still exactly as it was made */}
+      <Section title="Loan Agreement Acceptance">
+        {app.agreement ? (
+          <>
+            <Field label="Accepted On" value={`${new Date(app.agreement.accepted_at).toLocaleString("en-KE", { timeZone: "Africa/Nairobi", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })} EAT`} />
+            <Field label="Agreement Version" value={`${app.agreement.title ?? "Loan agreement"}, version ${app.agreement.version}${app.agreement.version === 0 ? " (the text built into the system)" : ""}`} />
+            <Field label="IP Address / Device" value={`${app.agreement.ip_address ?? "not available"} / ${app.agreement.device ?? "not available"}`} />
+            <Field label="Reference" value={app.agreement.reference} />
+            <Field label="Record Check" value={app.agreement.verified ? "Matches its seal: not changed since it was made" : "DOES NOT MATCH ITS SEAL: this record has been changed"} />
+          </>
+        ) : (
+          <Field label="Record" value="Not recorded: this application was made before acceptances were recorded." />
+        )}
+      </Section>
+
       {/* ── Application Timeline ── */}
       <Section title="Application Timeline">
         <Field

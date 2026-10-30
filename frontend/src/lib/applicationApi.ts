@@ -23,6 +23,9 @@ export interface CreateApplicationPayload {
   mpesa_statement_passcode?: string;
   bank_statement_passcode?: string;
   payslip_passcode?: string;
+  /** The version of the loan agreement the form showed, and what it filled in for the employer: the server records what was accepted. */
+  agreement_version?: string;
+  agreement_employer?: string;
 }
 
 export interface ApplicationResponse {

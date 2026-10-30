@@ -216,6 +216,9 @@ If the email does not arrive, check your spam folder.
     testimonials_title: "Loved by Kenyan Professionals",
     testimonials_lead: "Don't take our word for it — here's what our clients say.",
   },
+  // The built-in loan agreements live on the server (backend/website/agreement_defaults.py) and reach the editor as `built_in`; these are only placeholders.
+  agreement_salary: { title: "", intro: "", items: [] },
+  agreement_personal: { title: "", intro: "", items: [] },
   privacy: {
     items: [
       {

@@ -11,6 +11,7 @@ const GROUPS: [string, BlockKey[]][] = [
   ["Across the site", ["banner", "contact"]],
   ["Home page", ["home_hero", "home_products", "home_how", "home_headings", "testimonials"]],
   ["Other pages", ["faq", "privacy"]],
+  ["Loan agreements", ["agreement_salary", "agreement_personal"]],
 ];
 
 function BlockCard({ b }: { b: BlockSummary }) {
@@ -42,14 +43,16 @@ function BlockCard({ b }: { b: BlockSummary }) {
         >
           Edit
         </Link>
-        <a
-          href={PAGE_FOR[b.key]}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="tap-btn inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40"
-        >
-          View on the site <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-        </a>
+        {PAGE_FOR[b.key] && (
+          <a
+            href={PAGE_FOR[b.key] as string}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="tap-btn inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40"
+          >
+            View on the site <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+          </a>
+        )}
       </div>
     </li>
   );
