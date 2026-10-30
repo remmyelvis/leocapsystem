@@ -13,7 +13,7 @@ import { AgreementForm, HeadingsForm, HeroForm, HowForm, PolicyForm, ProductsFor
 // The editor for one section. The working copy lives here; nothing reaches visitors until "Publish".
 // Edits that are not saved yet are also kept in this tab (sessionStorage), so a click on another menu item cannot lose them.
 
-const KEYS: BlockKey[] = ["banner", "contact", "home_hero", "home_products", "home_how", "home_headings", "testimonials", "faq", "privacy", "agreement_salary", "agreement_personal"];
+const KEYS: BlockKey[] = ["banner", "contact", "home_hero", "home_products", "home_how", "home_headings", "testimonials", "faq", "privacy", "terms", "agreement_salary", "agreement_personal"];
 
 /** The block without the helper keys the lists carry on screen. */
 const strip = (v: unknown) => JSON.parse(JSON.stringify(v, (k, x) => (k === "_k" || k === "_auto" ? undefined : x)));
@@ -26,7 +26,7 @@ function withKeys(key: BlockKey, source: unknown): any {
     copy.phones = tag(copy.phones);
     if (copy.hours === undefined) copy.hours = DEFAULTS.contact.hours; // a copy saved before opening hours existed shows the built-in wording
   }
-  if (key === "testimonials" || key === "faq" || key === "home_products" || key === "privacy" || key === "agreement_salary" || key === "agreement_personal") copy.items = tag(copy.items);
+  if (key === "testimonials" || key === "faq" || key === "home_products" || key === "privacy" || key === "terms" || key === "agreement_salary" || key === "agreement_personal") copy.items = tag(copy.items);
   return copy;
 }
 
@@ -245,6 +245,7 @@ function Editor({ blockKey }: { blockKey: BlockKey }) {
       case "home_headings":
         return <HeadingsForm value={data} onChange={setData} {...common} />;
       case "privacy":
+      case "terms":
         return <PolicyForm value={data as PolicyValue} onChange={setData} {...common} />;
       case "agreement_salary":
         return <AgreementForm kind="salary" value={data as AgreementValue} onChange={setData} {...common} />;

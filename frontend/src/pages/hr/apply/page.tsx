@@ -694,7 +694,7 @@ export default function HRApplyPage() {
                         className="w-4 h-4 mt-0.5 rounded border-gray-300 text-emerald-900 cursor-pointer flex-shrink-0"
                       />
                       <span className="text-[13px] font-medium text-slate-700">
-                        I have read and accepted the Loan Agreement and Terms & Conditions.
+                        I have read and accepted the Loan Agreement and <a href="/terms-and-conditions" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">Terms & Conditions</a>.
                       </span>
                     </label>
                   )}

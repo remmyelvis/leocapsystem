@@ -167,6 +167,8 @@ export default function AuthLayout({
             <span className="whitespace-nowrap">
               <Link to="/privacy-policy" className="hover:text-slate-900 hover:underline">Privacy policy</Link>
               <span className="mx-2">·</span>
+              <Link to="/terms-and-conditions" className="hover:text-slate-900 hover:underline">Terms</Link>
+              <span className="mx-2">·</span>
               <Link to="/faq" className="hover:text-slate-900 hover:underline">FAQs</Link>
               {/* The few administrators find their sign-in here, so the applicants' form has nothing about it. */}
               {variant === "applicant" && (

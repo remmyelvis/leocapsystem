@@ -10,7 +10,7 @@ import { card, StatusBadge, when } from "./fields";
 const GROUPS: [string, BlockKey[]][] = [
   ["Across the site", ["banner", "contact"]],
   ["Home page", ["home_hero", "home_products", "home_how", "home_headings", "testimonials"]],
-  ["Other pages", ["faq", "privacy"]],
+  ["Other pages", ["faq", "privacy", "terms"]],
   ["Loan agreements", ["agreement_salary", "agreement_personal"]],
 ];
 

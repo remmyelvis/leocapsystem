@@ -29,6 +29,10 @@ export const PUBLIC_PAGES: Record<string, PageSeo> = {
     title: "Privacy Policy | Leocap Invest",
     description: "How Leocap Invest collects, uses, shares and protects your personal data, how long we keep it, and the rights you have over it.",
   },
+  "/terms-and-conditions": {
+    title: "Terms and Conditions | Leocap Invest",
+    description: "The terms for using the Leocap Invest website and online loan application: your account, applications and approval, acceptable use, and how complaints and disputes are handled.",
+  },
   "/register": {
     title: "Create an Account to Apply for a Loan | Leocap Invest",
     description: "Register with Leocap Invest to apply for a salary advance or a personal loan online. It takes about a minute to create your account.",

@@ -155,7 +155,7 @@ export function go(step: string, c: Ctx): Reply {
         mood: "hello",
         blocks: [
           text("Fair question. You apply entirely online, with no paperwork and no branch visits. We handle your personal data under the Kenya Data Protection Act, 2019, and we never sell it."),
-          { t: "actions", items: [{ label: "Read the Privacy Policy", to: "/privacy-policy" }] },
+          { t: "actions", items: [{ label: "Read the Privacy Policy", to: "/privacy-policy" }, { label: "Read the Terms", to: "/terms-and-conditions" }] },
         ],
         chips: [CHIP.how, CHIP.cost, CHIP.human],
       };

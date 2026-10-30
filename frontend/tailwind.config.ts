@@ -6,6 +6,9 @@ const config: Config = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    // Also hold class names: the site-content text renderer and the status colours (lib/), and the root layout (App.tsx).
+    "./src/lib/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/App.tsx",
   ],
   theme: {
     extend: {

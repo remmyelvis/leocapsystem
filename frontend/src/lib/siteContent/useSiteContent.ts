@@ -41,6 +41,9 @@ const listOf = (v: unknown, ok: (x: Record<string, unknown>) => boolean) => Arra
 const allStrings = (v: Record<string, unknown>, keys: string[]) => keys.every((k) => isStr(v[k]));
 const count = (v: unknown, lo: number, hi: number) => Array.isArray(v) && v.length >= lo && v.length <= hi;
 
+/** The Privacy Policy and the Terms and Conditions share one shape: numbered sections, each a title and text. */
+const policy = (v: unknown) => isObj(v) && count(v.items, 1, 30) && listOf(v.items, (s) => isStr(s.title) && isStr(s.body));
+
 const SHAPE: { [K in keyof SiteBlocks]: (v: unknown) => boolean } = {
   contact: (v) =>
     isObj(v) && isStr(v.email) && isStr(v.address) && isStr(v.maps_url) && (v.hours === undefined || isStr(v.hours)) && listOf(v.phones, (p) => isStr(p.number)) && (v.phones as unknown[]).length > 0,
@@ -72,7 +75,8 @@ const SHAPE: { [K in keyof SiteBlocks]: (v: unknown) => boolean } = {
   home_headings: (v) => isObj(v) && allStrings(v, ["contact_eyebrow", "contact_title", "contact_lead", "testimonials_eyebrow", "testimonials_title", "testimonials_lead"]),
   agreement_salary: () => false, // served by their own endpoint, never merged into the pages' content
   agreement_personal: () => false,
-  privacy: (v) => isObj(v) && count(v.items, 1, 30) && listOf(v.items, (s) => isStr(s.title) && isStr(s.body)),
+  privacy: policy,
+  terms: policy,
   faq: (v) =>
     isObj(v) &&
     listOf(v.items, (f) => isStr(f.id) && isStr(f.q) && isStr(f.a) && (TOPICS as readonly unknown[]).includes(f.topic) && typeof f.popular === "boolean") &&

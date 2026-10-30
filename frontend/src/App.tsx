@@ -69,6 +69,7 @@ const Page43 = lazy(loadSignIn);
 const Page46 = lazy(() => import('./pages/login/page'));
 const loadPrivacy = () => import('./pages/privacy-policy/page');
 const Page48 = lazy(loadPrivacy);
+const TermsPage = lazy(() => import('./pages/terms-and-conditions/page'));
 const loadFaq = () => import('./pages/faq/page');
 const FaqPage = lazy(loadFaq);
 const loadRegister = () => import('./pages/register/page');
@@ -175,6 +176,7 @@ function App() {
       <Route path="/login" element={<Page46 />} />
       <Route path="/" element={<Page47 />} />
       <Route path="/privacy-policy" element={<Page48 />} />
+      <Route path="/terms-and-conditions" element={<TermsPage />} />
       <Route path="/faq" element={<FaqPage />} />
       <Route path="/register" element={<Page49 />} />
       {/* Demo only: the role picker and the presenter's tools. IS_DEMO is a build-time constant, so the live build contains none of it. */}

@@ -75,6 +75,7 @@ export const PAGE_FOR: Record<BlockKey, string | null> = {
   home_how: "/",
   home_headings: "/",
   privacy: "/privacy-policy",
+  terms: "/terms-and-conditions",
   agreement_salary: null,
   agreement_personal: null,
 };

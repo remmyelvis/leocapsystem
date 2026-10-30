@@ -22,6 +22,9 @@ const registerSchema = z.object({
     ),
   applicant_type: z.string().min(1, "Please select your company, or Personal"),
   password: z.string().min(6, "Password must be at least 6 characters"),
+  termsAccepted: z.literal(true, {
+    error: "You must accept the Terms and Conditions to create an account",
+  }),
   privacyAccepted: z.literal(true, {
     error: "You must accept the Privacy Policy to create an account",
   }),
@@ -73,6 +76,7 @@ export default function RegisterPage() {
     if (window.matchMedia("(min-width: 1024px)").matches) setFocus("name");
   }, [setFocus]);
 
+  const isTermsAccepted = watch("termsAccepted");
   const isPrivacyAccepted = watch("privacyAccepted");
   const password = watch("password") ?? "";
 
@@ -142,6 +146,20 @@ export default function RegisterPage() {
 
           <div>
             <label className="flex cursor-pointer select-none items-start gap-3 rounded-xl border border-slate-200 p-4 transition-colors hover:bg-slate-50 has-[:checked]:border-brand-blue/40 has-[:checked]:bg-blue-50/40 has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-brand-blue/10">
+              <input type="checkbox" {...register("termsAccepted")} className="mt-0.5 h-5 w-5 flex-shrink-0 cursor-pointer rounded border-slate-300 accent-[#0F2C59]" />
+              <span className="text-[13px] leading-relaxed text-slate-600">
+                I have read and agree to the{" "}
+                <a href="/terms-and-conditions" target="_blank" rel="noopener noreferrer" className="font-semibold text-brand-blue hover:underline">
+                  Terms and Conditions
+                </a>
+                .
+              </span>
+            </label>
+            {errors.termsAccepted && <FieldError id="reg-terms-err">{errors.termsAccepted.message}</FieldError>}
+          </div>
+
+          <div>
+            <label className="flex cursor-pointer select-none items-start gap-3 rounded-xl border border-slate-200 p-4 transition-colors hover:bg-slate-50 has-[:checked]:border-brand-blue/40 has-[:checked]:bg-blue-50/40 has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-brand-blue/10">
               <input type="checkbox" {...register("privacyAccepted")} className="mt-0.5 h-5 w-5 flex-shrink-0 cursor-pointer rounded border-slate-300 accent-[#0F2C59]" />
               <span className="text-[13px] leading-relaxed text-slate-600">
                 I have read and understood the{" "}
@@ -154,7 +172,7 @@ export default function RegisterPage() {
             {errors.privacyAccepted && <FieldError id="reg-privacy-err">{errors.privacyAccepted.message}</FieldError>}
           </div>
 
-          <AuthSubmit loading={isLoading} loadingLabel="Creating account…" disabled={!isPrivacyAccepted}>
+          <AuthSubmit loading={isLoading} loadingLabel="Creating account…" disabled={!isTermsAccepted || !isPrivacyAccepted}>
             Create account
           </AuthSubmit>
         </form>

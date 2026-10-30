@@ -96,6 +96,11 @@ export default function SiteFooter({ home = true }: { home?: boolean }) {
                 </Link>
               </li>
               <li>
+                <Link to="/terms-and-conditions" className={footerLink}>
+                  Terms &amp; Conditions
+                </Link>
+              </li>
+              <li>
                 {/* No "noreferrer": the consultancy's own site statistics can then see that the visit came from here. */}
                 <a href={CONSULTANCY_URL} target="_blank" rel="noopener" className={`${footerLink} gap-1.5`}>
                   Leocap Consultancy

@@ -114,6 +114,7 @@ export interface SiteBlocks {
   home_how: HowBlock;
   home_headings: HeadingsBlock;
   privacy: { items: PolicySection[] };
+  terms: { items: PolicySection[] };
   /** Never part of the public pages' content: the forms fetch them from /api/site-content/agreement/<kind>. The built-in text lives on the server. */
   agreement_salary: AgreementBlock;
   agreement_personal: AgreementBlock;

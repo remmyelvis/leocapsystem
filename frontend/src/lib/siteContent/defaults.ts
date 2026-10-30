@@ -421,4 +421,155 @@ Such communications shall be conducted in accordance with applicable law and the
       },
     ],
   },
+  terms: {
+    items: [
+      {
+        title: "About these Terms",
+        body: `These Terms and Conditions ("Terms") apply when you use the Leocap Invest website and online loan application (together, the "Platform"). Leocap Invest ("Leocap", "we", "our" or "us") is based in Nairobi, Kenya.
+
+By creating an account, or by using the Platform to apply for a loan, you agree to these Terms. If you do not agree, please do not use the Platform.
+
+Three documents work together:
+- These Terms, which cover your use of the Platform;
+- The Loan Agreement, which you accept when you apply and which governs each loan;
+- The [Privacy Policy](/privacy-policy), which explains how we handle your personal data.`,
+      },
+      {
+        title: "Who can use the Platform",
+        body: `To use the Platform you must:
+- Be an individual aged 18 or over, with the legal capacity to enter into a binding contract;
+- Apply only for yourself, using your own details and documents;
+- Give us accurate and complete information.
+
+A Salary Advance is for staff of the partner companies we have an arrangement with. A Personal Loan is for individuals. The company you choose when you create your account decides which loan you see.
+
+Some accounts, such as those for HR and Finance users, are set up by us for a specific purpose and may be used only for that purpose.`,
+      },
+      {
+        title: "Your account",
+        body: `- Give us accurate, complete and current details when you register, and keep your profile up to date;
+- Keep one account only;
+- Keep your password private. Do not share it, and choose one that others cannot guess;
+- You are responsible for what happens on your account. If you think someone else has used it, change your password and tell us straight away.`,
+      },
+      {
+        title: "Information and documents you give us",
+        body: `You confirm that everything you tell us, and every document you upload, is true, complete and your own. You must not give us false, altered or borrowed information or documents.
+
+You allow us to check what you give us, including with your employer for a Salary Advance, and to ask for more information or documents when we need them. If a document is not accepted, we tell you why so that you can upload the right one.
+
+Giving false information breaks these Terms and the Loan Agreement. We may decline or cancel your application, close your account and take any action the law allows.`,
+      },
+      {
+        title: "Applying for a loan",
+        body: `When you submit an application you are asking us to lend to you. It is not an offer, and sending it does not mean you will be approved.
+
+We decide each application after reviewing it. We may approve it, approve a smaller amount, or decline it. Our decision can depend on your profile and documents, verification of your employment, our own credit assessment and, for a Salary Advance, the limits agreed with your employer.
+
+For a Personal Loan, we set the interest rate after reviewing your application and show it to you as Review Rate. The loan goes ahead only if you accept it.
+
+For a Salary Advance, we confirm your employment and pay details with your employer, and your employer is told about the advance so that repayments can be deducted from your salary. The Loan Agreement and the [Privacy Policy](/privacy-policy) explain this.
+
+The figures shown by our calculators and by the Leo chat assistant are estimates to help you plan. They are not an offer. What you will receive and repay is shown on your application and in your Loan Agreement.
+
+Times we quote, such as approval within 24 hours and funds within 24 hours of approval, are what we aim for, not a guarantee. They depend on a complete profile, your documents, verification, and the availability of M-Pesa or your bank.`,
+      },
+      {
+        title: "Your Loan Agreement",
+        body: `Every loan is governed by a Loan Agreement. You read and accept it on the application form before you submit. It sets out the loan amount, fees, interest, repayment, what happens if a payment is missed, and how we may recover what you owe.
+
+When you accept, we keep the exact text you accepted, with the date, the time and a reference code. A later change to the Loan Agreement never changes the text that applies to your loan.
+
+You agree that accepting an agreement online, by ticking its box and submitting your application, has the same effect as signing it on paper.
+
+If these Terms and your Loan Agreement disagree about your loan, the Loan Agreement prevails.`,
+      },
+      {
+        title: "Repayment",
+        body: `Once your loan has been paid out, your dashboard shows what you owe and when it is due. Please pay on or before the due date.
+
+For a Salary Advance, repayment is deducted from your salary through your employer, as the Loan Agreement describes. Fees, interest and the charges that apply when a payment is late or missed are set out in the Loan Agreement.
+
+Please borrow only what you can repay on time. If you think you may not be able to pay by the due date, contact us before it, so that we can talk about it.`,
+      },
+      {
+        title: "Using the Platform properly",
+        body: `You must not:
+- Pretend to be someone else, or apply on another person's behalf;
+- Upload forged, altered or stolen documents;
+- Try to get into accounts, systems or areas of the Platform that are not yours, or look for ways around its security;
+- Overload or disrupt the Platform, or use bots, scrapers or other automated tools on it;
+- Introduce viruses or other harmful code;
+- Use the Platform for fraud, money laundering or any other unlawful purpose.
+
+We may report unlawful activity to the authorities and share the information needed to do so.`,
+      },
+      {
+        title: "Messages from us",
+        body: `We contact you, using the email address and phone number on your account, about your account, your applications and your loans. For example, to confirm a change of status, ask for a document, send a reminder or give you a notice. If a loan falls behind, the [Privacy Policy](/privacy-policy) explains who else we may contact.
+
+Please keep your email address and phone number up to date. A notice we send to the details on your account counts as received by you.`,
+      },
+      {
+        title: "Availability of the Platform",
+        body: `We work to keep the Platform available, but we cannot promise that it will always be uninterrupted or free of errors. It may be unavailable during maintenance, or because of things outside our control, such as network or power failures, or an outage at M-Pesa or a bank.
+
+We may change, add or remove features, including loan products, at any time. A product marked Coming Soon is not yet available.`,
+      },
+      {
+        title: "Our content and ownership",
+        body: "The Platform, its design, text and logos, the Leocap Invest name and the software behind it belong to us or are used with permission. We give you a personal, limited licence to use the Platform for your own account and applications. You may not copy, sell, modify or reverse-engineer any part of it, or use our name or logo, without our written permission.",
+      },
+      {
+        title: "Suspending or closing an account",
+        body: `We may suspend or close an account, or decline an application, if:
+- You break these Terms or the Loan Agreement;
+- We believe the information or documents you gave us are false;
+- We suspect fraud or other unlawful activity;
+- The law, a court or a regulator requires it.
+
+You may ask us to close your account at any time. Closing an account does not cancel a loan or any amount you owe. We keep records as the [Privacy Policy](/privacy-policy) describes.`,
+      },
+      {
+        title: "Our responsibility",
+        body: `The Platform and the information on it are general guidance. Nothing on it is financial, legal or tax advice.
+
+Nothing in these Terms limits any liability that the law does not allow us to limit, including liability for fraud.
+
+To the extent the law allows, we are not responsible for:
+- Delays or failures caused by events outside our reasonable control, including network, power, M-Pesa or bank outages;
+- Loss caused by wrong details you gave us, such as an incorrect M-Pesa number or bank account;
+- Indirect or consequential loss, such as lost income or lost opportunity.`,
+      },
+      {
+        title: "Changes to these Terms",
+        body: `We may update these Terms from time to time, for example when our services or the law change. The version on this page is always the current one, and a change applies from the day it is published unless it says otherwise. Where we reasonably can, we will tell you about an important change in advance, with a notice on the Platform or by email.
+
+If you keep using the Platform after a change, you accept the updated Terms. If you do not agree, stop using the Platform and contact us to close your account. A change never alters a Loan Agreement you have already accepted.`,
+      },
+      {
+        title: "Complaints, disputes and governing law",
+        body: `If you have a complaint, please tell us first, using the contact details below. We will look into it and reply as soon as we reasonably can. Most problems can be settled by talking.
+
+If a dispute cannot be settled that way, it may be taken to the courts of competent jurisdiction in Kenya. These Terms are governed by the laws of Kenya.
+
+For a concern about your personal data you may also contact the Office of the Data Protection Commissioner.`,
+      },
+      {
+        title: "General",
+        body: "If any part of these Terms is found to be unenforceable, the rest still applies. If we do not enforce a right straight away, we have not given it up. You may not transfer your rights or duties under these Terms to anyone else. We may transfer ours to a successor of our business.",
+      },
+      {
+        title: "Contact us",
+        body: `If you have a question about these Terms, you may contact:
+
+> **Leocap Invest**
+>
+> **Email:** {{email}}
+> **Telephone:** {{phones}}
+> **Physical Address:** {{address}}
+> **Postal Address:** P.O. Box 184-00100 GPO, Nairobi, Kenya`,
+      },
+    ],
+  },
 };
