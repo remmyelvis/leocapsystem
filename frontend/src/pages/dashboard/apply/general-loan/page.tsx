@@ -1093,7 +1093,7 @@ export default function GeneralLoanPage() {
               <Button
                 type="submit"
                 disabled={isSubmitting || !termsAccepted || !privacyAccepted}
-                className={`font-bold rounded-lg px-6 transition-all ${isSubmitting || !termsAccepted || !privacyAccepted
+                className={`font-display font-semibold rounded-lg px-6 transition-all ${isSubmitting || !termsAccepted || !privacyAccepted
                   ? "bg-gray-300 text-slate-500 cursor-not-allowed opacity-50"
                   : "bg-red-600 hover:bg-red-700 text-white transition-colors"
                   }`}

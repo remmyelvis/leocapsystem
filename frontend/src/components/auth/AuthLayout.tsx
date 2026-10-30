@@ -109,7 +109,7 @@ function Eyebrow({ children }: { children: ReactNode }) {
   return (
     <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-[#081430]/50 px-3.5 py-1.5 backdrop-blur-sm">
       <span className="h-2 w-2 rounded-full bg-red-400 motion-safe:animate-pulse" />
-      <span className="text-[12px] font-semibold tracking-wide text-white">{children}</span>
+      <span className="font-display text-[12px] font-semibold tracking-wide text-white">{children}</span>
     </div>
   );
 }
@@ -141,7 +141,7 @@ export default function AuthLayout({
         <MarkMotif className="pointer-events-none absolute -bottom-10 -right-8 w-52" />
         <div className="relative mx-auto max-w-[400px]">
           <Eyebrow>{copy.eyebrow}</Eyebrow>
-          <p className="mt-5 text-[24px] font-bold leading-tight tracking-[-0.01em]">
+          <p className="mt-5 font-display text-[24px] font-bold leading-tight tracking-[-0.01em] max-[359px]:text-[22px]">
             {copy.lead}
             <span className="bg-gradient-to-r from-red-300 via-red-200 to-amber-200 bg-clip-text text-transparent">{copy.accent}</span>
           </p>
@@ -187,7 +187,7 @@ export default function AuthLayout({
         <div className="relative mx-auto flex h-full w-full max-w-[520px] flex-col justify-between">
           <div className="relative">
             <Eyebrow>{copy.eyebrow}</Eyebrow>
-            <p className="mt-8 text-[40px] font-bold leading-[1.12] tracking-[-0.015em]">
+            <p className="mt-8 font-display text-[40px] font-bold leading-[1.12] tracking-[-0.015em]">
               {copy.lead}
               <span className="bg-gradient-to-r from-red-300 via-red-200 to-amber-200 bg-clip-text text-transparent">{copy.accent}</span>
             </p>

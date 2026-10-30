@@ -869,7 +869,7 @@ export default function SalaryAdvancePage() {
               type="submit"
               form="salary-advance-form"
               disabled={isLoading || !termsAccepted || !privacyAccepted}
-              className={`w-full font-bold h-9 rounded-lg text-sm transition-all ${
+              className={`w-full font-display font-semibold h-9 rounded-lg text-sm transition-all ${
                 isLoading || !termsAccepted || !privacyAccepted
                   ? "bg-gray-300 text-slate-500 cursor-not-allowed opacity-50"
                   : "bg-red-600 hover:bg-red-700 text-white"

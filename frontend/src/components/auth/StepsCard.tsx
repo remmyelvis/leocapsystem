@@ -42,7 +42,7 @@ export default function StepsCard({
   return (
     <div className="rounded-2xl bg-white/[0.06] p-5 ring-1 ring-white/15 backdrop-blur-sm">
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-[13px] font-extrabold text-white">{title}</p>
+        <p className="font-display text-[13px] font-bold text-white">{title}</p>
         {tag && <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white/85">{tag}</span>}
       </div>
 

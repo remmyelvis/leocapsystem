@@ -31,7 +31,7 @@ export default function NextStepHero({ name, greeting = "Welcome back", step, er
           <>
             <h1 className="mt-2 text-xl font-extrabold leading-tight tracking-tight">We could not load your loans</h1>
             <p className="mt-1.5 text-[14px] leading-snug text-white/85">{error}</p>
-            <Button onClick={() => window.location.reload()} className="mt-4 h-[44px] rounded-lg bg-white px-5 text-[14px] font-bold text-blue-950 hover:bg-blue-50">
+            <Button onClick={() => window.location.reload()} className="mt-4 h-[44px] rounded-lg bg-white px-5 font-display text-[14px] font-semibold text-blue-950 hover:bg-blue-50">
               Try again
             </Button>
           </>
@@ -78,7 +78,7 @@ export default function NextStepHero({ name, greeting = "Welcome back", step, er
             <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1">
               {step.cta && (
                 <Link to={step.cta.to}>
-                  <Button className="h-[44px] rounded-lg bg-white px-5 text-[14px] font-bold text-blue-950 hover:bg-blue-50">
+                  <Button className="h-[44px] rounded-lg bg-white px-5 font-display text-[14px] font-semibold text-blue-950 hover:bg-blue-50">
                     {step.cta.label}
                     <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
                   </Button>

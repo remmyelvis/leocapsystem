@@ -70,7 +70,7 @@ export default function BorrowerCalculatorPage() {
         <div className="space-y-4 rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80" aria-live="polite">
           <div>
             <p className="text-[13px] font-medium text-slate-500">You could borrow up to</p>
-            <p className="text-3xl font-extrabold tracking-tight tabular-nums text-brand-blue">{kes(top)}</p>
+            <p className="font-display text-3xl font-bold tracking-tight tabular-nums text-brand-blue">{kes(top)}</p>
             {limited && <p className="mt-1 text-xs text-slate-500">Your limit is {kes(limit as number)}, so that is the most you can ask for.</p>}
           </div>
 

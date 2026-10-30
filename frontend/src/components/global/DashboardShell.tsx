@@ -150,7 +150,7 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
         </header>
 
         {/* Page content — add bottom padding on mobile for bottom nav */}
-        <main className="leo-room leo-room-nav relative flex-1 overflow-y-auto w-full">
+        <main className="leo-room leo-room-nav relative flex-1 overflow-y-auto w-full [&_h1]:font-display [&_h2]:font-display [&_h3]:font-display">
           {children}
         </main>
         {/* a page can draw a bar here (the apply form's "you receive" and Submit): above the phone's tab bar, and the page above it ends where the bar starts */}

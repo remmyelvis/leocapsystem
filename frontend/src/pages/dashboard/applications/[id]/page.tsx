@@ -808,7 +808,7 @@ export default function ApplicationDetailPage() {
                 <p className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">
                   Proposed Interest Rate
                 </p>
-                <p className="text-4xl font-bold text-blue-900">
+                <p className="font-display text-4xl font-bold text-blue-900">
                   {((effectiveInterestRate ?? 0) * 100).toFixed(0)}%
                 </p>
                 <p className="text-xs text-blue-600 mt-1">

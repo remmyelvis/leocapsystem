@@ -174,7 +174,7 @@ export function AuthSubmit({ loading, loadingLabel, children, disabled }: { load
     <button
       type="submit"
       disabled={loading || disabled}
-      className="group flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-brand-blue text-[15px] font-semibold text-white shadow-[0_10px_24px_-10px_rgba(15,44,89,0.65)] transition-all hover:bg-[#0b2246] hover:shadow-[0_12px_28px_-10px_rgba(15,44,89,0.75)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-blue/25 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-600 disabled:shadow-none"
+      className="group flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-brand-blue font-display text-[15px] font-semibold text-white shadow-[0_10px_24px_-10px_rgba(15,44,89,0.65)] transition-all hover:bg-[#0b2246] hover:shadow-[0_12px_28px_-10px_rgba(15,44,89,0.75)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-blue/25 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-600 disabled:shadow-none"
     >
       {loading ? (
         <>
@@ -211,7 +211,7 @@ export function MatchNote({ show }: { show: boolean }) {
 export function AuthHeading({ title, sub }: { title: string; sub?: ReactNode }) {
   return (
     <>
-      <h1 className="text-[28px] font-bold leading-tight tracking-[-0.015em] text-slate-900">{title}</h1>
+      <h1 className="font-display text-[28px] font-bold leading-tight tracking-[-0.015em] text-slate-900">{title}</h1>
       {sub && <p className="mt-1.5 text-[14px] leading-relaxed text-slate-600">{sub}</p>}
     </>
   );
@@ -221,7 +221,7 @@ export function AuthLinkButton({ to, children }: { to: string; children: ReactNo
   return (
     <Link
       to={to}
-      className="group flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-brand-blue text-[15px] font-semibold text-white shadow-[0_10px_24px_-10px_rgba(15,44,89,0.65)] transition-all hover:bg-[#0b2246] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-blue/25"
+      className="group flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-brand-blue font-display text-[15px] font-semibold text-white shadow-[0_10px_24px_-10px_rgba(15,44,89,0.65)] transition-all hover:bg-[#0b2246] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-blue/25"
     >
       {children}
       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />

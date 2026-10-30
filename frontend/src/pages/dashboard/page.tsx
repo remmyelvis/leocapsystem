@@ -327,7 +327,7 @@ export default function DashboardPage() {
                 <Icon className="h-[18px] w-[18px] text-white" />
               </div>
               <div>
-                <p className="text-2xl font-extrabold leading-none tracking-tight text-slate-900">
+                <p className="font-display text-2xl font-bold leading-none tracking-tight text-slate-900">
                   <CountUp value={String(value)} />
                 </p>
                 <p className="text-xs text-slate-500 font-medium">{label}</p>
