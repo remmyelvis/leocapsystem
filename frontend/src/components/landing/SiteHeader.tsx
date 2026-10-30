@@ -150,7 +150,7 @@ export default function SiteHeader({ home = true, current, skipTo = "#main-conte
                   </Button>
                 </Link>
                 <Link to={APPLY_TO}>
-                  <Button className="bg-red-600 font-bold text-white shadow-md shadow-red-900/20 hover:bg-red-700">Apply Now</Button>
+                  <Button className="bg-red-600 font-display font-semibold text-white shadow-md shadow-red-900/20 hover:bg-red-700">Apply Now</Button>
                 </Link>
               </>
             )}
@@ -216,7 +216,7 @@ export default function SiteHeader({ home = true, current, skipTo = "#main-conte
                 ) : (
                   <>
                     <Link to={APPLY_TO} onClick={close}>
-                      <Button className="h-12 w-full bg-red-600 text-[15px] font-bold text-white hover:bg-red-700">Apply Now</Button>
+                      <Button className="h-12 w-full bg-red-600 font-display text-[15px] font-semibold text-white hover:bg-red-700">Apply Now</Button>
                     </Link>
                     <Link to={SIGN_IN_TO} onClick={close}>
                       <Button variant="outline" className="h-12 w-full border-white/50 bg-transparent text-[15px] font-semibold text-white hover:bg-white/10 hover:text-white">

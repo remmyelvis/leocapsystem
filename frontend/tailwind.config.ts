@@ -71,6 +71,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["Plus Jakarta Sans", "Inter", "sans-serif"],
+        display: ["Outfit", "Outfit Fallback", "Plus Jakarta Sans", "sans-serif"],
       },
       keyframes: {
         "auth-rise": {

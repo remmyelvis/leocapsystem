@@ -32,12 +32,12 @@ export default function PrivacyPolicyPage() {
         </div>
 
         <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 sm:p-10">
-          <h1 className="text-3xl font-black text-slate-900 mb-6">PRIVACY POLICY</h1>
+          <h1 className="font-display text-3xl font-bold text-slate-900 mb-6">PRIVACY POLICY</h1>
           <div className="prose prose-blue max-w-none text-slate-600 text-sm leading-relaxed space-y-6">
             {/* The sections are editable content (Admin > Site content > Privacy policy); the number comes from the position. */}
             {privacy.items.map((section, i) => (
               <section key={i}>
-                <h2 className="text-lg font-bold text-slate-900 mb-2">
+                <h2 className="font-display text-lg font-bold text-slate-900 mb-2">
                   {i + 1}. {section.title}
                 </h2>
                 <div className="space-y-2">

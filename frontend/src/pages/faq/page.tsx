@@ -144,12 +144,12 @@ export default function FaqPage() {
       <section className="relative isolate overflow-hidden px-4 pb-16 pt-32 text-white sm:px-6 lg:px-8" style={navy("linear-gradient(160deg, #0F2C59 0%, #0b2246 55%, #081430 100%)")}>
         <MarkMotif className="pointer-events-none absolute -bottom-20 -right-10 -z-10 w-[420px]" strength={1.4} />
         <div className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-red-300">
+          <span className="inline-flex items-center gap-3 font-display text-xs font-semibold uppercase tracking-widest text-red-300">
             <span className="h-px w-6 bg-current opacity-60" aria-hidden />
             Help
             <span className="h-px w-6 bg-current opacity-60" aria-hidden />
           </span>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl max-sm:!text-[clamp(26px,7.4vw,32px)]">Frequently Asked Questions</h1>
+          <h1 className="mt-3 font-display text-3xl font-bold tracking-[-0.015em] sm:text-4xl max-sm:!text-[clamp(26px,7.4vw,32px)]">Frequently Asked Questions</h1>
           <p className="mx-auto mt-3 max-w-xl text-[15px] leading-relaxed text-white/85">Quick answers about applying, documents, repayment and your account.</p>
 
           <div className="relative mt-8">
@@ -259,7 +259,7 @@ export default function FaqPage() {
               {grouped.map((g) => (
                 <section key={g.topic} aria-labelledby={`topic-${g.topic}`}>
                   {(topic === "All" || grouped.length > 1) && (
-                    <h2 id={`topic-${g.topic}`} className="mb-3 text-[13px] font-bold uppercase tracking-widest text-red-700">
+                    <h2 id={`topic-${g.topic}`} className="mb-3 font-display text-[13px] font-semibold uppercase tracking-widest text-red-700">
                       {g.topic}
                     </h2>
                   )}
@@ -276,7 +276,7 @@ export default function FaqPage() {
           {/* Still stuck */}
           <Reveal className="mt-14">
             <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-              <h2 className="text-xl font-extrabold tracking-tight text-slate-900">Still have a question?</h2>
+              <h2 className="font-display text-xl font-bold tracking-tight text-slate-900">Still have a question?</h2>
               <p className="mt-1.5 text-[15px] text-slate-700">Our team is happy to help. We typically respond within 1 business day.</p>
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
                 <a href={`mailto:${contact.email}`} className="group flex items-start gap-3 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 transition-colors hover:bg-white hover:ring-brand-blue/30">

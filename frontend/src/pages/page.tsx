@@ -57,8 +57,8 @@ function HeroCard({ product, stepNames }: { product: ProductCard; stepNames: str
             <Briefcase className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="text-[17px] font-extrabold leading-tight text-white">{product.title}</p>
-            <p className="mt-0.5 text-[12px] font-bold uppercase tracking-wider text-blue-100">{product.tag}</p>
+            <p className="font-display text-[17px] font-bold leading-tight text-white">{product.title}</p>
+            <p className="mt-0.5 font-display text-[12px] font-semibold uppercase tracking-wider text-blue-100">{product.tag}</p>
           </div>
         </div>
 
@@ -130,11 +130,11 @@ function HeroSection() {
           {/* Badge */}
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/25 bg-[#081430]/50 px-4 py-1.5 backdrop-blur-sm motion-safe:animate-auth-rise">
             <span className="h-2 w-2 rounded-full bg-red-400 motion-safe:animate-pulse" />
-            <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-blue-50">{hero.badge}</span>
+            <span className="font-display text-[12px] font-semibold uppercase tracking-[0.14em] text-blue-50">{hero.badge}</span>
           </div>
 
           {/* globals.css forces every h1 to 1.5rem under 640px; keep the hero headline display-sized on phones */}
-          <h1 className="mb-6 text-4xl font-extrabold leading-[1.1] tracking-tight text-white drop-shadow-[0_2px_24px_rgba(8,20,48,0.45)] sm:text-5xl lg:text-6xl max-sm:!text-[clamp(28px,8.6vw,36px)] max-sm:!leading-[1.12]">
+          <h1 className="mb-6 font-display text-4xl font-bold leading-[1.1] tracking-[-0.015em] text-white drop-shadow-[0_2px_24px_rgba(8,20,48,0.45)] sm:text-5xl lg:text-6xl max-sm:!text-[clamp(28px,8.6vw,36px)] max-sm:!leading-[1.12]">
             {hero.headline_1}
             <br />
             <span className="bg-gradient-to-r from-red-300 via-red-200 to-amber-200 bg-clip-text text-transparent">{hero.headline_2}</span>
@@ -148,7 +148,7 @@ function HeroSection() {
             <Link to={APPLY_TO}>
               <Button
                 size="lg"
-                className="group h-14 bg-red-600 px-8 text-[15px] font-bold text-white shadow-xl shadow-red-950/40 transition-transform hover:scale-105 hover:bg-red-700 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#081430] motion-reduce:transform-none sm:text-base"
+                className="group h-14 bg-red-600 px-8 font-display text-[15px] font-semibold text-white shadow-xl shadow-red-950/40 transition-transform hover:scale-105 hover:bg-red-700 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#081430] motion-reduce:transform-none sm:text-base"
               >
                 {hero.primary_label}
                 <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-0.5" />
@@ -157,7 +157,7 @@ function HeroSection() {
             <Button
               size="lg"
               variant="outline"
-              className="h-14 border-white/70 bg-white/10 px-8 text-[15px] font-semibold text-white backdrop-blur-sm hover:border-white hover:bg-white hover:text-blue-950 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#081430] sm:text-base"
+              className="h-14 border-white/70 bg-white/10 px-8 font-display text-[15px] font-semibold text-white backdrop-blur-sm hover:border-white hover:bg-white hover:text-blue-950 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#081430] sm:text-base"
               onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })}
             >
               {hero.secondary_label}
@@ -168,7 +168,7 @@ function HeroSection() {
           <dl className="grid grid-cols-3 gap-x-4 border-t border-white/15 pt-6 sm:gap-x-10">
             {hero.stats.map(({ label, value }, i) => (
               <div key={i}>
-                <dd className="order-first whitespace-nowrap text-[20px] font-extrabold leading-none tracking-tight text-white sm:text-[28px]">
+                <dd className="order-first whitespace-nowrap font-display text-[20px] font-bold leading-none tracking-tight text-white max-[359px]:text-[18px] sm:text-[28px]">
                   <CountUp key={value} value={value} />
                 </dd>
                 <dt className="mt-2 text-[12px] leading-tight text-blue-100 sm:text-[13px]">{label}</dt>
@@ -238,10 +238,10 @@ function ProductsSection() {
                   <product.icon className={`h-6 w-6 ${product.featured ? "text-white" : product.comingSoon ? "text-slate-500" : "text-brand-blue"}`} />
                 </div>
 
-                <span className={`relative mb-2 text-xs font-bold uppercase tracking-wider ${product.featured ? "text-blue-100" : "text-red-700"}`}>
+                <span className={`relative mb-2 font-display text-xs font-semibold uppercase tracking-wider ${product.featured ? "text-blue-100" : "text-red-700"}`}>
                   {product.tag}
                 </span>
-                <h3 className={`relative mb-3 text-xl font-extrabold tracking-tight ${product.featured ? "text-white" : "text-slate-900"}`}>{product.title}</h3>
+                <h3 className={`relative mb-3 font-display text-xl font-bold tracking-tight ${product.featured ? "text-white" : "text-slate-900"}`}>{product.title}</h3>
                 <p className={`relative mb-6 flex-1 text-[15px] leading-relaxed ${product.featured ? "text-white/85" : "text-slate-600"}`}>{product.description}</p>
 
                 <ul className="relative mb-8 space-y-3">
@@ -264,7 +264,7 @@ function ProductsSection() {
                 ) : (
                   <Link to={APPLY_TO} className="relative">
                     <Button
-                      className={`group h-11 w-full text-[14px] font-bold ${product.featured ? "bg-red-600 text-white hover:bg-red-700" : "border-brand-blue text-brand-blue hover:bg-blue-50"}`}
+                      className={`group h-11 w-full font-display text-[14px] font-semibold ${product.featured ? "bg-red-600 text-white hover:bg-red-700" : "border-brand-blue text-brand-blue hover:bg-blue-50"}`}
                       variant={product.featured ? "default" : "outline"}
                     >
                       Apply Now <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -322,7 +322,7 @@ function HowItWorks() {
                   </span>
                 </div>
                 <div>
-                  <h3 className="mb-2 text-xl font-extrabold tracking-tight text-slate-900 md:mb-3">{step.title}</h3>
+                  <h3 className="mb-2 font-display text-xl font-bold tracking-tight text-slate-900 md:mb-3">{step.title}</h3>
                   <p className="max-w-xs text-[15px] leading-relaxed text-slate-600">{step.description}</p>
                 </div>
               </Reveal>
@@ -337,11 +337,11 @@ function HowItWorks() {
           >
             <MarkMotif className="pointer-events-none absolute -bottom-16 right-24 w-64 sm:right-40" strength={1.5} />
             <div className="relative text-center sm:text-left">
-              <h3 className="text-2xl font-extrabold tracking-tight text-white">{how.cta.title}</h3>
+              <h3 className="font-display text-2xl font-bold tracking-tight text-white">{how.cta.title}</h3>
               <p className="mt-1 text-[15px] text-white/80">{how.cta.text}</p>
             </div>
             <Link to={APPLY_TO} className="relative">
-              <Button size="lg" className="group h-12 flex-shrink-0 bg-red-600 px-8 text-[15px] font-bold text-white shadow-lg shadow-red-950/40 hover:bg-red-700">
+              <Button size="lg" className="group h-12 flex-shrink-0 bg-red-600 px-8 font-display text-[15px] font-semibold text-white shadow-lg shadow-red-950/40 hover:bg-red-700">
                 {how.cta.button} <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </Link>

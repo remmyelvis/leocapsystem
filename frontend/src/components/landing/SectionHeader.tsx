@@ -14,12 +14,12 @@ export default function SectionHeader({
 }) {
   return (
     <Reveal className="mb-14 text-center sm:mb-16">
-      <span className={`inline-flex items-center gap-3 text-xs font-bold uppercase tracking-widest ${dark ? "text-red-300" : "text-red-700"}`}>
+      <span className={`inline-flex items-center gap-3 font-display text-xs font-semibold uppercase tracking-widest ${dark ? "text-red-300" : "text-red-700"}`}>
         <span className="h-px w-6 bg-current opacity-60" aria-hidden />
         {eyebrow}
         <span className="h-px w-6 bg-current opacity-60" aria-hidden />
       </span>
-      <h2 className={`mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl ${dark ? "text-white" : "text-slate-900"}`}>{title}</h2>
+      <h2 className={`mt-3 font-display text-3xl font-bold tracking-[-0.015em] sm:text-4xl ${dark ? "text-white" : "text-slate-900"}`}>{title}</h2>
       <p className={`mx-auto mt-4 max-w-xl text-[15px] leading-relaxed ${dark ? "text-white/80" : "text-slate-600"}`}>{children}</p>
     </Reveal>
   );
