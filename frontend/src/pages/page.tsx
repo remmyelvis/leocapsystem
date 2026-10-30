@@ -51,7 +51,7 @@ function HeroCard({ product, stepNames }: { product: ProductCard; stepNames: str
   return (
     <div aria-hidden className="relative mx-auto w-full max-w-md motion-safe:animate-float-slow">
       <div className="absolute inset-0 translate-x-3 translate-y-3 rounded-3xl bg-white/5 ring-1 ring-white/10" />
-      <div className="relative rounded-3xl bg-[#081430]/60 p-6 shadow-2xl shadow-black/40 ring-1 ring-white/20 backdrop-blur-xl">
+      <div className="relative rounded-3xl bg-[#0a1a3b]/85 p-6 shadow-2xl shadow-black/40 ring-1 ring-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-600">
             <Briefcase className="h-5 w-5 text-white" />
@@ -105,43 +105,38 @@ function HeroSection() {
   const contact = useContact();
 
   return (
-    <section id="home" className="relative isolate flex min-h-[100svh] items-center overflow-hidden bg-[#081430] pt-16">
-      {/* The photo is greyscale, so the navy scrim makes it a navy duotone instead of an unrelated colour cast (see .hero-photo in globals.css). */}
-      <div className="hero-photo absolute inset-0 -z-10" />
-      {/* Small screens: text spans the full width, so keep the scrim even top to bottom */}
+    <section id="home" className="relative isolate flex min-h-[100svh] items-center overflow-hidden bg-[#081430] pt-16 sm:min-h-[min(100svh,880px)] xl:min-h-[100svh]">
+      {/* One navy field, no photo: a lifted top-left corner, a lifted middle and a darker base ground the headline and the stats, and the grain keeps flat navy from reading as a template. */}
       <div
-        className="absolute inset-0 -z-10 lg:hidden"
-        style={navy("linear-gradient(to bottom, rgba(8,20,48,0.92), rgba(11,31,69,0.92) 55%, rgba(8,20,48,0.96))")}
-      />
-      {/* Large screens: solid navy behind the text column, easing off so the photo reads on the right */}
-      <div
-        className="absolute inset-0 -z-10 hidden lg:block"
+        className="absolute inset-0 -z-10"
         style={navy(
-          "radial-gradient(40% 50% at 80% 40%, rgba(59,130,246,0.22), transparent 70%), linear-gradient(100deg, rgba(8,20,48,0.96) 0%, rgba(11,31,69,0.92) 42%, rgba(15,44,89,0.62) 64%, rgba(15,44,89,0.48) 100%)",
+          "radial-gradient(46% 52% at 6% 0%, rgba(23,65,138,0.55), transparent 70%), linear-gradient(180deg, #081430 0%, #0b1f45 46%, #081430 100%)",
           2
         )}
       />
-      <MarkMotif className="pointer-events-none absolute -bottom-32 -right-24 -z-10 hidden w-[620px] lg:block" strength={1.3} />
-      {/* Grounds the stats at the bottom */}
-      <div className="absolute inset-x-0 bottom-0 -z-10 h-2/5 bg-gradient-to-t from-[#081430]/70 to-transparent" />
+      {/* The light pool is the one soft pull on the eye: behind the card on a wide screen, behind the Apply button on a phone (where there is no card). */}
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(80%_36%_at_50%_62%,rgba(37,99,235,0.26),transparent_70%)] lg:bg-[radial-gradient(52%_58%_at_78%_36%,rgba(37,99,235,0.30),transparent_70%)]" aria-hidden />
 
-      <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-14 px-4 py-24 sm:px-6 lg:px-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] [@media(max-height:780px)]:py-16">
-        <div className="max-w-2xl">
+      <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-14 px-4 py-24 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,360px)] lg:gap-10 lg:px-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] xl:gap-14 [@media(max-height:780px)]:py-16">
+        <div className="max-w-2xl md:max-w-3xl lg:max-w-2xl">
           {/* Badge */}
-          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/25 bg-[#081430]/50 px-4 py-1.5 backdrop-blur-sm motion-safe:animate-auth-rise">
+          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-4 py-1.5 motion-safe:animate-auth-rise">
             <span className="h-2 w-2 rounded-full bg-red-400 motion-safe:animate-pulse" />
             <span className="font-display text-[12px] font-semibold uppercase tracking-[0.14em] text-blue-50">{hero.badge}</span>
           </div>
 
           {/* globals.css forces every h1 to 1.5rem under 640px; keep the hero headline display-sized on phones */}
-          <h1 className="mb-6 font-display text-4xl font-bold leading-[1.1] tracking-[-0.015em] text-white drop-shadow-[0_2px_24px_rgba(8,20,48,0.45)] sm:text-5xl lg:text-6xl max-sm:!text-[clamp(28px,8.6vw,36px)] max-sm:!leading-[1.12]">
+          <h1 className="mb-6 font-display text-4xl font-bold leading-[1.1] tracking-[-0.015em] text-white sm:text-[clamp(2.75rem,7vw,3.75rem)] sm:leading-[1.08] lg:text-[clamp(2.5rem,4.45vw,3.375rem)] max-sm:!text-[clamp(28px,8.6vw,36px)] max-sm:!leading-[1.12]">
             {hero.headline_1}
             <br />
             <span className="bg-gradient-to-r from-red-300 via-red-200 to-amber-200 bg-clip-text text-transparent">{hero.headline_2}</span>
           </h1>
 
-          <p className="mb-10 max-w-xl text-pretty text-[17px] leading-relaxed text-blue-50 sm:text-xl">
-            <InlineText source={hero.intro} contact={contact} bold={(text, key) => <span key={key} className="font-semibold text-white">{text}</span>} />
+          <p className="mb-10 max-w-xl text-pretty text-[17px] leading-relaxed text-blue-100 sm:text-xl md:max-w-2xl lg:max-w-xl">
+            <InlineText source={hero.intro} contact={contact} bold={(text, key) => (
+                // A short bold phrase ("24 hours") stays on one line; a long one may still wrap.
+                <span key={key} className="font-semibold text-white">{text.length <= 16 ? text.replace(/ /g, "\u00a0") : text}</span>
+              )} />
           </p>
 
           <div className="mb-11 flex flex-wrap gap-4">
@@ -157,7 +152,7 @@ function HeroSection() {
             <Button
               size="lg"
               variant="outline"
-              className="h-14 border-white/70 bg-white/10 px-8 font-display text-[15px] font-semibold text-white backdrop-blur-sm hover:border-white hover:bg-white hover:text-blue-950 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#081430] sm:text-base"
+              className="h-14 border-white/50 bg-transparent px-8 font-display text-[15px] font-semibold text-white hover:border-white hover:bg-white hover:text-blue-950 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#081430] sm:text-base"
               onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })}
             >
               {hero.secondary_label}
@@ -177,7 +172,7 @@ function HeroSection() {
           </dl>
         </div>
 
-        <div className="hidden xl:block">
+        <div className="hidden lg:block">
           <HeroCard product={products.items[0]} stepNames={how.steps.map((x) => x.title)} />
         </div>
       </div>
