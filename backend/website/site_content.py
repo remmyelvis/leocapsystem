@@ -313,7 +313,8 @@ def _headings(data):
     return out
 
 
-def _privacy(data):
+def _policy(data):
+    """A legal page (Privacy Policy, Terms and Conditions): numbered sections, each a title and text in the small format (no buttons or ready-made blocks)."""
     c, d = _Check(), _object(data)
     out = []
     for i, s in enumerate(c.items(d.get("items"), "Sections", 1, 30), 1):
@@ -359,7 +360,8 @@ BLOCKS = {
     "home_headings": ("Home page: other headings", "The headings of the Contact and Testimonials sections.", _headings),
     "testimonials": ("Testimonials", "Client quotes. Only quotes marked as agreed by the client are ever shown to visitors.", _testimonials),
     "faq": ("FAQs", "The questions and answers on the FAQ page.", _faq),
-    "privacy": ("Privacy policy", "The sections of the Privacy Policy page. Section numbers follow the order.", _privacy),
+    "privacy": ("Privacy policy", "The sections of the Privacy Policy page. Section numbers follow the order.", _policy),
+    "terms": ("Terms and conditions", "The sections of the Terms and Conditions page: using the website and account, applications, acceptable use, disputes. Each loan is governed by its own Loan agreement (below). Section numbers follow the order.", _policy),
     "agreement_salary": ("Loan agreement: Salary Advance", "The agreement a borrower accepts when applying for a Salary Advance (HR and finance staff accept the same text for their own loans). Every acceptance is recorded with the exact text, so changing it never changes what earlier borrowers accepted.", _agreement_salary),
     "agreement_personal": ("Loan agreement: Personal Loan", "The agreement a borrower accepts when applying for a Personal Loan. Every acceptance is recorded with the exact text, so changing it never changes what earlier borrowers accepted.", _agreement_personal),
 }
