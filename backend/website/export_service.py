@@ -1,5 +1,5 @@
 from io import BytesIO
-from datetime import datetime
+from datetime import datetime, timedelta
 from PIL import Image as PILImage
 from website import bank_details as bank
 import os
@@ -799,75 +799,54 @@ def generate_debt_dossier_pdf(app, applicant, statements, docs, include_demand=F
     elements.append(t_loan)
     elements.append(Spacer(1, 10))
     
-    # 4. Electronic Agreement
+    # 4. Electronic Agreement. For an application made with acceptance records, the text is the exact snapshot the borrower was shown and
+    # the block below it is the real record (time, version, address and device, reference, seal). An older application has no record:
+    # it gets the built-in text of its kind and an honest "not recorded" instead of a claim.
     elements.append(Paragraph("3. ELECTRONIC AGREEMENT & CONSENT", heading_style))
-    company_name = str(applicant.applicant_type).replace('_', ' ').title() if applicant.applicant_type else "the Employer"
-    from website.cron import LATE_CHARGE_FROM
-    late_terms = bool(app.created_at and app.created_at >= LATE_CHARGE_FROM)  # older loans were accepted without this clause
-    late_clause = "c. A late-payment charge of 10% of the outstanding balance may be charged after 7 days of default;<br/>\n" if late_terms else ""
-    cheque_letter = "d" if late_terms else "c"
-    tc_text = f"""<b>LOAN AGREEMENT</b><br/><br/>
-This Loan Agreement ("Agreement") is made and deemed executed in Nairobi, Kenya on the date of electronic acceptance by the Borrower.<br/><br/>
-<b>PARTIES</b><br/>
-1. <b>LEOCAP INVEST</b>, a business duly incorporated/registered under the laws of the Republic of Kenya, of P.O. Box 184-00100 GPO, Nairobi (hereinafter referred to as the "Lender", which expression shall include its successors and assigns);<br/>
-AND<br/>
-2. <b>The Applicant</b>, being the individual whose identification details, employment details, and address are provided in the online application form (hereinafter referred to as the "Borrower", which expression shall include personal representatives and assigns).<br/><br/>
-<b>A. LOAN AMOUNT AND DISBURSEMENT</b><br/>
-The Lender agrees to advance to the Borrower a loan amount as approved through the online application system ("Loan Amount").<br/>
-The Borrower acknowledges that approval is subject to employment verification under the Memorandum of Understanding between the Lender and {company_name}.<br/>
-The Borrower shall pay:<br/>
-- A processing fee of 3%, An Admin & Access Fee of 2% of the Loan Amount, and<br/>
-- Legal Fees of KES 1,500<br/>
-These fees may be deducted upfront from the Loan Amount prior to disbursement.<br/><br/>
-<b>B. LOAN LIMIT</b><br/>
-The Borrower's approved loan limit shall be determined solely by the Lender based on internal credit assessment and employer MOU limits.<br/>
-The Lender reserves the right to review, vary, or revoke the loan limit at its discretion.<br/>
-The Borrower shall not be entitled to exceed the approved loan limit unless expressly authorized in writing.<br/><br/>
-<b>C. LOAN TERM</b><br/>
-The loan shall be for a maximum period of one (1) month, unless otherwise extended or rescheduled in writing by the Lender.<br/><br/>
-<b>D. INTEREST</b><br/>
-The Loan shall attract interest at the rate communicated and agreed at the time of approval.<br/>
-Interest shall accrue monthly and be payable together with the principal unless otherwise agreed.<br/><br/>
-<b>E. REPAYMENT</b><br/>
-The Borrower shall repay the Loan Amount together with interest in accordance with the repayment schedule provided.<br/>
-Repayment shall be effected through salary deduction under the employer check-off arrangement pursuant to the MOU with {company_name}.<br/>
-Any unpaid balance shall continue to accrue interest at the contractual rate until fully settled.<br/><br/>
-<b>F. DEFAULT</b><br/>
-An event of default occurs when the Borrower fails to pay any instalment on its due date.<br/>
-Upon default:<br/>
-a. The overdue instalment may be rescheduled subject to a rescheduling fee of 10% of the instalment or KES 1,500 (whichever is higher);<br/>
-b. A debt recovery fee of 15% of the outstanding balance may be charged after 7 days of default and issuance of demand notice;<br/>
-{late_clause}{cheque_letter}. Returned or unpaid cheques shall attract actual bank charges or KES 3,000 (whichever is higher) plus 15% collection fee.<br/>
-The Lender reserves the right to engage third-party debt collection agents or legal counsel for recovery.<br/><br/>
-<b>G. DATA PROTECTION AND DISCLOSURE CONSENT</b><br/>
-The Borrower expressly consents to the collection, processing, storage, and sharing of their personal and employment data strictly for purposes of:<br/>
-- Loan assessment and administration;<br/>
-- Salary verification and check-off processing;<br/>
-- Debt recovery and enforcement.<br/>
-The Borrower acknowledges that data may be shared with:<br/>
-- {company_name} (employer);<br/>
-- Authorized debt collection agents;<br/>
-- Legal practitioners; and<br/>
-- Regulatory authorities where required by law.<br/>
-All processing shall comply with the Data Protection Act, 2019 of Kenya.<br/><br/>
-<b>H. DISPUTE RESOLUTION</b><br/>
-Any dispute arising shall first be resolved amicably through negotiation.<br/>
-If unresolved, the dispute shall be referred to the courts of competent jurisdiction in Kenya.<br/><br/>
-<b>I. ELECTRONIC ACCEPTANCE</b><br/>
-The Borrower agrees that ticking acceptance on the online portal constitutes a legally binding electronic signature under Kenyan law.<br/>
-The Borrower confirms they have read, understood, and accepted all terms herein.<br/><br/>
-<b>J. ENTIRE AGREEMENT</b><br/>
-This Agreement constitutes the entire understanding between the parties and supersedes all prior representations or agreements.
-"""
+    from html import escape as _esc
+    from website import agreements as _ag
+
+    accepted = _ag.for_application(app.id)
+    if accepted is not None:
+        agreement = accepted.snapshot
+    else:
+        company_name = str(applicant.applicant_type).replace('_', ' ').title() if applicant.applicant_type else "the Employer"
+        agreement = _ag.legacy(app, company_name)
+
+    def _agreement_html(doc):
+        html = f"<b>{_esc(doc['title'])}</b><br/><br/>"
+        if doc.get("intro"):
+            html += _esc(doc["intro"]).replace("\n", "<br/>") + "<br/><br/>"
+        for sec in doc["items"]:
+            html += f"<b>{_esc(sec['title'])}</b><br/>" + _esc(sec["body"]).replace("\n", "<br/>") + "<br/><br/>"
+        return html
+
+    tc_text = _agreement_html(agreement)
     elements.append(Paragraph(tc_text, justified_style))
     elements.append(Spacer(1, 15))
-    
-    agree_data = [
-        ["Electronically Accepted By:", Paragraph(str(applicant.name), normal_style)],
-        ["Timestamp:", app.created_at.strftime('%Y-%m-%d %H:%M:%S') if app.created_at else "Time of Application"],
-        ["IP Address / Device:", "Verified via authenticated session"],
-        ["Consent Granted:", Paragraph("Read and accepted Loan Agreement T&Cs. Read and understood Privacy Policy and consented to data processing under the Data Protection Act, 2019.", small_style)]
-    ]
+
+    def _eat(moment):  # stored in UTC; shown in East Africa Time
+        return (moment + timedelta(hours=3)).strftime("%d %B %Y, %H:%M:%S") + " EAT"
+
+    consent = Paragraph("Read and accepted Loan Agreement T&amp;Cs. Read and understood Privacy Policy and consented to data processing under the Data Protection Act, 2019.", small_style)
+    if accepted is not None:
+        ok = _ag.verify(accepted)
+        agree_data = [
+            ["Electronically Accepted By:", Paragraph(_esc(str(applicant.name)), normal_style)],
+            ["Accepted On:", _eat(accepted.accepted_at)],
+            ["Agreement Version:", Paragraph(_esc(f"{accepted.snapshot.get('title', 'Loan Agreement')}, version {accepted.version}" + (" (the text built into the system)" if accepted.version == 0 else "")), normal_style)],
+            ["IP Address / Device:", Paragraph(_esc(f"{accepted.ip_address or 'not available'} / {accepted.device or 'not available'}"), normal_style)],
+            ["Acceptance Reference:", Paragraph(f"<b>{_esc(accepted.reference)}</b>", normal_style)],
+            ["Record Seal:", Paragraph(_esc(f"{accepted.seal[:8].upper()}-{accepted.seal[8:16].upper()}-{accepted.seal[16:24].upper()} (SHA-256 HMAC). At the time this file was produced the record matched its seal: {'YES' if ok else 'NO, THIS RECORD HAS BEEN CHANGED'}."), small_style)],
+            ["Consent Granted:", consent],
+        ]
+    else:
+        agree_data = [
+            ["Electronically Accepted By:", Paragraph(_esc(str(applicant.name)), normal_style)],
+            ["Timestamp:", (app.created_at.strftime('%Y-%m-%d %H:%M:%S') + " (time of application)") if app.created_at else "Time of application"],
+            ["IP Address / Device:", Paragraph("Not recorded: this application was made before acceptances were recorded.", small_style)],
+            ["Consent Granted:", consent],
+        ]
     t_agree = Table(agree_data, colWidths=[160, 355])
     t_agree.setStyle(TableStyle([
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),

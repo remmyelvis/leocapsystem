@@ -105,10 +105,10 @@ def create_app():
                 if column not in {c["name"] for c in inspect(db.engine).get_columns("applications")}:
                     app.logger.exception("Could not add applications.%s", column)
 
-    # The site-content tables are new: create them once if they are missing (production has no create_all; its database user may create tables)
+    # The site-content and agreement-acceptance tables are new: create them once if they are missing (production has no create_all; its database user may create tables)
     with app.app_context():
-        from website.models import SiteContent, SiteContentVersion
-        for table in (SiteContent.__table__, SiteContentVersion.__table__):
+        from website.models import AgreementAcceptance, SiteContent, SiteContentVersion
+        for table in (SiteContent.__table__, SiteContentVersion.__table__, AgreementAcceptance.__table__):
             try:
                 table.create(db.engine, checkfirst=True)
             except Exception:

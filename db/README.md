@@ -11,6 +11,7 @@ SQL to bring the live loan-app database in line with `backend/website/models.py`
 | `03_verify_schema_readonly.sql` | Read-only. Compares the live schema with the models. Expect 0 rows. |
 | `04_disbursement_date.sql` | Adds `applications.disbursement_date` (the app also does this itself at startup). |
 | `05_site_content.sql` | Creates the two tables for the editable public pages (the app also does this itself at startup). Only needed if that did not happen. |
+| `06_agreement_acceptances.sql` | Creates the table that records what each borrower accepted when applying (the app also does this itself at startup). Only needed if that did not happen. |
 
 ## Important: who owns the tables
 

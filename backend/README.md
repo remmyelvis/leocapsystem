@@ -409,6 +409,8 @@ hr_email_body = Text
 files = File // accepted types are .pdf, .xls & .xlsx, application documents to upload
 ```
 
+**Loan agreement acceptance.** The form also sends `agreement_version` (the version it showed, 0 = built-in) and `agreement_employer` (the borrower's company, put into the salary advance text). If the version is no longer the one in force the answer is **409** "The loan agreement was updated while you were applying. Please read it again and accept it again." and nothing is created; a form that sends no version is accepted only while the built-in text is live. Otherwise the acceptance is stored in the same transaction (`agreement_acceptances`: the exact text shown, its SHA-256, version, time, IP from the first `X-Forwarded-For` else the socket, user agent and a short device reading, a random reference `LA-XXXX-XXXX-XXXX`, and an HMAC-SHA256 seal made from `SECRET_KEY`; changing `SECRET_KEY` makes older seals unverifiable). It is written in a savepoint: a problem with the table is logged and never costs the borrower their application. `GET /applications/get-one/<id>` (admin) adds `agreement` (`reference`, `version`, `title`, `accepted_at`, `ip_address`, `device`, `verified`), or `null` for an application made before 30 Oct 2026; deleting a never-paid-out loan deletes its record.
+
 #### Endpoint: get_all
 
 ```http
@@ -1207,11 +1209,12 @@ Base url
 /api/site-content
 ```
 
-The public pages read their editable text from here and fall back to the text built into the frontend (`frontend/src/lib/siteContent/defaults.ts`) for anything not published, so a new site shows exactly what it always showed. Blocks: `banner`, `contact`, `home_hero`, `home_products`, `home_how`, `home_headings`, `testimonials`, `faq`, `privacy` (each has its own check in `site_content.py`: for example exactly three hero numbers and three steps, one to three product cards with at most one Most Popular, 1 to 30 policy sections that may not contain buttons or the ready-made blocks). Each block has a **draft**, a **published** copy and a version history (`site_content`, `site_content_versions`; the two tables are created at startup, like the other additions, because production never runs `create_all`). The blocks are checked on every save and again on publish (`website/site_content.py`: types, lengths, at most 300 KB per request, links limited to `/path`, `https:`, `mailto:` and `tel:`, only the known `{{placeholders}}`). Answers are written in a small text format and drawn by the frontend as its own components, never as HTML.
+The public pages read their editable text from here and fall back to the text built into the frontend (`frontend/src/lib/siteContent/defaults.ts`) for anything not published, so a new site shows exactly what it always showed. Blocks: `banner`, `contact`, `home_hero`, `home_products`, `home_how`, `home_headings`, `testimonials`, `faq`, `privacy`, `agreement_salary`, `agreement_personal` (each has its own check in `site_content.py`: for example exactly three hero numbers and three steps, one to three product cards with at most one Most Popular, 1 to 30 policy sections that may not contain buttons or the ready-made blocks). Each block has a **draft**, a **published** copy and a version history (`site_content`, `site_content_versions`; the two tables are created at startup, like the other additions, because production never runs `create_all`). The blocks are checked on every save and again on publish (`website/site_content.py`: types, lengths, at most 300 KB per request, links limited to `/path`, `https:`, `mailto:` and `tel:`, only the known `{{placeholders}}`). Answers are written in a small text format and drawn by the frontend as its own components, never as HTML.
 
 #### Endpoints
 
 ```http
+    GET    /agreement/<kind>        // public: the agreement a borrower applying now is shown (kind = salary | personal): { kind, key, version, built_in, data }. `no-store`; 404 for another kind. Version 0 = the built-in text.
     GET    /                        // public: the published blocks. Cached 60 s (ETag). Testimonials without the client's agreement are left out on the server.
     GET    /?draft=1                // the same with the drafts, for a signed-in admin only (the "Preview on the site"); never cached
     GET    /admin                   // every block with its status (built-in / published / draft)
@@ -1228,5 +1231,7 @@ The public pages read their editable text from here and fall back to the text bu
 ```http
 GET /: everyone.  Everything else: admin, super_admin.
 ```
+
+**Loan agreements.** `agreement_salary` (also accepted by HR and finance staff for their own loans) and `agreement_personal` are `{ title, intro, items: [{ title, body }] }` (1 to 40 sections; `{{employer}}` is allowed only in the salary one) and are left out of the public payload. The built-in text is `website/agreement_defaults.py`. Applying records the acceptance (see `create_application`); `website/agreements.py` holds the version check, the record, the seal and the text the debt dossier prints.
 
 In `DEMO_MODE=True` all the admin endpoints answer 404 and the demo frontend build has no editor. Every write is also an Audit Trail line ("Site content" entity). Frontend: `Admin > Site content` (`frontend/src/pages/admin/site-content/`).

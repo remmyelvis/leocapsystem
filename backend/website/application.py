@@ -16,6 +16,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from website.export_service import export_applicant, export_statement
 from website.system_email_utils import send_email_smtp
 from website.models import Application, Applicant, ApplicationDocument, HrEmail, Email, ApplicationAudit, User, StatementEntry, Company, ApplicantDocument
+from website import agreements
 from website import db, Config
 from website.role_decorator import role_required, can_access_application
 from website.upload_paths import upload_path
@@ -194,6 +195,11 @@ def create_application():
             "message": f"Your loan limit is KES {applicant.loan_limit:,}. Please apply for that amount or less."
         }), 400
 
+    # The agreement the borrower read must still be the one in force (an admin may have published a new one meanwhile)
+    problem = agreements.version_problem(agreements.kind_for_loan_type(data.get("loan_type")), data)
+    if problem:
+        return jsonify({"message": problem}), 409
+
     application_id = str(uuid4())
     processing = round((amount * Decimal(0.03)), 2)
     access = 0
@@ -330,6 +336,14 @@ def create_application():
                 filetype=filename.rsplit(".", 1)[1] if "." in filename else "unknown"
             )
             db.session.add(doc)
+
+    # What the borrower accepted: the exact agreement text, when, from where, sealed (agreements.py). Written in a savepoint so that a
+    # problem with this table can never cost the borrower their application; it is logged loudly instead.
+    try:
+        with db.session.begin_nested():
+            agreements.record(new_application, applicant, data, request)
+    except Exception:
+        logging.exception("Could not record the agreement acceptance for application %s", application_id)
 
     db.session.commit()
 
@@ -2055,6 +2069,7 @@ def get_one_application(application_id):
                 Application.repayment_status.in_(["partially_paid", "delinquent", "escalated", "defaulted"]),
             ).order_by(Application.created_at).all()
         ]
+        detail["agreement"] = agreements.summary(app.id)  # None for an application made before acceptances were recorded
     return jsonify({"application": detail, "bio_data": applicant.to_dict() if applicant else {}}), 200
 
 def sync_terms_to_ledger(app):
@@ -2311,6 +2326,7 @@ def delete_application(application_id):
         "borrower": {"name": borrower.name, "email": borrower.email} if borrower else None,
         "history": [a.to_dict() for a in ApplicationAudit.query.filter_by(application_id=app.id).order_by(ApplicationAudit.changed_at).limit(200)],
         "ledger": [e.to_dict() for e in ledger.order_by(StatementEntry.date).limit(200)],
+        "agreement": agreements.summary(app.id),
     }, default=str))
     _record_audit_log(
         action=AuditAction.DELETE,
@@ -2322,6 +2338,7 @@ def delete_application(application_id):
         # The database will not delete a loan while rows still point at it: the ledger rows go with it, the borrower's profile
         # documents only lose their link to it (they stay on the profile).
         ledger.delete(synchronize_session=False)
+        agreements.delete_for(app.id)
         ApplicantDocument.query.filter_by(application_id=app.id).update({"application_id": None}, synchronize_session=False)
         db.session.delete(app)
         db.session.commit()

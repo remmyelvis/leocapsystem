@@ -19,6 +19,7 @@ from functools import wraps
 from flask import Blueprint, abort, jsonify, make_response, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
+from website import agreements
 from website.extensions import db
 from website.models import SiteContent, SiteContentVersion, User
 from website.role_decorator import optional_claims, role_required
@@ -322,6 +323,32 @@ def _privacy(data):
     return {"items": out}
 
 
+def _agreement(data, employer_ok):
+    """A loan agreement: a title, an opening paragraph and lettered sections of plain lines (kept exactly as typed). It is a legal text, so
+    nothing in it is interpreted: the only placeholder is {{employer}} (the Salary Advance agreement), filled in when it is shown."""
+    c, d = _Check(), _object(data)
+    title = c.text(d.get("title"), "Agreement title", 1, 80)
+    intro = c.text(d.get("intro"), "Opening paragraph", 0, 3000, multiline=True)
+    sections = []
+    for i, s in enumerate(c.items(d.get("items"), "Sections", 1, 40), 1):
+        where = f"Section {i}"
+        sections.append({"title": c.text(s.get("title"), f"{where} title", 1, 120), "body": c.text(s.get("body"), f"{where} text", 1, 8000, multiline=True)})
+    for where, text in [("Title", title), ("Opening paragraph", intro)] + [(f"Section {i} title", s["title"]) for i, s in enumerate(sections, 1)] + [(f"Section {i} text", s["body"]) for i, s in enumerate(sections, 1)]:
+        for token in _TOKEN.findall(text):
+            if token != "employer" or not employer_ok:
+                c.fail(where, "{{" + token + "}} is not available here" + (" (only {{employer}} is)" if employer_ok else " (this agreement has no placeholders)"))
+    c.done()
+    return {"title": title, "intro": intro.replace("\r\n", "\n"), "items": [{"title": s["title"], "body": s["body"].replace("\r\n", "\n")} for s in sections]}
+
+
+def _agreement_salary(data):
+    return _agreement(data, True)
+
+
+def _agreement_personal(data):
+    return _agreement(data, False)
+
+
 # key -> (title, what it is, check), in the order the admin list shows them. Adding a block is adding a line here and its check above.
 BLOCKS = {
     "banner": ("Announcement banner", "A short notice across the top of the public pages, for example planned maintenance.", _banner),
@@ -333,7 +360,10 @@ BLOCKS = {
     "testimonials": ("Testimonials", "Client quotes. Only quotes marked as agreed by the client are ever shown to visitors.", _testimonials),
     "faq": ("FAQs", "The questions and answers on the FAQ page.", _faq),
     "privacy": ("Privacy policy", "The sections of the Privacy Policy page. Section numbers follow the order.", _privacy),
+    "agreement_salary": ("Loan agreement: Salary Advance", "The agreement a borrower accepts when applying for a Salary Advance (HR and finance staff accept the same text for their own loans). Every acceptance is recorded with the exact text, so changing it never changes what earlier borrowers accepted.", _agreement_salary),
+    "agreement_personal": ("Loan agreement: Personal Loan", "The agreement a borrower accepts when applying for a Personal Loan. Every acceptance is recorded with the exact text, so changing it never changes what earlier borrowers accepted.", _agreement_personal),
 }
+AGREEMENT_KEYS = set(agreements.KEYS.values())  # served by their own endpoint (the forms), never inside the public pages' content
 
 
 def _public_view(key, data):
@@ -394,7 +424,9 @@ def _summary(key, row):
 
 
 def _detail(key, row):
-    return {**_summary(key, row), "draft": row.draft if row else None, "published": row.published if row else None}
+    # An agreement's built-in text is sent along: it is what the editor starts from and what "Reset to built-in text" returns to
+    return {**_summary(key, row), "draft": row.draft if row else None, "published": row.published if row else None,
+            "built_in": agreements.built_in(key) if key in AGREEMENT_KEYS else None}
 
 
 def _body():
@@ -423,7 +455,7 @@ def public_content():
     try:
         for row in SiteContent.query.all():
             data = row.draft if preview and row.draft is not None else row.published
-            if row.key in BLOCKS and data is not None:
+            if row.key in BLOCKS and row.key not in AGREEMENT_KEYS and data is not None:
                 blocks[row.key] = _public_view(row.key, data)
     except Exception:
         logging.exception("Could not read the site content; the pages will use their built-in text")
@@ -438,6 +470,18 @@ def public_content():
     response.set_etag(hashlib.sha1(payload.encode()).hexdigest())
     response.headers["Cache-Control"] = "public, max-age=60"
     return response.make_conditional(request)
+
+
+@site_content_bp.route("/agreement/<string:kind>", methods=["GET"])
+def agreement(kind):
+    """The agreement in force for a kind of loan ("salary" or "personal"): what the application form shows. It also says which version
+    that is, and the form sends that version back so the server can tell if it changed while the borrower was reading. Never cached."""
+    if kind not in agreements.KEYS:
+        abort(404)
+    version, data, is_built_in = agreements.published(agreements.KEYS[kind])
+    response = jsonify({"kind": kind, "key": agreements.KEYS[kind], "version": version, "built_in": is_built_in, "data": data})
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 # -- what admins do ---------------------------------------------------------------------------------------------------------

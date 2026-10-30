@@ -729,3 +729,27 @@ class SiteContentVersion(db.Model):
     data = db.Column(db.JSON, nullable=True)  # null for a reset
     by_email = db.Column(db.String(120), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class AgreementAcceptance(db.Model):
+    """What a borrower accepted when they applied (see agreements.py): the exact text they were shown, when, from where, and a seal over
+    all of it, so a later change to any of it can be detected. One row per application. No foreign keys on purpose: nothing about
+    deleting a loan or a person should ever be blocked by it (a loan that was never paid out is deleted together with its record)."""
+    __tablename__ = "agreement_acceptances"
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid4()), unique=True, nullable=False)
+    application_id = db.Column(db.String(36), nullable=False, unique=True, index=True)
+    applicant_id = db.Column(db.String(36), nullable=False, index=True)
+    agreement_key = db.Column(db.String(60), nullable=False)  # agreement_salary | agreement_personal
+    version = db.Column(db.Integer, nullable=False)  # the published version shown (0 = the text built into the site)
+    employer = db.Column(db.String(150), nullable=True)  # what "{{employer}}" was filled in with
+    snapshot = db.Column(db.JSON, nullable=False)  # title, intro and sections exactly as shown
+    text_hash = db.Column(db.String(64), nullable=False)  # SHA-256 of the snapshot
+    accepted_at = db.Column(db.DateTime, nullable=False)  # UTC
+    ip_address = db.Column(db.String(64), nullable=True)
+    user_agent = db.Column(db.String(300), nullable=True)
+    device = db.Column(db.String(80), nullable=True)  # a short reading of the user agent, for people
+    reference = db.Column(db.String(20), nullable=False, unique=True, index=True)  # random, unguessable: LA-XXXX-XXXX-XXXX
+    seal = db.Column(db.String(64), nullable=False)  # HMAC-SHA256 over everything above
+    seal_version = db.Column(db.Integer, nullable=False, default=1)
+
