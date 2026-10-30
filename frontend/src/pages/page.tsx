@@ -119,11 +119,11 @@ function HeroSection() {
 
       <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-14 px-4 py-24 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,360px)] lg:gap-10 lg:px-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] xl:gap-14 [@media(max-height:780px)]:py-16">
         <div className="max-w-2xl md:max-w-3xl lg:max-w-2xl">
-          {/* Badge */}
-          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-4 py-1.5 motion-safe:animate-auth-rise">
-            <span className="h-2 w-2 rounded-full bg-red-400 motion-safe:animate-pulse" />
-            <span className="font-display text-[12px] font-semibold uppercase tracking-[0.14em] text-blue-50">{hero.badge}</span>
-          </div>
+          {/* Eyebrow: a quiet label in the site's section-label style (small spaced capitals led by a short red line), not a pill, so the headline is the first thing the eye lands on. */}
+          <p className="mb-5 flex items-center gap-2.5 font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-blue-200 max-[359px]:gap-2 max-[359px]:tracking-[0.08em] motion-safe:animate-auth-rise">
+            <span className="h-px w-5 shrink-0 bg-red-400/80" aria-hidden />
+            <span className="min-w-0">{hero.badge}</span>
+          </p>
 
           {/* globals.css forces every h1 to 1.5rem under 640px; keep the hero headline display-sized on phones */}
           <h1 className="mb-6 font-display text-4xl font-bold leading-[1.1] tracking-[-0.015em] text-white sm:text-[clamp(2.75rem,7vw,3.75rem)] sm:leading-[1.08] lg:text-[clamp(2.5rem,4.45vw,3.375rem)] max-sm:!text-[clamp(28px,8.6vw,36px)] max-sm:!leading-[1.12]">
