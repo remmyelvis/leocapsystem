@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { IS_DEMO } from "@/components/demo/demo";
+import { REGISTRATION } from "@/components/landing/site";
 import { useContact } from "@/lib/siteContent/useSiteContent";
 import { APP_TITLE, normalizePath, PUBLIC_PAGES, SITE_NAME, SITE_URL, SOCIAL_IMAGE } from "./pages";
 
@@ -38,6 +39,8 @@ function OrganizationData() {
         "@type": "FinancialService",
         "@id": `${SITE_URL}/#organization`,
         name: SITE_NAME,
+        legalName: REGISTRATION.legalName,
+        identifier: { "@type": "PropertyValue", propertyID: "Kenya Business Registration Service business number", value: REGISTRATION.businessNumber },
         url: `${SITE_URL}/`,
         logo: `${SITE_URL}/icon-512.png`,
         image: SITE_URL + SOCIAL_IMAGE.path,

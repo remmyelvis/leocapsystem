@@ -5,7 +5,7 @@ import BrandLogo from "@/components/global/BrandLogo";
 import { MarkMotif, navy } from "@/components/global/brandArt";
 import { useAuth } from "@/contexts/AuthContext";
 import { useContact } from "@/lib/siteContent/useSiteContent";
-import { APPLY_TO, CONSULTANCY_URL, portalFor, SIGN_IN_TO } from "./site";
+import { APPLY_TO, CONSULTANCY_URL, portalFor, REGISTRATION, SIGN_IN_TO } from "./site";
 
 const footerLink = "inline-flex min-h-[40px] items-center text-slate-300 transition-colors hover:text-white md:min-h-[30px]";
 
@@ -142,6 +142,10 @@ export default function SiteFooter({ home = true }: { home?: boolean }) {
             <ArrowUp className="h-4 w-4" />
           </button>
         </div>
+        <p className="mt-4 max-w-3xl text-[12px] leading-relaxed text-slate-400">
+          Leocap Invest is a registered business name (No. <span className="whitespace-nowrap">{REGISTRATION.businessNumber}</span>, Registration of Business Names Act, Cap. 499). Registered with the Office of the Data Protection Commissioner as a data controller (ID{" "}
+          <span className="whitespace-nowrap">{REGISTRATION.dataControllerId}</span>).
+        </p>
       </div>
     </footer>
   );
