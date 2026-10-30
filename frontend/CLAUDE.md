@@ -19,7 +19,7 @@ Applicants apply for loans, admins manage them.
 src/
 ├── main.tsx, App.tsx      # entry + all routes (react-router)
 ├── pages/                 # one folder per route, each with page.tsx
-│   ├── login/ register/ forgot-password/ privacy-policy/
+│   ├── login/ register/ forgot-password/ privacy-policy/ terms-and-conditions/
 │   ├── dashboard/         # applicant portal (apply, applications, profile)
 │   ├── admin/             # admin portal (applicants, staff, companies,
 │   │                      #   audit-trail, reports, calculators, settings, site-content)
@@ -213,7 +213,7 @@ Progress bar: 50% personal info + 50% documents
 
 - **Public pages' titles, descriptions and canonical address** live in one table, `src/lib/seo/pages.ts` (`PUBLIC_PAGES`, `SITE_URL`).
   `vite-seo.ts` (a plugin in `vite.config.ts`) writes them into `index.html` between the `<!--seo:start/end-->` markers at build time and
-  writes `faq.html`, `privacy-policy.html`, `register.html`, `login-applicant.html` (flat names: a `login/` folder would break `/login`);
+  writes `faq.html`, `privacy-policy.html`, `terms-and-conditions.html`, `register.html`, `login-applicant.html` (flat names: a `login/` folder would break `/login`);
   `RouteSeo` keeps title / description / canonical / robots right while the visitor moves around. Every page that is not in `PUBLIC_PAGES`
   (portals, 404, password reset), the app. host and the demo build are `noindex` with no canonical. Adding a public page: add it to
   `PUBLIC_PAGES`, `public/sitemap.xml`, and check `public/robots.txt`. The owner settled the card numbers on 29 Oct (Salary Advance "up to 30% of gross salary", Personal Loan "up to KES 500,000", "1 month tenure"), but these texts still quote none: add figures only if asked.
@@ -355,3 +355,12 @@ Progress bar: 50% personal info + 50% documents
 - **Where they are (one source, `REGISTRATION` in `components/landing/site.ts`):** the footer's last line (`SiteFooter.tsx`, identifiers in `whitespace-nowrap` spans so a number never splits), the identity box that opens the Privacy Policy page (`pages/privacy-policy/page.tsx`, fixed facts, NOT part of the editable policy text) and the structured data on the home page (`lib/seo/RouteSeo.tsx`: `legalName` and an `identifier` PropertyValue; only mounted on the real host, so it does not show on localhost). It is a constant, not Site content, on purpose: legal identifiers should change only through a reviewed code change, and the owner can ask for a field if that ever becomes frequent.
 - **Deliberately NOT published:** the proprietors' names and personal P.O. boxes, the registry's Gmail address, the registered office street address (it differs from the site's address), the registry's "Debt collection agency" nature of business, and any lending licence (none is held on the certificates). The wording says "registered business name", never "licensed" or "company".
 - **Keep current:** the ODPC certificate expires after two years (renew it; the site quotes no date, so only the ID needs updating if it changes). If a Central Bank digital credit licence is ever obtained, add it from the licence document only. Owner-document decision 27 lists the three points to check with a lawyer.
+
+## Terms and Conditions page (30 Oct 2026)
+
+- **What:** `/terms-and-conditions` (`pages/terms-and-conditions/page.tsx`), a sibling of the Privacy Policy. Both are thin pages over the shared `components/global/LegalPage.tsx` (title, a `facts` box of fixed business facts, numbered sections rendered with `RichText variant="policy"`). Page name is "Terms and Conditions" because the four loan forms already said "Terms & Conditions".
+- **Content is an editable CMS block `terms`** (same shape and editor as `privacy`: `{ items: [{ title, body }] }`, 1-30 sections, no buttons). Backend: `BLOCKS["terms"]` in `site_content.py` shares the `_policy` check with `privacy`; frontend: `types.ts`, `defaults.ts` (built-in text), the shared `policy` shape check in `useSiteContent.ts`, `PAGE_FOR` in `adminApi.ts`, the list group in `admin/site-content/page.tsx`, and the editor wiring in `[key]/page.tsx` (`KEYS`, `withKeys`, `case "terms"` next to `privacy`, which reuses `PolicyForm`). No database change (the table is key/value).
+- **The built-in text deliberately repeats no fee, rate or charge** and points to the Loan Agreement for everything about a loan (and says the Loan Agreement prevails), so the two cannot drift. It names no regulator and claims no licence. It is a draft for a lawyer (owner-document decision 29).
+- **Where it is linked:** footer (Company column), the sign-in/sign-up footer line (`AuthLayout`), Leo's "safe" answer (`assistant/flows.ts`), the words "Terms & Conditions" in the existing checkbox label on all four loan forms (colour follows each portal's Privacy link), and a NEW separate checkbox on `/register` (`termsAccepted`, beside `privacyAccepted`; the submit button needs both). Neither sign-up acceptance is stored server-side; on a loan form only the Loan Agreement text goes into the acceptance record.
+- **SEO:** entry in `PUBLIC_PAGES` (`lib/seo/pages.ts`), a line in `public/sitemap.xml`; the build writes `terms-and-conditions.html` (the generic `.htaccess` rule serves it, nothing to add there).
+- **Tailwind trap found here:** `tailwind.config.ts` `content` listed only `pages`, `components` and `app`, so a class that appears ONLY in `src/lib/**` or `src/App.tsx` was never generated (the contact box was italic because `not-italic` is only in `lib/siteContent/format.tsx`; `marker:text-slate-400` and the `bg-cyan-100` status badge in `lib/loanStatus.ts` were also missing). `lib/**` and `App.tsx` are now in `content`. A Vite dev server does NOT reload that list: restart it after changing `content`.
