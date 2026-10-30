@@ -21,7 +21,7 @@ export function ModalShell({ titleId, onClose, children }: { titleId: string; on
         aria-labelledby={titleId}
         tabIndex={-1}
         onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}
-        className="w-full max-w-md max-h-[92vh] supports-[height:1dvh]:max-h-[92dvh] overflow-y-auto rounded-2xl bg-white p-5 shadow-xl outline-none"
+        className="w-full max-w-md max-h-[92vh] supports-[height:1dvh]:max-h-[92dvh] overflow-y-auto rounded-2xl bg-white p-5 shadow-xl outline-none [&_h1]:font-display [&_h2]:font-display [&_h3]:font-display"
       >
         {children}
       </div>

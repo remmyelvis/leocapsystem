@@ -740,7 +740,7 @@ export default function HRApplyPage() {
             <Button
               type="submit"
               disabled={isLoading || !termsAccepted || !privacyAccepted}
-              className={`w-full font-bold h-9 rounded-lg text-sm transition-all ${
+              className={`w-full font-display font-semibold h-9 rounded-lg text-sm transition-all ${
                 isLoading || !termsAccepted || !privacyAccepted
                   ? "bg-gray-300 text-slate-500 cursor-not-allowed opacity-50"
                   : "bg-emerald-700 hover:bg-emerald-800 text-white"

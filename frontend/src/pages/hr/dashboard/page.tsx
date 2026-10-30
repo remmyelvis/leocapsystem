@@ -41,7 +41,7 @@ function StatCard({
         <Icon className="h-4 w-4 text-white" />
       </div>
       <div>
-        <p className="text-lg font-bold text-slate-900">{value}</p>
+        <p className="font-display text-lg font-bold text-slate-900">{value}</p>
         <p className="text-xs text-slate-400 font-medium mt-0.5">{label}</p>
       </div>
     </div>
@@ -168,7 +168,7 @@ export default function HRDashboardPage() {
           </p>
         </div>
         <Link to="/hr/apply"
-          className="tap-btn inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-600 text-white text-[13px] font-bold px-3 py-1.5 rounded-lg transition-colors"
+          className="tap-btn inline-flex items-center gap-2 font-display bg-emerald-700 hover:bg-emerald-600 text-white text-[13px] font-semibold px-3 py-1.5 rounded-lg transition-colors"
         >
           Apply for Loan
           <ArrowRight className="h-4 w-4" />

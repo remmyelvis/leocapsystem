@@ -741,7 +741,7 @@ export default function FinanceApplyPage() {
             <Button
               type="submit"
               disabled={isLoading || !termsAccepted || !privacyAccepted}
-              className={`w-full font-bold h-9 rounded-lg text-sm transition-all ${
+              className={`w-full font-display font-semibold h-9 rounded-lg text-sm transition-all ${
                 isLoading || !termsAccepted || !privacyAccepted
                   ? "bg-gray-300 text-slate-500 cursor-not-allowed opacity-50"
                   : "bg-violet-700 hover:bg-violet-800 text-white"
