@@ -2308,20 +2308,15 @@ def disburse_application(application_id):
 NEVER_PAID_OUT = {"pending", "pending_processing", "processing", "amended", "rate_set", "rate_confirmed", "confirmed", "rate_declined", "approved", "declined", "rejected"}
 
 
-@application.route('/applications/delete/<string:application_id>', methods=['DELETE'])
-@jwt_required()
-@role_required("admin", "super_admin")
-def delete_application(application_id):
-    app = Application.query.filter_by(id=application_id).first()
-    if not app:
-        return jsonify({"error": "Not found"}), 404
+def delete_application_record(app, actor_id, actor_email, actor_role):
+    """Delete a loan that was never paid out, keeping what it was in the system log. Returns (answer, status). The admin screen and
+    the Telegram Delete button both call it, so they follow the same rule."""
     ledger = StatementEntry.query.filter_by(application_id=app.id)
     if app.loan_status not in NEVER_PAID_OUT or app.disbursement_date is not None or ledger.filter(StatementEntry.credit > 0).first():
-        return jsonify({"error": "This loan was paid out, so it cannot be deleted: its history must stay on the borrower's statement."}), 409
+        return {"error": "This loan was paid out, so it cannot be deleted: its history must stay on the borrower's statement."}, 409
     # A loan's own audit rows and ledger rows are deleted with it, so what it was and its history are kept in the system log first.
     from website.audit_logs import _record_audit_log
     from website.models import AuditAction
-    email, role, _ = _actor()
     borrower = Applicant.query.get(app.applicant_id)
     snapshot = json.loads(json.dumps({
         "application": app.to_dict(),
@@ -2333,7 +2328,7 @@ def delete_application(application_id):
     _record_audit_log(
         action=AuditAction.DELETE,
         description=f"Deleted loan application {app.id[:8]} ({borrower.name if borrower else 'unknown borrower'}, KES {float(app.amount_applied):,.2f}, {app.loan_status})",
-        entity_type="Application", entity_id=app.id, actor_id=get_jwt_identity(), actor_email=email, actor_role=role,
+        entity_type="Application", entity_id=app.id, actor_id=actor_id, actor_email=actor_email, actor_role=actor_role,
         old_values=snapshot,
     )
     try:
@@ -2347,8 +2342,20 @@ def delete_application(application_id):
     except SQLAlchemyError:
         db.session.rollback()
         logging.exception("Could not delete application %s", application_id)
-        return jsonify({"error": "The loan could not be deleted. Nothing was changed."}), 500
-    return jsonify({"message": "Deleted"}), 200
+        return {"error": "The loan could not be deleted. Nothing was changed."}, 500
+    return {"message": "Deleted"}, 200
+
+
+@application.route('/applications/delete/<string:application_id>', methods=['DELETE'])
+@jwt_required()
+@role_required("admin", "super_admin")
+def delete_application(application_id):
+    app = Application.query.filter_by(id=application_id).first()
+    if not app:
+        return jsonify({"error": "Not found"}), 404
+    email, role, _ = _actor()
+    answer, status = delete_application_record(app, get_jwt_identity(), email, role)
+    return jsonify(answer), status
 
 
 

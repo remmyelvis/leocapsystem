@@ -74,6 +74,9 @@ def create_app():
     from website.site_content import site_content_bp
     app.register_blueprint(site_content_bp)
 
+    from website.telegram_actions import telegram_actions
+    app.register_blueprint(telegram_actions)
+
     from website.audit_hook import register_audit_hook
     register_audit_hook(app)
 

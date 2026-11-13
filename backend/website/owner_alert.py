@@ -147,28 +147,53 @@ def _send_whatsapp(text):
         logging.error("WhatsApp alert refused by Twilio (%s): %s", error.code, error.read().decode(errors="replace")[:300])
 
 
-def _send_telegram(text):
-    """Send one Telegram message to each chat in TELEGRAM_CHAT_ID (comma-separated). A Twilio trial account cannot send
-    free text on WhatsApp, Telegram can. *bold* is tried first and plain text if Telegram cannot parse the message. No link
-    preview: the link opens a page behind the admin sign-in, so a preview would only show an empty card."""
-    token = os.environ["TELEGRAM_BOT_TOKEN"]
+def telegram_api(method, **fields):
+    """Call one Telegram Bot API method. None when Telegram accepted it, otherwise the HTTP code it refused with (logged)."""
+    request = urllib.request.Request(
+        f"https://api.telegram.org/bot{os.environ['TELEGRAM_BOT_TOKEN']}/{method}", data=urllib.parse.urlencode(fields).encode())
+    try:
+        urllib.request.urlopen(request, timeout=20).close()
+        return None
+    except urllib.error.HTTPError as error:
+        logging.error("Telegram %s to chat %s refused (%s): %s", method, fields.get("chat_id", "-"), error.code, error.read().decode(errors="replace")[:300])
+        return error.code
+
+
+def action_chats():
+    """The Telegram ids allowed to press the Decline and Delete buttons (TELEGRAM_ACTION_CHAT_ID, comma-separated): nobody
+    unless the webhook that receives the presses is switched on (TELEGRAM_WEBHOOK_SECRET)."""
+    if not os.getenv("TELEGRAM_WEBHOOK_SECRET"):
+        return set()
+    return {chat.strip() for chat in os.getenv("TELEGRAM_ACTION_CHAT_ID", "").split(",") if chat.strip()}
+
+
+def alert_keyboard(application_id):
+    """The buttons under an alert: a link to the application (Telegram accepts only https links) and Decline / Delete."""
+    link = f"{frontend_url()}/admin/applications/{application_id}"
+    rows = [[{"text": "Open application", "url": link}]] if link.startswith("https://") else []
+    rows.append([{"text": "Decline", "callback_data": f"ask_dec:{application_id}"}, {"text": "Delete", "callback_data": f"ask_del:{application_id}"}])
+    return {"inline_keyboard": rows}
+
+
+def _send_telegram(text, application_id=None):
+    """Send one Telegram message to each chat in TELEGRAM_CHAT_ID (comma-separated), with the buttons for the chats allowed to
+    use them. A Twilio trial account cannot send free text on WhatsApp, Telegram can. *bold* is tried first and plain text if
+    Telegram cannot parse the message. No link preview: the link opens a page behind the admin sign-in, so a preview would
+    only show an empty card."""
     for chat in os.environ["TELEGRAM_CHAT_ID"].split(","):
+        chat = chat.strip()
         for mode in ("Markdown", None):
-            fields = {"chat_id": chat.strip(), "text": text[:4000], "disable_web_page_preview": "true", **({"parse_mode": mode} if mode else {})}
-            request = urllib.request.Request(f"https://api.telegram.org/bot{token}/sendMessage", data=urllib.parse.urlencode(fields).encode())
-            try:
-                urllib.request.urlopen(request, timeout=20).close()
+            fields = {"chat_id": chat, "text": text[:4000], "disable_web_page_preview": "true", **({"parse_mode": mode} if mode else {})}
+            if application_id and chat in action_chats():
+                fields["reply_markup"] = json.dumps(alert_keyboard(application_id))
+            if telegram_api("sendMessage", **fields) != 400:  # sent, or refused for a reason a plain retry cannot fix
                 break
-            except urllib.error.HTTPError as error:
-                logging.error("Telegram alert to chat %s refused (%s): %s", chat.strip(), error.code, error.read().decode(errors="replace")[:300])
-                if error.code != 400:
-                    break
 
 
-def _send(text):
+def _send(text, application_id=None):
     """Telegram when its two settings are present, otherwise WhatsApp through Twilio."""
     if os.getenv("TELEGRAM_BOT_TOKEN") and os.getenv("TELEGRAM_CHAT_ID"):
-        _send_telegram(text)
+        _send_telegram(text, application_id)
     else:
         _send_whatsapp(text)
 
@@ -195,12 +220,13 @@ def notify_owner(application, applicant):
     if not (os.getenv("TELEGRAM_BOT_TOKEN") and os.getenv("TELEGRAM_CHAT_ID")) and not all(os.getenv(name) for name in _SETTINGS):
         return
     try:
-        facts, flags, signal, head, link = build_alert(application, applicant)  # read now: the database session is gone once the answer has been sent
+        application_id = application.id  # read now: the database session is gone once the answer has been sent
+        facts, flags, signal, head, link = build_alert(application, applicant)
 
         def _run():
             summary = _summarise(facts, signal, flags)
             note = "AI-assisted summary; the decision is yours." if summary else "AI summary unavailable: the facts only."
-            _send(f"{head}\n\n{summary or _plain(facts)}\n\n{note}\nOpen the application: {link}")
+            _send(f"{head}\n\n{summary or _plain(facts)}\n\n{note}\nOpen the application: {link}", application_id)
 
         run_after_response(_run)
     except Exception:
