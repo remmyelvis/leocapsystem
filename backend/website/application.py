@@ -21,6 +21,7 @@ from website import db, Config
 from website.role_decorator import role_required, can_access_application
 from website.upload_paths import upload_path
 from website.notifications import notify_hr_of_application, notify_loans_repaid, notify_penalty
+from website.owner_alert import notify_owner
 from flask import Response
 from sqlalchemy.orm.attributes import get_history
 from dateutil.relativedelta import relativedelta
@@ -348,6 +349,7 @@ def create_application():
     db.session.commit()
 
     notify_hr_of_application(new_application, applicant)
+    notify_owner(new_application, applicant)
 
     return jsonify({
         'message': 'Application created successfully',
